@@ -1,8 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const TELEGRAM_BOT_TOKEN = "8579583220:AAHcl0ElgV6VuDno-OZNQwKTKV2vDs3aYxE";
-const TELEGRAM_CHAT_ID = "-5166184217";
+// Use environment variables - never hardcode secrets!
+const TELEGRAM_BOT_TOKEN = Deno.env.get("TELEGRAM_BOT_TOKEN") || "";
+const TELEGRAM_CHAT_ID = Deno.env.get("TELEGRAM_CHAT_ID") || "";
 
 serve(async (req) => {
   if (req.method !== "POST") {
