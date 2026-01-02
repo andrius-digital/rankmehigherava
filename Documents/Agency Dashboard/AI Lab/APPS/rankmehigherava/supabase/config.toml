@@ -1,0 +1,31 @@
+project_id = "rmzmocmhjsbnckvbtypw"
+
+[functions.chat]
+verify_jwt = false
+
+[functions.slack-notify]
+verify_jwt = false
+
+[functions.notify-website-submission]
+verify_jwt = false
+
+[functions.improve-text]
+verify_jwt = false
+
+[functions.extract-gbp-info]
+verify_jwt = false
+
+[functions.generate-website-prompt]
+verify_jwt = false
+
+[functions.generate-image]
+verify_jwt = false
+
+[functions.admin-operations]
+verify_jwt = false
+
+[functions.improve-task-text]
+verify_jwt = false
+
+[functions.clockify]
+verify_jwt = false
