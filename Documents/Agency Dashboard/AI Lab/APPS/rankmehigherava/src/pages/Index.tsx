@@ -415,11 +415,22 @@ const Index = () => {
                 </p>
               </div>
 
-              {/* Mobile: Horizontal Scrollable Cards */}
-              <div className="lg:hidden overflow-x-auto mb-6 -mx-4 px-4 scrollbar-hide">
-                <div className="flex gap-4" style={{ width: 'max-content' }}>
-                  {[1, 2, 3, 4, 5].map((num) => (
-                    <div key={num} className="group flex-shrink-0" style={{ width: '320px' }}>
+              {/* Mobile: Horizontal Scrollable Cards with swipe indicator */}
+              <div className="lg:hidden mb-6">
+                {/* Swipe hint */}
+                <div className="flex items-center justify-center gap-2 mb-4 text-muted-foreground">
+                  <div className="flex items-center gap-1 text-xs font-orbitron animate-pulse">
+                    <span>←</span>
+                    <span>Swipe to explore</span>
+                    <span>→</span>
+                  </div>
+                </div>
+                
+                {/* Scrollable container with peek effect */}
+                <div className="overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide snap-x snap-mandatory">
+                  <div className="flex gap-4" style={{ width: 'max-content', paddingRight: '40px' }}>
+                    {[1, 2, 3, 4, 5].map((num) => (
+                      <div key={num} className="group flex-shrink-0 snap-center" style={{ width: 'calc(100vw - 80px)', maxWidth: '320px' }}>
                       <div className="relative rounded-2xl overflow-hidden bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/40 transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-primary/20">
                         {num === 1 ? (
                           <>
@@ -562,6 +573,17 @@ const Index = () => {
                         )}
                       </div>
                     </div>
+                  ))}
+                  </div>
+                </div>
+                
+                {/* Scroll indicator dots */}
+                <div className="flex justify-center gap-2 mt-4">
+                  {[1, 2, 3, 4, 5].map((num) => (
+                    <div 
+                      key={num} 
+                      className="w-2 h-2 rounded-full bg-primary/30 transition-colors"
+                    />
                   ))}
                 </div>
               </div>

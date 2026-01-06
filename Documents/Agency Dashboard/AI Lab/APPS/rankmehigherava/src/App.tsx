@@ -56,6 +56,7 @@ import SEOSpiderSettings from "./pages/seo-spider/Settings";
 import SEOSpiderAdmin from "./pages/seo-spider/AdminDashboard";
 
 import ParticlesOverlay from "@/components/ui/ParticlesOverlay";
+import ScrollToTop from "@/components/ScrollToTop";
 
 const queryClient = new QueryClient();
 
@@ -68,6 +69,7 @@ const App = () => (
           <Sonner />
           <ParticlesOverlay />
           <BrowserRouter>
+            <ScrollToTop />
             <Routes>
               {/* Public routes */}
               <Route path="/" element={<Index />} />
