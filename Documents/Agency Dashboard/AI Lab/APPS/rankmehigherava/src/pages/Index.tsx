@@ -742,23 +742,23 @@ const Index = () => {
           */}
 
           {/* ALEX HORMOZI STYLE SALES SECTION */}
-          <section className="pt-4 pb-8 lg:pt-6 lg:pb-12 relative overflow-hidden">
+          <section className="pt-0 pb-6 lg:pb-10 relative overflow-hidden">
             {/* Background Effects */}
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-red-500/5 to-transparent" />
             
             <div className="container mx-auto px-4 lg:px-8 max-w-6xl relative z-10">
               {/* Main Content */}
-              <div className="text-center mb-6 lg:mb-8">
+              <div className="text-center mb-4 lg:mb-6">
                 {/* Urgency Badge */}
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/10 border border-red-500/30 mb-4 animate-pulse">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/10 border border-red-500/30 mb-3 animate-pulse">
                   <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-ping" />
                   <span className="text-xs font-orbitron text-red-400 font-bold">LIMITED: Only 5 Spots Left This Month</span>
                 </div>
 
                 {/* Main Headline */}
-                <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-black leading-tight font-orbitron mb-3 lg:mb-4">
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-black leading-tight font-orbitron mb-2 lg:mb-3">
                   <span className="text-foreground">Your Competitors Are </span>
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-500 to-red-500">Stealing Your Customers</span>
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-red-500 to-primary">Stealing Your Customers</span>
                   <br className="hidden sm:block" />
                   <span className="text-foreground text-lg sm:text-xl lg:text-2xl"> Right Now. Every. Single. Day.</span>
                 </h2>
@@ -771,42 +771,42 @@ const Index = () => {
               </div>
 
               {/* Pain Points Grid - Compact */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 lg:gap-4 mb-6 lg:mb-8">
-                <div className="p-4 rounded-xl bg-white/5 backdrop-blur-md border border-red-500/20 hover:border-red-500/40 transition-all">
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="text-2xl">💸</span>
-                    <h3 className="font-orbitron font-bold text-sm lg:text-base text-foreground">Burning Money on Ads?</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 lg:gap-3 mb-4 lg:mb-6">
+                <div className="p-3 rounded-xl bg-white/5 backdrop-blur-md border border-red-500/20 hover:border-red-500/40 transition-all">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xl">💸</span>
+                    <h3 className="font-orbitron font-bold text-xs lg:text-sm text-foreground">Burning Money on Ads?</h3>
                   </div>
-                  <p className="text-xs text-muted-foreground">Traffic to a site that doesn't convert = gambling.</p>
+                  <p className="text-[10px] lg:text-xs text-muted-foreground">Traffic to a site that doesn't convert = gambling.</p>
                 </div>
-                <div className="p-4 rounded-xl bg-white/5 backdrop-blur-md border border-red-500/20 hover:border-red-500/40 transition-all">
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="text-2xl">👻</span>
-                    <h3 className="font-orbitron font-bold text-sm lg:text-base text-foreground">Invisible on Google?</h3>
+                <div className="p-3 rounded-xl bg-white/5 backdrop-blur-md border border-red-500/20 hover:border-red-500/40 transition-all">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xl">👻</span>
+                    <h3 className="font-orbitron font-bold text-xs lg:text-sm text-foreground">Invisible on Google?</h3>
                   </div>
-                  <p className="text-xs text-muted-foreground">Page 2 is where businesses go to die.</p>
+                  <p className="text-[10px] lg:text-xs text-muted-foreground">Page 2 is where businesses go to die.</p>
                 </div>
-                <div className="p-4 rounded-xl bg-white/5 backdrop-blur-md border border-red-500/20 hover:border-red-500/40 transition-all">
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="text-2xl">🕐</span>
-                    <h3 className="font-orbitron font-bold text-sm lg:text-base text-foreground">No Time?</h3>
+                <div className="p-3 rounded-xl bg-white/5 backdrop-blur-md border border-red-500/20 hover:border-red-500/40 transition-all">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xl">🕐</span>
+                    <h3 className="font-orbitron font-bold text-xs lg:text-sm text-foreground">No Time?</h3>
                   </div>
-                  <p className="text-xs text-muted-foreground">Let us handle the technical stuff.</p>
+                  <p className="text-[10px] lg:text-xs text-muted-foreground">Let us handle the technical stuff.</p>
                 </div>
               </div>
 
               {/* The Solution - Compact */}
-              <div className="relative p-4 lg:p-8 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border border-primary/30 mb-6 lg:mb-8">
-                <div className="text-center mb-4 lg:mb-6">
-                  <h3 className="text-xl lg:text-2xl font-black font-orbitron">
+              <div className="relative p-3 lg:p-6 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border border-red-500/30 mb-4 lg:mb-6">
+                <div className="text-center mb-3 lg:mb-4">
+                  <h3 className="text-lg lg:text-xl font-black font-orbitron">
                     <span className="text-foreground">What We Do </span>
                     <span className="text-primary">Differently:</span>
                   </h3>
                 </div>
 
-                <div className="grid lg:grid-cols-2 gap-4 lg:gap-6">
+                <div className="grid lg:grid-cols-2 gap-3 lg:gap-4">
                   {/* Left: Benefits - Compact */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-2 lg:gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-1.5 lg:gap-2">
                     {[
                       { icon: '🚀', title: 'Live in 7 Days' },
                       { icon: '🎯', title: 'Built to Convert' },
@@ -815,47 +815,47 @@ const Index = () => {
                       { icon: '💬', title: 'SMS & Email Built-In' },
                       { icon: '🛡️', title: 'We Handle Everything' },
                     ].map((item, i) => (
-                      <div key={i} className="flex items-center gap-2 p-2 lg:p-3 rounded-lg bg-white/5 border border-white/10">
-                        <span className="text-lg lg:text-xl">{item.icon}</span>
-                        <span className="font-orbitron font-bold text-xs lg:text-sm text-foreground">{item.title}</span>
+                      <div key={i} className="flex items-center gap-1.5 p-1.5 lg:p-2 rounded-lg bg-white/5 border border-white/10">
+                        <span className="text-base lg:text-lg">{item.icon}</span>
+                        <span className="font-orbitron font-bold text-[10px] lg:text-xs text-foreground">{item.title}</span>
                       </div>
                     ))}
                   </div>
 
                   {/* Right: Stats - Compact */}
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-4 gap-2">
-                      <div className="p-2 lg:p-3 rounded-lg bg-green-500/10 border border-green-500/30 text-center">
-                        <div className="text-lg lg:text-2xl font-black text-green-400 font-orbitron">100+</div>
-                        <div className="text-[10px] text-muted-foreground">Sites</div>
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-4 gap-1.5">
+                      <div className="p-1.5 lg:p-2 rounded-lg bg-red-500/10 border border-red-500/30 text-center">
+                        <div className="text-base lg:text-xl font-black text-red-400 font-orbitron">100+</div>
+                        <div className="text-[8px] lg:text-[10px] text-muted-foreground">Sites</div>
                       </div>
-                      <div className="p-2 lg:p-3 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-center">
-                        <div className="text-lg lg:text-2xl font-black text-cyan-400 font-orbitron">$2M+</div>
-                        <div className="text-[10px] text-muted-foreground">Revenue</div>
+                      <div className="p-1.5 lg:p-2 rounded-lg bg-red-500/10 border border-red-500/30 text-center">
+                        <div className="text-base lg:text-xl font-black text-red-400 font-orbitron">$2M+</div>
+                        <div className="text-[8px] lg:text-[10px] text-muted-foreground">Revenue</div>
                       </div>
-                      <div className="p-2 lg:p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/30 text-center">
-                        <div className="text-lg lg:text-2xl font-black text-yellow-400 font-orbitron">4.9★</div>
-                        <div className="text-[10px] text-muted-foreground">Rating</div>
+                      <div className="p-1.5 lg:p-2 rounded-lg bg-red-500/10 border border-red-500/30 text-center">
+                        <div className="text-base lg:text-xl font-black text-red-400 font-orbitron">4.9★</div>
+                        <div className="text-[8px] lg:text-[10px] text-muted-foreground">Rating</div>
                       </div>
-                      <div className="p-2 lg:p-3 rounded-lg bg-purple-500/10 border border-purple-500/30 text-center">
-                        <div className="text-lg lg:text-2xl font-black text-purple-400 font-orbitron">24/7</div>
-                        <div className="text-[10px] text-muted-foreground">Support</div>
+                      <div className="p-1.5 lg:p-2 rounded-lg bg-red-500/10 border border-red-500/30 text-center">
+                        <div className="text-base lg:text-xl font-black text-red-400 font-orbitron">24/7</div>
+                        <div className="text-[8px] lg:text-[10px] text-muted-foreground">Support</div>
                       </div>
                     </div>
 
                     {/* Testimonial - Compact */}
-                    <div className="p-3 lg:p-4 rounded-xl bg-white/5 border border-white/10">
-                      <div className="flex items-center gap-1 mb-2">
+                    <div className="p-2 lg:p-3 rounded-xl bg-white/5 border border-white/10">
+                      <div className="flex items-center gap-1 mb-1">
                         {[...Array(5)].map((_, i) => (
-                          <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                          <Star key={i} className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" />
                         ))}
                       </div>
-                      <p className="text-xs text-muted-foreground italic mb-2">
+                      <p className="text-[10px] lg:text-xs text-muted-foreground italic mb-1">
                         "47 new leads in 2 weeks. Old site got us 2-3/month. ROI is insane."
                       </p>
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs">M</div>
-                        <div className="text-xs text-muted-foreground">Mike T. • Truck Repair Owner</div>
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-[10px]">M</div>
+                        <div className="text-[10px] text-muted-foreground">Mike T. • Truck Repair Owner</div>
                       </div>
                     </div>
                   </div>
@@ -863,9 +863,9 @@ const Index = () => {
               </div>
 
               {/* Trust Badges - Compact */}
-              <div className="flex flex-wrap justify-center gap-2 mb-4 lg:mb-6">
+              <div className="flex flex-wrap justify-center gap-1.5 mb-3 lg:mb-4">
                 {['🔒 Secure', '✅ Verified', '🇺🇸 Chicago', '💯 Guaranteed', '🏆 100+ Clients'].map((badge, i) => (
-                  <div key={i} className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] lg:text-xs font-orbitron text-muted-foreground">
+                  <div key={i} className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-[9px] lg:text-[10px] font-orbitron text-muted-foreground">
                     {badge}
                   </div>
                 ))}
@@ -873,29 +873,32 @@ const Index = () => {
 
               {/* Final CTA - Compact */}
               <div className="text-center">
-                <p className="text-sm lg:text-base text-muted-foreground mb-4 font-orbitron">
+                <p className="text-xs lg:text-sm text-muted-foreground mb-3 font-orbitron">
                   <span className="text-foreground font-bold">How many more customers will you lose?</span>
                 </p>
                 
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <div className="flex flex-col sm:flex-row gap-2 justify-center">
                   <button
                     onClick={() => setIsQualifyDialogOpen(true)}
-                    className="group relative px-6 py-3 lg:py-4 rounded-xl bg-gradient-to-r from-red-500 to-orange-500 text-white font-bold text-sm lg:text-base shadow-xl shadow-red-500/30 hover:shadow-red-500/50 hover:scale-105 transition-all duration-300 font-orbitron overflow-hidden"
+                    className="group relative px-5 py-2.5 lg:py-3 rounded-xl bg-red-500/10 backdrop-blur-md border border-red-500/30 text-white font-bold text-sm shadow-lg hover:shadow-xl hover:shadow-red-500/20 hover:bg-red-500/20 hover:border-red-500/50 hover:scale-[1.02] transition-all duration-300 font-orbitron overflow-hidden"
                   >
-                    <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                    <span className="relative">🚀 See If You Qualify (Free)</span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/10 to-red-500/0 group-hover:from-red-500/10 group-hover:via-red-500/20 group-hover:to-red-500/10 transition-all duration-500" />
+                    <span className="relative flex items-center justify-center gap-2">
+                      <Globe className="w-4 h-4 text-red-400" />
+                      See If You Qualify (Free)
+                    </span>
                   </button>
                   
                   <button
                     onClick={openCalendly}
-                    className="group px-6 py-3 lg:py-4 rounded-xl bg-white/5 backdrop-blur-md border border-white/20 text-white font-bold text-sm lg:text-base hover:bg-white/10 hover:border-white/40 transition-all duration-300 font-orbitron flex items-center justify-center gap-2"
+                    className="group px-5 py-2.5 lg:py-3 rounded-xl bg-white/5 backdrop-blur-md border border-white/20 text-white font-bold text-sm hover:bg-white/10 hover:border-white/30 hover:shadow-lg hover:shadow-white/10 hover:scale-[1.02] transition-all duration-300 font-orbitron flex items-center justify-center gap-2"
                   >
-                    <Calendar className="w-4 h-4" />
                     Book a Call
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </button>
                 </div>
 
-                <p className="text-[10px] lg:text-xs text-muted-foreground mt-3">
+                <p className="text-[9px] lg:text-[10px] text-muted-foreground mt-2">
                   No credit card • Free consultation • Results in 7 days
                 </p>
               </div>
