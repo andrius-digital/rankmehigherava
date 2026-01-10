@@ -14,7 +14,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Building2, MapPin, Target, Settings, Shield, Users, Palette, Globe, DollarSign, Sparkles } from "lucide-react";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerClose,
+} from "@/components/ui/drawer";
+import { Building2, MapPin, Target, Settings, Shield, Users, Palette, Globe, DollarSign, Sparkles, ChevronDown, ChevronUp, Check, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import FileUpload from "@/components/FileUpload";
@@ -26,6 +39,7 @@ import { AITextarea } from "@/components/AITextarea";
 import { GBPScanner } from "@/components/GBPScanner";
 import { SocialMediaFields } from "@/components/SocialMediaFields";
 import { calculateAllStepCompletions, getIncompleteSteps, FormState } from "@/utils/formCompletionCalculator";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const STORAGE_KEY = 'website-submission-draft';
 
@@ -45,9 +59,28 @@ const STEPS = [
 const WebsiteSubmissions = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [lastSaved, setLastSaved] = useState<string | null>(null);
+  const [openSections, setOpenSections] = useState<number[]>([1]); // Track open accordion sections
+  const [mobileDrawerStep, setMobileDrawerStep] = useState<number | null>(null); // Track which step is open in mobile drawer
+
+  const toggleSection = (stepId: number) => {
+    setOpenSections(prev => 
+      prev.includes(stepId) 
+        ? prev.filter(id => id !== stepId)
+        : [...prev, stepId]
+    );
+  };
+
+  const openMobileDrawer = (stepId: number) => {
+    setMobileDrawerStep(stepId);
+  };
+
+  const closeMobileDrawer = () => {
+    setMobileDrawerStep(null);
+  };
 
   const [formData, setFormData] = useState({
     companyName: "",
@@ -342,6 +375,26 @@ const WebsiteSubmissions = () => {
         throw new Error(`Database error: ${dbError.message}`);
       }
 
+      // Create a client card automatically with the company name
+      const { error: clientError } = await supabase
+        .from("clients")
+        .insert({
+          name: formData.companyName,
+          company_name: formData.companyName,
+          email: formData.businessEmail,
+          phone: formData.businessPhone,
+          city: formData.mainCity,
+          state: formData.stateProvince,
+          address: formData.streetAddress,
+          service_type: formData.serviceCategory,
+          notes: `Onboarded via website submission form. Service areas: ${formData.serviceAreas}`,
+        });
+
+      if (clientError) {
+        console.error("Client creation error:", clientError);
+        // Don't throw - submission was successful, client creation is secondary
+      }
+
       const { error: fnError } = await supabase.functions.invoke("notify-website-submission", {
         body: {
           companyName: formData.companyName,
@@ -393,113 +446,108 @@ const WebsiteSubmissions = () => {
     }
   };
 
-  // Step 1: Basic Business Info
-  const renderStep1 = () => (
+  // Mobile-optimized section wrapper
+  const MobileSection = ({ children, title, icon: Icon }: { children: React.ReactNode, title: string, icon: any }) => (
     <section>
-      <div className="flex items-center justify-center gap-3 mb-6">
-        <Building2 className="w-8 h-8 text-primary" />
-        <h2 className="font-heading text-2xl md:text-3xl font-bold text-foreground">
-          Basic Business Info
-        </h2>
-      </div>
-      <div className="border-t border-border pt-6 space-y-6">
-        <div>
-          <Label className="text-base font-medium">
-            1.1 Official company name <span className="text-destructive">*</span>
-          </Label>
-          <Input
-            className="mt-2 max-w-md"
-            value={formData.companyName}
-            onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-          />
-          <p className="text-sm text-muted-foreground mt-1">
-            Provide your full registered company name.
-          </p>
+      {!isMobile && (
+        <div className="flex items-center justify-center gap-3 mb-6">
+          <Icon className="w-8 h-8 text-primary" />
+          <h2 className="font-heading text-2xl md:text-3xl font-bold text-foreground">
+            {title}
+          </h2>
         </div>
-
-        <div>
-          <Label className="text-base font-medium">
-            1.2 Do you own a domain name? <span className="text-destructive">*</span>
-          </Label>
-          <Select
-            value={formData.ownsDomain}
-            onValueChange={(value) => setFormData({ ...formData, ownsDomain: value })}
-          >
-            <SelectTrigger className="mt-2 max-w-md">
-              <SelectValue placeholder="Please Select" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="yes">Yes</SelectItem>
-              <SelectItem value="no">No</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {formData.ownsDomain === "yes" && (
-          <div>
-            <Label className="text-base font-medium">
-              1.3 If you own a domain name, provide it here: <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              className="mt-2 max-w-md"
-              value={formData.domainName}
-              onChange={(e) => setFormData({ ...formData, domainName: e.target.value })}
-              placeholder="www.domainname.com"
-            />
-            <p className="text-sm text-muted-foreground mt-1">
-              Provide in the format: www.domainname.com
-            </p>
-          </div>
-        )}
-
-        <div>
-          <Label className="text-base font-medium">
-            1.4 Business Phone Number <span className="text-destructive">*</span>
-          </Label>
-          <Input
-            className="mt-2 max-w-md"
-            value={formData.businessPhone}
-            onChange={(e) => setFormData({ ...formData, businessPhone: e.target.value })}
-            placeholder="(000) 000-0000"
-          />
-          <p className="text-sm text-muted-foreground mt-1">
-            Please enter a valid phone number.
-          </p>
-        </div>
-
-        <div>
-          <Label className="text-base font-medium">
-            1.5 Business email <span className="text-destructive">*</span>
-          </Label>
-          <Input
-            type="email"
-            className="mt-2 max-w-md"
-            value={formData.businessEmail}
-            onChange={(e) => setFormData({ ...formData, businessEmail: e.target.value })}
-            placeholder="example@example.com"
-          />
-          <p className="text-sm text-muted-foreground mt-1">
-            Please enter a valid business email.
-          </p>
-        </div>
-
-        <div>
-          <Label className="text-base font-medium">
-            1.6 Email for job requests <span className="text-destructive">*</span>
-          </Label>
-          <Input
-            type="email"
-            className="mt-2 max-w-md"
-            value={formData.jobRequestEmail}
-            onChange={(e) => setFormData({ ...formData, jobRequestEmail: e.target.value })}
-            placeholder="example@example.com"
-          />
-          <p className="text-sm text-muted-foreground mt-1">
-            Put the email where you want messages from your website's contact form to be sent.
-          </p>
-        </div>
+      )}
+      <div className={`${isMobile ? 'space-y-4' : 'border-t border-border pt-6 space-y-6'}`}>
+        {children}
       </div>
     </section>
+  );
+
+  // Mobile-optimized form field
+  const FormField = ({ label, required, hint, children }: { label: string, required?: boolean, hint?: string, children: React.ReactNode }) => (
+    <div>
+      <Label className={`${isMobile ? 'text-sm' : 'text-base'} font-medium`}>
+        {label} {required && <span className="text-destructive">*</span>}
+      </Label>
+      <div className={`${isMobile ? 'mt-1.5' : 'mt-2'}`}>
+        {children}
+      </div>
+      {hint && (
+        <p className={`${isMobile ? 'text-xs mt-1' : 'text-sm mt-1'} text-muted-foreground`}>
+          {hint}
+        </p>
+      )}
+    </div>
+  );
+
+  // Step 1: Basic Business Info
+  const renderStep1 = () => (
+    <MobileSection title="Basic Business Info" icon={Building2}>
+      <FormField label="1.1 Official company name" required hint="Provide your full registered company name.">
+        <Input
+          className={`${isMobile ? 'h-11' : ''} max-w-md`}
+          value={formData.companyName}
+          onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+          placeholder="Enter company name"
+        />
+      </FormField>
+
+      <FormField label="1.2 Do you own a domain name?" required>
+        <Select
+          value={formData.ownsDomain}
+          onValueChange={(value) => setFormData({ ...formData, ownsDomain: value })}
+        >
+          <SelectTrigger className={`${isMobile ? 'h-11' : ''} max-w-md`}>
+            <SelectValue placeholder="Please Select" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="yes">Yes</SelectItem>
+            <SelectItem value="no">No</SelectItem>
+          </SelectContent>
+        </Select>
+      </FormField>
+
+      {formData.ownsDomain === "yes" && (
+        <FormField label="1.3 Domain name" required hint="Format: www.domainname.com">
+          <Input
+            className={`${isMobile ? 'h-11' : ''} max-w-md`}
+            value={formData.domainName}
+            onChange={(e) => setFormData({ ...formData, domainName: e.target.value })}
+            placeholder="www.domainname.com"
+          />
+        </FormField>
+      )}
+
+      <FormField label="1.4 Business Phone" required hint="Enter a valid phone number">
+        <Input
+          type="tel"
+          className={`${isMobile ? 'h-11' : ''} max-w-md`}
+          value={formData.businessPhone}
+          onChange={(e) => setFormData({ ...formData, businessPhone: e.target.value })}
+          placeholder="(000) 000-0000"
+        />
+      </FormField>
+
+      <FormField label="1.5 Business Email" required hint="Enter a valid business email">
+        <Input
+          type="email"
+          className={`${isMobile ? 'h-11' : ''} max-w-md`}
+          value={formData.businessEmail}
+          onChange={(e) => setFormData({ ...formData, businessEmail: e.target.value })}
+          placeholder="example@example.com"
+        />
+      </FormField>
+
+      <FormField label="1.6 Email for job requests" required hint="Where website form messages go">
+        <Input
+          type="email"
+          className={`${isMobile ? 'h-11' : ''} max-w-md`}
+          value={formData.jobRequestEmail}
+          onChange={(e) => setFormData({ ...formData, jobRequestEmail: e.target.value })}
+          placeholder="example@example.com"
+        />
+      </FormField>
+    </MobileSection>
   );
 
   // Step 2: Location & Hours
@@ -1632,6 +1680,172 @@ const WebsiteSubmissions = () => {
     }
   };
 
+  const stepRenderers = [
+    renderStep1, renderStep2, renderStep3, renderStep4, renderStep5,
+    renderStep6, renderStep7, renderStep8, renderStep9, renderStep10
+  ];
+
+  // Mobile compact card for each section
+  const renderMobileCard = (step: typeof STEPS[0], index: number, completion: number) => (
+    <button
+      type="button"
+      onClick={() => openMobileDrawer(step.id)}
+      className="flex flex-col items-center justify-center w-full p-3 bg-card/60 backdrop-blur-sm hover:bg-card/80 transition-all cursor-pointer rounded-xl border border-border/50 active:scale-[0.97] min-h-[100px]"
+    >
+      <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-2 ${completion === 100 ? 'bg-green-500/20 text-green-400' : 'bg-cyan-500/20 text-cyan-400'}`}>
+        {completion === 100 ? <Check className="w-5 h-5" /> : step.icon}
+      </div>
+      <h3 className="font-medium text-foreground text-xs text-center leading-tight mb-1">{step.title}</h3>
+      <div className="w-full px-2">
+        <div className="w-full h-1 bg-muted rounded-full overflow-hidden">
+          <div 
+            className={`h-full transition-all ${completion === 100 ? 'bg-green-500' : 'bg-cyan-500'}`}
+            style={{ width: `${completion}%` }}
+          />
+        </div>
+        <span className="text-[9px] text-muted-foreground mt-1 block text-center">{completion}%</span>
+      </div>
+    </button>
+  );
+
+  // Desktop accordion header
+  const renderSectionHeader = (step: typeof STEPS[0], index: number, isOpen: boolean, completion: number) => (
+    <div className="flex items-center justify-between w-full py-4 px-6 bg-card hover:bg-muted/50 transition-colors cursor-pointer rounded-xl border border-border">
+      <div className="flex items-center gap-3">
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${completion === 100 ? 'bg-green-500/20 text-green-500' : 'bg-primary/20 text-primary'}`}>
+          {completion === 100 ? <Check className="w-5 h-5" /> : step.icon}
+        </div>
+        <div className="text-left">
+          <h3 className="font-semibold text-foreground">{step.title}</h3>
+          <p className="text-xs text-muted-foreground">{completion}% complete</p>
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <div className="w-20 h-2 bg-muted rounded-full overflow-hidden">
+          <div 
+            className={`h-full transition-all ${completion === 100 ? 'bg-green-500' : 'bg-primary'}`}
+            style={{ width: `${completion}%` }}
+          />
+        </div>
+        {isOpen ? <ChevronUp className="w-5 h-5 text-muted-foreground" /> : <ChevronDown className="w-5 h-5 text-muted-foreground" />}
+      </div>
+    </div>
+  );
+
+  // Desktop accordion view
+  const renderDesktopAccordion = () => (
+    <div className="space-y-4">
+      {STEPS.map((step, index) => (
+        <Collapsible
+          key={step.id}
+          open={openSections.includes(step.id)}
+          onOpenChange={() => toggleSection(step.id)}
+        >
+          <CollapsibleTrigger className="w-full">
+            {renderSectionHeader(step, index, openSections.includes(step.id), stepCompletions[index])}
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="bg-card border border-border border-t-0 rounded-b-xl p-6 -mt-2">
+              {stepRenderers[index]()}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      ))}
+    </div>
+  );
+
+  // Mobile compact grid with drawer popups
+  const renderMobileCompact = () => (
+    <>
+      {/* Compact card grid - 2 columns for better mobile fit */}
+      <div className="grid grid-cols-2 gap-2">
+        {STEPS.map((step, index) => (
+          <div key={step.id}>
+            {renderMobileCard(step, index, stepCompletions[index])}
+          </div>
+        ))}
+      </div>
+
+      {/* Mobile Drawer for each section - optimized for mobile */}
+      <Drawer open={mobileDrawerStep !== null} onOpenChange={(open) => !open && closeMobileDrawer()}>
+        <DrawerContent className="max-h-[80vh] rounded-t-3xl">
+          {mobileDrawerStep !== null && (
+            <>
+              {/* Drawer Handle */}
+              <div className="flex justify-center pt-2 pb-1">
+                <div className="w-10 h-1 bg-muted-foreground/30 rounded-full" />
+              </div>
+              
+              {/* Compact Header */}
+              <DrawerHeader className="border-b border-border py-3 px-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center text-cyan-400">
+                      {STEPS[mobileDrawerStep - 1]?.icon}
+                    </div>
+                    <div>
+                      <DrawerTitle className="text-base font-semibold">{STEPS[mobileDrawerStep - 1]?.title}</DrawerTitle>
+                      <p className="text-[10px] text-muted-foreground">
+                        {stepCompletions[mobileDrawerStep - 1]}% complete
+                      </p>
+                    </div>
+                  </div>
+                  <DrawerClose asChild>
+                    <Button variant="ghost" size="sm" className="rounded-full h-8 w-8 p-0">
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </DrawerClose>
+                </div>
+              </DrawerHeader>
+              
+              {/* Scrollable Content - Mobile Optimized */}
+              <div className="overflow-y-auto flex-1 px-4 py-4 mobile-form-content">
+                <div className="space-y-4 text-sm">
+                  {stepRenderers[mobileDrawerStep - 1]()}
+                </div>
+              </div>
+              
+              {/* Fixed Bottom Action */}
+              <div className="p-3 border-t border-border bg-background/95 backdrop-blur-sm safe-area-bottom">
+                <Button 
+                  type="button"
+                  onClick={closeMobileDrawer}
+                  className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold h-12 rounded-xl text-sm"
+                >
+                  <Check className="w-4 h-4 mr-2" />
+                  Save & Close
+                </Button>
+              </div>
+            </>
+          )}
+        </DrawerContent>
+      </Drawer>
+      
+      {/* Mobile-specific styles */}
+      <style>{`
+        .mobile-form-content label {
+          font-size: 13px !important;
+        }
+        .mobile-form-content input,
+        .mobile-form-content textarea,
+        .mobile-form-content select,
+        .mobile-form-content button[role="combobox"] {
+          font-size: 16px !important; /* Prevents zoom on iOS */
+          min-height: 44px;
+        }
+        .mobile-form-content .space-y-6 {
+          gap: 1rem;
+        }
+        .mobile-form-content h2 {
+          font-size: 1.1rem !important;
+        }
+        .safe-area-bottom {
+          padding-bottom: max(12px, env(safe-area-inset-bottom));
+        }
+      `}</style>
+    </>
+  );
+
   return (
     <form onSubmit={handleSubmit} className="min-h-screen bg-background flex flex-col">
       <Helmet>
@@ -1641,42 +1855,82 @@ const WebsiteSubmissions = () => {
 
       <Navbar />
 
-      <main className="flex-1 pt-24 pb-16">
-        <div className="container mx-auto px-4 max-w-3xl">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="font-heading text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Website Onboarding Form
+      <main className={`flex-1 ${isMobile ? 'pt-20 pb-24' : 'pt-24 pb-16'}`}>
+        <div className={`container mx-auto ${isMobile ? 'px-3' : 'px-4'} max-w-4xl`}>
+          {/* Header - Compact on mobile */}
+          <div className={`${isMobile ? 'mb-4' : 'mb-8'}`}>
+            <h1 className={`font-heading font-bold text-foreground ${isMobile ? 'text-xl mb-2' : 'text-3xl md:text-4xl mb-4'}`}>
+              {isMobile ? 'Client Onboarding' : 'Website Onboarding Form'}
             </h1>
-            <p className="text-muted-foreground text-lg mb-4">
-              This form takes about <strong>30-35 minutes</strong> to complete. The more detail you provide, 
-              the stronger your website will be. Your progress is automatically saved.
-            </p>
+            {!isMobile && (
+              <p className="text-muted-foreground text-lg mb-4">
+                Complete all sections below. Click on any section to expand it. Your progress is saved automatically.
+              </p>
+            )}
             <AutoSaveIndicator lastSaved={lastSaved} onClearDraft={clearDraft} />
           </div>
 
-          {/* Progress Bar */}
-          <FormProgressBar
-            steps={STEPS}
-            currentStep={currentStep}
-            onStepClick={handleStepClick}
-            stepCompletions={stepCompletions}
-          />
+          {/* Mobile: Compact card grid with drawer popups */}
+          {isMobile ? (
+            <>
+              {/* Compact Overall Progress */}
+              <div className="mb-4 p-3 bg-card/50 backdrop-blur-sm rounded-xl border border-border/50">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-medium text-foreground">Progress</span>
+                  <span className="text-xs font-bold text-cyan-400">
+                    {stepCompletions.filter(c => c === 100).length}/{STEPS.length} done
+                  </span>
+                </div>
+                <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-gradient-to-r from-cyan-500 to-blue-600 transition-all"
+                    style={{ width: `${stepCompletions.reduce((a, b) => a + b, 0) / stepCompletions.length}%` }}
+                  />
+                </div>
+              </div>
 
-          {/* Current Step Content */}
-          <div className="bg-card border border-border rounded-xl p-6 md:p-8 shadow-sm">
-            {renderCurrentStep()}
+              {/* Compact Cards Grid */}
+              {renderMobileCompact()}
 
-            {/* Navigation */}
-            <FormStepNavigation
-              currentStep={currentStep}
-              totalSteps={STEPS.length}
-              onPrevious={handlePrevious}
-              onNext={handleNext}
-              isSubmitting={isSubmitting}
-              isLastStep={currentStep === STEPS.length}
-            />
-          </div>
+              {/* Submit Button - Fixed at bottom with safe area */}
+              <div className="fixed bottom-0 left-0 right-0 p-3 bg-background/95 backdrop-blur-sm border-t border-border z-50" style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full py-3.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-cyan-500/30 text-sm uppercase tracking-wide"
+                >
+                  {isSubmitting ? "Submitting..." : "Submit Application"}
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Desktop: All sections accordion view */}
+              {renderDesktopAccordion()}
+
+              {/* Submit Button */}
+              <div className="mt-8 bg-card border border-border rounded-xl p-6 shadow-sm">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                  <div>
+                    <h3 className="font-heading text-lg font-semibold">Ready to submit?</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {stepCompletions.every(c => c === 100) 
+                        ? "All sections complete! You're ready to submit."
+                        : `${stepCompletions.filter(c => c === 100).length} of ${STEPS.length} sections complete`
+                      }
+                    </p>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="px-8 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-cyan-500/20"
+                  >
+                    {isSubmitting ? "Submitting..." : "Submit Application"}
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </main>
 

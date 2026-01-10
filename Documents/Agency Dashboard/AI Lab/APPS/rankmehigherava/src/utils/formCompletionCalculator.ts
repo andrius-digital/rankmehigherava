@@ -28,6 +28,10 @@ interface FormData {
   qualityTrust: string;
   founderMessage: string;
   googleBusinessProfileLink: string;
+  competitorWebsites: string;
+  additionalNotes: string;
+  specialOffersExplanation: string;
+  financingExplanation: string;
   [key: string]: string;
 }
 
@@ -209,20 +213,40 @@ export function calculateStep8Completion(state: FormState): number {
 
 // Step 9: Offers
 // Required: hasSpecialOffers selection, hasFinancing selection
+// If hasSpecialOffers=yes: specialOffersExplanation
+// If hasFinancing=yes: financingExplanation
 export function calculateStep9Completion(state: FormState): number {
-  const { hasSpecialOffers, hasFinancing } = state;
+  const { formData, hasSpecialOffers, hasFinancing } = state;
   const fields: boolean[] = [];
   
   fields.push(isFilled(hasSpecialOffers));
+  
+  if (hasSpecialOffers === "yes") {
+    fields.push(isFilled(formData.specialOffersExplanation));
+  }
+  
   fields.push(isFilled(hasFinancing));
+  
+  if (hasFinancing === "yes") {
+    fields.push(isFilled(formData.financingExplanation));
+  }
   
   const completed = fields.filter(Boolean).length;
   return Math.round((completed / fields.length) * 100);
 }
 
-// Step 10: Final - No required fields, always 100%
-export function calculateStep10Completion(_state: FormState): number {
-  return 100;
+// Step 10: Final - Has 2 optional fields
+// competitorWebsites and additionalNotes
+export function calculateStep10Completion(state: FormState): number {
+  const { formData } = state;
+  const fields: boolean[] = [];
+  
+  // Both fields are optional but count toward completion
+  fields.push(isFilled(formData.competitorWebsites));
+  fields.push(isFilled(formData.additionalNotes));
+  
+  const completed = fields.filter(Boolean).length;
+  return Math.round((completed / fields.length) * 100);
 }
 
 // Calculate all step completions
