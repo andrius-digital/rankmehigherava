@@ -741,6 +741,190 @@ const Index = () => {
           </section>
           */}
 
+          {/* ALEX HORMOZI STYLE SALES SECTION */}
+          <section className="py-16 lg:py-24 relative overflow-hidden">
+            {/* Background Effects */}
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-red-500/5 to-transparent" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-red-500/10 rounded-full blur-3xl" />
+            
+            <div className="container mx-auto px-4 lg:px-8 max-w-6xl relative z-10">
+              {/* Main Content */}
+              <div className="text-center mb-12">
+                {/* Urgency Badge */}
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/10 border border-red-500/30 mb-6 animate-pulse">
+                  <span className="w-2 h-2 bg-red-500 rounded-full animate-ping" />
+                  <span className="text-sm font-orbitron text-red-400 font-bold">LIMITED: Only 5 Spots Left This Month</span>
+                </div>
+
+                {/* Main Headline */}
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-black leading-tight font-orbitron mb-6">
+                  <span className="text-foreground">Your Competitors Are</span>
+                  <br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-500 to-red-500">Stealing Your Customers</span>
+                  <br />
+                  <span className="text-foreground text-2xl sm:text-3xl lg:text-4xl">Right Now. Every. Single. Day.</span>
+                </h2>
+
+                {/* Sub-headline */}
+                <p className="text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto mb-8 leading-relaxed">
+                  While you're reading this, someone in your city just Googled your service and clicked on your competitor. 
+                  <strong className="text-foreground"> They got the lead. They got paid. You got nothing.</strong>
+                </p>
+              </div>
+
+              {/* Pain Points Grid */}
+              <div className="grid md:grid-cols-3 gap-6 mb-12">
+                <div className="p-6 rounded-2xl bg-white/5 backdrop-blur-md border border-red-500/20 hover:border-red-500/40 transition-all">
+                  <div className="text-4xl mb-4">💸</div>
+                  <h3 className="font-orbitron font-bold text-lg mb-2 text-foreground">Burning Money on Ads?</h3>
+                  <p className="text-sm text-muted-foreground">Spending $500-$5000/month on Google Ads that send traffic to a website that doesn't convert? That's not marketing—that's gambling.</p>
+                </div>
+                <div className="p-6 rounded-2xl bg-white/5 backdrop-blur-md border border-red-500/20 hover:border-red-500/40 transition-all">
+                  <div className="text-4xl mb-4">👻</div>
+                  <h3 className="font-orbitron font-bold text-lg mb-2 text-foreground">Invisible on Google?</h3>
+                  <p className="text-sm text-muted-foreground">Page 2 of Google is where businesses go to die. If you're not in the top 3, you're paying for a digital paperweight.</p>
+                </div>
+                <div className="p-6 rounded-2xl bg-white/5 backdrop-blur-md border border-red-500/20 hover:border-red-500/40 transition-all">
+                  <div className="text-4xl mb-4">🕐</div>
+                  <h3 className="font-orbitron font-bold text-lg mb-2 text-foreground">No Time to Figure It Out?</h3>
+                  <p className="text-sm text-muted-foreground">You didn't start a business to become an SEO expert. You have clients to serve. Let us handle the technical stuff.</p>
+                </div>
+              </div>
+
+              {/* The Solution */}
+              <div className="relative p-8 lg:p-12 rounded-3xl bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border-2 border-primary/30 mb-12">
+                <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-red-500/20 to-primary/20 rounded-3xl blur-xl opacity-50" />
+                
+                <div className="relative z-10">
+                  <div className="text-center mb-8">
+                    <h3 className="text-2xl lg:text-3xl font-black font-orbitron mb-4">
+                      <span className="text-foreground">Here's What We Do </span>
+                      <span className="text-primary">Differently:</span>
+                    </h3>
+                  </div>
+
+                  <div className="grid lg:grid-cols-2 gap-8">
+                    {/* Left: Benefits */}
+                    <div className="space-y-4">
+                      {[
+                        { icon: '🚀', title: 'Live in 7 Days', desc: 'Not 3 months. Not "soon." 7 actual days from signing.' },
+                        { icon: '🎯', title: 'Built to Convert', desc: 'Every pixel engineered to turn visitors into paying customers.' },
+                        { icon: '🤖', title: 'AI-Powered 24/7', desc: 'AVA captures leads, responds instantly, books appointments while you sleep.' },
+                        { icon: '📈', title: 'SEO From Day 1', desc: 'Custom-coded for Google. Optimized pages, fast loading, local SEO ready.' },
+                        { icon: '💬', title: 'SMS & Email Built-In', desc: 'Automated follow-ups that close deals without you lifting a finger.' },
+                        { icon: '🛡️', title: 'We Handle Everything', desc: 'Hosting, updates, security, support. You focus on your business.' },
+                      ].map((item, i) => (
+                        <div key={i} className="flex items-start gap-4 p-4 rounded-xl bg-white/5 border border-white/10 hover:border-primary/30 transition-all">
+                          <span className="text-2xl">{item.icon}</span>
+                          <div>
+                            <h4 className="font-orbitron font-bold text-foreground">{item.title}</h4>
+                            <p className="text-sm text-muted-foreground">{item.desc}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Right: Stats & Social Proof */}
+                    <div className="space-y-6">
+                      {/* Stats */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="p-6 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/10 border border-green-500/30 text-center">
+                          <div className="text-4xl font-black text-green-400 font-orbitron">100+</div>
+                          <div className="text-xs text-muted-foreground mt-1">Websites Launched</div>
+                        </div>
+                        <div className="p-6 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/10 border border-cyan-500/30 text-center">
+                          <div className="text-4xl font-black text-cyan-400 font-orbitron">$2M+</div>
+                          <div className="text-xs text-muted-foreground mt-1">Revenue Generated</div>
+                        </div>
+                        <div className="p-6 rounded-xl bg-gradient-to-br from-yellow-500/20 to-orange-500/10 border border-yellow-500/30 text-center">
+                          <div className="text-4xl font-black text-yellow-400 font-orbitron">4.9★</div>
+                          <div className="text-xs text-muted-foreground mt-1">Average Rating</div>
+                        </div>
+                        <div className="p-6 rounded-xl bg-gradient-to-br from-purple-500/20 to-violet-500/10 border border-purple-500/30 text-center">
+                          <div className="text-4xl font-black text-purple-400 font-orbitron">24/7</div>
+                          <div className="text-xs text-muted-foreground mt-1">AVA Support</div>
+                        </div>
+                      </div>
+
+                      {/* Testimonial */}
+                      <div className="p-6 rounded-xl bg-white/5 border border-white/10">
+                        <div className="flex items-center gap-1 mb-3">
+                          {[...Array(5)].map((_, i) => (
+                            <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                          ))}
+                        </div>
+                        <p className="text-sm text-muted-foreground italic mb-4">
+                          "Within 2 weeks of launching, we got 47 new leads. The old website got us maybe 2-3 per month. 
+                          The ROI is insane."
+                        </p>
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
+                            M
+                          </div>
+                          <div>
+                            <div className="font-orbitron font-bold text-sm text-foreground">Mike T.</div>
+                            <div className="text-xs text-muted-foreground">Truck Repair Shop Owner</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Trust Badges */}
+              <div className="flex flex-wrap justify-center gap-4 mb-12">
+                {[
+                  { icon: '🔒', text: 'Secure & Fast' },
+                  { icon: '✅', text: 'Google Verified' },
+                  { icon: '🇺🇸', text: 'Based in Chicago' },
+                  { icon: '💯', text: 'Satisfaction Guaranteed' },
+                  { icon: '🏆', text: '100+ Happy Clients' },
+                ].map((badge, i) => (
+                  <div key={i} className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10">
+                    <span>{badge.icon}</span>
+                    <span className="text-xs font-orbitron text-muted-foreground">{badge.text}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Final CTA */}
+              <div className="text-center">
+                <p className="text-lg text-muted-foreground mb-6 font-orbitron">
+                  <span className="text-foreground font-bold">The question isn't IF you need a better website.</span>
+                  <br />
+                  It's how many more customers will you lose before you get one?
+                </p>
+                
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <button
+                    onClick={() => setIsQualifyDialogOpen(true)}
+                    className="group relative px-8 py-5 rounded-2xl bg-gradient-to-r from-red-500 to-orange-500 text-white font-bold text-lg shadow-2xl shadow-red-500/30 hover:shadow-red-500/50 hover:scale-105 transition-all duration-300 font-orbitron overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                    <span className="relative flex items-center justify-center gap-2">
+                      🚀 See If You Qualify (Free)
+                    </span>
+                  </button>
+                  
+                  <button
+                    onClick={openCalendly}
+                    className="group px-8 py-5 rounded-2xl bg-white/5 backdrop-blur-md border-2 border-white/20 text-white font-bold text-lg hover:bg-white/10 hover:border-white/40 transition-all duration-300 font-orbitron"
+                  >
+                    <span className="flex items-center justify-center gap-2">
+                      <Calendar className="w-5 h-5" />
+                      Book a Strategy Call
+                    </span>
+                  </button>
+                </div>
+
+                <p className="text-xs text-muted-foreground mt-4">
+                  No credit card required • Free consultation • Results in 7 days
+                </p>
+              </div>
+            </div>
+          </section>
+
           <Footer />
         </div>
       </main>
