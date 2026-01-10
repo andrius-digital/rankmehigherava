@@ -741,165 +741,187 @@ const Index = () => {
           </section>
           */}
 
-          {/* ALEX HORMOZI STYLE SALES SECTION */}
-          <section className="pt-0 pb-6 lg:pb-10 relative overflow-hidden">
-            {/* Background Effects */}
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-red-500/5 to-transparent" />
-            
+          {/* WHY CHOOSE US SECTION - SEO OPTIMIZED */}
+          <section className="pt-0 pb-8 lg:pb-12 relative overflow-hidden">
             <div className="container mx-auto px-4 lg:px-8 max-w-6xl relative z-10">
-              {/* Main Content */}
-              <div className="text-center mb-4 lg:mb-6">
-                {/* Urgency Badge */}
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/10 border border-red-500/30 mb-3 animate-pulse">
-                  <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-ping" />
-                  <span className="text-xs font-orbitron text-red-400 font-bold">LIMITED: Only 5 Spots Left This Month</span>
+              
+              {/* Section Header */}
+              <div className="text-center mb-6 lg:mb-8">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/10 border border-red-500/30 mb-3">
+                  <span className="w-1.5 h-1.5 bg-red-500 rounded-full" />
+                  <span className="text-xs font-orbitron text-red-400 font-bold">Chicago's Premier Web Development Agency</span>
                 </div>
-
-                {/* Main Headline */}
-                <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-black leading-tight font-orbitron mb-2 lg:mb-3">
-                  <span className="text-foreground">Your Competitors Are </span>
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-red-500 to-primary">Stealing Your Customers</span>
-                  <br className="hidden sm:block" />
-                  <span className="text-foreground text-lg sm:text-xl lg:text-2xl"> Right Now. Every. Single. Day.</span>
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black leading-tight font-orbitron mb-3">
+                  <span className="text-foreground">Custom Coded Websites </span>
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-red-500 to-primary">Built for Growth</span>
                 </h2>
-
-                {/* Sub-headline */}
-                <p className="text-sm lg:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                  Someone just Googled your service and clicked on your competitor. 
-                  <strong className="text-foreground"> They got paid. You got nothing.</strong>
+                <p className="text-sm lg:text-base text-muted-foreground max-w-3xl mx-auto">
+                  No templates. No page builders. Every website is hand-coded from scratch, optimized for Google rankings, 
+                  and integrated with automation systems that capture leads while you focus on your business.
                 </p>
               </div>
 
-              {/* Pain Points Grid - Compact */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 lg:gap-3 mb-4 lg:mb-6">
-                <div className="p-3 rounded-xl bg-white/5 backdrop-blur-md border border-red-500/20 hover:border-red-500/40 transition-all">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xl">💸</span>
-                    <h3 className="font-orbitron font-bold text-xs lg:text-sm text-foreground">Burning Money on Ads?</h3>
+              {/* Main Content Grid */}
+              <div className="grid lg:grid-cols-2 gap-6 lg:gap-8 mb-6 lg:mb-8">
+                
+                {/* Left: Image */}
+                <div className="relative rounded-2xl overflow-hidden border border-red-500/20 shadow-xl">
+                  <img 
+                    src="/kleanaf.png" 
+                    alt="Custom Coded Website Example - Klean AF House Cleaning San Diego" 
+                    className="w-full h-auto"
+                    loading="lazy"
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+                    <p className="text-xs text-white/80 font-orbitron">Custom coded website with lead capture & SMS automations</p>
                   </div>
-                  <p className="text-[10px] lg:text-xs text-muted-foreground">Traffic to a site that doesn't convert = gambling.</p>
-                </div>
-                <div className="p-3 rounded-xl bg-white/5 backdrop-blur-md border border-red-500/20 hover:border-red-500/40 transition-all">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xl">👻</span>
-                    <h3 className="font-orbitron font-bold text-xs lg:text-sm text-foreground">Invisible on Google?</h3>
-                  </div>
-                  <p className="text-[10px] lg:text-xs text-muted-foreground">Page 2 is where businesses go to die.</p>
-                </div>
-                <div className="p-3 rounded-xl bg-white/5 backdrop-blur-md border border-red-500/20 hover:border-red-500/40 transition-all">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xl">🕐</span>
-                    <h3 className="font-orbitron font-bold text-xs lg:text-sm text-foreground">No Time?</h3>
-                  </div>
-                  <p className="text-[10px] lg:text-xs text-muted-foreground">Let us handle the technical stuff.</p>
-                </div>
-              </div>
-
-              {/* The Solution - Compact */}
-              <div className="relative p-3 lg:p-6 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border border-red-500/30 mb-4 lg:mb-6">
-                <div className="text-center mb-3 lg:mb-4">
-                  <h3 className="text-lg lg:text-xl font-black font-orbitron">
-                    <span className="text-foreground">What We Do </span>
-                    <span className="text-primary">Differently:</span>
-                  </h3>
                 </div>
 
-                <div className="grid lg:grid-cols-2 gap-3 lg:gap-4">
-                  {/* Left: Benefits - Compact */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-1.5 lg:gap-2">
-                    {[
-                      { icon: '🚀', title: 'Live in 7 Days' },
-                      { icon: '🎯', title: 'Built to Convert' },
-                      { icon: '🤖', title: 'AI-Powered 24/7' },
-                      { icon: '📈', title: 'SEO From Day 1' },
-                      { icon: '💬', title: 'SMS & Email Built-In' },
-                      { icon: '🛡️', title: 'We Handle Everything' },
-                    ].map((item, i) => (
-                      <div key={i} className="flex items-center gap-1.5 p-1.5 lg:p-2 rounded-lg bg-white/5 border border-white/10">
-                        <span className="text-base lg:text-lg">{item.icon}</span>
-                        <span className="font-orbitron font-bold text-[10px] lg:text-xs text-foreground">{item.title}</span>
+                {/* Right: Features */}
+                <div className="space-y-4">
+                  
+                  {/* Custom Coded Websites */}
+                  <div className="p-4 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 hover:border-red-500/30 transition-all">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                        <Globe className="w-5 h-5 text-red-400" />
                       </div>
-                    ))}
-                  </div>
-
-                  {/* Right: Stats - Compact */}
-                  <div className="space-y-2">
-                    <div className="grid grid-cols-4 gap-1.5">
-                      <div className="p-1.5 lg:p-2 rounded-lg bg-red-500/10 border border-red-500/30 text-center">
-                        <div className="text-base lg:text-xl font-black text-red-400 font-orbitron">100+</div>
-                        <div className="text-[8px] lg:text-[10px] text-muted-foreground">Sites</div>
-                      </div>
-                      <div className="p-1.5 lg:p-2 rounded-lg bg-red-500/10 border border-red-500/30 text-center">
-                        <div className="text-base lg:text-xl font-black text-red-400 font-orbitron">$2M+</div>
-                        <div className="text-[8px] lg:text-[10px] text-muted-foreground">Revenue</div>
-                      </div>
-                      <div className="p-1.5 lg:p-2 rounded-lg bg-red-500/10 border border-red-500/30 text-center">
-                        <div className="text-base lg:text-xl font-black text-red-400 font-orbitron">4.9★</div>
-                        <div className="text-[8px] lg:text-[10px] text-muted-foreground">Rating</div>
-                      </div>
-                      <div className="p-1.5 lg:p-2 rounded-lg bg-red-500/10 border border-red-500/30 text-center">
-                        <div className="text-base lg:text-xl font-black text-red-400 font-orbitron">24/7</div>
-                        <div className="text-[8px] lg:text-[10px] text-muted-foreground">Support</div>
+                      <div>
+                        <h3 className="font-orbitron font-bold text-sm lg:text-base text-foreground mb-1">Custom Coded Websites</h3>
+                        <p className="text-xs text-muted-foreground">Hand-coded React/TypeScript websites. Faster load times, better SEO rankings, and complete control over every feature. No WordPress, no Wix—just clean, professional code.</p>
                       </div>
                     </div>
+                  </div>
 
-                    {/* Testimonial - Compact */}
-                    <div className="p-2 lg:p-3 rounded-xl bg-white/5 border border-white/10">
-                      <div className="flex items-center gap-1 mb-1">
-                        {[...Array(5)].map((_, i) => (
-                          <Star key={i} className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" />
-                        ))}
+                  {/* Automations & SMS */}
+                  <div className="p-4 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 hover:border-red-500/30 transition-all">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                        <Phone className="w-5 h-5 text-red-400" />
                       </div>
-                      <p className="text-[10px] lg:text-xs text-muted-foreground italic mb-1">
-                        "47 new leads in 2 weeks. Old site got us 2-3/month. ROI is insane."
-                      </p>
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-[10px]">M</div>
-                        <div className="text-[10px] text-muted-foreground">Mike T. • Truck Repair Owner</div>
+                      <div>
+                        <h3 className="font-orbitron font-bold text-sm lg:text-base text-foreground mb-1">Custom Automations & SMS Reminders</h3>
+                        <p className="text-xs text-muted-foreground">Automated SMS and email follow-ups built directly into your website. New lead? They get an instant text. Appointment booked? Automatic reminder. No manual work required.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* AVA Integration */}
+                  <div className="p-4 rounded-xl bg-gradient-to-br from-cyan-500/10 to-blue-500/10 backdrop-blur-md border border-cyan-500/30 hover:border-cyan-400 transition-all">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-cyan-500/20 flex items-center justify-center flex-shrink-0">
+                        <Brain className="w-5 h-5 text-cyan-400" />
+                      </div>
+                      <div>
+                        <h3 className="font-orbitron font-bold text-sm lg:text-base text-foreground mb-1">AVA Integration</h3>
+                        <p className="text-xs text-muted-foreground">Our proprietary system adds voice chat, voice calls, and automatic appointment booking to your website. AVA answers questions, qualifies leads, and books appointments 24/7—while you sleep.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Telegram Support */}
+                  <div className="p-4 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 hover:border-red-500/30 transition-all">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                        <Mail className="w-5 h-5 text-red-400" />
+                      </div>
+                      <div>
+                        <h3 className="font-orbitron font-bold text-sm lg:text-base text-foreground mb-1">Telegram Group for Direct Support</h3>
+                        <p className="text-xs text-muted-foreground">Every client gets added to a private Telegram group. Need a quick change? Have a question? Message us directly. Fast response times, real humans, no ticket systems.</p>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Trust Badges - Compact */}
-              <div className="flex flex-wrap justify-center gap-1.5 mb-3 lg:mb-4">
-                {['🔒 Secure', '✅ Verified', '🇺🇸 Chicago', '💯 Guaranteed', '🏆 100+ Clients'].map((badge, i) => (
-                  <div key={i} className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-[9px] lg:text-[10px] font-orbitron text-muted-foreground">
-                    {badge}
+              {/* Pricing Model */}
+              <div className="relative p-4 lg:p-6 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border border-red-500/30 mb-6">
+                <div className="grid lg:grid-cols-2 gap-4 items-center">
+                  <div>
+                    <h3 className="font-orbitron font-bold text-lg lg:text-xl text-foreground mb-2">Simple, Transparent Pricing</h3>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      No hidden fees. No long-term contracts. No expensive monthly retainers.
+                    </p>
+                    <ul className="space-y-2 text-xs text-muted-foreground">
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0" />
+                        <span><strong className="text-foreground">One-time build fee</strong> — Your website, fully custom coded</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0" />
+                        <span><strong className="text-foreground">Small monthly hosting & management fee</strong> — We handle servers, updates, security</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0" />
+                        <span><strong className="text-foreground">Adjustments charged per project</strong> — No hourly billing, no surprises</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0" />
+                        <span><strong className="text-foreground">Usage-based services</strong> — Pay for what you actually use</span>
+                      </li>
+                    </ul>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-center">
+                      <div className="text-2xl lg:text-3xl font-black text-red-400 font-orbitron">100+</div>
+                      <div className="text-[10px] text-muted-foreground">Websites Built</div>
+                    </div>
+                    <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-center">
+                      <div className="text-2xl lg:text-3xl font-black text-red-400 font-orbitron">7</div>
+                      <div className="text-[10px] text-muted-foreground">Days to Launch</div>
+                    </div>
+                    <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-center">
+                      <div className="text-2xl lg:text-3xl font-black text-red-400 font-orbitron">24/7</div>
+                      <div className="text-[10px] text-muted-foreground">AVA Support</div>
+                    </div>
+                    <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-center">
+                      <div className="text-2xl lg:text-3xl font-black text-red-400 font-orbitron">4.9★</div>
+                      <div className="text-[10px] text-muted-foreground">Client Rating</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Trust Badges */}
+              <div className="flex flex-wrap justify-center gap-2 mb-4">
+                {[
+                  { icon: '🔒', text: 'SSL Secured' },
+                  { icon: '⚡', text: 'Fast Loading' },
+                  { icon: '📱', text: 'Mobile Optimized' },
+                  { icon: '🇺🇸', text: 'Based in Chicago' },
+                  { icon: '💬', text: 'Direct Support' },
+                ].map((badge, i) => (
+                  <div key={i} className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-orbitron text-muted-foreground">
+                    <span>{badge.icon}</span>
+                    <span>{badge.text}</span>
                   </div>
                 ))}
               </div>
 
-              {/* Final CTA - Compact */}
+              {/* CTA */}
               <div className="text-center">
-                <p className="text-xs lg:text-sm text-muted-foreground mb-3 font-orbitron">
-                  <span className="text-foreground font-bold">How many more customers will you lose?</span>
-                </p>
-                
-                <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   <button
                     onClick={() => setIsQualifyDialogOpen(true)}
-                    className="group relative px-5 py-2.5 lg:py-3 rounded-xl bg-red-500/10 backdrop-blur-md border border-red-500/30 text-white font-bold text-sm shadow-lg hover:shadow-xl hover:shadow-red-500/20 hover:bg-red-500/20 hover:border-red-500/50 hover:scale-[1.02] transition-all duration-300 font-orbitron overflow-hidden"
+                    className="group relative px-6 py-3 rounded-xl bg-red-500/10 backdrop-blur-md border border-red-500/30 text-white font-bold text-sm shadow-lg hover:shadow-xl hover:shadow-red-500/20 hover:bg-red-500/20 hover:border-red-500/50 hover:scale-[1.02] transition-all duration-300 font-orbitron overflow-hidden"
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/10 to-red-500/0 group-hover:from-red-500/10 group-hover:via-red-500/20 group-hover:to-red-500/10 transition-all duration-500" />
                     <span className="relative flex items-center justify-center gap-2">
                       <Globe className="w-4 h-4 text-red-400" />
-                      See If You Qualify (Free)
+                      Get a Free Website Quote
                     </span>
                   </button>
                   
                   <button
                     onClick={openCalendly}
-                    className="group px-5 py-2.5 lg:py-3 rounded-xl bg-white/5 backdrop-blur-md border border-white/20 text-white font-bold text-sm hover:bg-white/10 hover:border-white/30 hover:shadow-lg hover:shadow-white/10 hover:scale-[1.02] transition-all duration-300 font-orbitron flex items-center justify-center gap-2"
+                    className="group px-6 py-3 rounded-xl bg-white/5 backdrop-blur-md border border-white/20 text-white font-bold text-sm hover:bg-white/10 hover:border-white/30 hover:shadow-lg hover:shadow-white/10 hover:scale-[1.02] transition-all duration-300 font-orbitron flex items-center justify-center gap-2"
                   >
-                    Book a Call
+                    Schedule a Strategy Call
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </button>
                 </div>
-
-                <p className="text-[9px] lg:text-[10px] text-muted-foreground mt-2">
-                  No credit card • Free consultation • Results in 7 days
+                <p className="text-[10px] text-muted-foreground mt-3">
+                  Free consultation • No obligations • Results in 7 days
                 </p>
               </div>
             </div>
