@@ -402,7 +402,7 @@ const Index = () => {
           </section>
 
           {/* PORTFOLIO SHOWCASE SECTION */}
-          <section className="pt-4 pb-8 lg:pt-6 lg:pb-12 relative overflow-hidden">
+          <section className="pt-4 pb-2 lg:pt-6 lg:pb-4 relative overflow-hidden">
             <div className="container mx-auto px-4 lg:px-8 max-w-7xl relative z-10">
               {/* Header */}
               <div className="text-center mb-8">
@@ -589,7 +589,7 @@ const Index = () => {
               </div>
 
               {/* Desktop: Overlapping Portfolio Grid */}
-              <div className="hidden lg:block relative min-h-[700px]">
+              <div className="hidden lg:block relative min-h-[500px]">
                 {/* Portfolio Item 1 - Left */}
                 <div className="group absolute top-0 left-[3%] w-[40%] z-10 hover:z-50 transition-all duration-500 hover:scale-105">
                   <div className="relative rounded-2xl overflow-hidden bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/40 transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-primary/20">
@@ -742,7 +742,7 @@ const Index = () => {
           */}
 
           {/* ALEX HORMOZI STYLE SALES SECTION */}
-          <section className="py-8 lg:py-12 relative overflow-hidden -mt-4 lg:-mt-8">
+          <section className="pt-4 pb-8 lg:pt-6 lg:pb-12 relative overflow-hidden">
             {/* Background Effects */}
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-red-500/5 to-transparent" />
             
