@@ -9,7 +9,6 @@ import {
     ArrowRight,
     LogOut,
     GraduationCap,
-    Sparkles,
     Users,
     Music,
     UsersRound,
@@ -17,7 +16,9 @@ import {
     Building2,
     Mic,
     CreditCard,
-    Clock
+    Clock,
+    ChevronRight,
+    Layers
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -26,97 +27,190 @@ import HUDOverlay from '@/components/ui/HUDOverlay';
 import AvaAvatar from '@/components/agency/AvaAvatar';
 import StatusIndicator from '@/components/agency/StatusIndicator';
 import MissionClock from '@/components/agency/MissionClock';
+import { useIsMobile } from '@/hooks/use-mobile';
+
+// Color classes for card styling
+const colorClasses = {
+    purple: 'from-purple-500/20 to-purple-600/20 border-purple-500/30 text-purple-400',
+    cyan: 'from-cyan-500/20 to-cyan-600/20 border-cyan-500/30 text-cyan-400',
+    blue: 'from-blue-500/20 to-blue-600/20 border-blue-500/30 text-blue-400',
+    orange: 'from-orange-500/20 to-orange-600/20 border-orange-500/30 text-orange-400',
+    green: 'from-green-500/20 to-green-600/20 border-green-500/30 text-green-400',
+    emerald: 'from-emerald-500/20 to-emerald-600/20 border-emerald-500/30 text-emerald-400'
+};
+
+interface CardItem {
+    id: string;
+    title: string;
+    icon: React.ComponentType<{ className?: string }>;
+    description: string;
+    href: string;
+    color: keyof typeof colorClasses;
+}
 
 const AgencyDashboard: React.FC = () => {
     const { signOut } = useAuth();
+    const isMobile = useIsMobile();
 
-    // Agency Cards
-    const agencyCards = [
+    // All cards organized by section
+    const sections = [
         {
-            id: 'ava-voice-calls',
-            title: 'AVA Voice Calls',
-            icon: Mic,
-            description: 'Voice chat analytics & lead tracking',
-            href: '/ava-voice-calls',
-            color: 'cyan'
-        }
-    ];
-
-    // AI Lab Cards
-    const aiLabCards = [
-        {
-            id: 'ava-training',
-            title: 'AVA Training',
-            icon: GraduationCap,
-            description: 'Train and configure AVA AI assistant',
-            href: '/ava-training',
-            color: 'purple'
+            id: 'agency',
+            title: 'Agency',
+            icon: Building2,
+            color: 'cyan' as const,
+            cards: [
+                {
+                    id: 'ava-voice-calls',
+                    title: 'AVA Voice Calls',
+                    icon: Mic,
+                    description: 'Voice chat analytics',
+                    href: '/ava-voice-calls',
+                    color: 'cyan' as const
+                },
+                {
+                    id: 'task-flow',
+                    title: 'Task Flow',
+                    icon: Layers,
+                    description: 'Project management',
+                    href: '/task-flow',
+                    color: 'cyan' as const
+                }
+            ]
         },
         {
-            id: 'ava-rank-me-higher',
-            title: 'AVA SEO',
+            id: 'ai-lab',
+            title: 'AI Lab',
             icon: Brain,
-            description: 'AI SEO Tool developed by Rank Me Higher. Rank on autopilot with zero effort.',
-            href: '/avaseo',
-            color: 'cyan'
+            color: 'purple' as const,
+            cards: [
+                {
+                    id: 'ava-training',
+                    title: 'AVA Training',
+                    icon: GraduationCap,
+                    description: 'Train AVA AI',
+                    href: '/ava-training',
+                    color: 'purple' as const
+                },
+                {
+                    id: 'ava-seo',
+                    title: 'AVA SEO',
+                    icon: Brain,
+                    description: 'AI SEO autopilot',
+                    href: '/avaseo',
+                    color: 'cyan' as const
+                },
+                {
+                    id: 'cdl-agency',
+                    title: 'CDL Agency',
+                    icon: Users,
+                    description: 'Driver brokerage',
+                    href: '/cdl-agency-portal',
+                    color: 'blue' as const
+                },
+                {
+                    id: 'drum-kit',
+                    title: 'Drum Kit Bazaar',
+                    icon: Music,
+                    description: 'Sample packs AI',
+                    href: '#',
+                    color: 'orange' as const
+                }
+            ]
         },
         {
-            id: 'cdl-agency-onboard',
-            title: 'CDL Agency Onboard',
-            icon: Users,
-            description: 'AI Powered Driver Brokerage Software for Carriers & Recruiters',
-            href: '/cdl-agency-portal',
-            color: 'blue'
+            id: 'websites',
+            title: 'Websites',
+            icon: Globe,
+            color: 'green' as const,
+            cards: [
+                {
+                    id: 'client-portal',
+                    title: 'Client Portal',
+                    icon: UsersRound,
+                    description: 'Manage clients',
+                    href: '/client-portal',
+                    color: 'green' as const
+                },
+                {
+                    id: 'build-website',
+                    title: 'Build Website',
+                    icon: Palette,
+                    description: 'AI design',
+                    href: '/website-prompting',
+                    color: 'green' as const
+                }
+            ]
         },
         {
-            id: 'drum-kit-bazaar',
-            title: 'Drum Kit Bazaar',
-            icon: Music,
-            description: 'Automated Sample Pack AI Tool',
-            href: '#',
-            color: 'orange'
+            id: 'accounting',
+            title: 'Accounting',
+            icon: DollarSign,
+            color: 'emerald' as const,
+            cards: [
+                {
+                    id: 'subscriptions',
+                    title: 'Subscriptions',
+                    icon: CreditCard,
+                    description: 'Manage billing',
+                    href: '/subscriptions',
+                    color: 'emerald' as const
+                },
+                {
+                    id: 'team-tracker',
+                    title: 'Team Tracker',
+                    icon: Clock,
+                    description: 'Payroll & time',
+                    href: '/team-tracker',
+                    color: 'emerald' as const
+                }
+            ]
         }
     ];
 
-    // Website Cards
-    const websiteCards = [
-        {
-            id: 'client-portal',
-            title: 'Agency Client Portal',
-            icon: UsersRound,
-            description: 'Profile Setup & Data Submission',
-            href: '/client-portal',
-            color: 'green'
-        },
-        {
-            id: 'build-website',
-            title: 'Build New Website',
-            icon: Palette,
-            description: 'AI Design & Deployment',
-            href: '/website-prompting',
-            color: 'green'
-        }
-    ];
+    // Mobile ultra-compact card
+    const MobileCard = ({ card }: { card: CardItem }) => {
+        const Icon = card.icon;
+        return (
+            <Link
+                to={card.href}
+                className="flex items-center gap-2 py-2 px-2.5 bg-card/20 border border-white/5 rounded-lg active:scale-[0.97] active:bg-card/40 transition-all"
+            >
+                <div className={`w-8 h-8 rounded-md bg-gradient-to-br ${colorClasses[card.color]} border flex items-center justify-center flex-shrink-0`}>
+                    <Icon className="w-4 h-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                    <h3 className="font-medium text-xs text-foreground truncate">{card.title}</h3>
+                </div>
+                <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/50 flex-shrink-0" />
+            </Link>
+        );
+    };
 
-    // Accounting Cards
-    const accountingCards = [
-        {
-            id: 'subscriptions',
-            title: 'Subscriptions',
-            icon: CreditCard,
-            description: 'Manage recurring subscriptions',
-            href: '/subscriptions',
-            color: 'emerald'
-        },
-        {
-            id: 'team-tracker',
-            title: 'Team Tracker',
-            icon: Clock,
-            description: 'Payroll & time tracking',
-            href: '/team-tracker',
-            color: 'emerald'
-        }
-    ];
+    // Desktop card
+    const DesktopCard = ({ card }: { card: CardItem }) => {
+        const Icon = card.icon;
+        return (
+            <Link
+                to={card.href}
+                className="group relative bg-card/20 backdrop-blur-md border border-primary/10 rounded-2xl p-6 hover:border-primary/40 transition-all hover:translate-y-[-4px] overflow-hidden"
+            >
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors" />
+                <div className="relative z-10 space-y-4">
+                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${colorClasses[card.color]} border flex items-center justify-center`}>
+                        <Icon className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <h3 className="font-orbitron font-bold text-lg text-foreground mb-2">{card.title}</h3>
+                        <p className="text-sm text-muted-foreground">{card.description}</p>
+                    </div>
+                    <div className="flex items-center gap-2 text-primary text-sm font-orbitron font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                        Open <ArrowRight className="w-4 h-4" />
+                    </div>
+                </div>
+            </Link>
+        );
+    };
 
     return (
         <div className="min-h-screen bg-background relative overflow-hidden">
@@ -127,30 +221,43 @@ const AgencyDashboard: React.FC = () => {
             <HUDOverlay />
 
             <div className="relative z-10 flex flex-col min-h-screen">
-                {/* Header */}
-                <header className="border-b border-primary/20 bg-card/30 backdrop-blur-xl sticky top-0 z-20">
-                    <div className="container mx-auto px-4 py-4">
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                            <div className="flex items-center gap-4">
-                                <AvaAvatar />
-                                <div>
-                                    <h1 className="font-orbitron text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-                                        AVA ADMIN PANEL
-                                    </h1>
-                                    <p className="text-xs text-muted-foreground font-orbitron tracking-widest uppercase">
-                                        AI Marketing System by Rank Me Higher
+                {/* Header - Ultra compact on mobile */}
+                <header className={`border-b border-primary/20 bg-card/30 backdrop-blur-xl sticky top-0 z-20 ${isMobile ? 'py-2' : 'py-4'}`}>
+                    <div className={`container mx-auto ${isMobile ? 'px-2.5' : 'px-4'}`}>
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <AvaAvatar size={isMobile ? 'sm' as const : 'md' as const} />
+                                <h1 className={`font-orbitron font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent ${isMobile ? 'text-base' : 'text-2xl'}`}>
+                                    {isMobile ? 'AVA' : 'AVA ADMIN PANEL'}
+                                </h1>
+                                {!isMobile && (
+                                    <p className="text-xs text-muted-foreground font-orbitron tracking-widest uppercase ml-2">
+                                        AI Marketing System
                                     </p>
-                                </div>
+                                )}
                             </div>
 
-                            <div className="flex items-center gap-4">
-                                <div className="hidden md:flex items-center gap-4 px-4 py-2 rounded-lg bg-card/50 border border-primary/20">
-                                    <StatusIndicator status="online" label="Agency Node" />
-                                    <div className="w-px h-4 bg-border" />
-                                    <MissionClock />
-                                </div>
-                                <Button variant="ghost" size="icon" onClick={signOut}>
-                                    <LogOut className="w-5 h-5 text-muted-foreground hover:text-destructive" />
+                            <div className="flex items-center gap-1.5">
+                                {!isMobile && (
+                                    <div className="flex items-center gap-4 px-4 py-2 rounded-lg bg-card/50 border border-primary/20">
+                                        <StatusIndicator status="online" label="Agency Node" />
+                                        <div className="w-px h-4 bg-border" />
+                                        <MissionClock />
+                                    </div>
+                                )}
+                                {isMobile && (
+                                    <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-card/30 border border-primary/10">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                                        <span className="text-[9px] text-muted-foreground font-orbitron">ONLINE</span>
+                                    </div>
+                                )}
+                                <Button 
+                                    variant="ghost" 
+                                    size="sm"
+                                    onClick={signOut}
+                                    className={isMobile ? 'h-7 w-7 p-0' : 'h-9 w-9 p-0'}
+                                >
+                                    <LogOut className={`text-muted-foreground hover:text-destructive ${isMobile ? 'w-3.5 h-3.5' : 'w-5 h-5'}`} />
                                 </Button>
                             </div>
                         </div>
@@ -158,208 +265,97 @@ const AgencyDashboard: React.FC = () => {
                 </header>
 
                 {/* Main Content */}
-                <main className="flex-1 container mx-auto px-4 py-8">
-                    <div className="max-w-7xl mx-auto space-y-12">
-                        {/* Agency Section */}
-                        <section className="space-y-6">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/30 flex items-center justify-center">
-                                    <Building2 className="w-5 h-5 text-cyan-400" />
-                                </div>
-                                <h2 className="font-orbitron text-2xl font-bold text-foreground">Agency</h2>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                {agencyCards.map((card) => {
-                                    const Icon = card.icon;
-                                    const colorClasses = {
-                                        purple: 'from-purple-500/20 to-purple-600/20 border-purple-500/30 text-purple-400',
-                                        cyan: 'from-cyan-500/20 to-cyan-600/20 border-cyan-500/30 text-cyan-400',
-                                        blue: 'from-blue-500/20 to-blue-600/20 border-blue-500/30 text-blue-400',
-                                        orange: 'from-orange-500/20 to-orange-600/20 border-orange-500/30 text-orange-400',
-                                        green: 'from-green-500/20 to-green-600/20 border-green-500/30 text-green-400'
-                                    };
+                <main className={`flex-1 container mx-auto ${isMobile ? 'px-2.5 py-3' : 'px-4 py-8'}`}>
+                    <div className={`max-w-7xl mx-auto ${isMobile ? 'space-y-3' : 'space-y-12'}`}>
+                        
+                        {/* Mobile: Ultra-compact sections */}
+                        {isMobile ? (
+                            <>
+                                {sections.map((section) => {
+                                    const SectionIcon = section.icon;
                                     return (
-                                        <Link
-                                            key={card.id}
-                                            to={card.href}
-                                            className="group relative bg-card/20 backdrop-blur-md border border-cyan-500/10 rounded-2xl p-6 hover:border-cyan-500/40 transition-all hover:translate-y-[-4px] overflow-hidden"
-                                        >
-                                            <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 rounded-full blur-3xl group-hover:bg-cyan-500/10 transition-colors" />
-                                            <div className="relative z-10 space-y-4">
-                                                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${colorClasses[card.color as keyof typeof colorClasses]} border flex items-center justify-center`}>
-                                                    <Icon className="w-6 h-6" />
+                                        <section key={section.id}>
+                                            <div className="flex items-center gap-1.5 mb-1.5">
+                                                <div className={`w-5 h-5 rounded bg-gradient-to-br ${colorClasses[section.color]} border flex items-center justify-center`}>
+                                                    <SectionIcon className="w-3 h-3" />
                                                 </div>
-                                                <div>
-                                                    <h3 className="font-orbitron font-bold text-lg text-foreground mb-2">{card.title}</h3>
-                                                    <p className="text-sm text-muted-foreground">{card.description}</p>
-                                                </div>
-                                                <div className="flex items-center gap-2 text-cyan-400 text-sm font-orbitron font-bold opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    Open <ArrowRight className="w-4 h-4" />
-                                                </div>
+                                                <h2 className="font-orbitron text-xs font-bold text-foreground uppercase tracking-wide">{section.title}</h2>
                                             </div>
-                                        </Link>
+                                            <div className="space-y-1">
+                                                {section.cards.map((card) => (
+                                                    <MobileCard key={card.id} card={card} />
+                                                ))}
+                                            </div>
+                                        </section>
                                     );
                                 })}
-                            </div>
-                        </section>
 
-                        {/* AI Lab Section */}
-                        <section className="space-y-6">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-600/20 border border-purple-500/30 flex items-center justify-center">
-                                    <Brain className="w-5 h-5 text-purple-400" />
+                                {/* Coming Soon sections - minimal on mobile */}
+                                <div className="flex gap-2 pt-2">
+                                    <div className="flex items-center gap-1 px-2 py-1 bg-card/10 rounded-md border border-white/5">
+                                        <Search className="w-3 h-3 text-blue-400" />
+                                        <span className="text-[10px] text-muted-foreground">SEO</span>
+                                        <span className="text-[8px] bg-muted/50 px-1 rounded text-muted-foreground/70">Soon</span>
+                                    </div>
+                                    <div className="flex items-center gap-1 px-2 py-1 bg-card/10 rounded-md border border-white/5">
+                                        <Phone className="w-3 h-3 text-orange-400" />
+                                        <span className="text-[10px] text-muted-foreground">Call Center</span>
+                                        <span className="text-[8px] bg-muted/50 px-1 rounded text-muted-foreground/70">Soon</span>
+                                    </div>
                                 </div>
-                                <h2 className="font-orbitron text-2xl font-bold text-foreground">AI Lab</h2>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                {aiLabCards.map((card) => {
-                                    const Icon = card.icon;
-                                    const colorClasses = {
-                                        purple: 'from-purple-500/20 to-purple-600/20 border-purple-500/30 text-purple-400',
-                                        cyan: 'from-cyan-500/20 to-cyan-600/20 border-cyan-500/30 text-cyan-400',
-                                        blue: 'from-blue-500/20 to-blue-600/20 border-blue-500/30 text-blue-400',
-                                        orange: 'from-orange-500/20 to-orange-600/20 border-orange-500/30 text-orange-400',
-                                        green: 'from-green-500/20 to-green-600/20 border-green-500/30 text-green-400'
-                                    };
+                            </>
+                        ) : (
+                            <>
+                                {/* Desktop: Full sections */}
+                                {sections.map((section) => {
+                                    const SectionIcon = section.icon;
                                     return (
-                                        <Link
-                                            key={card.id}
-                                            to={card.href}
-                                            className="group relative bg-card/20 backdrop-blur-md border border-primary/10 rounded-2xl p-6 hover:border-primary/40 transition-all hover:translate-y-[-4px] overflow-hidden"
-                                        >
-                                            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors" />
-                                            <div className="relative z-10 space-y-4">
-                                                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${colorClasses[card.color as keyof typeof colorClasses]} border flex items-center justify-center`}>
-                                                    <Icon className="w-6 h-6" />
+                                        <section key={section.id} className="space-y-6">
+                                            <div className="flex items-center gap-3">
+                                                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${colorClasses[section.color]} border flex items-center justify-center`}>
+                                                    <SectionIcon className="w-5 h-5" />
                                                 </div>
-                                                <div>
-                                                    <h3 className="font-orbitron font-bold text-lg text-foreground mb-2">{card.title}</h3>
-                                                    <p className="text-sm text-muted-foreground">{card.description}</p>
-                                                </div>
-                                                <div className="flex items-center gap-2 text-primary text-sm font-orbitron font-bold opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    Open <ArrowRight className="w-4 h-4" />
-                                                </div>
+                                                <h2 className="font-orbitron text-2xl font-bold text-foreground">{section.title}</h2>
                                             </div>
-                                        </Link>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                                {section.cards.map((card) => (
+                                                    <DesktopCard key={card.id} card={card} />
+                                                ))}
+                                            </div>
+                                        </section>
                                     );
                                 })}
-                            </div>
-                        </section>
 
-                        {/* Websites Section */}
-                        <section className="space-y-6">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500/20 to-green-600/20 border border-green-500/30 flex items-center justify-center">
-                                    <Globe className="w-5 h-5 text-green-400" />
-                                </div>
-                                <h2 className="font-orbitron text-2xl font-bold text-foreground">Websites</h2>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                {websiteCards.map((card) => {
-                                    const Icon = card.icon;
-                                    const colorClasses = {
-                                        purple: 'from-purple-500/20 to-purple-600/20 border-purple-500/30 text-purple-400',
-                                        cyan: 'from-cyan-500/20 to-cyan-600/20 border-cyan-500/30 text-cyan-400',
-                                        blue: 'from-blue-500/20 to-blue-600/20 border-blue-500/30 text-blue-400',
-                                        orange: 'from-orange-500/20 to-orange-600/20 border-orange-500/30 text-orange-400',
-                                        green: 'from-green-500/20 to-green-600/20 border-green-500/30 text-green-400'
-                                    };
-                                    return (
-                                        <Link
-                                            key={card.id}
-                                            to={card.href}
-                                            className="group relative bg-card/20 backdrop-blur-md border border-primary/10 rounded-2xl p-6 hover:border-primary/40 transition-all hover:translate-y-[-4px] overflow-hidden"
-                                        >
-                                            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors" />
-                                            <div className="relative z-10 space-y-4">
-                                                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${colorClasses[card.color as keyof typeof colorClasses]} border flex items-center justify-center`}>
-                                                    <Icon className="w-6 h-6" />
-                                                </div>
-                                                <div>
-                                                    <h3 className="font-orbitron font-bold text-lg text-foreground mb-2">{card.title}</h3>
-                                                    <p className="text-sm text-muted-foreground">{card.description}</p>
-                                                </div>
-                                                <div className="flex items-center gap-2 text-primary text-sm font-orbitron font-bold opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    Open <ArrowRight className="w-4 h-4" />
-                                                </div>
-                                            </div>
-                                        </Link>
-                                    );
-                                })}
-                            </div>
-                        </section>
+                                {/* SEO Section - Coming Soon */}
+                                <section className="space-y-6">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 border border-blue-500/30 flex items-center justify-center">
+                                            <Search className="w-5 h-5 text-blue-400" />
+                                        </div>
+                                        <h2 className="font-orbitron text-2xl font-bold text-foreground">SEO</h2>
+                                    </div>
+                                    <div className="bg-card/10 backdrop-blur-md border border-primary/10 rounded-2xl p-8 text-center">
+                                        <p className="text-muted-foreground">SEO cards coming soon...</p>
+                                    </div>
+                                </section>
 
-                        {/* SEO Section */}
-                        <section className="space-y-6">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 border border-blue-500/30 flex items-center justify-center">
-                                    <Search className="w-5 h-5 text-blue-400" />
-                                </div>
-                                <h2 className="font-orbitron text-2xl font-bold text-foreground">SEO</h2>
-                            </div>
-                            <div className="bg-card/10 backdrop-blur-md border border-primary/10 rounded-2xl p-8 text-center">
-                                <p className="text-muted-foreground">SEO cards coming soon...</p>
-                            </div>
-                        </section>
-
-                        {/* Call Center Section */}
-                        <section className="space-y-6">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500/20 to-orange-600/20 border border-orange-500/30 flex items-center justify-center">
-                                    <Phone className="w-5 h-5 text-orange-400" />
-                                </div>
-                                <h2 className="font-orbitron text-2xl font-bold text-foreground">Call Center</h2>
-                            </div>
-                            <div className="bg-card/10 backdrop-blur-md border border-primary/10 rounded-2xl p-8 text-center">
-                                <p className="text-muted-foreground">Call Center cards coming soon...</p>
-                            </div>
-                        </section>
-
-                        {/* Accounting Section */}
-                        <section className="space-y-6">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/20 border border-emerald-500/30 flex items-center justify-center">
-                                    <DollarSign className="w-5 h-5 text-emerald-400" />
-                                </div>
-                                <h2 className="font-orbitron text-2xl font-bold text-foreground">Accounting</h2>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                {accountingCards.map((card) => {
-                                    const Icon = card.icon;
-                                    const colorClasses = {
-                                        purple: 'from-purple-500/20 to-purple-600/20 border-purple-500/30 text-purple-400',
-                                        cyan: 'from-cyan-500/20 to-cyan-600/20 border-cyan-500/30 text-cyan-400',
-                                        blue: 'from-blue-500/20 to-blue-600/20 border-blue-500/30 text-blue-400',
-                                        orange: 'from-orange-500/20 to-orange-600/20 border-orange-500/30 text-orange-400',
-                                        green: 'from-green-500/20 to-green-600/20 border-green-500/30 text-green-400',
-                                        emerald: 'from-emerald-500/20 to-emerald-600/20 border-emerald-500/30 text-emerald-400'
-                                    };
-                                    return (
-                                        <Link
-                                            key={card.id}
-                                            to={card.href}
-                                            className="group relative bg-card/20 backdrop-blur-md border border-primary/10 rounded-2xl p-6 hover:border-emerald-500/40 transition-all hover:translate-y-[-4px] overflow-hidden"
-                                        >
-                                            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl group-hover:bg-emerald-500/10 transition-colors" />
-                                            <div className="relative z-10 space-y-4">
-                                                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${colorClasses[card.color as keyof typeof colorClasses]} border flex items-center justify-center`}>
-                                                    <Icon className="w-6 h-6" />
-                                                </div>
-                                                <div>
-                                                    <h3 className="font-orbitron font-bold text-lg text-foreground mb-2">{card.title}</h3>
-                                                    <p className="text-sm text-muted-foreground">{card.description}</p>
-                                                </div>
-                                                <div className="flex items-center gap-2 text-emerald-400 text-sm font-orbitron font-bold opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    Open <ArrowRight className="w-4 h-4" />
-                                                </div>
-                                            </div>
-                                        </Link>
-                                    );
-                                })}
-                            </div>
-                        </section>
+                                {/* Call Center Section - Coming Soon */}
+                                <section className="space-y-6">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500/20 to-orange-600/20 border border-orange-500/30 flex items-center justify-center">
+                                            <Phone className="w-5 h-5 text-orange-400" />
+                                        </div>
+                                        <h2 className="font-orbitron text-2xl font-bold text-foreground">Call Center</h2>
+                                    </div>
+                                    <div className="bg-card/10 backdrop-blur-md border border-primary/10 rounded-2xl p-8 text-center">
+                                        <p className="text-muted-foreground">Call Center cards coming soon...</p>
+                                    </div>
+                                </section>
+                            </>
+                        )}
                     </div>
                 </main>
+
             </div>
         </div>
     );

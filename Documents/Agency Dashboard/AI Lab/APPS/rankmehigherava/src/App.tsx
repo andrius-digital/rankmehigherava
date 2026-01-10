@@ -32,6 +32,7 @@ import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Subscriptions from "./pages/Subscriptions";
 import TaskPipeline from "./pages/TaskPipeline";
+import TaskFlow from "./pages/TaskFlow";
 import TeamTracker from "./pages/TeamTracker";
 import AvaVoiceCallsDashboard from "./pages/AvaVoiceCallsDashboard";
 import AvaTrainingDashboard from "./pages/AvaTrainingDashboard";
@@ -152,6 +153,11 @@ const App = () => (
               <Route path="/task-pipeline" element={
                 <ProtectedRoute>
                   <TaskPipeline />
+                </ProtectedRoute>
+              } />
+              <Route path="/task-flow" element={
+                <ProtectedRoute>
+                  <TaskFlow />
                 </ProtectedRoute>
               } />
               <Route path="/team-tracker" element={

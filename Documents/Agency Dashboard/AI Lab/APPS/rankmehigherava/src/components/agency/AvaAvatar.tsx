@@ -3,16 +3,25 @@ import { Brain } from 'lucide-react';
 
 interface AvaAvatarProps {
     className?: string;
+    size?: 'sm' | 'md' | 'lg';
 }
 
-const AvaAvatar: React.FC<AvaAvatarProps> = ({ className }) => {
+const sizeClasses = {
+    sm: { container: 'w-9 h-9', icon: 'w-4 h-4' },
+    md: { container: 'w-12 h-12', icon: 'w-6 h-6' },
+    lg: { container: 'w-16 h-16', icon: 'w-8 h-8' }
+};
+
+const AvaAvatar: React.FC<AvaAvatarProps> = ({ className, size = 'md' }) => {
+    const sizeClass = sizeClasses[size];
+    
     return (
         <div className={`relative group ${className}`}>
             {/* Outer glow ring */}
             <div className="absolute inset-0 rounded-full bg-gradient-to-br from-cyan-500/30 via-blue-500/30 to-purple-500/30 blur-xl animate-pulse" />
 
             {/* Main avatar container */}
-            <div className="relative w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500/10 via-blue-500/10 to-purple-500/10 backdrop-blur-md border border-cyan-400/30 flex items-center justify-center overflow-hidden">
+            <div className={`relative ${sizeClass.container} rounded-full bg-gradient-to-br from-cyan-500/10 via-blue-500/10 to-purple-500/10 backdrop-blur-md border border-cyan-400/30 flex items-center justify-center overflow-hidden`}>
                 {/* Animated scan lines */}
                 <div className="absolute inset-0 opacity-30">
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-400/20 to-transparent animate-scan" />
@@ -41,7 +50,7 @@ const AvaAvatar: React.FC<AvaAvatarProps> = ({ className }) => {
 
                 {/* Brain icon with glow */}
                 <div className="relative z-10">
-                    <Brain className="w-6 h-6 text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.8)] animate-float" />
+                    <Brain className={`${sizeClass.icon} text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.8)] animate-float`} />
                 </div>
 
                 {/* Rotating ring */}
