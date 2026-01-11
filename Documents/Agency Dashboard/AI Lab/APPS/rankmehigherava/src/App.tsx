@@ -14,12 +14,10 @@ import AdsContent from "./pages/services/AdsContent";
 import Outbound from "./pages/services/Outbound";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
-import Contact from "./pages/Contact";
 import CallCenterKPI from "./pages/CallCenterKPI";
 import SubmissionsDashboard from "./pages/SubmissionsDashboard";
 import WebsiteSubmissions from "./pages/WebsiteSubmissions";
 import ClientProfile from "./pages/ClientProfile";
-import IndividualClientProfile from "./pages/IndividualClientProfile";
 import AgencyDashboard from "./pages/AgencyDashboard";
 import ClientPortal from "./pages/ClientPortal";
 import CDLAgencyPortal from "./pages/CDLAgencyPortal";
@@ -27,20 +25,14 @@ import WebsiteSubmissionConfirmation from "./pages/WebsiteSubmissionConfirmation
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import Chatbot from "./components/Chatbot";
-import ComingSoon from "./pages/ComingSoon";
-import Terms from "./pages/Terms";
-import Privacy from "./pages/Privacy";
 import Subscriptions from "./pages/Subscriptions";
 import TaskPipeline from "./pages/TaskPipeline";
-import TaskFlow from "./pages/TaskFlow";
 import TeamTracker from "./pages/TeamTracker";
-import AvaVoiceCallsDashboard from "./pages/AvaVoiceCallsDashboard";
-import AvaTrainingDashboard from "./pages/AvaTrainingDashboard";
 import WebsitePromptingPage from "./pages/WebsitePromptingPage";
 import WebsiteBuilderDashboard from "./pages/WebsiteBuilderDashboard";
 import WebsiteCommandCenter from "./pages/WebsiteCommandCenter";
 
-// AVA SEO Pages
+// AVA by Rank Me Higher Pages
 import SEOSpiderDashboard from "./pages/seo-spider/Dashboard";
 import SEOSpiderAIAssistant from "./pages/seo-spider/AIAssistant";
 import SEOSpiderAnalytics from "./pages/seo-spider/Analytics";
@@ -57,7 +49,6 @@ import SEOSpiderSettings from "./pages/seo-spider/Settings";
 import SEOSpiderAdmin from "./pages/seo-spider/AdminDashboard";
 
 import ParticlesOverlay from "@/components/ui/ParticlesOverlay";
-import ScrollToTop from "@/components/ScrollToTop";
 
 const queryClient = new QueryClient();
 
@@ -70,21 +61,17 @@ const App = () => (
           <Sonner />
           <ParticlesOverlay />
           <BrowserRouter>
-            <ScrollToTop />
             <Routes>
               {/* Public routes */}
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/localmapbooster" element={<ComingSoon />} />
-              <Route path="/services/websites" element={<ComingSoon />} />
-              <Route path="/services/seo" element={<ComingSoon />} />
-              <Route path="/services/ads-content" element={<ComingSoon />} />
-              <Route path="/services/outbound" element={<ComingSoon />} />
-              <Route path="/blog" element={<ComingSoon />} />
-              <Route path="/terms" element={<Terms />} />
-              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/localmapbooster" element={<LocalMapBooster />} />
+              <Route path="/services/websites" element={<Websites />} />
+              <Route path="/services/seo" element={<SEO />} />
+              <Route path="/services/ads-content" element={<AdsContent />} />
+              <Route path="/services/outbound" element={<Outbound />} />
+              <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:slug" element={<BlogPost />} />
-              <Route path="/contact" element={<Contact />} />
               <Route path="/website-submissions" element={<WebsiteSubmissions />} />
               <Route path="/website-submission-confirmation" element={<WebsiteSubmissionConfirmation />} />
 
@@ -99,13 +86,16 @@ const App = () => (
                   <SubmissionsDashboard />
                 </ProtectedRoute>
               } />
+              <Route path="/agency-dashboard" element={
+                <ProtectedRoute>
+                  <AgencyDashboard />
+                </ProtectedRoute>
+              } />
               <Route path="/avaadminpanel" element={
                 <ProtectedRoute>
                   <AgencyDashboard />
                 </ProtectedRoute>
               } />
-              {/* Redirect old route to new route */}
-              <Route path="/agency-dashboard" element={<Navigate to="/avaadminpanel" replace />} />
               <Route path="/cdl-agency-portal" element={
                 <ProtectedRoute>
                   <CDLAgencyPortal />
@@ -113,7 +103,7 @@ const App = () => (
               } />
               <Route path="/agency/client/:id" element={
                 <ProtectedRoute>
-                  <IndividualClientProfile />
+                  <ClientProfile />
                 </ProtectedRoute>
               } />
               <Route path="/subscriptions" element={
@@ -155,41 +145,27 @@ const App = () => (
                   <TaskPipeline />
                 </ProtectedRoute>
               } />
-              <Route path="/task-flow" element={
-                <ProtectedRoute>
-                  <TaskFlow />
-                </ProtectedRoute>
-              } />
               <Route path="/team-tracker" element={
                 <ProtectedRoute>
                   <TeamTracker />
                 </ProtectedRoute>
               } />
 
-              {/* AVA SEO Routes */}
-              <Route path="/avaseo" element={<ProtectedRoute><SEOSpiderDashboard /></ProtectedRoute>} />
-              <Route path="/avaseo/ai-assistant" element={<ProtectedRoute><SEOSpiderAIAssistant /></ProtectedRoute>} />
-              <Route path="/avaseo/analytics" element={<ProtectedRoute><SEOSpiderAnalytics /></ProtectedRoute>} />
-              <Route path="/avaseo/billing" element={<ProtectedRoute><SEOSpiderBilling /></ProtectedRoute>} />
-              <Route path="/avaseo/blogs" element={<ProtectedRoute><SEOSpiderBlogs /></ProtectedRoute>} />
-              <Route path="/avaseo/company" element={<ProtectedRoute><SEOSpiderCompany /></ProtectedRoute>} />
-              <Route path="/avaseo/contacts" element={<ProtectedRoute><SEOSpiderContacts /></ProtectedRoute>} />
-              <Route path="/avaseo/local-rankings" element={<ProtectedRoute><SEOSpiderLocalRankings /></ProtectedRoute>} />
-              <Route path="/avaseo/onboarding" element={<ProtectedRoute><SEOSpiderOnboarding /></ProtectedRoute>} />
-              <Route path="/avaseo/pricing" element={<SEOSpiderPricing />} />
-              <Route path="/avaseo/reviews" element={<ProtectedRoute><SEOSpiderReviews /></ProtectedRoute>} />
-              <Route path="/avaseo/service-areas" element={<ProtectedRoute><SEOSpiderServiceAreas /></ProtectedRoute>} />
-              <Route path="/avaseo/settings" element={<ProtectedRoute><SEOSpiderSettings /></ProtectedRoute>} />
-              <Route path="/avaseo/admin" element={<ProtectedRoute requireAdmin><SEOSpiderAdmin /></ProtectedRoute>} />
-              
-              {/* Redirect old routes */}
-              <Route path="/avabyrankmehigher/*" element={<Navigate to="/avaseo" replace />} />
-              
-              {/* Ava Voice Calls Dashboard */}
-              <Route path="/ava-voice-calls" element={<ProtectedRoute><AvaVoiceCallsDashboard /></ProtectedRoute>} />
-              
-              {/* AVA Training Dashboard */}
-              <Route path="/ava-training" element={<ProtectedRoute><AvaTrainingDashboard /></ProtectedRoute>} />
+              {/* AVA by Rank Me Higher Routes */}
+              <Route path="/avabyrankmehigher" element={<ProtectedRoute><SEOSpiderDashboard /></ProtectedRoute>} />
+              <Route path="/avabyrankmehigher/ai-assistant" element={<ProtectedRoute><SEOSpiderAIAssistant /></ProtectedRoute>} />
+              <Route path="/avabyrankmehigher/analytics" element={<ProtectedRoute><SEOSpiderAnalytics /></ProtectedRoute>} />
+              <Route path="/avabyrankmehigher/billing" element={<ProtectedRoute><SEOSpiderBilling /></ProtectedRoute>} />
+              <Route path="/avabyrankmehigher/blogs" element={<ProtectedRoute><SEOSpiderBlogs /></ProtectedRoute>} />
+              <Route path="/avabyrankmehigher/company" element={<ProtectedRoute><SEOSpiderCompany /></ProtectedRoute>} />
+              <Route path="/avabyrankmehigher/contacts" element={<ProtectedRoute><SEOSpiderContacts /></ProtectedRoute>} />
+              <Route path="/avabyrankmehigher/local-rankings" element={<ProtectedRoute><SEOSpiderLocalRankings /></ProtectedRoute>} />
+              <Route path="/avabyrankmehigher/onboarding" element={<ProtectedRoute><SEOSpiderOnboarding /></ProtectedRoute>} />
+              <Route path="/avabyrankmehigher/pricing" element={<SEOSpiderPricing />} />
+              <Route path="/avabyrankmehigher/reviews" element={<ProtectedRoute><SEOSpiderReviews /></ProtectedRoute>} />
+              <Route path="/avabyrankmehigher/service-areas" element={<ProtectedRoute><SEOSpiderServiceAreas /></ProtectedRoute>} />
+              <Route path="/avabyrankmehigher/settings" element={<ProtectedRoute><SEOSpiderSettings /></ProtectedRoute>} />
+              <Route path="/avabyrankmehigher/admin" element={<ProtectedRoute requireAdmin><SEOSpiderAdmin /></ProtectedRoute>} />
 
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
