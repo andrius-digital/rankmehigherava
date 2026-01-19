@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -29,6 +29,9 @@ import {
     Wrench,
     DollarSign,
     Home,
+    History,
+    Receipt,
+    Plus,
     Layers,
     List,
     ChevronDown,
@@ -38,7 +41,10 @@ import {
     Briefcase,
     Image as ImageIcon,
     X,
-    ZoomIn
+    ZoomIn,
+    TrendingUp,
+    Edit2,
+    Upload
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -47,6 +53,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import HUDOverlay from '@/components/ui/HUDOverlay';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
+import { compressImage } from '@/utils/imageCompression';
 
 // Toggle Item Component
 const ToggleItem = ({ 
@@ -191,7 +204,7 @@ const propertyRefreshClient = {
         one_service_page: false,
         pages_to_include: ['Blog Page', 'About Us Page', 'Contact Page'],
         free_estimates: true,
-        customer_action: 'Request a free quote — you receive their contact details',
+        customer_action: 'Request a free quote � you receive their contact details',
         client_type: 'Both residential and commercial',
         typical_job_length: '1-5 business days, depending on client preference and availability',
         // Section 4: Process & Operations
@@ -266,7 +279,7 @@ const kleanAndFreshClient = {
             'Lakeside, CA', 'Alpine, CA', 'Harbison Canyon, CA', 'Dehesa, CA', 'Jamul, CA',
             'Spring Valley, CA', 'Casa de Oro, CA', 'Mt. Helix, CA', 'Rancho San Diego, CA', 'Fletcher Hills, CA',
             'Bostonia, CA', 'Blossom Valley, CA', 'Pine Valley, CA', 'Descanso, CA', 'Guatay, CA',
-            'Boulevard, CA', '4S Ranch, CA', 'Rancho Bernardo, CA', 'Rancho Peñasquitos, CA', 'Black Mountain Ranch, CA',
+            'Boulevard, CA', '4S Ranch, CA', 'Rancho Bernardo, CA', 'Rancho Pe�asquitos, CA', 'Black Mountain Ranch, CA',
             'Del Sur, CA', 'Scripps Ranch, CA', 'Mira Mesa, CA', 'Sabre Springs, CA', 'Carmel Mountain Ranch, CA',
             'Poway, CA', 'San Marcos, CA', 'Escondido, CA', 'Valley Center, CA', 'Twin Oaks Valley, CA',
             'Hidden Meadows, CA', 'Bonsall, CA', 'Fallbrook, CA', 'Rainbow, CA', 'Pala, CA',
@@ -302,8 +315,8 @@ const kleanAndFreshClient = {
             { name: 'Monthly Upkeep', price: '$75/room', description: 'A scheduled, high-detail maintenance service designed to keep your home consistently clean, healthy, and reset every month. We focus on preventing buildup in kitchens, bathrooms, floors, and high-touch areas, using eco-friendly products and hotel-grade methods.' },
             { name: 'Biweekly Upkeep', price: '$67.50/room', description: 'A scheduled, high-detail maintenance service designed to keep your home consistently clean, healthy, and reset every month. We focus on preventing buildup in kitchens, bathrooms, floors, and high-touch areas, using eco-friendly products and hotel-grade methods.' },
             { name: 'Weekly Upkeep', price: '$60/room', description: 'A scheduled, high-detail maintenance service designed to keep your home consistently clean, healthy, and reset every month. We focus on preventing buildup in kitchens, bathrooms, floors, and high-touch areas, using eco-friendly products and hotel-grade methods.' },
-            { name: 'Room Reset', price: '$100/room', description: 'A focused, high-impact deep clean for a single room that restores it to a like-new state. We dismantle, detail, and sanitize every surface—scrubbing buildup, removing hidden grime, and refreshing the space with eco-friendly, hotel-grade methods.' },
-            { name: 'Kitchen Reset', price: '$200', description: 'A comprehensive deep restoration of your kitchen, designed to eliminate buildup and restore a polished, like-new feel. We detail every surface—counters, cabinets, appliances, fixtures, glass, and hard-to-reach areas—removing grease, grime, and hidden residue.' },
+            { name: 'Room Reset', price: '$100/room', description: 'A focused, high-impact deep clean for a single room that restores it to a like-new state. We dismantle, detail, and sanitize every surface�scrubbing buildup, removing hidden grime, and refreshing the space with eco-friendly, hotel-grade methods.' },
+            { name: 'Kitchen Reset', price: '$200', description: 'A comprehensive deep restoration of your kitchen, designed to eliminate buildup and restore a polished, like-new feel. We detail every surface�counters, cabinets, appliances, fixtures, glass, and hard-to-reach areas�removing grease, grime, and hidden residue.' },
             { name: 'Standard Deep Clean', price: '$150/room', description: 'A thorough, detail-forward clean that goes deeper than regular maintenance but without the full dismantling of a Reset. We address buildup on surfaces, baseboards, floors, fixtures, and high-touch areas while refreshing the room\'s overall feel.' },
             { name: 'Standard Kitchen Deep Clean', price: '$300', description: 'A solid, above-maintenance deep clean focused on restoring cleanliness and removing moderate buildup throughout the kitchen. We clean exterior appliance surfaces, accessible cabinet fronts, backsplash, counters, sink, fixtures, and flooring.' },
         ],
@@ -312,22 +325,22 @@ const kleanAndFreshClient = {
         service_page_type: 'Separate Pages',
         pages_to_include: ['Service Pages', 'Blog Page', 'About Page', 'Contact Page', 'Service Area Pages'],
         free_estimates: true,
-        customer_action: 'They request a free quote — you receive their contact details.',
+        customer_action: 'They request a free quote � you receive their contact details.',
         client_type: 'Residential only',
         job_duration: 'Upkeep room cleanings take anywhere from 30-60 minutes per room, Standard Deep Cleanings take ~2hrs per room, Standard Kitchen Deep Cleanings take ~4hrs, Full Room Resets take on average 10 working hours per room, Full Kitchen Resets take on average 20 working hours.',
         homeowner_challenges: 'Common challenges homeowners face in San Diego include a lack of time, proper tools, and the specialized skills needed to keep a home deeply clean and consistently maintained. Many busy professionals simply don\'t have the bandwidth to take on detailed cleaning tasks.',
         // Section 4: Process & Operations
-        service_process: '1. Initial Contact & Service Match\nWhen a homeowner reaches out, we quickly identify which service fits their needs—Monthly Upkeep, a Standard Deep Clean, or a full Reset. We confirm scope, timelines, and expectations so clients know exactly what will be handled.\n\n2. Walkthrough or Assessment (Virtual or In-Person)\nFor deep or restorative services, we perform a brief walkthrough to evaluate the condition of the home, note problem areas, and align on priorities.\n\n3. Proposal & Scheduling\nWe deliver a clear service outline and schedule the job at a time convenient for the homeowner.\n\n4. The Cleaning Process\nOur team arrives prepared with professional eco-friendly solutions and commercial-grade equipment.\n\n5. Final Review & Completion\nAt the end of the service, we conduct a walkthrough with the homeowner to ensure every priority was addressed.',
+        service_process: '1. Initial Contact & Service Match\nWhen a homeowner reaches out, we quickly identify which service fits their needs�Monthly Upkeep, a Standard Deep Clean, or a full Reset. We confirm scope, timelines, and expectations so clients know exactly what will be handled.\n\n2. Walkthrough or Assessment (Virtual or In-Person)\nFor deep or restorative services, we perform a brief walkthrough to evaluate the condition of the home, note problem areas, and align on priorities.\n\n3. Proposal & Scheduling\nWe deliver a clear service outline and schedule the job at a time convenient for the homeowner.\n\n4. The Cleaning Process\nOur team arrives prepared with professional eco-friendly solutions and commercial-grade equipment.\n\n5. Final Review & Completion\nAt the end of the service, we conduct a walkthrough with the homeowner to ensure every priority was addressed.',
         emergency_services: ['No emergency services'],
         service_options: 'We offer three structured service tiers designed to meet homeowners at different levels of need. Our Monthly Upkeep service provides routine maintenance using eco-friendly products and efficient, hotel-style cleaning methods.',
         guarantees: 'Our guarantee: If our client feels like a spot was missed we\'ll come back within 48 hours to fix it or their service is free.',
-        unique_value: 'Truly Deep Cleaning: We reset your home to like-new condition by cleaning far beyond the surface. Every nook, cranny, and fixture is meticulously addressed – going above and beyond what standard maid services offer.\n\nEco-Friendly & Safe: Our cleaning approach is non-toxic and eco-conscious, ensuring a healthy home environment. We use high-end equipment like HEPA-filter vacuums and steam cleaners to remove dirt, allergens, and germs without harsh chemicals.\n\nPremium, Reliable Service: Enjoy peace of mind with our vetted, trustworthy cleaning team and consistently high-quality results.',
+        unique_value: 'Truly Deep Cleaning: We reset your home to like-new condition by cleaning far beyond the surface. Every nook, cranny, and fixture is meticulously addressed � going above and beyond what standard maid services offer.\n\nEco-Friendly & Safe: Our cleaning approach is non-toxic and eco-conscious, ensuring a healthy home environment. We use high-end equipment like HEPA-filter vacuums and steam cleaners to remove dirt, allergens, and germs without harsh chemicals.\n\nPremium, Reliable Service: Enjoy peace of mind with our vetted, trustworthy cleaning team and consistently high-quality results.',
         // Section 5: Trust & Credibility
         quality_trust: '4 Years in business, Multiple years of working experience behind each cleaner, we use HEPA certified vacuums, high powered steamers, and vetted eco-friendly products. Our business is covered under liability insurance, and each cleaning is backed by a 48 hour guarantee: if we miss a spot we\'ll come back or the service is free.',
         accreditations: 'BBB Accredited, Angi 2025 Super Service Award, Thumbtack Top Pro',
         insurance_help: ['This does not apply for my business'],
         // Section 6: Team & Story
-        founder_message: 'Jakob Scott, Founder – In 2021 I began this work as a side gig because I always enjoyed how cleaning made me feel, especially when my own space was clean. I found I loved talking to the people I worked for at the end of the job, as they were often hardworking and had lived interesting lives. At the same time, many of these folks had struggled to find reliable help with their home. I began to understand more how valuable time, focus, and consistency were for myself and the people I worked for. That\'s why my aim over the past four years is to provide quality cleaners with these same values for the many clients who trust me. It\'s with focus, consistency, and a clean home that we can tackle life on life\'s terms.',
+        founder_message: 'Jakob Scott, Founder � In 2021 I began this work as a side gig because I always enjoyed how cleaning made me feel, especially when my own space was clean. I found I loved talking to the people I worked for at the end of the job, as they were often hardworking and had lived interesting lives. At the same time, many of these folks had struggled to find reliable help with their home. I began to understand more how valuable time, focus, and consistency were for myself and the people I worked for. That\'s why my aim over the past four years is to provide quality cleaners with these same values for the many clients who trust me. It\'s with focus, consistency, and a clean home that we can tackle life on life\'s terms.',
         team_members: 'Not at this time',
         community_giving: 'We actively donate profits to the San Diego Narcotics Anonymous fellowship',
         core_values: 'Articulate Quality\nTailor Service\nEarn Trust',
@@ -429,16 +442,79 @@ const IndividualClientProfile: React.FC = () => {
     const [activeSubscription, setActiveSubscription] = useState(true);
     // SMS Automations = OFF by default (needs to be set up after website is complete)
     const [activeSmsAutomations, setActiveSmsAutomations] = useState(isOffTint);
+    // Monthly Website Upgrades = OFF by default (client opts in for monthly updates/upgrades)
+    const [monthlyUpgrades, setMonthlyUpgrades] = useState(false);
 
     // Management toggles state - ALL OFF by default for new clients from form submissions
     // Only Off Tint demo has everything complete (website already live)
     // Klean And Fresh and all form submission clients start with all OFF
+    const [telegramGroup, setTelegramGroup] = useState(isOffTint);
     const [githubRepoActive, setGithubRepoActive] = useState(isOffTint);
     const [autoVpsUpdates, setAutoVpsUpdates] = useState(isOffTint);
     const [connectedToDomain, setConnectedToDomain] = useState(isOffTint);
 
     // Image popup state
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+    // Edit mode and editable fields state
+    const [isEditing, setIsEditing] = useState(false);
+    const [editFields, setEditFields] = useState({
+        name: '',
+        company_name: '',
+        website_url: '',
+        email: '',
+        phone: '',
+    });
+    const [isSaving, setIsSaving] = useState(false);
+    
+    // Logo upload state
+    const [logoFiles, setLogoFiles] = useState<string[]>([]);
+    const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const { toast } = useToast();
+    const queryClient = useQueryClient();
+    
+    // Stripe payment state
+    const [showChargeDialog, setShowChargeDialog] = useState(false);
+    const [chargeAmount, setChargeAmount] = useState('');
+    const [chargeDescription, setChargeDescription] = useState('');
+    const [chargeService, setChargeService] = useState('website');
+    const [chargeServiceManual, setChargeServiceManual] = useState('');
+    const [useManualService, setUseManualService] = useState(false);
+    const [isCreatingCharge, setIsCreatingCharge] = useState(false);
+    
+    // Service templates state
+    const [serviceTemplates, setServiceTemplates] = useState([
+        { id: 'website', name: 'Website Hosting & Maintenance', defaultAmount: '199' },
+        { id: 'seo', name: 'SEO Services', defaultAmount: '299' },
+        { id: 'design', name: 'Design Services', defaultAmount: '150' },
+        { id: 'development', name: 'Development Services', defaultAmount: '250' },
+        { id: 'social', name: 'Social Media Management', defaultAmount: '199' },
+        { id: 'other', name: 'Other Services', defaultAmount: '0' },
+    ]);
+    const [showEditTemplates, setShowEditTemplates] = useState(false);
+    const [editingTemplate, setEditingTemplate] = useState<string | null>(null);
+
+    // Fetch onboarding number based on created_at order (only for database clients)
+    const { data: onboardingNumber } = useQuery({
+        queryKey: ['client-onboarding-number', id],
+        queryFn: async () => {
+            if (isFeaturedClient || !id) return null;
+            
+            // Get all clients ordered by created_at
+            const { data: allClients, error } = await supabase
+                .from('clients')
+                .select('id, created_at')
+                .order('created_at', { ascending: true });
+            
+            if (error) throw error;
+            
+            // Find the index of current client (1-based)
+            const index = allClients?.findIndex(c => c.id === id);
+            return index !== undefined && index !== -1 ? index + 1 : null;
+        },
+        enabled: !!id && !isFeaturedClient,
+    });
 
     // Fetch client data from database (skip for featured clients)
     const { data: dbClient, isLoading, error } = useQuery({
@@ -486,6 +562,235 @@ const IndividualClientProfile: React.FC = () => {
     
     const client = getClientWithFormData();
 
+    // Fetch Stripe customer data (subscription and payment history)
+    const { data: stripeData, isLoading: isLoadingStripe } = useQuery({
+        queryKey: ['stripe-customer-data', id, client?.email, client?.stripe_customer_id],
+        queryFn: async () => {
+            if (!client) return null;
+            
+            // Get email from client record or form_submission
+            const customerEmail = client.email || client.form_submission?.businessEmail || client.form_submission?.email;
+            const customerId = client.stripe_customer_id;
+
+            if (!customerEmail && !customerId) {
+                return null; // No email or Stripe ID, can't fetch data
+            }
+
+            const { data, error } = await supabase.functions.invoke('stripe-get-customer-data', {
+                body: {
+                    customerEmail,
+                    customerId,
+                },
+            });
+
+            if (error) {
+                console.error('Error fetching Stripe data:', error);
+                return null; // Return null on error, don't throw
+            }
+
+            if (data && !data.success) {
+                console.error('Stripe function returned error:', data.error);
+                return null;
+            }
+
+            return data;
+        },
+        enabled: !!client && (!!client.email || !!client.form_submission?.businessEmail || !!client.form_submission?.email || !!client.stripe_customer_id),
+        refetchInterval: 60000, // Refetch every minute to keep data fresh
+    });
+
+    // Initialize edit fields when entering edit mode
+    useEffect(() => {
+        if (client && !isFeaturedClient && isEditing) {
+            // Only initialize if editFields are empty or out of sync
+            if (!editFields.name && !editFields.company_name) {
+                setEditFields({
+                    name: client.name || '',
+                    company_name: client.company_name || '',
+                    website_url: client.website_url || '',
+                    email: client.email || '',
+                    phone: client.phone || '',
+                });
+            }
+        }
+    }, [isEditing, client, isFeaturedClient]);
+
+    // Initialize edit fields and logo when client data loads (only when not editing)
+    useEffect(() => {
+        if (client && !isFeaturedClient && !isEditing) {
+            setEditFields({
+                name: client.name || '',
+                company_name: client.company_name || '',
+                website_url: client.website_url || '',
+                email: client.email || '',
+                phone: client.phone || '',
+            });
+            
+            // Initialize logo from form_submission
+            // Sync from database but preserve logoFiles state if it's already set (prevents clearing during refetch)
+            const logos = client.form_submission?.logo_files;
+            if (logos) {
+                const logoUrl = Array.isArray(logos) ? logos[0] : logos;
+                if (logoUrl) {
+                    setLogoFiles(prev => {
+                        // If we already have a logo in state, keep it (might be a recently uploaded logo)
+                        // Only update if the database logo is different from what we have
+                        if (prev && prev.length > 0 && prev[0] === logoUrl) {
+                            return prev; // Same logo, no change needed
+                        }
+                        // If state is empty or different, update from database
+                        return [logoUrl];
+                    });
+                }
+            }
+            // Don't clear logoFiles if form_submission doesn't have logo_files - preserves uploaded logo
+        }
+    }, [client, isFeaturedClient]);
+    
+    // Handle logo file selection and upload
+    const handleLogoFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file || isFeaturedClient || !id || !dbClient) return;
+
+        // Validate file size (max 10MB)
+        if (file.size > 10 * 1024 * 1024) {
+            toast({
+                title: "File too large",
+                description: "Logo must be less than 10MB",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        setIsUploadingLogo(true);
+        try {
+            // Compress image if needed
+            const compressedResult = await compressImage(file);
+            const fileToUpload = compressedResult.file;
+
+            // Upload to Supabase storage
+            const fileExt = fileToUpload.name.split(".").pop();
+            const fileName = `client-logos/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from("website-submissions-files")
+                .upload(fileName, fileToUpload, {
+                    contentType: fileToUpload.type,
+                    upsert: true,
+                });
+
+            if (uploadError) throw uploadError;
+
+            // Get public URL
+            const { data: urlData } = supabase.storage
+                .from("website-submissions-files")
+                .getPublicUrl(fileName);
+
+            const logoUrl = urlData.publicUrl;
+
+            // Get existing notes or form_submission data
+            let notesData = {};
+            if (dbClient.notes) {
+                try {
+                    notesData = JSON.parse(dbClient.notes);
+                } catch {
+                    notesData = {};
+                }
+            }
+
+            // Update logo_files in notes
+            const updatedNotes = {
+                ...notesData,
+                logo_files: [logoUrl],
+            };
+
+            const { error: updateError } = await supabase
+                .from('clients')
+                .update({
+                    notes: JSON.stringify(updatedNotes),
+                })
+                .eq('id', id);
+
+            if (updateError) throw updateError;
+
+            setLogoFiles([logoUrl]);
+            queryClient.invalidateQueries({ queryKey: ['client', id] });
+            queryClient.invalidateQueries({ queryKey: ['all-clients'] });
+
+            toast({
+                title: "Logo uploaded",
+                description: "Client logo has been updated successfully.",
+            });
+        } catch (error) {
+            console.error('Logo upload error:', error);
+            toast({
+                title: "Upload failed",
+                description: error instanceof Error ? error.message : "Please try again.",
+                variant: "destructive",
+            });
+        } finally {
+            setIsUploadingLogo(false);
+            // Reset file input
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+        }
+    };
+
+    // Handle save
+    const handleSave = async () => {
+        if (isFeaturedClient || !id || !dbClient) return;
+        
+        setIsSaving(true);
+        try {
+            const { error } = await supabase
+                .from('clients')
+                .update({
+                    name: editFields.name || null,
+                    company_name: editFields.company_name || null,
+                    website_url: editFields.website_url || null,
+                    email: editFields.email || null,
+                    phone: editFields.phone || null,
+                })
+                .eq('id', id);
+
+            if (error) throw error;
+
+            queryClient.invalidateQueries({ queryKey: ['client', id] });
+            queryClient.invalidateQueries({ queryKey: ['all-clients'] });
+            queryClient.invalidateQueries({ queryKey: ['client-onboarding-number', id] });
+            
+            setIsEditing(false);
+            toast({
+                title: "Client updated",
+                description: "Client information has been saved successfully.",
+            });
+        } catch (error) {
+            console.error('Save error:', error);
+            toast({
+                title: "Save failed",
+                description: error instanceof Error ? error.message : "Please try again.",
+                variant: "destructive",
+            });
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    // Handle cancel
+    const handleCancel = () => {
+        if (client) {
+            setEditFields({
+                name: client.name || '',
+                company_name: client.company_name || '',
+                website_url: client.website_url || '',
+                email: client.email || '',
+                phone: client.phone || '',
+            });
+        }
+        setIsEditing(false);
+    };
+
     if (isLoading && !isFeaturedClient) {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center">
@@ -503,7 +808,7 @@ const IndividualClientProfile: React.FC = () => {
                 <div className="text-center">
                     <p className="font-orbitron text-destructive mb-4">Client not found</p>
                     <Link to="/client-portal" className="text-primary hover:underline font-orbitron text-sm">
-                        ← Back to Portal
+                        ? Back to Portal
                     </Link>
                 </div>
             </div>
@@ -543,17 +848,75 @@ const IndividualClientProfile: React.FC = () => {
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-6">
                     <div className="flex items-start gap-4">
-                        {/* Client Logo - from form submission */}
+                        {/* Client Logo - from form submission or uploaded */}
                         {(() => {
-                            const logos = client.form_submission?.logo_files;
-                            const logoUrl = logos ? (Array.isArray(logos) ? logos[0] : logos) : null;
+                            // Prioritize logoFiles state (updated immediately after upload) over client.form_submission
+                            // This ensures the logo displays right after upload, before query refetch completes
+                            const logos = (logoFiles && logoFiles.length > 0) ? logoFiles : (client.form_submission?.logo_files);
+                            const logoUrl = logos?.length > 0 ? (Array.isArray(logos) ? logos[0] : logos) : null;
+                            
                             if (logoUrl) {
                                 return (
-                                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden border-2 border-cyan-500/30 bg-zinc-900 p-1 shadow-lg shadow-cyan-500/20 flex-shrink-0">
-                                        <img src={logoUrl} alt="Client Logo" className="w-full h-full object-contain" />
+                                    <div className="relative group flex-shrink-0">
+                                        <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden border-2 border-cyan-500/30 bg-zinc-900 p-1 shadow-lg shadow-cyan-500/20">
+                                            <img src={logoUrl} alt="Client Logo" className="w-full h-full object-contain" />
+                                        </div>
+                                        {!isFeaturedClient && (
+                                            <>
+                                                <input
+                                                    ref={fileInputRef}
+                                                    type="file"
+                                                    accept="image/*"
+                                                    className="hidden"
+                                                    onChange={handleLogoFileSelect}
+                                                    disabled={isUploadingLogo}
+                                                />
+                                                <button
+                                                    onClick={() => fileInputRef.current?.click()}
+                                                    disabled={isUploadingLogo}
+                                                    className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center cursor-pointer disabled:cursor-not-allowed"
+                                                    title="Replace logo"
+                                                >
+                                                    {isUploadingLogo ? (
+                                                        <div className="w-6 h-6 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />
+                                                    ) : (
+                                                        <Upload className="w-5 h-5 text-cyan-400" />
+                                                    )}
+                                                </button>
+                                            </>
+                                        )}
                                     </div>
                                 );
                             }
+                            
+                            // Dummy logo placeholder - show upload option
+                            if (!isFeaturedClient) {
+                                return (
+                                    <div className="relative flex-shrink-0">
+                                        <input
+                                            ref={fileInputRef}
+                                            type="file"
+                                            accept="image/*"
+                                            className="hidden"
+                                            onChange={handleLogoFileSelect}
+                                            disabled={isUploadingLogo}
+                                        />
+                                        <button
+                                            onClick={() => fileInputRef.current?.click()}
+                                            disabled={isUploadingLogo}
+                                            className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border-2 border-cyan-500/30 flex items-center justify-center border-dashed cursor-pointer hover:border-cyan-400 hover:bg-cyan-500/30 transition-all disabled:cursor-not-allowed disabled:opacity-50"
+                                            title="Upload logo"
+                                        >
+                                            {isUploadingLogo ? (
+                                                <div className="w-6 h-6 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />
+                                            ) : (
+                                                <Upload className="w-6 h-6 text-cyan-400" />
+                                            )}
+                                        </button>
+                                    </div>
+                                );
+                            }
+                            
                             return (
                                 <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border-2 border-cyan-500/30 flex items-center justify-center flex-shrink-0">
                                     <Building2 className="w-8 h-8 text-cyan-400" />
@@ -569,7 +932,7 @@ const IndividualClientProfile: React.FC = () => {
                                 {client.company_name || client.name}
                             </h1>
                             <p className="text-xs text-muted-foreground font-orbitron tracking-widest uppercase mt-2">
-                                Client ID: #{client.id?.slice(0, 8).toUpperCase()}
+                                Client ID: #{onboardingNumber !== null && onboardingNumber !== undefined ? onboardingNumber : (isFeaturedClient ? 'N/A' : '...')}
                             </p>
                         </div>
                     </div>
@@ -587,10 +950,17 @@ const IndividualClientProfile: React.FC = () => {
                                 <ExternalLink className="w-3 h-3" />
                             </a>
                         )}
-                        <Button variant="outline" size="sm" className="font-orbitron text-[10px]">
-                            <Settings className="w-3 h-3 mr-2" />
-                            Edit Client
-                        </Button>
+                        {!isFeaturedClient && (
+                            <Button 
+                                variant="ghost"
+                                size="sm" 
+                                className="font-orbitron text-[10px] bg-transparent border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-400/50 hover:text-cyan-300"
+                                onClick={() => setIsEditing(!isEditing)}
+                            >
+                                <Settings className="w-3 h-3 mr-2" />
+                                {isEditing ? 'Cancel' : 'Edit Client'}
+                            </Button>
+                        )}
                     </div>
                 </div>
 
@@ -600,28 +970,123 @@ const IndividualClientProfile: React.FC = () => {
                         {/* Basic Info Card */}
                         <div className="bg-card/20 backdrop-blur-xl border border-cyan-500/20 rounded-2xl overflow-hidden">
                             <div className="px-5 py-4 border-b border-cyan-500/10 bg-cyan-500/5">
-                                <div className="flex items-center gap-2">
-                                    <Building2 className="w-4 h-4 text-cyan-400" />
-                                    <h2 className="font-orbitron text-xs font-bold tracking-wider text-cyan-400 uppercase">Client Information</h2>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <Building2 className="w-4 h-4 text-cyan-400" />
+                                        <h2 className="font-orbitron text-xs font-bold tracking-wider text-cyan-400 uppercase">Client Information</h2>
+                                    </div>
+                                    {!isFeaturedClient && (
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => setIsEditing(!isEditing)}
+                                            className="h-7 px-2 text-[10px] font-orbitron text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10"
+                                        >
+                                            <Edit2 className="w-3 h-3 mr-1" />
+                                            {isEditing ? 'Cancel' : 'Edit'}
+                                        </Button>
+                                    )}
                                 </div>
                             </div>
                             <div className="p-5 space-y-4">
                                 <div>
+                                    <p className="text-[10px] font-orbitron text-muted-foreground uppercase tracking-widest mb-1">Client Name</p>
+                                    {isEditing && !isFeaturedClient ? (
+                                        <Input
+                                            value={editFields.name}
+                                            onChange={(e) => setEditFields({ ...editFields, name: e.target.value })}
+                                            className="bg-background border-cyan-500/30 focus:border-cyan-400"
+                                            placeholder="Client name"
+                                        />
+                                    ) : (
+                                        <p className="text-foreground font-medium">{client.name || 'Not set'}</p>
+                                    )}
+                                </div>
+                                <div>
                                     <p className="text-[10px] font-orbitron text-muted-foreground uppercase tracking-widest mb-1">Company Name</p>
-                                    <p className="text-foreground font-medium">{client.company_name || client.name || 'Not set'}</p>
+                                    {isEditing && !isFeaturedClient ? (
+                                        <Input
+                                            value={editFields.company_name}
+                                            onChange={(e) => setEditFields({ ...editFields, company_name: e.target.value })}
+                                            className="bg-background border-cyan-500/30 focus:border-cyan-400"
+                                            placeholder="Company name"
+                                        />
+                                    ) : (
+                                        <p className="text-foreground font-medium">{client.company_name || 'Not set'}</p>
+                                    )}
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-orbitron text-muted-foreground uppercase tracking-widest mb-1">Website URL</p>
-                                    <p className="text-cyan-400 font-medium text-sm">{client.website_url || 'Not set'}</p>
+                                    {isEditing && !isFeaturedClient ? (
+                                        <Input
+                                            value={editFields.website_url}
+                                            onChange={(e) => setEditFields({ ...editFields, website_url: e.target.value })}
+                                            className="bg-background border-cyan-500/30 focus:border-cyan-400"
+                                            placeholder="https://example.com"
+                                        />
+                                    ) : (
+                                        client.website_url ? (
+                                            <a
+                                                href={client.website_url.startsWith('http') ? client.website_url : `https://${client.website_url}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-cyan-400 font-medium text-sm hover:text-cyan-300 hover:underline transition-colors inline-flex items-center gap-1"
+                                            >
+                                                {client.website_url}
+                                                <ExternalLink className="w-3 h-3" />
+                                            </a>
+                                        ) : (
+                                            <p className="text-foreground text-sm">Not set</p>
+                                        )
+                                    )}
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-orbitron text-muted-foreground uppercase tracking-widest mb-1">Contact Email</p>
-                                    <p className="text-foreground text-sm">{client.email || 'Not set'}</p>
+                                    {isEditing && !isFeaturedClient ? (
+                                        <Input
+                                            type="email"
+                                            value={editFields.email}
+                                            onChange={(e) => setEditFields({ ...editFields, email: e.target.value })}
+                                            className="bg-background border-cyan-500/30 focus:border-cyan-400"
+                                            placeholder="email@example.com"
+                                        />
+                                    ) : (
+                                        <p className="text-foreground text-sm">{client.email || 'Not set'}</p>
+                                    )}
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-orbitron text-muted-foreground uppercase tracking-widest mb-1">Phone</p>
-                                    <p className="text-foreground text-sm">{client.phone || 'Not set'}</p>
+                                    {isEditing && !isFeaturedClient ? (
+                                        <Input
+                                            type="tel"
+                                            value={editFields.phone}
+                                            onChange={(e) => setEditFields({ ...editFields, phone: e.target.value })}
+                                            className="bg-background border-cyan-500/30 focus:border-cyan-400"
+                                            placeholder="(123) 456-7890"
+                                        />
+                                    ) : (
+                                        <p className="text-foreground text-sm">{client.phone || 'Not set'}</p>
+                                    )}
                                 </div>
+                                {isEditing && !isFeaturedClient && (
+                                    <div className="flex gap-2 pt-2">
+                                        <Button
+                                            onClick={handleSave}
+                                            disabled={isSaving}
+                                            className="flex-1 bg-cyan-500 hover:bg-cyan-600"
+                                        >
+                                            {isSaving ? 'Saving...' : 'Save Changes'}
+                                        </Button>
+                                        <Button
+                                            onClick={handleCancel}
+                                            variant="outline"
+                                            disabled={isSaving}
+                                            className="flex-1"
+                                        >
+                                            Cancel
+                                        </Button>
+                                    </div>
+                                )}
                                 
                                 {/* Services */}
                                 <div>
@@ -639,12 +1104,12 @@ const IndividualClientProfile: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Client Subscription Toggles */}
+                        {/* Client Services */}
                         <div className="bg-card/20 backdrop-blur-xl border border-emerald-500/20 rounded-2xl overflow-hidden">
                             <div className="px-5 py-4 border-b border-emerald-500/10 bg-emerald-500/5">
                                 <div className="flex items-center gap-2">
                                     <CreditCard className="w-4 h-4 text-emerald-400" />
-                                    <h2 className="font-orbitron text-xs font-bold tracking-wider text-emerald-400 uppercase">Client Subscriptions</h2>
+                                    <h2 className="font-orbitron text-xs font-bold tracking-wider text-emerald-400 uppercase">Client Services</h2>
                                 </div>
                             </div>
                             <div className="p-4 space-y-3">
@@ -654,6 +1119,14 @@ const IndividualClientProfile: React.FC = () => {
                                     icon={Globe}
                                     checked={activeSubscription}
                                     onChange={setActiveSubscription}
+                                    color="emerald"
+                                />
+                                <ToggleItem
+                                    label="Monthly Website Upgrades"
+                                    description="Opt-in for regular feature updates & enhancements"
+                                    icon={TrendingUp}
+                                    checked={monthlyUpgrades}
+                                    onChange={setMonthlyUpgrades}
                                     color="emerald"
                                 />
                                 <ToggleItem
@@ -672,27 +1145,34 @@ const IndividualClientProfile: React.FC = () => {
                     <div className="lg:col-span-1 space-y-6">
                         <div className="bg-card/20 backdrop-blur-xl border border-purple-500/20 rounded-2xl overflow-hidden">
                             <div className="px-5 py-4 border-b border-purple-500/10 bg-purple-500/5">
-                                <div className="flex items-center gap-2">
-                                    <Wrench className="w-4 h-4 text-purple-400" />
-                                    <h2 className="font-orbitron text-xs font-bold tracking-wider text-purple-400 uppercase">Management Checklist</h2>
-                                    {/* V3: Only 3 items - 2026-01-17 */}
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <Wrench className="w-4 h-4 text-purple-400" />
+                                        <h2 className="font-orbitron text-xs font-bold tracking-wider text-purple-400 uppercase">Management Checklist</h2>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[10px] font-orbitron text-muted-foreground">Completion</span>
+                                        <span className="text-sm font-orbitron font-bold text-cyan-400">
+                                            {Math.round(([telegramGroup, githubRepoActive, autoVpsUpdates, connectedToDomain].filter(Boolean).length / 4) * 100)}%
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                             <div className="p-4 space-y-3">
+                                <ToggleItem
+                                    label="Telegram Group"
+                                    description="Telegram group has been created with the client"
+                                    icon={MessageSquare}
+                                    checked={telegramGroup}
+                                    onChange={setTelegramGroup}
+                                    color="purple"
+                                />
                                 <ToggleItem
                                     label="Github Repository Active"
                                     description="In Rank Me Higher Websites org"
                                     icon={Github}
                                     checked={githubRepoActive}
                                     onChange={setGithubRepoActive}
-                                    color="purple"
-                                />
-                                <ToggleItem
-                                    label="Auto VPS Updates"
-                                    description="Automatic deploys via Github"
-                                    icon={Server}
-                                    checked={autoVpsUpdates}
-                                    onChange={setAutoVpsUpdates}
                                     color="purple"
                                 />
                                 <ToggleItem
@@ -703,41 +1183,449 @@ const IndividualClientProfile: React.FC = () => {
                                     onChange={setConnectedToDomain}
                                     color="purple"
                                 />
+                                <ToggleItem
+                                    label="Auto VPS Updates"
+                                    description="Automatic deploys via Github"
+                                    icon={Server}
+                                    checked={autoVpsUpdates}
+                                    onChange={setAutoVpsUpdates}
+                                    color="purple"
+                                />
                             </div>
                         </div>
-
-                        {/* Progress Summary */}
-                        <div className="bg-gradient-to-br from-purple-500/10 to-cyan-500/10 backdrop-blur-xl border border-purple-500/20 rounded-2xl p-5">
-                            <h3 className="font-orbitron text-xs font-bold text-foreground mb-4 uppercase">Setup Progress</h3>
-                            <div className="space-y-2">
-                                {[
-                                    { label: 'Github', done: githubRepoActive },
-                                    { label: 'VPS', done: autoVpsUpdates },
-                                    { label: 'DNS', done: connectedToDomain },
-                                ].map((item, i) => (
-                                    <div key={i} className="flex items-center justify-between text-sm">
-                                        <span className="text-muted-foreground">{item.label}</span>
-                                        {item.done ? (
-                                            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                                        ) : (
-                                            <XCircle className="w-4 h-4 text-muted-foreground/50" />
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="mt-4 pt-4 border-t border-white/10">
+                        
+                        {/* Stripe Payment & Subscription Card */}
+                        <div className="bg-card/20 backdrop-blur-xl border border-emerald-500/20 rounded-2xl overflow-hidden">
+                            <div className="px-5 py-4 border-b border-emerald-500/10 bg-emerald-500/5">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-xs font-orbitron text-muted-foreground">Completion</span>
-                                    <span className="text-lg font-orbitron font-bold text-cyan-400">
-                                        {Math.round(([githubRepoActive, autoVpsUpdates, connectedToDomain].filter(Boolean).length / 3) * 100)}%
-                                    </span>
+                                    <div className="flex items-center gap-2">
+                                        <CreditCard className="w-4 h-4 text-emerald-400" />
+                                        <h2 className="font-orbitron text-xs font-bold tracking-wider text-emerald-400 uppercase">Payment & Subscription</h2>
+                                    </div>
                                 </div>
-                                <div className="mt-2 h-2 bg-white/10 rounded-full overflow-hidden">
-                                    <div 
-                                        className="h-full bg-gradient-to-r from-purple-500 to-cyan-500 rounded-full transition-all duration-500"
-                                        style={{ width: `${([githubRepoActive, autoVpsUpdates, connectedToDomain].filter(Boolean).length / 3) * 100}%` }}
-                                    />
+                            </div>
+                            <div className="p-4 space-y-4">
+                                {/* Current Subscription Info */}
+                                <div className="space-y-2">
+                                    {stripeData?.currentSubscription ? (
+                                        <div className="flex items-center justify-between p-3 bg-card/30 rounded-lg border border-emerald-500/20">
+                                            <div>
+                                                <p className="text-[10px] font-orbitron text-muted-foreground uppercase tracking-widest mb-1">Current Subscription</p>
+                                                <p className="text-sm font-medium text-foreground">{stripeData.currentSubscription.planName}</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-[10px] font-orbitron text-muted-foreground uppercase tracking-widest mb-1">
+                                                    {stripeData.currentSubscription.interval === 'month' ? 'Monthly' : 
+                                                     stripeData.currentSubscription.interval === 'year' ? 'Yearly' : 
+                                                     stripeData.currentSubscription.interval}
+                                                </p>
+                                                <p className="text-sm font-bold text-emerald-400">${stripeData.currentSubscription.amount}/{stripeData.currentSubscription.interval === 'month' ? 'mo' : 'yr'}</p>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center justify-between p-3 bg-card/30 rounded-lg border border-emerald-500/20">
+                                            <div>
+                                                <p className="text-[10px] font-orbitron text-muted-foreground uppercase tracking-widest mb-1">Current Subscription</p>
+                                                <p className="text-sm font-medium text-muted-foreground">{isLoadingStripe ? 'Loading...' : 'No active subscription'}</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                    
+                                    <div className="flex items-center justify-between p-3 bg-card/30 rounded-lg border border-emerald-500/20">
+                                        <div>
+                                            <p className="text-[10px] font-orbitron text-muted-foreground uppercase tracking-widest mb-1">Total Paid</p>
+                                            <p className="text-sm font-medium text-foreground">All Time</p>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-sm font-bold text-cyan-400">
+                                                {isLoadingStripe ? '...' : `$${stripeData?.totalPaid?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}`}
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
+                                
+                                {/* Payment History */}
+                                <div className="space-y-2">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <History className="w-3 h-3 text-emerald-400" />
+                                        <p className="text-[10px] font-orbitron text-emerald-400 uppercase tracking-widest">Recent Payments</p>
+                                    </div>
+                                    <ScrollArea className="h-32">
+                                        <div className="space-y-2 pr-2">
+                                            {isLoadingStripe ? (
+                                                <div className="text-center py-4 text-xs text-muted-foreground">Loading payment history...</div>
+                                            ) : stripeData?.recentInvoices && stripeData.recentInvoices.length > 0 ? (
+                                                stripeData.recentInvoices.map((payment: any, idx: number) => (
+                                                    <div key={idx} className="flex items-center justify-between p-2 bg-card/20 rounded-lg border border-emerald-500/10">
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-xs font-medium text-foreground truncate">{payment.description}</p>
+                                                            <p className="text-[9px] text-muted-foreground">{payment.date}</p>
+                                                        </div>
+                                                        <div className="flex items-center gap-2 ml-2">
+                                                            <Badge className={`text-[8px] ${payment.status === 'paid' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'}`}>
+                                                                {payment.status}
+                                                            </Badge>
+                                                            <p className="text-xs font-bold text-emerald-400">${payment.amount}</p>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="text-center py-4 text-xs text-muted-foreground">No payment history yet</div>
+                                            )}
+                                        </div>
+                                    </ScrollArea>
+                                </div>
+                                
+                                {/* Create Charge Button */}
+                                <Dialog open={showChargeDialog} onOpenChange={setShowChargeDialog}>
+                                    <DialogTrigger asChild>
+                                        <Button 
+                                            variant="outline" 
+                                            size="sm"
+                                            className="w-full border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 hover:border-emerald-400/50 font-orbitron text-[10px]"
+                                        >
+                                            <Plus className="w-3 h-3 mr-2" />
+                                            Create Charge
+                                        </Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="bg-card border-emerald-500/30">
+                                        <DialogHeader>
+                                            <DialogTitle className="font-orbitron text-emerald-400">Create New Charge</DialogTitle>
+                                        </DialogHeader>
+                                        <div className="space-y-4 pt-4">
+                                            <div>
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <Label className="text-xs font-orbitron text-muted-foreground uppercase tracking-widest">Service</Label>
+                                                    <div className="flex items-center gap-2">
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => setShowEditTemplates(!showEditTemplates)}
+                                                            className="h-6 px-2 text-[9px] text-emerald-400 hover:bg-emerald-500/10"
+                                                        >
+                                                            <Edit2 className="w-3 h-3 mr-1" />
+                                                            Edit Templates
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                                
+                                                {!useManualService ? (
+                                                    <Select 
+                                                        value={chargeService} 
+                                                        onValueChange={(value) => {
+                                                            setChargeService(value);
+                                                            const template = serviceTemplates.find(t => t.id === value);
+                                                            if (template && template.defaultAmount) {
+                                                                setChargeAmount(template.defaultAmount);
+                                                            }
+                                                        }}
+                                                    >
+                                                        <SelectTrigger className="bg-background border-emerald-500/30">
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {serviceTemplates.map((template) => (
+                                                                <SelectItem key={template.id} value={template.id}>
+                                                                    {template.name}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                ) : (
+                                                    <Input
+                                                        value={chargeServiceManual}
+                                                        onChange={(e) => setChargeServiceManual(e.target.value)}
+                                                        placeholder="Enter service name manually..."
+                                                        className="bg-background border-emerald-500/30"
+                                                    />
+                                                )}
+                                                
+                                                <div className="flex items-center gap-2 mt-2">
+                                                    <Switch
+                                                        checked={useManualService}
+                                                        onCheckedChange={setUseManualService}
+                                                        className="data-[state=checked]:bg-emerald-500"
+                                                    />
+                                                    <Label className="text-[10px] text-muted-foreground cursor-pointer">
+                                                        Enter service manually
+                                                    </Label>
+                                                </div>
+                                                
+                                                {/* Edit Templates Section */}
+                                                {showEditTemplates && (
+                                                    <div className="mt-4 p-3 bg-card/50 rounded-lg border border-emerald-500/20 space-y-2 max-h-48 overflow-y-auto">
+                                                        <div className="flex items-center justify-between mb-2">
+                                                            <p className="text-[10px] font-orbitron text-emerald-400 uppercase">Service Templates</p>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => {
+                                                                    setServiceTemplates([...serviceTemplates, { id: `new-${Date.now()}`, name: 'New Service', defaultAmount: '0' }]);
+                                                                    setEditingTemplate(`new-${Date.now()}`);
+                                                                }}
+                                                                className="h-6 px-2 text-[9px] text-emerald-400"
+                                                            >
+                                                                <Plus className="w-3 h-3 mr-1" />
+                                                                Add
+                                                            </Button>
+                                                        </div>
+                                                        {serviceTemplates.map((template, idx) => (
+                                                            <div key={template.id} className="flex items-center gap-2 p-2 bg-background/50 rounded border border-emerald-500/10">
+                                                                {editingTemplate === template.id ? (
+                                                                    <div className="flex-1 space-y-2">
+                                                                        <Input
+                                                                            value={template.name}
+                                                                            onChange={(e) => {
+                                                                                const updated = [...serviceTemplates];
+                                                                                updated[idx] = { ...updated[idx], name: e.target.value };
+                                                                                setServiceTemplates(updated);
+                                                                            }}
+                                                                            className="h-7 text-xs bg-background border-emerald-500/30"
+                                                                            placeholder="Service name"
+                                                                        />
+                                                                        <Input
+                                                                            type="number"
+                                                                            value={template.defaultAmount}
+                                                                            onChange={(e) => {
+                                                                                const updated = [...serviceTemplates];
+                                                                                updated[idx] = { ...updated[idx], defaultAmount: e.target.value };
+                                                                                setServiceTemplates(updated);
+                                                                            }}
+                                                                            className="h-7 text-xs bg-background border-emerald-500/30"
+                                                                            placeholder="Default amount"
+                                                                        />
+                                                                        <div className="flex gap-1">
+                                                                            <Button
+                                                                                size="sm"
+                                                                                variant="ghost"
+                                                                                onClick={() => setEditingTemplate(null)}
+                                                                                className="h-6 px-2 text-[8px]"
+                                                                            >
+                                                                                Save
+                                                                            </Button>
+                                                                            <Button
+                                                                                size="sm"
+                                                                                variant="ghost"
+                                                                                onClick={() => {
+                                                                                    setServiceTemplates(serviceTemplates.filter(t => t.id !== template.id));
+                                                                                    setEditingTemplate(null);
+                                                                                }}
+                                                                                className="h-6 px-2 text-[8px] text-destructive"
+                                                                            >
+                                                                                <X className="w-3 h-3" />
+                                                                            </Button>
+                                                                        </div>
+                                                                    </div>
+                                                                ) : (
+                                                                    <>
+                                                                        <div className="flex-1 min-w-0">
+                                                                            <p className="text-xs font-medium text-foreground truncate">{template.name}</p>
+                                                                            <p className="text-[9px] text-muted-foreground">Default: ${template.defaultAmount}</p>
+                                                                        </div>
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="sm"
+                                                                            onClick={() => setEditingTemplate(template.id)}
+                                                                            className="h-6 px-2 text-[8px]"
+                                                                        >
+                                                                            <Edit2 className="w-3 h-3" />
+                                                                        </Button>
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div>
+                                                <Label className="text-xs font-orbitron text-muted-foreground uppercase tracking-widest mb-2 block">Amount ($)</Label>
+                                                <Input
+                                                    type="number"
+                                                    value={chargeAmount}
+                                                    onChange={(e) => setChargeAmount(e.target.value)}
+                                                    placeholder="199.00"
+                                                    className="bg-background border-emerald-500/30"
+                                                />
+                                            </div>
+                                            <div>
+                                                <Label className="text-xs font-orbitron text-muted-foreground uppercase tracking-widest mb-2 block">Description</Label>
+                                                <Textarea
+                                                    value={chargeDescription}
+                                                    onChange={(e) => setChargeDescription(e.target.value)}
+                                                    placeholder="Describe the charge..."
+                                                    rows={3}
+                                                    className="bg-background border-emerald-500/30"
+                                                />
+                                            </div>
+                                            <div className="flex gap-2 pt-2">
+                                                <Button
+                                                    onClick={async () => {
+                                                        if (!chargeAmount || parseFloat(chargeAmount) <= 0) {
+                                                            toast({
+                                                                title: "Invalid amount",
+                                                                description: "Please enter a valid charge amount.",
+                                                                variant: "destructive",
+                                                            });
+                                                            return;
+                                                        }
+                                                        
+                                                        const serviceName = useManualService ? chargeServiceManual : (serviceTemplates.find(t => t.id === chargeService)?.name || chargeService);
+                                                        if (!serviceName || serviceName.trim() === '') {
+                                                            toast({
+                                                                title: "Service required",
+                                                                description: "Please select or enter a service name.",
+                                                                variant: "destructive",
+                                                            });
+                                                            return;
+                                                        }
+                                                        
+                                                        setIsCreatingCharge(true);
+                                                        try {
+                                                            // Stripe API Integration
+                                                            // This will create an invoice and charge the client
+                                    
+                                                            
+                                                            // Get client email or Stripe customer ID
+                                                            const customerEmail = client?.email || client?.form_submission?.businessEmail || client?.form_submission?.email;
+                                                            const customerId = client?.stripe_customer_id;
+                                                            
+                                                            if (!customerEmail && !customerId) {
+                                                                throw new Error('Client email or Stripe customer ID is required.');
+                                                            }
+                                                            
+                                                            // Amount in cents (Stripe uses cents)
+                                                            const amountInCents = Math.round(parseFloat(chargeAmount) * 100);
+                                                            const finalDescription = chargeDescription || `${serviceName} - ${new Date().toLocaleDateString()}`;
+                                                            
+                                                            // Call Supabase Edge Function for Stripe integration (recommended)
+                                                            // OR use direct Stripe API call if you have a backend endpoint
+                                                            const { data, error: stripeError } = await supabase.functions.invoke('stripe-create-invoice', {
+                                                                body: {
+                                                                    customerEmail,
+                                                                    customerId,
+                                                                    amount: amountInCents,
+                                                                    description: finalDescription,
+                                                                    serviceName,
+                                                                    clientId: id,
+                                                                },
+                                                            });
+                                                            
+                                                            // Check if data contains an error first (function returned error in body with 200 status)
+                                                            if (data && !data.success) {
+                                                                const errorMsg = data.error || 'Unknown error from Edge Function';
+                                                                console.error('Stripe function returned error in data:', errorMsg);
+                                                                throw new Error(errorMsg);
+                                                            }
+                                                            
+                                                            // Check for errors in response (network errors, non-2xx status codes)
+                                                            if (stripeError) {
+                                                                console.error('Stripe function error - full error object:', JSON.stringify(stripeError, null, 2));
+                                                                console.error('Response data (if any):', data);
+                                                                
+                                                                // Check if error has a context with the response body
+                                                                const errorContext = (stripeError as any)?.context;
+                                                                let errorMsg = stripeError.message || 'Unknown error';
+                                                                
+                                                                // Try to extract error from response body if available
+                                                                if (errorContext?.body) {
+                                                                    try {
+                                                                        const parsedBody = typeof errorContext.body === 'string' 
+                                                                            ? JSON.parse(errorContext.body) 
+                                                                            : errorContext.body;
+                                                                        if (parsedBody?.error) {
+                                                                            errorMsg = parsedBody.error;
+                                                                        }
+                                                                    } catch (parseError) {
+                                                                        console.error('Failed to parse error body:', parseError);
+                                                                    }
+                                                                }
+                                                                
+                                                                // Also check data for error if it exists despite error being set
+                                                                if (data?.error) {
+                                                                    errorMsg = data.error;
+                                                                }
+                                                                
+                                                                // If message contains non-2xx, try to provide more helpful context
+                                                                if (errorMsg.includes('non-2xx') || errorMsg.includes('status code')) {
+                                                                    errorMsg = `Stripe API error. Check Supabase function logs or verify STRIPE_SECRET_KEY is set correctly. Original: ${errorMsg}`;
+                                                                }
+                                                                
+                                                                throw new Error(errorMsg);
+                                                            }
+                                                            
+                                                            toast({
+                                                                title: "Invoice created successfully",
+                                                                description: `$${chargeAmount} invoice has been created and sent to ${customerEmail || 'client'}.`,
+                                                            });
+                                                        
+                                                            setShowChargeDialog(false);
+                                                            setChargeAmount('');
+                                                            setChargeDescription('');
+                                                            setChargeService('website');
+                                                            setChargeServiceManual('');
+                                                            setUseManualService(false);
+                                                            
+                                                            // Refresh client data if needed
+                                                            queryClient.invalidateQueries({ queryKey: ['client', id] });
+                                                        } catch (error) {
+                                                            console.error('Charge creation error:', error);
+                                                            let errorMessage = "Please try again.";
+                                                            
+                                                            // Extract actual error message
+                                                            if (error instanceof Error) {
+                                                                errorMessage = error.message;
+                                                            } else if (typeof error === 'object' && error !== null) {
+                                                                if ('message' in error) {
+                                                                    errorMessage = String(error.message);
+                                                                } else if ('error' in error && typeof error.error === 'string') {
+                                                                    errorMessage = error.error;
+                                                                }
+                                                            }
+                                                            
+                                                            // Check for specific error types
+                                                            if (errorMessage.includes('Failed to send') || errorMessage.includes('not available') || errorMessage.includes('404')) {
+                                                                errorMessage = `Function not found. Please verify 'stripe-create-invoice' is deployed. Error: ${errorMessage}`;
+                                                            } else if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
+                                                                errorMessage = `Authentication error. Please refresh and try again. Error: ${errorMessage}`;
+                                                            } else if (errorMessage.includes('STRIPE_SECRET_KEY')) {
+                                                                errorMessage = `Stripe secret key not configured in Supabase secrets. Error: ${errorMessage}`;
+                                                            }
+                                                            
+                                                            toast({
+                                                                title: "Charge failed",
+                                                                description: errorMessage,
+                                                                variant: "destructive",
+                                                            });
+                                                        } finally {
+                                                            setIsCreatingCharge(false);
+                                                        }
+                                                    }}
+                                                    disabled={isCreatingCharge}
+                                                    className="flex-1 bg-emerald-500/20 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/30"
+                                                >
+                                                    {isCreatingCharge ? 'Processing...' : 'Create Charge'}
+                                                </Button>
+                                                <Button
+                                                    variant="outline"
+                                                    onClick={() => {
+                                                        setShowChargeDialog(false);
+                                                        setChargeAmount('');
+                                                        setChargeDescription('');
+                                                        setChargeService('website');
+                                                        setChargeServiceManual('');
+                                                        setUseManualService(false);
+                                                        setShowEditTemplates(false);
+                                                        setEditingTemplate(null);
+                                                    }}
+                                                    disabled={isCreatingCharge}
+                                                    className="border-emerald-500/30 text-emerald-400"
+                                                >
+                                                    Cancel
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </DialogContent>
+                                </Dialog>
                             </div>
                         </div>
                     </div>

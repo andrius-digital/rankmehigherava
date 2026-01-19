@@ -18,10 +18,13 @@ import CallCenterKPI from "./pages/CallCenterKPI";
 import SubmissionsDashboard from "./pages/SubmissionsDashboard";
 import WebsiteSubmissions from "./pages/WebsiteSubmissions";
 import ClientProfile from "./pages/ClientProfile";
+import IndividualClientProfile from "./pages/IndividualClientProfile";
 import AgencyDashboard from "./pages/AgencyDashboard";
 import ClientPortal from "./pages/ClientPortal";
 import CDLAgencyPortal from "./pages/CDLAgencyPortal";
 import WebsiteSubmissionConfirmation from "./pages/WebsiteSubmissionConfirmation";
+import FunnelSubmissions from "./pages/FunnelSubmissions";
+import FunnelSubmissionConfirmation from "./pages/FunnelSubmissionConfirmation";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import Chatbot from "./components/Chatbot";
@@ -31,6 +34,10 @@ import TeamTracker from "./pages/TeamTracker";
 import WebsitePromptingPage from "./pages/WebsitePromptingPage";
 import WebsiteBuilderDashboard from "./pages/WebsiteBuilderDashboard";
 import WebsiteCommandCenter from "./pages/WebsiteCommandCenter";
+import AvaVoiceCallsDashboard from "./pages/AvaVoiceCallsDashboard";
+import AvaTrainingDashboard from "./pages/AvaTrainingDashboard";
+import TaskFlow from "./pages/TaskFlow";
+import ClientSitesTracker from "./pages/ClientSitesTracker";
 
 // AVA by Rank Me Higher Pages
 import SEOSpiderDashboard from "./pages/seo-spider/Dashboard";
@@ -74,6 +81,8 @@ const App = () => (
               <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/website-submissions" element={<WebsiteSubmissions />} />
               <Route path="/website-submission-confirmation" element={<WebsiteSubmissionConfirmation />} />
+              <Route path="/funnel-submissions" element={<FunnelSubmissions />} />
+              <Route path="/funnel-submission-confirmation" element={<FunnelSubmissionConfirmation />} />
 
               {/* Protected routes - require authentication */}
               <Route path="/call-center-kpi" element={
@@ -101,9 +110,19 @@ const App = () => (
                   <CDLAgencyPortal />
                 </ProtectedRoute>
               } />
+              <Route path="/cdl-recruiters" element={
+                <ProtectedRoute>
+                  <CDLAgencyPortal />
+                </ProtectedRoute>
+              } />
+              <Route path="/cdl-carriers" element={
+                <ProtectedRoute>
+                  <CDLAgencyPortal />
+                </ProtectedRoute>
+              } />
               <Route path="/agency/client/:id" element={
                 <ProtectedRoute>
-                  <ClientProfile />
+                  <IndividualClientProfile />
                 </ProtectedRoute>
               } />
               <Route path="/subscriptions" element={
@@ -132,12 +151,35 @@ const App = () => (
                   <ClientPortal />
                 </ProtectedRoute>
               } />
-
-
-
-
-
-
+              <Route path="/ava-voice-calls" element={
+                <ProtectedRoute>
+                  <AvaVoiceCallsDashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/ava-training" element={
+                <ProtectedRoute>
+                  <AvaTrainingDashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/task-flow" element={
+                <ProtectedRoute>
+                  <TaskFlow />
+                </ProtectedRoute>
+              } />
+              <Route path="/avaseo" element={<ProtectedRoute><SEOSpiderDashboard /></ProtectedRoute>} />
+              <Route path="/avaseo/ai-assistant" element={<ProtectedRoute><SEOSpiderAIAssistant /></ProtectedRoute>} />
+              <Route path="/avaseo/analytics" element={<ProtectedRoute><SEOSpiderAnalytics /></ProtectedRoute>} />
+              <Route path="/avaseo/billing" element={<ProtectedRoute><SEOSpiderBilling /></ProtectedRoute>} />
+              <Route path="/avaseo/blogs" element={<ProtectedRoute><SEOSpiderBlogs /></ProtectedRoute>} />
+              <Route path="/avaseo/company" element={<ProtectedRoute><SEOSpiderCompany /></ProtectedRoute>} />
+              <Route path="/avaseo/contacts" element={<ProtectedRoute><SEOSpiderContacts /></ProtectedRoute>} />
+              <Route path="/avaseo/local-rankings" element={<ProtectedRoute><SEOSpiderLocalRankings /></ProtectedRoute>} />
+              <Route path="/avaseo/onboarding" element={<ProtectedRoute><SEOSpiderOnboarding /></ProtectedRoute>} />
+              <Route path="/avaseo/pricing" element={<SEOSpiderPricing />} />
+              <Route path="/avaseo/reviews" element={<ProtectedRoute><SEOSpiderReviews /></ProtectedRoute>} />
+              <Route path="/avaseo/service-areas" element={<ProtectedRoute><SEOSpiderServiceAreas /></ProtectedRoute>} />
+              <Route path="/avaseo/settings" element={<ProtectedRoute><SEOSpiderSettings /></ProtectedRoute>} />
+              <Route path="/avaseo/admin" element={<ProtectedRoute requireAdmin><SEOSpiderAdmin /></ProtectedRoute>} />
 
               {/* Task Management Routes */}
               <Route path="/task-pipeline" element={
@@ -148,6 +190,11 @@ const App = () => (
               <Route path="/team-tracker" element={
                 <ProtectedRoute>
                   <TeamTracker />
+                </ProtectedRoute>
+              } />
+              <Route path="/client-sites-tracker" element={
+                <ProtectedRoute>
+                  <ClientSitesTracker />
                 </ProtectedRoute>
               } />
 

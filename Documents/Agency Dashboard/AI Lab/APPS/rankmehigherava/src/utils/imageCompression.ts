@@ -82,15 +82,18 @@ async function compressImageFile(file: File, quality: number): Promise<File> {
       canvas.width = width;
       canvas.height = height;
 
-      // Draw image with white background (for transparency)
-      ctx.fillStyle = "#FFFFFF";
-      ctx.fillRect(0, 0, width, height);
-      ctx.drawImage(img, 0, 0, width, height);
-
       // Determine output type - keep PNG for files that likely have transparency
       const isPNG = file.type === "image/png";
       const outputType = isPNG ? "image/png" : "image/jpeg";
       const outputQuality = isPNG ? undefined : quality;
+
+      // Only fill white background for JPEG (which doesn't support transparency)
+      // PNG files preserve transparency by NOT filling the background
+      if (!isPNG) {
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillRect(0, 0, width, height);
+      }
+      ctx.drawImage(img, 0, 0, width, height);
 
       canvas.toBlob(
         (blob) => {

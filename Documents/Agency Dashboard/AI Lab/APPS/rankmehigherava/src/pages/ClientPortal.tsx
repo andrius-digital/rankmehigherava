@@ -90,12 +90,46 @@ const getClientLogo = (client: any): string | null => {
     if (client.notes) {
         try {
             const parsed = JSON.parse(client.notes);
+            
+            // Try multiple possible locations for logo_files
+            let logoFiles = null;
+            
+            // Check root level logo_files (most common)
             if (parsed?.logo_files) {
-                const logos = Array.isArray(parsed.logo_files) ? parsed.logo_files : [parsed.logo_files];
-                if (logos.length > 0 && logos[0]) return logos[0];
+                logoFiles = parsed.logo_files;
             }
-        } catch {
-            // Notes is not JSON
+            // Check if logo_files is in form_submission structure
+            else if (parsed?.form_submission?.logo_files) {
+                logoFiles = parsed.form_submission.logo_files;
+            }
+            // Check if it's a direct string URL
+            else if (typeof parsed === 'string' && (parsed.startsWith('http://') || parsed.startsWith('https://'))) {
+                return parsed;
+            }
+            
+            // Extract logo URL from logoFiles (handle array, string, or single object)
+            if (logoFiles) {
+                if (Array.isArray(logoFiles)) {
+                    if (logoFiles.length > 0) {
+                        const firstLogo = logoFiles[0];
+                        // Handle if it's a string URL
+                        if (typeof firstLogo === 'string') return firstLogo;
+                        // Handle if it's an object with url property
+                        if (firstLogo && typeof firstLogo === 'object' && firstLogo.url) return firstLogo.url;
+                    }
+                } else if (typeof logoFiles === 'string') {
+                    // logoFiles is a single string URL
+                    return logoFiles;
+                } else if (logoFiles && typeof logoFiles === 'object' && logoFiles.url) {
+                    // logoFiles is an object with url property
+                    return logoFiles.url;
+                }
+            }
+        } catch (error) {
+            // Notes is not JSON or parsing failed - try checking if notes itself is a URL
+            if (typeof client.notes === 'string' && (client.notes.startsWith('http://') || client.notes.startsWith('https://'))) {
+                return client.notes;
+            }
         }
     }
     
@@ -944,26 +978,24 @@ const ClientPortal: React.FC = () => {
                         </div>
                     </div>
                     
-                    {/* Global Search Bar - UPDATED 2026-01-17 */}
-                    <div className="flex items-center gap-3 w-full py-2 border-t border-cyan-500/20">
-                        <div className="relative flex-1 max-w-2xl">
-                            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyan-400 z-10" />
-                            <Input
-                                type="text"
-                                placeholder="🔍 Search clients by name, email, or domain..."
-                                value={globalSearch}
-                                onChange={(e) => setGlobalSearch(e.target.value)}
-                                className="pl-12 pr-12 h-12 bg-card/90 border-2 border-cyan-500/60 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-400/40 font-orbitron text-base placeholder:text-muted-foreground/70 shadow-lg"
-                            />
-                            {globalSearch && (
-                                <button
-                                    onClick={() => setGlobalSearch('')}
-                                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground z-10"
-                                >
-                                    <X className="w-5 h-5" />
-                                </button>
-                            )}
-                        </div>
+                    {/* Global Search Bar */}
+                    <div className="relative max-w-md w-full">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Input
+                            type="text"
+                            placeholder="Search clients by name, email, or domain..."
+                            value={globalSearch}
+                            onChange={(e) => setGlobalSearch(e.target.value)}
+                            className="pl-10 pr-10 h-9 bg-card/40 border-cyan-500/30 focus:border-cyan-400/60 font-orbitron text-xs placeholder:text-muted-foreground/60"
+                        />
+                        {globalSearch && (
+                            <button
+                                onClick={() => setGlobalSearch('')}
+                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                            >
+                                <X className="w-3.5 h-3.5" />
+                            </button>
+                        )}
                     </div>
                 </div>
 

@@ -1,5 +1,5 @@
 import { Helmet } from "react-helmet-async";
-import Navbar from "@/components/Navbar";
+import AvaAdminHeader from "@/components/AvaAdminHeader";
 import Footer from "@/components/Footer";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
@@ -26,12 +26,13 @@ import {
   DrawerTitle,
   DrawerClose,
 } from "@/components/ui/drawer";
-import { Building2, MapPin, Target, Settings, Shield, Users, Palette, Globe, DollarSign, Sparkles, ChevronDown, ChevronUp, Check, X } from "lucide-react";
+import { Building2, MapPin, Target, Settings, Shield, Users, Palette, Globe, DollarSign, Sparkles, ChevronDown, ChevronUp, Check, X, ArrowLeft, Wand2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import FileUpload from "@/components/FileUpload";
 import LogoGenerator from "@/components/LogoGenerator";
+import PhotoGenerator from "@/components/PhotoGenerator";
 import { FormProgressBar } from "@/components/FormProgressBar";
 import { FormStepNavigation } from "@/components/FormStepNavigation";
 import { AutoSaveIndicator } from "@/components/AutoSaveIndicator";
@@ -44,16 +45,16 @@ import { useIsMobile } from "@/hooks/use-mobile";
 const STORAGE_KEY = 'website-submission-draft';
 
 const STEPS = [
-  { id: 1, title: "Business Info", icon: <Building2 className="w-4 h-4" /> },
-  { id: 2, title: "Location & Hours", icon: <MapPin className="w-4 h-4" /> },
-  { id: 3, title: "Services", icon: <Target className="w-4 h-4" /> },
-  { id: 4, title: "Operations", icon: <Settings className="w-4 h-4" /> },
-  { id: 5, title: "Trust", icon: <Shield className="w-4 h-4" /> },
-  { id: 6, title: "Team & Story", icon: <Users className="w-4 h-4" /> },
-  { id: 7, title: "Branding", icon: <Palette className="w-4 h-4" /> },
-  { id: 8, title: "Online Presence", icon: <Globe className="w-4 h-4" /> },
-  { id: 9, title: "Offers", icon: <DollarSign className="w-4 h-4" /> },
-  { id: 10, title: "Final", icon: <Sparkles className="w-4 h-4" /> },
+  { id: 1, title: "1. Business Info", icon: <Building2 className="w-4 h-4" /> },
+  { id: 2, title: "2. Location & Hours", icon: <MapPin className="w-4 h-4" /> },
+  { id: 3, title: "3. Services", icon: <Target className="w-4 h-4" /> },
+  { id: 4, title: "4. Operations", icon: <Settings className="w-4 h-4" /> },
+  { id: 5, title: "5. Trust", icon: <Shield className="w-4 h-4" /> },
+  { id: 6, title: "6. Team & Story", icon: <Users className="w-4 h-4" /> },
+  { id: 7, title: "7. Branding", icon: <Palette className="w-4 h-4" /> },
+  { id: 8, title: "8. Online Presence", icon: <Globe className="w-4 h-4" /> },
+  { id: 9, title: "9. Offers", icon: <DollarSign className="w-4 h-4" /> },
+  { id: 10, title: "10. Final", icon: <Sparkles className="w-4 h-4" /> },
 ];
 
 const WebsiteSubmissions = () => {
@@ -162,6 +163,14 @@ const WebsiteSubmissions = () => {
   const [hasBrandBook, setHasBrandBook] = useState("");
   const [hasLogo, setHasLogo] = useState<"yes" | "no" | "">("");
   const [logoGenerationAttempts, setLogoGenerationAttempts] = useState(0);
+  
+  // Photo generation state
+  const [generateFounderPhoto, setGenerateFounderPhoto] = useState(false);
+  const [generateTeamPhoto, setGenerateTeamPhoto] = useState(false);
+  const [generateWorkPhoto, setGenerateWorkPhoto] = useState(false);
+  const [founderPhotoAttempts, setFounderPhotoAttempts] = useState(0);
+  const [teamPhotoAttempts, setTeamPhotoAttempts] = useState(0);
+  const [workPhotoAttempts, setWorkPhotoAttempts] = useState(0);
 
   const [operatingHours, setOperatingHours] = useState({
     monday: { open: false, openTime: "", closeTime: "" },
@@ -201,6 +210,233 @@ const WebsiteSubmissions = () => {
 
   const days = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
 
+  // AI Auto-fill state
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+
+  // AI Auto-fill function - generates complete dummy submission
+  const handleAIAutoFill = async () => {
+    setIsGeneratingAI(true);
+    toast({
+      title: "🤖 Generating with AI...",
+      description: "Creating a complete dummy business submission. This may take a moment.",
+    });
+
+    try {
+      // Call the edge function to generate dummy data
+      const { data, error } = await supabase.functions.invoke("generate-dummy-submission");
+
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || "Failed to generate data");
+
+      const aiData = data.data;
+      console.log("AI Generated Data:", aiData);
+
+      // Fill all form fields with AI-generated data
+      setFormData(prev => ({
+        ...prev,
+        companyName: aiData.companyName || "",
+        ownsDomain: aiData.ownsDomain || "yes",
+        domainName: aiData.domainName || "",
+        businessPhone: aiData.businessPhone || "",
+        businessEmail: aiData.businessEmail || "",
+        jobRequestEmail: aiData.jobRequestEmail || "",
+        mainCity: aiData.mainCity || "",
+        serviceAreas: aiData.serviceAreas || "",
+        showAddress: aiData.showAddress || "yes",
+        streetAddress: aiData.streetAddress || "",
+        city: aiData.city || aiData.mainCity || "",
+        stateProvince: aiData.stateProvince || "",
+        postalCode: aiData.postalCode || "",
+        showHours: aiData.showHours || "yes",
+        serviceCategory: aiData.serviceCategory || "",
+        includeServicePage: aiData.includeServicePage || "include",
+        showPricing: aiData.showPricing || "yes",
+        servicePageType: aiData.servicePageType || "separate",
+        freeEstimates: aiData.freeEstimates || "yes",
+        customerAction: aiData.customerAction || "form",
+        clientType: aiData.clientType || "both",
+        serviceJobDuration: aiData.serviceJobDuration || "",
+        serviceProcess: aiData.serviceProcess || "",
+        serviceOptions: aiData.serviceOptions || "",
+        guarantees: aiData.guarantees || "",
+        businessUnique: aiData.businessUnique || "",
+        qualityTrust: aiData.qualityTrust || "",
+        accreditations: aiData.accreditations || "",
+        founderMessage: aiData.founderMessage || "",
+        teamMembers: aiData.teamMembers || "",
+        communityGiving: aiData.communityGiving || "",
+        coreValues: aiData.coreValues || "",
+        websiteColors: aiData.websiteColors || "",
+        fontName: aiData.fontName || "",
+        googleBusinessProfileLink: aiData.googleBusinessProfileLink || "",
+        googleReviews: aiData.googleReviews || "",
+        yelpLink: aiData.yelpLink || "",
+        instagramLink: aiData.instagramLink || "",
+        facebookLink: aiData.facebookLink || "",
+        specialOffersExplanation: aiData.specialOffersExplanation || "",
+        financingExplanation: aiData.financingExplanation || "",
+        competitorWebsites: aiData.competitorWebsites || "",
+        additionalNotes: aiData.additionalNotes || "",
+      }));
+
+      // Set dropdown states
+      setHasGoogleProfile("yes");
+      setHasSpecialOffers(aiData.specialOffersExplanation ? "yes" : "no");
+      setHasFinancing(aiData.financingExplanation ? "yes" : "no");
+      setHasSpecificFont(aiData.fontName ? "yes" : "no");
+      setHasBrandBook("no");
+      setHasLogo("no"); // Will generate logo below
+
+      // Set services from AI data
+      if (aiData.services && Array.isArray(aiData.services)) {
+        const filledServices = aiData.services.map((s: any) => ({
+          name: s.name || "",
+          price: s.price || "",
+          description: s.description || "",
+        }));
+        // Pad with empty slots to make 10
+        while (filledServices.length < 10) {
+          filledServices.push({ name: "", price: "", description: "" });
+        }
+        setServices(filledServices);
+      }
+
+      // Set operating hours (Mon-Fri 8AM-6PM, Sat 9AM-4PM, Sun closed)
+      setOperatingHours({
+        monday: { open: true, openTime: "8:00 AM", closeTime: "6:00 PM" },
+        tuesday: { open: true, openTime: "8:00 AM", closeTime: "6:00 PM" },
+        wednesday: { open: true, openTime: "8:00 AM", closeTime: "6:00 PM" },
+        thursday: { open: true, openTime: "8:00 AM", closeTime: "6:00 PM" },
+        friday: { open: true, openTime: "8:00 AM", closeTime: "6:00 PM" },
+        saturday: { open: true, openTime: "9:00 AM", closeTime: "4:00 PM" },
+        sunday: { open: false, openTime: "", closeTime: "" },
+      });
+
+      // Set pages to include
+      setPages({
+        servicePages: true,
+        blogPage: true,
+        aboutPage: true,
+        contactPage: true,
+        serviceAreaPages: true,
+      });
+
+      // Set emergency services (pick one relevant option)
+      setEmergencyServices({
+        "24/7 emergency response": false,
+        "Same-day repairs": true,
+        "Temporary fixes until full service": false,
+        "No emergency services": false,
+        "Other": false,
+      });
+
+      // Open all sections to show filled data
+      setOpenSections([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+
+      toast({
+        title: "✅ AI Auto-Fill Complete!",
+        description: `Created dummy submission for: ${data.businessType}`,
+      });
+
+      // Now generate all images sequentially
+      const generateImage = async (prompt: string, type: string): Promise<string | null> => {
+        try {
+          const response = await supabase.functions.invoke("generate-image", {
+            body: { prompt }
+          });
+          const imageData = response.data?.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+          if (imageData) {
+            console.log(`${type} generated successfully`);
+            return imageData;
+          }
+        } catch (err) {
+          console.warn(`${type} generation failed:`, err);
+        }
+        return null;
+      };
+
+      // Generate logo
+      if (aiData.logoPrompt) {
+        toast({
+          title: "🎨 Generating logo...",
+          description: "Creating AI-generated logo for the business.",
+        });
+        const logoImage = await generateImage(
+          `Professional business logo: ${aiData.logoPrompt}. Clean, modern, minimal design on white background.`,
+          "Logo"
+        );
+        if (logoImage) {
+          setLogoFiles([logoImage]);
+          setHasLogo("yes");
+          toast({ title: "✅ Logo Generated!" });
+        }
+      }
+
+      // Generate founder photo
+      if (aiData.founderPhotoPrompt) {
+        toast({
+          title: "📸 Generating founder photo...",
+          description: "Creating professional founder portrait.",
+        });
+        const founderImage = await generateImage(
+          `Professional business portrait photo: ${aiData.founderPhotoPrompt}. High-quality, photorealistic, warm lighting.`,
+          "Founder photo"
+        );
+        if (founderImage) {
+          setFounderPhotos([founderImage]);
+          toast({ title: "✅ Founder Photo Generated!" });
+        }
+      }
+
+      // Generate team photo
+      if (aiData.teamPhotoPrompt) {
+        toast({
+          title: "👥 Generating team photo...",
+          description: "Creating professional team photo.",
+        });
+        const teamImage = await generateImage(
+          `Professional team photo: ${aiData.teamPhotoPrompt}. High-quality, photorealistic, group portrait.`,
+          "Team photo"
+        );
+        if (teamImage) {
+          setTeamPhotos([teamImage]);
+          toast({ title: "✅ Team Photo Generated!" });
+        }
+      }
+
+      // Generate work photos
+      if (aiData.workPhotosPrompt) {
+        toast({
+          title: "🔧 Generating work photos...",
+          description: "Creating project gallery photos.",
+        });
+        const workImage = await generateImage(
+          `Professional work photo: ${aiData.workPhotosPrompt}. High-quality, photorealistic, showing professional craftsmanship.`,
+          "Work photo"
+        );
+        if (workImage) {
+          setWorkPhotos([workImage]);
+          toast({ title: "✅ Work Photos Generated!" });
+        }
+      }
+
+      toast({
+        title: "🎉 All Done!",
+        description: "AI-generated submission is ready. Review and submit!",
+      });
+
+    } catch (error) {
+      console.error("AI Auto-Fill Error:", error);
+      toast({
+        title: "❌ AI Generation Failed",
+        description: error instanceof Error ? error.message : "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingAI(false);
+    }
+  };
+
   // Load saved form data on mount
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -217,6 +453,9 @@ const WebsiteSubmissions = () => {
         if (parsed.hasBrandBook) setHasBrandBook(parsed.hasBrandBook);
         if (parsed.hasLogo) setHasLogo(parsed.hasLogo);
         if (parsed.logoGenerationAttempts !== undefined) setLogoGenerationAttempts(parsed.logoGenerationAttempts);
+        if (parsed.founderPhotoAttempts !== undefined) setFounderPhotoAttempts(parsed.founderPhotoAttempts);
+        if (parsed.teamPhotoAttempts !== undefined) setTeamPhotoAttempts(parsed.teamPhotoAttempts);
+        if (parsed.workPhotoAttempts !== undefined) setWorkPhotoAttempts(parsed.workPhotoAttempts);
         if (parsed.operatingHours) setOperatingHours(parsed.operatingHours);
         if (parsed.services) setServices(parsed.services);
         if (parsed.pages) setPages(parsed.pages);
@@ -250,6 +489,9 @@ const WebsiteSubmissions = () => {
       hasBrandBook,
       hasLogo,
       logoGenerationAttempts,
+      founderPhotoAttempts,
+      teamPhotoAttempts,
+      workPhotoAttempts,
       operatingHours,
       services,
       pages,
@@ -262,7 +504,7 @@ const WebsiteSubmissions = () => {
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
     setLastSaved(now);
-  }, [formData, hasGoogleProfile, hasSpecialOffers, hasFinancing, emergencyServices, insuranceHelp, hasSpecificFont, hasBrandBook, hasLogo, logoGenerationAttempts, operatingHours, services, pages, logoFiles, founderPhotos, teamPhotos, workPhotos, currentStep]);
+  }, [formData, hasGoogleProfile, hasSpecialOffers, hasFinancing, emergencyServices, insuranceHelp, hasSpecificFont, hasBrandBook, hasLogo, logoGenerationAttempts, founderPhotoAttempts, teamPhotoAttempts, workPhotoAttempts, operatingHours, services, pages, logoFiles, founderPhotos, teamPhotos, workPhotos, currentStep]);
 
   // Debounced auto-save
   useEffect(() => {
@@ -375,24 +617,157 @@ const WebsiteSubmissions = () => {
         throw new Error(`Database error: ${dbError.message}`);
       }
 
-      // Create a client card automatically with the company name
-      const { error: clientError } = await supabase
+      // Format services list - extract just the names that have values
+      const serviceNames = services
+        .filter(s => s.name && s.name.trim() !== '')
+        .map(s => s.name);
+
+      // Format pages to include
+      const pagesToInclude = Object.entries(pages)
+        .filter(([_, included]) => included)
+        .map(([key]) => {
+          const pageLabels: Record<string, string> = {
+            servicePages: 'Service Pages',
+            blogPage: 'Blog Page',
+            aboutPage: 'About Page',
+            contactPage: 'Contact Page',
+            serviceAreaPages: 'Service Area Pages'
+          };
+          return pageLabels[key] || key;
+        });
+
+      // Build the full form submission object for storage
+      const formSubmissionData = {
+        // Section 1: Business Information
+        official_company_name: formData.companyName,
+        owns_domain: formData.ownsDomain === 'yes',
+        domain_name: formData.domainName,
+        business_phone: formData.businessPhone,
+        business_email: formData.businessEmail,
+        job_requests_email: formData.jobRequestEmail,
+        // Section 2: Location & Hours
+        main_city: formData.mainCity,
+        state_province: formData.stateProvince,
+        service_areas: formData.serviceAreas ? formData.serviceAreas.split(/[,;\n]/).map(s => s.trim()).filter(s => s) : [],
+        display_address_on_website: formData.showAddress === 'yes',
+        business_address: formData.streetAddress,
+        business_address_2: formData.streetAddress2,
+        business_city: formData.city,
+        business_state: formData.stateProvince,
+        business_zip: formData.postalCode,
+        display_hours_on_website: formData.showHours === 'yes',
+        operating_hours: Object.fromEntries(
+          Object.entries(operatingHours).map(([day, hours]) => [
+            day,
+            { open: hours.openTime, close: hours.closeTime, is_open: hours.open }
+          ])
+        ),
+        // Section 3: Services
+        service_category: formData.serviceCategory,
+        services_list: services.filter(s => s.name && s.name.trim() !== ''),
+        include_service_page: formData.includeServicePage === 'include',
+        display_pricing_on_website: formData.showPricing === 'yes',
+        service_page_type: formData.servicePageType === 'separate' ? 'Separate Pages' : 'Single Page',
+        pages_to_include: pagesToInclude,
+        free_estimates: formData.freeEstimates === 'yes',
+        customer_action: formData.customerAction,
+        client_type: formData.clientType,
+        job_duration: formData.serviceJobDuration,
+        // Section 4: Process & Operations
+        service_process: formData.serviceProcess,
+        emergency_services: Object.entries(emergencyServices).filter(([_, v]) => v).map(([k]) => k),
+        service_options: formData.serviceOptions,
+        guarantees: formData.guarantees,
+        unique_value: formData.businessUnique,
+        // Section 5: Trust
+        quality_trust: formData.qualityTrust,
+        accreditations: formData.accreditations,
+        insurance_help: Object.entries(insuranceHelp).filter(([_, v]) => v).map(([k]) => k),
+        // Section 6: Team & Photos
+        founder_message: formData.founderMessage,
+        team_members: formData.teamMembers,
+        founder_photos: founderPhotos,
+        team_photos: teamPhotos,
+        community_giving: formData.communityGiving,
+        core_values: formData.coreValues,
+        // Section 7: Branding
+        has_logo: hasLogo,
+        logo_files: logoFiles,
+        website_colors: formData.websiteColors,
+        font_name: formData.fontName,
+        brand_book_link: formData.brandBookLink,
+        // Section 8: Online Presence
+        google_business_profile: formData.googleBusinessProfileLink,
+        google_reviews: formData.googleReviews,
+        other_reviews_link: formData.otherReviewsLink,
+        yelp_link: formData.yelpLink,
+        instagram_link: formData.instagramLink,
+        facebook_link: formData.facebookLink,
+        tiktok_link: formData.tiktokLink,
+        work_photos: workPhotos,
+        work_photos_link: formData.workPhotosLink,
+        // Section 9: Offers
+        special_offers: hasSpecialOffers === 'yes',
+        special_offers_details: formData.specialOffersExplanation,
+        financing: hasFinancing === 'yes',
+        financing_details: formData.financingExplanation,
+        // Section 10: Final
+        competitor_websites: formData.competitorWebsites,
+        additional_notes: formData.additionalNotes,
+      };
+
+      // Create a client card automatically with ALL form data
+      // This creates a new client with:
+      // - Website Subscription: ON (they submitted the form = they're subscribing)
+      // - All other toggles: OFF (pending setup)
+      // - Form submission data stored in notes for display in client profile
+      // Get logo URL from uploaded or generated logos
+      const clientLogoUrl = logoFiles && logoFiles.length > 0 ? logoFiles[0] : null;
+      
+      // Website URL - use domain if provided, otherwise generate from company name
+      // This is critical - without website_url, the client shows as a Funnel client
+      const websiteUrl = formData.domainName 
+        ? formData.domainName 
+        : `www.${formData.companyName.toLowerCase().replace(/[^a-z0-9]/g, '')}.com`;
+      
+      // Store logo in formSubmissionData which goes to notes
+      const formSubmissionDataWithLogo = {
+        ...formSubmissionData,
+        logo_files: logoFiles, // Store logo URLs in the notes JSON
+      };
+      
+      console.log("Creating client with data:", {
+        name: formData.companyName,
+        company_name: formData.companyName,
+        email: formData.businessEmail,
+        website_url: websiteUrl,
+        logo_files: logoFiles,
+        primary_services: serviceNames,
+      });
+      
+      const { data: newClient, error: clientError } = await supabase
         .from("clients")
         .insert({
           name: formData.companyName,
           company_name: formData.companyName,
           email: formData.businessEmail,
           phone: formData.businessPhone,
-          city: formData.mainCity,
-          state: formData.stateProvince,
-          address: formData.streetAddress,
-          service_type: formData.serviceCategory,
-          notes: `Onboarded via website submission form. Service areas: ${formData.serviceAreas}`,
-        });
+          website_url: websiteUrl, // Always set for website submissions
+          primary_services: serviceNames.length > 0 ? serviceNames : null,
+          brand_voice: formData.serviceCategory || 'Professional',
+          target_audience: formData.clientType === 'homeowners' ? 'Homeowners' : formData.clientType === 'businesses' ? 'Businesses' : 'Homeowners & Businesses',
+          status: 'PENDING', // New submissions start as PENDING until website is live
+          notes: JSON.stringify(formSubmissionDataWithLogo), // Logo stored in notes JSON
+        })
+        .select()
+        .single();
 
       if (clientError) {
         console.error("Client creation error:", clientError);
+        console.error("Full error details:", JSON.stringify(clientError, null, 2));
         // Don't throw - submission was successful, client creation is secondary
+      } else if (newClient) {
+        console.log("Client created successfully:", newClient.id, newClient);
       }
 
       const { error: fnError } = await supabase.functions.invoke("notify-website-submission", {
@@ -480,9 +855,19 @@ const WebsiteSubmissions = () => {
     </div>
   );
 
-  // Step 1: Basic Business Info
+  // Handler for GBP location auto-fill
+  const handleGBPLocationFound = (data: { city?: string; state?: string; serviceAreas?: string }) => {
+    setFormData(prev => ({
+      ...prev,
+      ...(data.city && !prev.mainCity && { mainCity: data.city }),
+      ...(data.state && !prev.stateProvince && { stateProvince: data.state }),
+      ...(data.serviceAreas && !prev.serviceAreas && { serviceAreas: data.serviceAreas }),
+    }));
+  };
+
+  // Step 1: Business Info
   const renderStep1 = () => (
-    <MobileSection title="Basic Business Info" icon={Building2}>
+    <MobileSection title="1. Business Info" icon={Building2}>
       <FormField label="1.1 Official company name" required hint="Provide your full registered company name.">
         <Input
           className={`${isMobile ? 'h-11' : ''} max-w-md`}
@@ -492,7 +877,40 @@ const WebsiteSubmissions = () => {
         />
       </FormField>
 
-      <FormField label="1.2 Do you own a domain name?" required>
+      {/* 1.2 Google Business Profile - early to auto-fill info */}
+      <FormField label="1.2 Do you have a Google Business Profile?">
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Checkbox
+              checked={hasGoogleProfile === "yes"}
+              onCheckedChange={(checked) => setHasGoogleProfile(checked ? "yes" : "")}
+            />
+            <label className="text-sm">Yes</label>
+          </div>
+          <div className="flex items-center gap-2">
+            <Checkbox
+              checked={hasGoogleProfile === "no"}
+              onCheckedChange={(checked) => setHasGoogleProfile(checked ? "no" : "")}
+            />
+            <label className="text-sm">No, I don't have one</label>
+          </div>
+        </div>
+      </FormField>
+
+      {hasGoogleProfile === "yes" && (
+        <div className="space-y-2">
+          <GBPScanner
+            value={formData.googleBusinessProfileLink}
+            onChange={(value) => setFormData({ ...formData, googleBusinessProfileLink: value })}
+            onLocationFound={handleGBPLocationFound}
+          />
+          <p className="text-xs text-muted-foreground">
+            We'll use this to auto-fill your location and service areas
+          </p>
+        </div>
+      )}
+
+      <FormField label="1.3 Do you own a domain name?" required>
         <Select
           value={formData.ownsDomain}
           onValueChange={(value) => setFormData({ ...formData, ownsDomain: value })}
@@ -508,7 +926,7 @@ const WebsiteSubmissions = () => {
       </FormField>
 
       {formData.ownsDomain === "yes" && (
-        <FormField label="1.3 Domain name" required hint="Format: www.domainname.com">
+        <FormField label="1.4 Domain name" required hint="Format: www.domainname.com">
           <Input
             className={`${isMobile ? 'h-11' : ''} max-w-md`}
             value={formData.domainName}
@@ -518,7 +936,7 @@ const WebsiteSubmissions = () => {
         </FormField>
       )}
 
-      <FormField label="1.4 Business Phone" required hint="Enter a valid phone number">
+      <FormField label="1.5 Business Phone" required hint="Enter a valid phone number">
         <Input
           type="tel"
           className={`${isMobile ? 'h-11' : ''} max-w-md`}
@@ -528,7 +946,7 @@ const WebsiteSubmissions = () => {
         />
       </FormField>
 
-      <FormField label="1.5 Business Email" required hint="Enter a valid business email">
+      <FormField label="1.6 Business Email" required hint="Enter a valid business email">
         <Input
           type="email"
           className={`${isMobile ? 'h-11' : ''} max-w-md`}
@@ -538,7 +956,7 @@ const WebsiteSubmissions = () => {
         />
       </FormField>
 
-      <FormField label="1.6 Email for job requests" required hint="Where website form messages go">
+      <FormField label="1.7 Email for job requests" required hint="Where website form messages go">
         <Input
           type="email"
           className={`${isMobile ? 'h-11' : ''} max-w-md`}
@@ -556,7 +974,7 @@ const WebsiteSubmissions = () => {
       <div className="flex items-center justify-center gap-3 mb-6">
         <MapPin className="w-8 h-8 text-primary" />
         <h2 className="font-heading text-2xl md:text-3xl font-bold text-foreground">
-          Location & Hours
+          2. Location & Hours
         </h2>
       </div>
       <div className="border-t border-border pt-6 space-y-6">
@@ -759,7 +1177,7 @@ const WebsiteSubmissions = () => {
       <div className="flex items-center justify-center gap-3 mb-6">
         <Target className="w-8 h-8 text-primary" />
         <h2 className="font-heading text-2xl md:text-3xl font-bold text-foreground">
-          Focus & Services
+          3. Services
         </h2>
       </div>
       <div className="border-t border-border pt-6 space-y-6">
@@ -1031,7 +1449,7 @@ const WebsiteSubmissions = () => {
       <div className="flex items-center justify-center gap-3 mb-6">
         <Settings className="w-8 h-8 text-primary" />
         <h2 className="font-heading text-2xl md:text-3xl font-bold text-foreground">
-          Process & Operations
+          4. Operations
         </h2>
       </div>
       <div className="border-t border-border pt-6 space-y-6">
@@ -1118,7 +1536,7 @@ const WebsiteSubmissions = () => {
       <div className="flex items-center justify-center gap-3 mb-6">
         <Shield className="w-8 h-8 text-primary" />
         <h2 className="font-heading text-2xl md:text-3xl font-bold text-foreground">
-          Trust & Credibility
+          5. Trust
         </h2>
       </div>
       <div className="border-t border-border pt-6 space-y-6">
@@ -1188,7 +1606,7 @@ const WebsiteSubmissions = () => {
       <div className="flex items-center justify-center gap-3 mb-6">
         <Users className="w-8 h-8 text-primary" />
         <h2 className="font-heading text-2xl md:text-3xl font-bold text-foreground">
-          Team & Story
+          6. Team & Story
         </h2>
       </div>
       <div className="border-t border-border pt-6 space-y-6">
@@ -1218,65 +1636,10 @@ const WebsiteSubmissions = () => {
           />
         </div>
 
-        <FileUpload
-          label="6.3 Founder / owner photos"
-          required
-          folder="founder-photos"
-          description="Upload high-quality, professional photos of yourself."
-          onFilesChange={setFounderPhotos}
-          existingUrls={founderPhotos}
-        />
-
-        <FileUpload
-          label="6.4 Team photos"
-          folder="team-photos"
-          description="Upload photos of your team — group shots or individual portraits."
-          onFilesChange={setTeamPhotos}
-          existingUrls={teamPhotos}
-        />
-
+        {/* 6.3 Logo - BEFORE photos so it can be used in AI-generated photos */}
         <div>
           <Label className="text-base font-medium">
-            6.5 Do you give back to the community?
-          </Label>
-          <Textarea
-            className="mt-2"
-            rows={4}
-            value={formData.communityGiving}
-            onChange={(e) => setFormData({ ...formData, communityGiving: e.target.value })}
-            placeholder="Sponsorships, donations, volunteer work..."
-          />
-        </div>
-
-        <div>
-          <Label className="text-base font-medium">
-            6.6 Company core values
-          </Label>
-          <Textarea
-            className="mt-2"
-            rows={4}
-            value={formData.coreValues}
-            onChange={(e) => setFormData({ ...formData, coreValues: e.target.value })}
-            placeholder="List 3-4 values that define your company..."
-          />
-        </div>
-      </div>
-    </section>
-  );
-
-  // Step 7: Branding & Visuals
-  const renderStep7 = () => (
-    <section>
-      <div className="flex items-center justify-center gap-3 mb-6">
-        <Palette className="w-8 h-8 text-primary" />
-        <h2 className="font-heading text-2xl md:text-3xl font-bold text-foreground">
-          Branding & Visuals
-        </h2>
-      </div>
-      <div className="border-t border-border pt-6 space-y-6">
-        <div>
-          <Label className="text-base font-medium">
-            7.1 Do you have a company logo? <span className="text-destructive">*</span>
+            6.3 Do you have a company logo? <span className="text-destructive">*</span>
           </Label>
           <div className="mt-3 space-y-3">
             <div className="flex items-center gap-2">
@@ -1324,14 +1687,204 @@ const WebsiteSubmissions = () => {
         )}
 
         {logoFiles.length > 0 && hasLogo === "yes" && (
-          <div className="text-sm text-muted-foreground">
-            ✓ Logo uploaded successfully
+          <div className="flex items-center gap-3">
+            <img
+              src={logoFiles[0]}
+              alt="Your logo"
+              className="w-24 h-24 object-contain rounded-lg border border-border bg-zinc-900 p-2"
+            />
+            <div className="text-sm text-green-500 flex items-center gap-1">
+              <Check className="w-4 h-4" />
+              Logo saved
+            </div>
           </div>
         )}
 
+        {/* 6.4 Founder/Owner Photos */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <Label className="text-base font-medium">
+              6.4 Founder / owner photos
+            </Label>
+            {!generateFounderPhoto && founderPhotos.length === 0 && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setGenerateFounderPhoto(true)}
+                className="text-xs"
+              >
+                <Sparkles className="w-3 h-3 mr-1" />
+                Generate with AI
+              </Button>
+            )}
+          </div>
+          
+          {generateFounderPhoto ? (
+            <PhotoGenerator
+              type="founder"
+              companyName={formData.companyName}
+              serviceCategory={formData.serviceCategory}
+              mainCity={formData.mainCity}
+              founderMessage={formData.founderMessage}
+              logoUrl={logoFiles[0]}
+              attemptsUsed={founderPhotoAttempts}
+              maxAttempts={10}
+              onPhotoGenerated={(url) => {
+                setFounderPhotos(prev => [...prev, url]);
+                setGenerateFounderPhoto(false);
+              }}
+              onAttemptsChange={setFounderPhotoAttempts}
+              onCancel={() => setGenerateFounderPhoto(false)}
+            />
+          ) : (
+            <FileUpload
+              label=""
+              folder="founder-photos"
+              description="Upload high-quality, professional photos of yourself."
+              onFilesChange={setFounderPhotos}
+              existingUrls={founderPhotos}
+            />
+          )}
+        </div>
+
+        {/* 6.5 Team Photos */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <Label className="text-base font-medium">
+              6.5 Team photos
+            </Label>
+            {!generateTeamPhoto && teamPhotos.length === 0 && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setGenerateTeamPhoto(true)}
+                className="text-xs"
+              >
+                <Sparkles className="w-3 h-3 mr-1" />
+                Generate with AI
+              </Button>
+            )}
+          </div>
+          
+          {generateTeamPhoto ? (
+            <PhotoGenerator
+              type="team"
+              companyName={formData.companyName}
+              serviceCategory={formData.serviceCategory}
+              mainCity={formData.mainCity}
+              teamMembers={formData.teamMembers}
+              logoUrl={logoFiles[0]}
+              attemptsUsed={teamPhotoAttempts}
+              maxAttempts={10}
+              onPhotoGenerated={(url) => {
+                setTeamPhotos(prev => [...prev, url]);
+                setGenerateTeamPhoto(false);
+              }}
+              onAttemptsChange={setTeamPhotoAttempts}
+              onCancel={() => setGenerateTeamPhoto(false)}
+            />
+          ) : (
+            <FileUpload
+              label=""
+              folder="team-photos"
+              description="Upload photos of your team — group shots or individual portraits."
+              onFilesChange={setTeamPhotos}
+              existingUrls={teamPhotos}
+            />
+          )}
+        </div>
+
+        {/* 6.6 Work Photos */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <Label className="text-base font-medium">
+              6.6 Work photos / Project gallery
+            </Label>
+            {!generateWorkPhoto && workPhotos.length === 0 && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setGenerateWorkPhoto(true)}
+                className="text-xs"
+              >
+                <Sparkles className="w-3 h-3 mr-1" />
+                Generate with AI
+              </Button>
+            )}
+          </div>
+          
+          {generateWorkPhoto ? (
+            <PhotoGenerator
+              type="work"
+              companyName={formData.companyName}
+              serviceCategory={formData.serviceCategory}
+              mainCity={formData.mainCity}
+              logoUrl={logoFiles[0]}
+              attemptsUsed={workPhotoAttempts}
+              maxAttempts={10}
+              onPhotoGenerated={(url) => {
+                setWorkPhotos(prev => [...prev, url]);
+                setGenerateWorkPhoto(false);
+              }}
+              onAttemptsChange={setWorkPhotoAttempts}
+              onCancel={() => setGenerateWorkPhoto(false)}
+            />
+          ) : (
+            <FileUpload
+              label=""
+              folder="work-photos"
+              description="Upload high-quality photos of your completed work."
+              onFilesChange={setWorkPhotos}
+              existingUrls={workPhotos}
+            />
+          )}
+        </div>
+
         <div>
           <Label className="text-base font-medium">
-            7.2 Website colors
+            6.7 Do you give back to the community?
+          </Label>
+          <Textarea
+            className="mt-2"
+            rows={4}
+            value={formData.communityGiving}
+            onChange={(e) => setFormData({ ...formData, communityGiving: e.target.value })}
+            placeholder="Sponsorships, donations, volunteer work..."
+          />
+        </div>
+
+        <div>
+          <Label className="text-base font-medium">
+            6.8 Company core values
+          </Label>
+          <Textarea
+            className="mt-2"
+            rows={4}
+            value={formData.coreValues}
+            onChange={(e) => setFormData({ ...formData, coreValues: e.target.value })}
+            placeholder="List 3-4 values that define your company..."
+          />
+        </div>
+      </div>
+    </section>
+  );
+
+  // Step 7: Branding & Visuals (logo moved to section 6)
+  const renderStep7 = () => (
+    <section>
+      <div className="flex items-center justify-center gap-3 mb-6">
+        <Palette className="w-8 h-8 text-primary" />
+        <h2 className="font-heading text-2xl md:text-3xl font-bold text-foreground">
+          7. Branding Details
+        </h2>
+      </div>
+      <div className="border-t border-border pt-6 space-y-6">
+        <div>
+          <Label className="text-base font-medium">
+            7.1 Website colors
           </Label>
           <Textarea
             className="mt-2"
@@ -1344,7 +1897,7 @@ const WebsiteSubmissions = () => {
 
         <div>
           <Label className="text-base font-medium">
-            7.3 Do you have a specific font in mind?
+            7.2 Do you have a specific font in mind?
           </Label>
           <div className="mt-3 space-y-3">
             <div className="flex items-center gap-2">
@@ -1366,7 +1919,7 @@ const WebsiteSubmissions = () => {
 
         {hasSpecificFont === "yes" && (
           <div>
-            <Label className="text-base font-medium">7.4 Font name</Label>
+            <Label className="text-base font-medium">7.3 Font name</Label>
             <Input
               className="mt-2 max-w-md"
               value={formData.fontName}
@@ -1377,7 +1930,7 @@ const WebsiteSubmissions = () => {
 
         <div>
           <Label className="text-base font-medium">
-            7.5 Do you have a brand book?
+            7.4 Do you have a brand book?
           </Label>
           <div className="mt-3 space-y-3">
             <div className="flex items-center gap-2">
@@ -1400,7 +1953,7 @@ const WebsiteSubmissions = () => {
         {hasBrandBook === "yes" && (
           <div>
             <Label className="text-base font-medium">
-              7.6 Brand book link (Google Drive or other)
+              7.5 Brand book link (Google Drive or other)
             </Label>
             <Textarea
               className="mt-2"
@@ -1414,59 +1967,20 @@ const WebsiteSubmissions = () => {
     </section>
   );
 
-  // Step 8: Online Presence
+  // Step 8: Online Presence & Reviews
   const renderStep8 = () => {
-    const handleGBPLocationFound = (data: { city?: string; state?: string; serviceAreas?: string }) => {
-      setFormData(prev => ({
-        ...prev,
-        ...(data.city && !prev.mainCity && { mainCity: data.city }),
-        ...(data.state && !prev.stateProvince && { stateProvince: data.state }),
-        ...(data.serviceAreas && !prev.serviceAreas && { serviceAreas: data.serviceAreas }),
-      }));
-    };
-
     return (
       <section>
         <div className="flex items-center justify-center gap-3 mb-6">
           <Globe className="w-8 h-8 text-primary" />
           <h2 className="font-heading text-2xl md:text-3xl font-bold text-foreground">
-            Online Presence
+            8. Reviews & Social
           </h2>
         </div>
         <div className="border-t border-border pt-6 space-y-6">
           <div>
             <Label className="text-base font-medium">
-              8.1 Do you have a Google Business Profile?
-            </Label>
-            <div className="mt-3 space-y-3">
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  checked={hasGoogleProfile === "yes"}
-                  onCheckedChange={(checked) => setHasGoogleProfile(checked ? "yes" : "")}
-                />
-                <label className="text-sm">Yes</label>
-              </div>
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  checked={hasGoogleProfile === "no"}
-                  onCheckedChange={(checked) => setHasGoogleProfile(checked ? "no" : "")}
-                />
-                <label className="text-sm">No</label>
-              </div>
-            </div>
-          </div>
-
-          {hasGoogleProfile === "yes" && (
-            <GBPScanner
-              value={formData.googleBusinessProfileLink}
-              onChange={(value) => setFormData({ ...formData, googleBusinessProfileLink: value })}
-              onLocationFound={handleGBPLocationFound}
-            />
-          )}
-
-          <div>
-            <Label className="text-base font-medium">
-              8.2 How many Google reviews do you have?
+              8.1 How many Google reviews do you have?
             </Label>
             <Input
               className="mt-2 max-w-md"
@@ -1478,7 +1992,7 @@ const WebsiteSubmissions = () => {
 
           <div>
             <Label className="text-base font-medium">
-              8.3 Links to reviews on other platforms
+              8.2 Links to reviews on other platforms
             </Label>
             <Textarea
               className="mt-2"
@@ -1501,17 +2015,9 @@ const WebsiteSubmissions = () => {
             onTiktokChange={(value) => setFormData({ ...formData, tiktokLink: value })}
           />
 
-          <FileUpload
-            label="8.4 Work photos / Project gallery"
-            folder="work-photos"
-            description="Upload high-quality photos of your completed work."
-            onFilesChange={setWorkPhotos}
-            existingUrls={workPhotos}
-          />
-
           <div>
             <Label className="text-base font-medium">
-              8.5 Or provide a link to work photos
+              8.3 Link to additional work photos (optional)
             </Label>
             <Input
               className="mt-2 max-w-md"
@@ -1519,6 +2025,9 @@ const WebsiteSubmissions = () => {
               onChange={(e) => setFormData({ ...formData, workPhotosLink: e.target.value })}
               placeholder="Google Drive, Dropbox, etc."
             />
+            <p className="text-xs text-muted-foreground mt-1">
+              Work photos can be uploaded or generated in Section 6
+            </p>
           </div>
         </div>
       </section>
@@ -1531,7 +2040,7 @@ const WebsiteSubmissions = () => {
       <div className="flex items-center justify-center gap-3 mb-6">
         <DollarSign className="w-8 h-8 text-primary" />
         <h2 className="font-heading text-2xl md:text-3xl font-bold text-foreground">
-          Offers, Payments & Financing
+          9. Offers
         </h2>
       </div>
       <div className="border-t border-border pt-6 space-y-6">
@@ -1618,7 +2127,7 @@ const WebsiteSubmissions = () => {
       <div className="flex items-center justify-center gap-3 mb-6">
         <Sparkles className="w-8 h-8 text-primary" />
         <h2 className="font-heading text-2xl md:text-3xl font-bold text-foreground">
-          Content & Final Notes
+          10. Final
         </h2>
       </div>
       <div className="border-t border-border pt-6 space-y-6">
@@ -1853,12 +2362,49 @@ const WebsiteSubmissions = () => {
         <meta name="description" content="Complete this form to start your website development." />
       </Helmet>
 
-      <Navbar />
+      <AvaAdminHeader />
 
       <main className={`flex-1 ${isMobile ? 'pt-20 pb-24' : 'pt-24 pb-16'}`}>
         <div className={`container mx-auto ${isMobile ? 'px-3' : 'px-4'} max-w-4xl`}>
           {/* Header - Compact on mobile */}
           <div className={`${isMobile ? 'mb-4' : 'mb-8'}`}>
+            {/* Navigation and AI Button Row */}
+            <div className="flex items-center justify-between mb-4">
+              {/* Return Button */}
+              <Button 
+                type="button"
+                variant="ghost" 
+                size="sm" 
+                onClick={() => navigate(-1)}
+                className="-ml-2 text-muted-foreground hover:text-foreground"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back
+              </Button>
+
+              {/* AI Auto-Fill Button */}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleAIAutoFill}
+                disabled={isGeneratingAI}
+                className="gap-2 bg-gradient-to-r from-purple-500/20 to-cyan-500/20 border-purple-500/30 hover:border-cyan-500/50 text-purple-400 hover:text-cyan-400 transition-all"
+              >
+                {isGeneratingAI ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Wand2 className="w-4 h-4" />
+                    {isMobile ? 'AI Fill' : 'Create Dummy Submission with AI'}
+                  </>
+                )}
+              </Button>
+            </div>
+            
             <h1 className={`font-heading font-bold text-foreground ${isMobile ? 'text-xl mb-2' : 'text-3xl md:text-4xl mb-4'}`}>
               {isMobile ? 'Client Onboarding' : 'Website Onboarding Form'}
             </h1>
