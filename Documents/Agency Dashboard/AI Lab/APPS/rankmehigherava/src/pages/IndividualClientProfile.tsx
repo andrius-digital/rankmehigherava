@@ -44,12 +44,107 @@ import {
     ZoomIn,
     TrendingUp,
     Edit2,
-    Upload
+    Upload,
+    Bell,
+    Trash2,
+    PenLine,
+    Save,
+    MoreVertical,
+    Search,
+    Database,
+    Lock,
+    Key,
+    Shield,
+    Zap,
+    Send,
+    Share2,
+    Users,
+    User,
+    Star,
+    Heart,
+    Bookmark,
+    Tag,
+    Package,
+    Code,
+    Terminal,
+    Wifi,
+    Cloud,
+    Download,
+    RefreshCw,
+    Play,
+    Pause,
+    Video,
+    Camera,
+    Mic,
+    Music,
+    Map,
+    Navigation,
+    Compass,
+    Target,
+    Award,
+    Trophy,
+    Gift,
+    ShoppingCart,
+    Store,
+    Truck,
+    Plane,
+    Car,
+    Rocket,
+    Flame,
+    Sun,
+    Moon,
+    Palette,
+    Paintbrush,
+    Scissors,
+    Tool,
+    Hammer,
+    Cpu,
+    HardDrive,
+    Monitor,
+    Smartphone,
+    Tablet,
+    Watch,
+    Headphones,
+    Speaker,
+    Radio,
+    Tv,
+    Gamepad2,
+    Bot,
+    Brain,
+    Sparkles,
+    Lightbulb,
+    AlertCircle,
+    Info,
+    HelpCircle,
+    MessageCircle,
+    AtSign,
+    Hash,
+    Link as LinkIcon,
+    Paperclip,
+    Folder,
+    FolderOpen,
+    File,
+    FileCode,
+    FilePlus,
+    FileCheck,
+    ClipboardCheck,
+    ClipboardList,
+    ListChecks,
+    LayoutDashboard,
+    PieChart,
+    LineChart,
+    Percent,
+    Calculator,
+    Wallet,
+    Banknote,
+    Coins
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import HUDOverlay from '@/components/ui/HUDOverlay';
@@ -61,22 +156,52 @@ import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { compressImage } from '@/utils/imageCompression';
 
-// Toggle Item Component
-const ToggleItem = ({ 
-    label, 
-    description, 
-    checked, 
-    onChange, 
+// Checklist item interface
+interface ChecklistItem {
+    id: string;
+    label: string;
+    description: string;
+    checked: boolean;
+    notes: string;
+    isDefault?: boolean; // Default items cannot be deleted
+}
+
+// Toggle Item Component with expandable notes, edit and delete functionality
+const ToggleItem = ({
+    label,
+    description,
+    checked,
+    onChange,
     icon: Icon,
-    color = 'cyan'
-}: { 
-    label: string; 
-    description?: string; 
-    checked: boolean; 
+    color = 'cyan',
+    notes = '',
+    onNotesChange,
+    placeholder = 'Add notes for the team...',
+    onEdit,
+    onDelete,
+    canDelete = false
+}: {
+    label: string;
+    description?: string;
+    checked: boolean;
     onChange: (checked: boolean) => void;
     icon: React.ComponentType<{ className?: string }>;
     color?: 'cyan' | 'emerald' | 'purple' | 'orange';
+    notes?: string;
+    onNotesChange?: (notes: string) => void;
+    placeholder?: string;
+    onEdit?: (newLabel: string, newDescription: string) => void;
+    onDelete?: () => void;
+    canDelete?: boolean;
 }) => {
+    const [isExpanded, setIsExpanded] = useState(false);
+    const [isEditingNotes, setIsEditingNotes] = useState(false);
+    const [isEditingItem, setIsEditingItem] = useState(false);
+    const [localNotes, setLocalNotes] = useState(notes);
+    const [editLabel, setEditLabel] = useState(label);
+    const [editDescription, setEditDescription] = useState(description || '');
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
     const colorClasses = {
         cyan: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30',
         emerald: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30',
@@ -84,18 +209,192 @@ const ToggleItem = ({
         orange: 'text-orange-400 bg-orange-500/10 border-orange-500/30',
     };
 
+    const handleSaveNotes = () => {
+        onNotesChange?.(localNotes);
+        setIsEditingNotes(false);
+    };
+
+    const handleSaveItemEdit = () => {
+        if (onEdit && editLabel.trim()) {
+            onEdit(editLabel.trim(), editDescription.trim());
+            setIsEditingItem(false);
+        }
+    };
+
+    const handleCancelItemEdit = () => {
+        setEditLabel(label);
+        setEditDescription(description || '');
+        setIsEditingItem(false);
+    };
+
     return (
-        <div className="flex items-center justify-between py-3 px-4 rounded-xl bg-card/20 border border-white/5 hover:border-white/10 transition-all">
-            <div className="flex items-center gap-3">
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center border ${colorClasses[color]}`}>
-                    <Icon className="w-4 h-4" />
+        <div className="rounded-xl bg-card/20 border border-white/5 hover:border-white/10 transition-all overflow-hidden">
+            <div
+                className="flex items-center justify-between py-3 px-4 cursor-pointer"
+                onClick={() => !isEditingItem && setIsExpanded(!isExpanded)}
+            >
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center border shrink-0 ${colorClasses[color]}`}>
+                        <Icon className="w-4 h-4" />
+                    </div>
+                    {isEditingItem ? (
+                        <div className="flex-1 space-y-2" onClick={(e) => e.stopPropagation()}>
+                            <input
+                                type="text"
+                                value={editLabel}
+                                onChange={(e) => setEditLabel(e.target.value)}
+                                className="w-full px-2 py-1 text-sm bg-zinc-900/50 border border-purple-500/30 rounded text-foreground focus:outline-none focus:border-purple-400"
+                                placeholder="Item name"
+                                autoFocus
+                            />
+                            <input
+                                type="text"
+                                value={editDescription}
+                                onChange={(e) => setEditDescription(e.target.value)}
+                                className="w-full px-2 py-1 text-[10px] bg-zinc-900/50 border border-purple-500/30 rounded text-muted-foreground focus:outline-none focus:border-purple-400"
+                                placeholder="Description (optional)"
+                            />
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={handleSaveItemEdit}
+                                    className="px-2 py-1 text-[10px] bg-purple-500/20 text-purple-400 rounded hover:bg-purple-500/30 transition-colors"
+                                >
+                                    Save
+                                </button>
+                                <button
+                                    onClick={handleCancelItemEdit}
+                                    className="px-2 py-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="min-w-0">
+                            <p className="text-sm font-medium text-foreground truncate">{label}</p>
+                            {description && <p className="text-[10px] text-muted-foreground truncate">{description}</p>}
+                        </div>
+                    )}
                 </div>
-                <div>
-                    <p className="text-sm font-medium text-foreground">{label}</p>
-                    {description && <p className="text-[10px] text-muted-foreground">{description}</p>}
-                </div>
+                {!isEditingItem && (
+                    <div className="flex items-center gap-2">
+                        {(onEdit || (onDelete && canDelete)) && (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                                    <button className="p-1 hover:bg-white/5 rounded transition-colors">
+                                        <MoreVertical className="w-4 h-4 text-muted-foreground" />
+                                    </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="bg-zinc-900 border-white/10">
+                                    {onEdit && (
+                                        <DropdownMenuItem
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setIsEditingItem(true);
+                                            }}
+                                            className="text-xs cursor-pointer"
+                                        >
+                                            <PenLine className="w-3 h-3 mr-2" />
+                                            Edit Item
+                                        </DropdownMenuItem>
+                                    )}
+                                    {onDelete && canDelete && (
+                                        <DropdownMenuItem
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setShowDeleteConfirm(true);
+                                            }}
+                                            className="text-xs text-red-400 cursor-pointer focus:text-red-400"
+                                        >
+                                            <Trash2 className="w-3 h-3 mr-2" />
+                                            Delete
+                                        </DropdownMenuItem>
+                                    )}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
+                        <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                        <div onClick={(e) => e.stopPropagation()}>
+                            <Switch checked={checked} onCheckedChange={onChange} />
+                        </div>
+                    </div>
+                )}
             </div>
-            <Switch checked={checked} onCheckedChange={onChange} />
+
+            {isExpanded && !isEditingItem && (
+                <div className="px-4 pb-4 pt-1 border-t border-white/5">
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-orbitron text-muted-foreground uppercase tracking-wider">Team Notes</span>
+                        {!isEditingNotes && (
+                            <button
+                                onClick={() => setIsEditingNotes(true)}
+                                className="text-[10px] text-cyan-400 hover:text-cyan-300 flex items-center gap-1"
+                            >
+                                <Edit2 className="w-3 h-3" />
+                                Edit
+                            </button>
+                        )}
+                    </div>
+
+                    {isEditingNotes ? (
+                        <div className="space-y-2">
+                            <textarea
+                                value={localNotes}
+                                onChange={(e) => setLocalNotes(e.target.value)}
+                                placeholder={placeholder}
+                                className="w-full px-3 py-2 text-sm bg-zinc-900/50 border border-white/10 rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-cyan-500/50 resize-none"
+                                rows={3}
+                                autoFocus
+                            />
+                            <div className="flex gap-2 justify-end">
+                                <button
+                                    onClick={() => {
+                                        setLocalNotes(notes);
+                                        setIsEditingNotes(false);
+                                    }}
+                                    className="px-3 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleSaveNotes}
+                                    className="px-3 py-1 text-xs bg-cyan-500/20 text-cyan-400 rounded-md hover:bg-cyan-500/30 transition-colors"
+                                >
+                                    Save
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                            {notes || <span className="italic text-muted-foreground/50">No notes yet. Click Edit to add.</span>}
+                        </p>
+                    )}
+                </div>
+            )}
+
+            {/* Delete Confirmation Dialog */}
+            <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+                <AlertDialogContent className="bg-zinc-900 border-red-500/30">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="text-red-400">Delete Checklist Item</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to delete "{label}"? This action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel className="border-white/10">Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => {
+                                onDelete?.();
+                                setShowDeleteConfirm(false);
+                            }}
+                            className="bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30"
+                        >
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 };
@@ -445,13 +744,57 @@ const IndividualClientProfile: React.FC = () => {
     // Monthly Website Upgrades = OFF by default (client opts in for monthly updates/upgrades)
     const [monthlyUpgrades, setMonthlyUpgrades] = useState(false);
 
-    // Management toggles state - ALL OFF by default for new clients from form submissions
+    // Management checklist state - dynamic array for add/edit/delete functionality
     // Only Off Tint demo has everything complete (website already live)
     // Klean And Fresh and all form submission clients start with all OFF
-    const [telegramGroup, setTelegramGroup] = useState(isOffTint);
-    const [githubRepoActive, setGithubRepoActive] = useState(isOffTint);
-    const [autoVpsUpdates, setAutoVpsUpdates] = useState(isOffTint);
-    const [connectedToDomain, setConnectedToDomain] = useState(isOffTint);
+    const [managementChecklist, setManagementChecklist] = useState<ChecklistItem[]>([
+        { id: 'telegram', label: 'Telegram Group', description: 'Telegram group has been created with the client', checked: isOffTint, notes: '', isDefault: false },
+        { id: 'github', label: 'Github Repository Active', description: 'In Rank Me Higher Websites org', checked: isOffTint, notes: '', isDefault: false },
+        { id: 'dns', label: 'DNS Pointing to Our NameServers', description: 'DNS configured & live - UPDATED', checked: isOffTint, notes: '', isDefault: false },
+        { id: 'vps', label: 'Auto VPS Updates', description: 'Automatic deploys via Github', checked: isOffTint, notes: '', isDefault: false },
+        { id: 'leads', label: 'Lead Form Submissions', description: 'Telegram Channel & Email Notifications', checked: isOffTint, notes: '', isDefault: false },
+    ]);
+
+    // Add new checklist item dialog state
+    const [showAddChecklistDialog, setShowAddChecklistDialog] = useState(false);
+    const [newChecklistLabel, setNewChecklistLabel] = useState('');
+    const [newChecklistDescription, setNewChecklistDescription] = useState('');
+
+    // Helper functions for checklist management
+    const updateChecklistItem = (itemId: string, updates: Partial<ChecklistItem>) => {
+        setManagementChecklist(prev =>
+            prev.map(item => item.id === itemId ? { ...item, ...updates } : item)
+        );
+    };
+
+    const addChecklistItem = () => {
+        if (!newChecklistLabel.trim()) return;
+        const newItem: ChecklistItem = {
+            id: `custom-${Date.now()}`,
+            label: newChecklistLabel.trim(),
+            description: newChecklistDescription.trim(),
+            checked: false,
+            notes: '',
+            isDefault: false
+        };
+        setManagementChecklist(prev => [...prev, newItem]);
+        setNewChecklistLabel('');
+        setNewChecklistDescription('');
+        setShowAddChecklistDialog(false);
+    };
+
+    const deleteChecklistItem = (itemId: string) => {
+        setManagementChecklist(prev => prev.filter(item => item.id !== itemId));
+    };
+
+    const editChecklistItem = (itemId: string, newLabel: string, newDescription: string) => {
+        updateChecklistItem(itemId, { label: newLabel, description: newDescription });
+    };
+
+    // Calculate completion percentage
+    const checklistCompletionPercent = Math.round(
+        (managementChecklist.filter(item => item.checked).length / managementChecklist.length) * 100
+    ) || 0;
 
     // Image popup state
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -470,8 +813,16 @@ const IndividualClientProfile: React.FC = () => {
     // Logo upload state
     const [logoFiles, setLogoFiles] = useState<string[]>([]);
     const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+    const [logoLoadError, setLogoLoadError] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { toast } = useToast();
+
+    // Reset logo error when logoFiles changes (new upload)
+    useEffect(() => {
+        if (logoFiles.length > 0) {
+            setLogoLoadError(false);
+        }
+    }, [logoFiles]);
     const queryClient = useQueryClient();
     
     // Stripe payment state
@@ -631,7 +982,9 @@ const IndividualClientProfile: React.FC = () => {
             const logos = client.form_submission?.logo_files;
             if (logos) {
                 const logoUrl = Array.isArray(logos) ? logos[0] : logos;
-                if (logoUrl) {
+                // Only set if it's a valid URL (not just text like "Client Logo")
+                const isValidUrl = logoUrl && (logoUrl.startsWith('http://') || logoUrl.startsWith('https://') || logoUrl.startsWith('data:'));
+                if (isValidUrl) {
                     setLogoFiles(prev => {
                         // If we already have a logo in state, keep it (might be a recently uploaded logo)
                         // Only update if the database logo is different from what we have
@@ -687,6 +1040,7 @@ const IndividualClientProfile: React.FC = () => {
                 .getPublicUrl(fileName);
 
             const logoUrl = urlData.publicUrl;
+            console.log('Uploaded logo URL:', logoUrl);
 
             // Get existing notes or form_submission data
             let notesData = {};
@@ -714,6 +1068,7 @@ const IndividualClientProfile: React.FC = () => {
             if (updateError) throw updateError;
 
             setLogoFiles([logoUrl]);
+            setLogoLoadError(false); // Reset error state on successful upload
             queryClient.invalidateQueries({ queryKey: ['client', id] });
             queryClient.invalidateQueries({ queryKey: ['all-clients'] });
 
@@ -850,73 +1205,23 @@ const IndividualClientProfile: React.FC = () => {
                     <div className="flex items-start gap-4">
                         {/* Client Logo - from form submission or uploaded */}
                         {(() => {
-                            // Prioritize logoFiles state (updated immediately after upload) over client.form_submission
-                            // This ensures the logo displays right after upload, before query refetch completes
-                            const logos = (logoFiles && logoFiles.length > 0) ? logoFiles : (client.form_submission?.logo_files);
-                            const logoUrl = logos?.length > 0 ? (Array.isArray(logos) ? logos[0] : logos) : null;
-                            
-                            if (logoUrl) {
+                            // Get favicon from website URL using Google's favicon service
+                            const websiteUrl = client.website_url;
+                            const faviconUrl = websiteUrl ? `https://www.google.com/s2/favicons?domain=${encodeURIComponent(websiteUrl)}&sz=128` : null;
+
+                            if (faviconUrl) {
                                 return (
-                                    <div className="relative group flex-shrink-0">
-                                        <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden border-2 border-cyan-500/30 bg-zinc-900 p-1 shadow-lg shadow-cyan-500/20">
-                                            <img src={logoUrl} alt="Client Logo" className="w-full h-full object-contain" />
-                                        </div>
-                                        {!isFeaturedClient && (
-                                            <>
-                                                <input
-                                                    ref={fileInputRef}
-                                                    type="file"
-                                                    accept="image/*"
-                                                    className="hidden"
-                                                    onChange={handleLogoFileSelect}
-                                                    disabled={isUploadingLogo}
-                                                />
-                                                <button
-                                                    onClick={() => fileInputRef.current?.click()}
-                                                    disabled={isUploadingLogo}
-                                                    className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center cursor-pointer disabled:cursor-not-allowed"
-                                                    title="Replace logo"
-                                                >
-                                                    {isUploadingLogo ? (
-                                                        <div className="w-6 h-6 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />
-                                                    ) : (
-                                                        <Upload className="w-5 h-5 text-cyan-400" />
-                                                    )}
-                                                </button>
-                                            </>
-                                        )}
-                                    </div>
-                                );
-                            }
-                            
-                            // Dummy logo placeholder - show upload option
-                            if (!isFeaturedClient) {
-                                return (
-                                    <div className="relative flex-shrink-0">
-                                        <input
-                                            ref={fileInputRef}
-                                            type="file"
-                                            accept="image/*"
-                                            className="hidden"
-                                            onChange={handleLogoFileSelect}
-                                            disabled={isUploadingLogo}
+                                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden border-2 border-cyan-500/30 bg-zinc-900 p-2 shadow-lg shadow-cyan-500/20 flex items-center justify-center flex-shrink-0">
+                                        <img
+                                            src={faviconUrl}
+                                            alt={`${client.company_name || client.name} logo`}
+                                            className="w-full h-full object-contain"
                                         />
-                                        <button
-                                            onClick={() => fileInputRef.current?.click()}
-                                            disabled={isUploadingLogo}
-                                            className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border-2 border-cyan-500/30 flex items-center justify-center border-dashed cursor-pointer hover:border-cyan-400 hover:bg-cyan-500/30 transition-all disabled:cursor-not-allowed disabled:opacity-50"
-                                            title="Upload logo"
-                                        >
-                                            {isUploadingLogo ? (
-                                                <div className="w-6 h-6 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />
-                                            ) : (
-                                                <Upload className="w-6 h-6 text-cyan-400" />
-                                            )}
-                                        </button>
                                     </div>
                                 );
                             }
-                            
+
+                            // No website URL - show building icon
                             return (
                                 <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border-2 border-cyan-500/30 flex items-center justify-center flex-shrink-0">
                                     <Building2 className="w-8 h-8 text-cyan-400" />
@@ -1153,47 +1458,207 @@ const IndividualClientProfile: React.FC = () => {
                                     <div className="flex items-center gap-2">
                                         <span className="text-[10px] font-orbitron text-muted-foreground">Completion</span>
                                         <span className="text-sm font-orbitron font-bold text-cyan-400">
-                                            {Math.round(([telegramGroup, githubRepoActive, autoVpsUpdates, connectedToDomain].filter(Boolean).length / 4) * 100)}%
+                                            {checklistCompletionPercent}%
                                         </span>
                                     </div>
                                 </div>
                             </div>
                             <div className="p-4 space-y-3">
-                                <ToggleItem
-                                    label="Telegram Group"
-                                    description="Telegram group has been created with the client"
-                                    icon={MessageSquare}
-                                    checked={telegramGroup}
-                                    onChange={setTelegramGroup}
-                                    color="purple"
-                                />
-                                <ToggleItem
-                                    label="Github Repository Active"
-                                    description="In Rank Me Higher Websites org"
-                                    icon={Github}
-                                    checked={githubRepoActive}
-                                    onChange={setGithubRepoActive}
-                                    color="purple"
-                                />
-                                <ToggleItem
-                                    label="DNS Pointing to Our NameServers"
-                                    description="DNS configured & live - UPDATED"
-                                    icon={Link2}
-                                    checked={connectedToDomain}
-                                    onChange={setConnectedToDomain}
-                                    color="purple"
-                                />
-                                <ToggleItem
-                                    label="Auto VPS Updates"
-                                    description="Automatic deploys via Github"
-                                    icon={Server}
-                                    checked={autoVpsUpdates}
-                                    onChange={setAutoVpsUpdates}
-                                    color="purple"
-                                />
+                                {/* Dynamic checklist items */}
+                                {managementChecklist.map((item) => {
+                                    // Smart icon selection based on keywords in label
+                                    const getIcon = () => {
+                                        const label = item.label.toLowerCase();
+
+                                        // Default items by ID
+                                        if (item.id === 'telegram') return MessageSquare;
+                                        if (item.id === 'github') return Github;
+                                        if (item.id === 'dns') return Link2;
+                                        if (item.id === 'vps') return Server;
+                                        if (item.id === 'leads') return Bell;
+
+                                        // Communication & Messaging
+                                        if (label.includes('telegram') || label.includes('chat') || label.includes('message')) return MessageSquare;
+                                        if (label.includes('email') || label.includes('mail') || label.includes('inbox')) return Mail;
+                                        if (label.includes('sms') || label.includes('text')) return Smartphone;
+                                        if (label.includes('phone') || label.includes('call')) return Phone;
+                                        if (label.includes('notification') || label.includes('alert') || label.includes('remind')) return Bell;
+                                        if (label.includes('contact') || label.includes('support')) return MessageCircle;
+
+                                        // Development & Technical
+                                        if (label.includes('github') || label.includes('git') || label.includes('repo')) return Github;
+                                        if (label.includes('code') || label.includes('develop') || label.includes('programming')) return Code;
+                                        if (label.includes('terminal') || label.includes('command') || label.includes('cli')) return Terminal;
+                                        if (label.includes('api') || label.includes('endpoint') || label.includes('webhook')) return Zap;
+                                        if (label.includes('database') || label.includes('db') || label.includes('sql')) return Database;
+                                        if (label.includes('server') || label.includes('vps') || label.includes('host')) return Server;
+                                        if (label.includes('deploy') || label.includes('release') || label.includes('launch')) return Rocket;
+                                        if (label.includes('build') || label.includes('compile')) return Hammer;
+                                        if (label.includes('test') || label.includes('qa') || label.includes('quality')) return ClipboardCheck;
+                                        if (label.includes('bug') || label.includes('fix') || label.includes('debug')) return Tool;
+
+                                        // Domain & DNS
+                                        if (label.includes('dns') || label.includes('nameserver') || label.includes('domain')) return Link2;
+                                        if (label.includes('ssl') || label.includes('https') || label.includes('certificate') || label.includes('secure')) return Lock;
+                                        if (label.includes('url') || label.includes('link') || label.includes('redirect')) return LinkIcon;
+
+                                        // Cloud & Storage
+                                        if (label.includes('cloud') || label.includes('aws') || label.includes('azure') || label.includes('gcp')) return Cloud;
+                                        if (label.includes('backup') || label.includes('restore')) return HardDrive;
+                                        if (label.includes('storage') || label.includes('file') || label.includes('upload')) return Folder;
+                                        if (label.includes('download')) return Download;
+                                        if (label.includes('sync') || label.includes('update') || label.includes('refresh')) return RefreshCw;
+
+                                        // Analytics & Marketing
+                                        if (label.includes('analytics') || label.includes('tracking') || label.includes('ga4') || label.includes('google analytics')) return BarChart3;
+                                        if (label.includes('seo') || label.includes('search') || label.includes('keyword')) return Search;
+                                        if (label.includes('pixel') || label.includes('facebook') || label.includes('meta')) return Target;
+                                        if (label.includes('report') || label.includes('dashboard') || label.includes('metric')) return PieChart;
+                                        if (label.includes('conversion') || label.includes('funnel')) return TrendingUp;
+                                        if (label.includes('campaign') || label.includes('ad') || label.includes('marketing')) return Sparkles;
+
+                                        // Security & Access
+                                        if (label.includes('password') || label.includes('credential') || label.includes('login')) return Key;
+                                        if (label.includes('auth') || label.includes('permission') || label.includes('access')) return Shield;
+                                        if (label.includes('2fa') || label.includes('mfa') || label.includes('verification')) return ShieldCheck;
+                                        if (label.includes('user') || label.includes('account') || label.includes('profile')) return User;
+                                        if (label.includes('team') || label.includes('member') || label.includes('staff')) return Users;
+
+                                        // Content & Media
+                                        if (label.includes('image') || label.includes('photo') || label.includes('picture')) return Camera;
+                                        if (label.includes('video') || label.includes('youtube') || label.includes('vimeo')) return Video;
+                                        if (label.includes('audio') || label.includes('podcast') || label.includes('sound')) return Mic;
+                                        if (label.includes('content') || label.includes('blog') || label.includes('article') || label.includes('post')) return FileText;
+                                        if (label.includes('document') || label.includes('doc') || label.includes('pdf')) return File;
+                                        if (label.includes('design') || label.includes('ui') || label.includes('ux') || label.includes('graphic')) return Palette;
+                                        if (label.includes('logo') || label.includes('brand') || label.includes('identity')) return Paintbrush;
+
+                                        // Business & Finance
+                                        if (label.includes('payment') || label.includes('stripe') || label.includes('billing')) return CreditCard;
+                                        if (label.includes('invoice') || label.includes('receipt')) return Receipt;
+                                        if (label.includes('subscription') || label.includes('plan') || label.includes('pricing')) return DollarSign;
+                                        if (label.includes('wallet') || label.includes('balance')) return Wallet;
+                                        if (label.includes('contract') || label.includes('agreement') || label.includes('legal')) return FileCheck;
+                                        if (label.includes('client') || label.includes('customer')) return Briefcase;
+                                        if (label.includes('lead') || label.includes('prospect') || label.includes('form')) return ClipboardList;
+
+                                        // E-commerce
+                                        if (label.includes('shop') || label.includes('store') || label.includes('ecommerce')) return Store;
+                                        if (label.includes('cart') || label.includes('checkout') || label.includes('order')) return ShoppingCart;
+                                        if (label.includes('product') || label.includes('inventory') || label.includes('stock')) return Package;
+                                        if (label.includes('shipping') || label.includes('delivery')) return Truck;
+
+                                        // Social Media
+                                        if (label.includes('social') || label.includes('share') || label.includes('post')) return Share2;
+                                        if (label.includes('review') || label.includes('rating') || label.includes('feedback')) return Star;
+                                        if (label.includes('follow') || label.includes('subscribe') || label.includes('like')) return Heart;
+
+                                        // Location & Maps
+                                        if (label.includes('location') || label.includes('address') || label.includes('gmb') || label.includes('google business')) return MapPin;
+                                        if (label.includes('map') || label.includes('direction')) return Map;
+
+                                        // AI & Automation
+                                        if (label.includes('ai') || label.includes('bot') || label.includes('chatbot') || label.includes('ava')) return Bot;
+                                        if (label.includes('automat') || label.includes('workflow') || label.includes('zapier')) return Zap;
+                                        if (label.includes('smart') || label.includes('intelligent')) return Brain;
+
+                                        // Misc
+                                        if (label.includes('setup') || label.includes('config') || label.includes('setting')) return Settings;
+                                        if (label.includes('install') || label.includes('integrate')) return Cpu;
+                                        if (label.includes('complete') || label.includes('done') || label.includes('finish')) return CheckCircle2;
+                                        if (label.includes('schedule') || label.includes('calendar') || label.includes('date') || label.includes('time')) return Calendar;
+                                        if (label.includes('list') || label.includes('task') || label.includes('todo')) return ListChecks;
+                                        if (label.includes('tag') || label.includes('label') || label.includes('category')) return Tag;
+                                        if (label.includes('bookmark') || label.includes('save') || label.includes('favorite')) return Bookmark;
+                                        if (label.includes('info') || label.includes('about') || label.includes('detail')) return Info;
+                                        if (label.includes('help') || label.includes('faq') || label.includes('question')) return HelpCircle;
+                                        if (label.includes('home') || label.includes('main') || label.includes('landing')) return Home;
+                                        if (label.includes('global') || label.includes('world') || label.includes('international')) return Globe;
+
+                                        // Default
+                                        return CheckCircle2;
+                                    };
+
+                                    return (
+                                        <ToggleItem
+                                            key={item.id}
+                                            label={item.label}
+                                            description={item.description}
+                                            icon={getIcon()}
+                                            checked={item.checked}
+                                            onChange={(checked) => updateChecklistItem(item.id, { checked })}
+                                            color="purple"
+                                            notes={item.notes}
+                                            onNotesChange={(notes) => updateChecklistItem(item.id, { notes })}
+                                            placeholder="Add notes..."
+                                            onEdit={(newLabel, newDescription) => editChecklistItem(item.id, newLabel, newDescription)}
+                                            onDelete={() => deleteChecklistItem(item.id)}
+                                            canDelete={!item.isDefault}
+                                        />
+                                    );
+                                })}
+
+                                {/* Add New Item Button */}
+                                <Dialog open={showAddChecklistDialog} onOpenChange={setShowAddChecklistDialog}>
+                                    <DialogTrigger asChild>
+                                        <button className="w-full py-3 px-4 rounded-xl bg-purple-500/10 border border-purple-500/20 border-dashed hover:bg-purple-500/20 hover:border-purple-500/40 transition-all flex items-center justify-center gap-2 text-purple-400">
+                                            <Plus className="w-4 h-4" />
+                                            <span className="text-sm font-medium">Add Checklist Item</span>
+                                        </button>
+                                    </DialogTrigger>
+                                    <DialogContent className="bg-zinc-900 border-purple-500/30">
+                                        <DialogHeader>
+                                            <DialogTitle className="font-orbitron text-purple-400">Add New Checklist Item</DialogTitle>
+                                            <DialogDescription className="text-muted-foreground">
+                                                Create a new item for the management checklist.
+                                            </DialogDescription>
+                                        </DialogHeader>
+                                        <div className="space-y-4 pt-4">
+                                            <div className="space-y-2">
+                                                <Label className="text-xs font-orbitron text-muted-foreground uppercase tracking-widest">Item Name</Label>
+                                                <Input
+                                                    value={newChecklistLabel}
+                                                    onChange={(e) => setNewChecklistLabel(e.target.value)}
+                                                    placeholder="e.g., SSL Certificate Installed"
+                                                    className="bg-background border-purple-500/30 focus:border-purple-400"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label className="text-xs font-orbitron text-muted-foreground uppercase tracking-widest">Description (Optional)</Label>
+                                                <Input
+                                                    value={newChecklistDescription}
+                                                    onChange={(e) => setNewChecklistDescription(e.target.value)}
+                                                    placeholder="e.g., HTTPS enabled for the domain"
+                                                    className="bg-background border-purple-500/30 focus:border-purple-400"
+                                                />
+                                            </div>
+                                            <div className="flex gap-2 pt-2">
+                                                <Button
+                                                    variant="outline"
+                                                    onClick={() => {
+                                                        setShowAddChecklistDialog(false);
+                                                        setNewChecklistLabel('');
+                                                        setNewChecklistDescription('');
+                                                    }}
+                                                    className="flex-1 border-white/10"
+                                                >
+                                                    Cancel
+                                                </Button>
+                                                <Button
+                                                    onClick={addChecklistItem}
+                                                    disabled={!newChecklistLabel.trim()}
+                                                    className="flex-1 bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 border border-purple-500/30"
+                                                >
+                                                    <Plus className="w-4 h-4 mr-2" />
+                                                    Add Item
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </DialogContent>
+                                </Dialog>
                             </div>
                         </div>
-                        
+
                         {/* Stripe Payment & Subscription Card */}
                         <div className="bg-card/20 backdrop-blur-xl border border-emerald-500/20 rounded-2xl overflow-hidden">
                             <div className="px-5 py-4 border-b border-emerald-500/10 bg-emerald-500/5">
