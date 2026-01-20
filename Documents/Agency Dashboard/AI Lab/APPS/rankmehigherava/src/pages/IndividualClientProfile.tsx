@@ -222,6 +222,47 @@ interface ServiceItem {
     display_order?: number;
 }
 
+// Global tech stack item from Supabase
+interface GlobalTechStackItem {
+    id: string;
+    label: string;
+    description: string;
+    display_order: number;
+    is_default: boolean;
+    created_at: string;
+    updated_at: string;
+}
+
+// Client-specific tech stack status from Supabase
+interface ClientTechStackStatus {
+    id: string;
+    client_id: string;
+    tech_stack_item_id: string;
+    enabled: boolean;
+    created_at: string;
+    updated_at: string;
+}
+
+// Tech stack item interface (combined)
+interface TechStackItem {
+    id: string;
+    label: string;
+    description: string;
+    enabled: boolean;
+    isDefault?: boolean;
+    display_order?: number;
+}
+
+// Client tech stack choices interface
+interface ClientTechStackChoices {
+    id: string;
+    client_id: string;
+    framework: 'react' | 'html' | null;
+    hosting: 'vercel' | 'namecheap' | null;
+    created_at: string;
+    updated_at: string;
+}
+
 // Toggle Item Component with expandable notes, edit and delete functionality
 const ToggleItem = ({
     label,
@@ -980,6 +1021,254 @@ const IndividualClientProfile: React.FC = () => {
     const servicesCompletionPercent = clientServices.length > 0
         ? Math.round((clientServices.filter(item => item.checked).length / clientServices.length) * 100)
         : 0;
+
+    // Tech Stack state - synced with Supabase
+    const [techStack, setTechStack] = useState<TechStackItem[]>([]);
+    const [techStackLoading, setTechStackLoading] = useState(true);
+
+    // Add new tech stack item dialog state
+    const [showAddTechStackDialog, setShowAddTechStackDialog] = useState(false);
+    const [newTechStackLabel, setNewTechStackLabel] = useState('');
+    const [newTechStackDescription, setNewTechStackDescription] = useState('');
+
+    // Fetch global tech stack items from Supabase
+    const { data: globalTechStackItems, refetch: refetchGlobalTechStack } = useQuery({
+        queryKey: ['global-tech-stack-items'],
+        queryFn: async () => {
+            const { data, error } = await supabase
+                .from('global_tech_stack_items')
+                .select('*')
+                .order('display_order', { ascending: true });
+            if (error) throw error;
+            return data as GlobalTechStackItem[];
+        },
+    });
+
+    // Fetch client-specific tech stack status from Supabase
+    const { data: clientTechStackStatus, refetch: refetchTechStackStatus } = useQuery({
+        queryKey: ['client-tech-stack-status', id],
+        queryFn: async () => {
+            if (!id) return [];
+            const { data, error } = await supabase
+                .from('client_tech_stack_status')
+                .select('*')
+                .eq('client_id', id);
+            if (error) throw error;
+            return data as ClientTechStackStatus[];
+        },
+        enabled: !!id,
+    });
+
+    // Combine global tech stack items with client-specific status
+    useEffect(() => {
+        if (globalTechStackItems) {
+            const combined: TechStackItem[] = globalTechStackItems.map(item => {
+                const clientStatus = clientTechStackStatus?.find(s => s.tech_stack_item_id === item.id);
+                return {
+                    id: item.id,
+                    label: item.label,
+                    description: item.description,
+                    enabled: clientStatus?.enabled ?? false,
+                    isDefault: item.is_default,
+                    display_order: item.display_order,
+                };
+            });
+            setTechStack(combined);
+            setTechStackLoading(false);
+        }
+    }, [globalTechStackItems, clientTechStackStatus]);
+
+    // Helper functions for tech stack management
+    const updateTechStackItem = async (itemId: string, enabled: boolean) => {
+        // Optimistic update
+        setTechStack(prev =>
+            prev.map(item => item.id === itemId ? { ...item, enabled } : item)
+        );
+
+        // Sync 'enabled' to client_tech_stack_status (per-client)
+        if (id) {
+            const existingStatus = clientTechStackStatus?.find(s => s.tech_stack_item_id === itemId);
+
+            if (existingStatus) {
+                // Update existing status
+                await supabase
+                    .from('client_tech_stack_status')
+                    .update({ enabled })
+                    .eq('id', existingStatus.id);
+            } else {
+                // Insert new status
+                await supabase
+                    .from('client_tech_stack_status')
+                    .insert({
+                        client_id: id,
+                        tech_stack_item_id: itemId,
+                        enabled,
+                    });
+            }
+            refetchTechStackStatus();
+        }
+    };
+
+    const addTechStackItem = async () => {
+        if (!newTechStackLabel.trim()) return;
+
+        // Get the next display order
+        const maxOrder = Math.max(...(globalTechStackItems?.map(i => i.display_order) || [0]), 0);
+
+        // Insert into global_tech_stack_items (syncs to all clients)
+        const { error } = await supabase
+            .from('global_tech_stack_items')
+            .insert({
+                label: newTechStackLabel.trim(),
+                description: newTechStackDescription.trim(),
+                display_order: maxOrder + 1,
+                is_default: false,
+            });
+
+        if (error) {
+            toast({
+                title: 'Error',
+                description: 'Failed to add tech stack item',
+                variant: 'destructive',
+            });
+            return;
+        }
+
+        // Refetch to sync
+        refetchGlobalTechStack();
+
+        setNewTechStackLabel('');
+        setNewTechStackDescription('');
+        setShowAddTechStackDialog(false);
+
+        toast({
+            title: 'Tech Stack Added',
+            description: 'Tech stack item added and synced to all clients',
+        });
+    };
+
+    const deleteTechStackItem = async (itemId: string) => {
+        // Delete from global_tech_stack_items (cascades to client_tech_stack_status)
+        const { error } = await supabase
+            .from('global_tech_stack_items')
+            .delete()
+            .eq('id', itemId);
+
+        if (error) {
+            toast({
+                title: 'Error',
+                description: 'Failed to delete tech stack item',
+                variant: 'destructive',
+            });
+            return;
+        }
+
+        // Optimistic update
+        setTechStack(prev => prev.filter(item => item.id !== itemId));
+        refetchGlobalTechStack();
+
+        toast({
+            title: 'Tech Stack Deleted',
+            description: 'Tech stack item removed from all clients',
+        });
+    };
+
+    const editTechStackItem = async (itemId: string, newLabel: string, newDescription: string) => {
+        // Update global_tech_stack_items (syncs to all clients)
+        const { error } = await supabase
+            .from('global_tech_stack_items')
+            .update({
+                label: newLabel,
+                description: newDescription,
+            })
+            .eq('id', itemId);
+
+        if (error) {
+            toast({
+                title: 'Error',
+                description: 'Failed to update tech stack item',
+                variant: 'destructive',
+            });
+            return;
+        }
+
+        // Optimistic update
+        setTechStack(prev =>
+            prev.map(item => item.id === itemId ? { ...item, label: newLabel, description: newDescription } : item)
+        );
+        refetchGlobalTechStack();
+
+        toast({
+            title: 'Tech Stack Updated',
+            description: 'Tech stack item updated across all clients',
+        });
+    };
+
+    // Calculate tech stack completion percentage
+    const techStackCompletionPercent = techStack.length > 0
+        ? Math.round((techStack.filter(item => item.enabled).length / techStack.length) * 100)
+        : 0;
+
+    // Fetch client tech stack choices (Framework & Hosting selections)
+    const { data: techStackChoices, refetch: refetchTechStackChoices } = useQuery({
+        queryKey: ['client-tech-stack-choices', id],
+        queryFn: async () => {
+            if (!id) return null;
+            const { data, error } = await supabase
+                .from('client_tech_stack_choices')
+                .select('*')
+                .eq('client_id', id)
+                .single();
+            if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no rows
+            return data as ClientTechStackChoices | null;
+        },
+        enabled: !!id,
+    });
+
+    // Update tech stack choice (Framework or Hosting)
+    const updateTechStackChoice = async (field: 'framework' | 'hosting', value: 'react' | 'html' | 'vercel' | 'namecheap') => {
+        if (!id) return;
+
+        if (techStackChoices) {
+            // Update existing record
+            const { error } = await supabase
+                .from('client_tech_stack_choices')
+                .update({ [field]: value })
+                .eq('client_id', id);
+
+            if (error) {
+                toast({
+                    title: 'Error',
+                    description: `Failed to update ${field}`,
+                    variant: 'destructive',
+                });
+                return;
+            }
+        } else {
+            // Insert new record
+            const { error } = await supabase
+                .from('client_tech_stack_choices')
+                .insert({
+                    client_id: id,
+                    [field]: value,
+                });
+
+            if (error) {
+                toast({
+                    title: 'Error',
+                    description: `Failed to set ${field}`,
+                    variant: 'destructive',
+                });
+                return;
+            }
+        }
+
+        refetchTechStackChoices();
+        toast({
+            title: 'Updated',
+            description: `${field === 'framework' ? 'Framework' : 'Hosting'} updated successfully`,
+        });
+    };
 
     // Management checklist state - now synced with Supabase
     const [managementChecklist, setManagementChecklist] = useState<ChecklistItem[]>([]);
@@ -3258,6 +3547,349 @@ const IndividualClientProfile: React.FC = () => {
                                 </ScrollArea>
                             </DialogContent>
                         </Dialog>
+
+                        {/* Tech Stack Card */}
+                        <div className="bg-card/20 backdrop-blur-xl border border-blue-500/20 rounded-2xl overflow-hidden">
+                            <div className="px-5 py-4 border-b border-blue-500/10 bg-blue-500/5">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <Layers className="w-4 h-4 text-blue-400" />
+                                        <h2 className="font-orbitron text-xs font-bold tracking-wider text-blue-400 uppercase">Tech Stack</h2>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[10px] font-orbitron text-muted-foreground">Active</span>
+                                        <span className="text-sm font-orbitron font-bold text-cyan-400">
+                                            {techStackCompletionPercent}%
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="p-4 space-y-3">
+                                {/* Fixed Tech Stack Choices - Framework */}
+                                <div className="rounded-xl bg-card/30 border border-blue-500/20 p-3">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/30 flex items-center justify-center">
+                                                <Code className="w-4 h-4 text-blue-400" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-medium text-foreground">Framework</p>
+                                                <p className="text-[10px] text-muted-foreground">Website technology</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-1">
+                                            <button
+                                                onClick={() => updateTechStackChoice('framework', 'react')}
+                                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                                                    techStackChoices?.framework === 'react'
+                                                        ? 'bg-cyan-500/30 text-cyan-300 border border-cyan-500/50'
+                                                        : 'bg-card/50 text-muted-foreground border border-white/10 hover:border-cyan-500/30 hover:text-cyan-400'
+                                                }`}
+                                            >
+                                                React
+                                            </button>
+                                            <button
+                                                onClick={() => updateTechStackChoice('framework', 'html')}
+                                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                                                    techStackChoices?.framework === 'html'
+                                                        ? 'bg-orange-500/30 text-orange-300 border border-orange-500/50'
+                                                        : 'bg-card/50 text-muted-foreground border border-white/10 hover:border-orange-500/30 hover:text-orange-400'
+                                                }`}
+                                            >
+                                                HTML
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Fixed Tech Stack Choices - Hosting */}
+                                <div className="rounded-xl bg-card/30 border border-blue-500/20 p-3">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/30 flex items-center justify-center">
+                                                <Server className="w-4 h-4 text-blue-400" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-medium text-foreground">Hosting</p>
+                                                <p className="text-[10px] text-muted-foreground">Server platform</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-1">
+                                            <button
+                                                onClick={() => updateTechStackChoice('hosting', 'vercel')}
+                                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                                                    techStackChoices?.hosting === 'vercel'
+                                                        ? 'bg-purple-500/30 text-purple-300 border border-purple-500/50'
+                                                        : 'bg-card/50 text-muted-foreground border border-white/10 hover:border-purple-500/30 hover:text-purple-400'
+                                                }`}
+                                            >
+                                                Vercel
+                                            </button>
+                                            <button
+                                                onClick={() => updateTechStackChoice('hosting', 'namecheap')}
+                                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                                                    techStackChoices?.hosting === 'namecheap'
+                                                        ? 'bg-emerald-500/30 text-emerald-300 border border-emerald-500/50'
+                                                        : 'bg-card/50 text-muted-foreground border border-white/10 hover:border-emerald-500/30 hover:text-emerald-400'
+                                                }`}
+                                            >
+                                                Namecheap
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* GitHub Branches - Info Only (Not Clickable) */}
+                                <div className="rounded-xl bg-card/30 border border-blue-500/20 p-3">
+                                    <div className="flex items-center gap-3 mb-3">
+                                        <div className="w-8 h-8 rounded-lg bg-gray-500/20 flex items-center justify-center">
+                                            <Github className="w-4 h-4 text-gray-400" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-white">GitHub Branches</p>
+                                            <p className="text-[10px] text-muted-foreground">Deployment workflow guide</p>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2 pl-11">
+                                        <div className="flex items-center gap-2 py-1.5 px-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                                            <div className="w-2 h-2 rounded-full bg-yellow-400"></div>
+                                            <span className="text-xs font-medium text-yellow-300">dev</span>
+                                            <span className="text-[10px] text-yellow-200/60 ml-auto">Development & testing</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 py-1.5 px-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                                            <div className="w-2 h-2 rounded-full bg-blue-400"></div>
+                                            <span className="text-xs font-medium text-blue-300">staging</span>
+                                            <span className="text-[10px] text-blue-200/60 ml-auto">Pre-production review</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 py-1.5 px-3 rounded-lg bg-green-500/10 border border-green-500/20">
+                                            <div className="w-2 h-2 rounded-full bg-green-400"></div>
+                                            <span className="text-xs font-medium text-green-300">main</span>
+                                            <span className="text-[10px] text-green-200/60 ml-auto">Live production</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Divider */}
+                                <div className="border-t border-white/5 my-2"></div>
+
+                                {/* Loading state */}
+                                {techStackLoading && (
+                                    <div className="text-center py-4 text-sm text-muted-foreground">
+                                        Loading tech stack...
+                                    </div>
+                                )}
+                                {/* Dynamic tech stack items */}
+                                {!techStackLoading && techStack.map((item) => {
+                                    // Smart icon selection based on keywords in label
+                                    const getIcon = () => {
+                                        const label = item.label.toLowerCase();
+
+                                        // Hosting & Infrastructure
+                                        if (label.includes('vercel')) return Rocket;
+                                        if (label.includes('netlify')) return Cloud;
+                                        if (label.includes('aws') || label.includes('amazon')) return Cloud;
+                                        if (label.includes('gcp') || label.includes('google cloud')) return Cloud;
+                                        if (label.includes('azure')) return Cloud;
+                                        if (label.includes('digitalocean') || label.includes('droplet')) return Server;
+                                        if (label.includes('heroku')) return Server;
+                                        if (label.includes('cloudflare')) return Shield;
+                                        if (label.includes('vps') || label.includes('server') || label.includes('host')) return Server;
+
+                                        // Databases
+                                        if (label.includes('supabase')) return Database;
+                                        if (label.includes('firebase')) return Flame;
+                                        if (label.includes('postgres') || label.includes('postgresql')) return Database;
+                                        if (label.includes('mysql')) return Database;
+                                        if (label.includes('mongodb') || label.includes('mongo')) return Database;
+                                        if (label.includes('redis')) return Database;
+                                        if (label.includes('database') || label.includes('db')) return Database;
+
+                                        // Frontend Frameworks
+                                        if (label.includes('react')) return Code;
+                                        if (label.includes('next') || label.includes('nextjs')) return Code;
+                                        if (label.includes('vue')) return Code;
+                                        if (label.includes('angular')) return Code;
+                                        if (label.includes('svelte')) return Code;
+                                        if (label.includes('astro')) return Sparkles;
+
+                                        // Languages & Runtimes
+                                        if (label.includes('typescript') || label.includes('ts')) return FileCode;
+                                        if (label.includes('javascript') || label.includes('js')) return FileCode;
+                                        if (label.includes('python')) return Terminal;
+                                        if (label.includes('node') || label.includes('nodejs')) return Terminal;
+                                        if (label.includes('deno')) return Terminal;
+                                        if (label.includes('bun')) return Zap;
+
+                                        // CMS & Content
+                                        if (label.includes('wordpress') || label.includes('wp')) return Globe;
+                                        if (label.includes('webflow')) return Paintbrush;
+                                        if (label.includes('shopify')) return ShoppingCart;
+                                        if (label.includes('strapi') || label.includes('cms')) return Folder;
+                                        if (label.includes('sanity')) return Folder;
+                                        if (label.includes('contentful')) return FileText;
+
+                                        // Version Control & CI/CD
+                                        if (label.includes('github')) return Github;
+                                        if (label.includes('gitlab')) return Github;
+                                        if (label.includes('bitbucket')) return Github;
+                                        if (label.includes('ci') || label.includes('cd') || label.includes('pipeline')) return RefreshCw;
+
+                                        // Auth & Security
+                                        if (label.includes('auth') || label.includes('clerk') || label.includes('auth0')) return Shield;
+                                        if (label.includes('oauth')) return Key;
+                                        if (label.includes('ssl') || label.includes('https')) return Lock;
+
+                                        // APIs & Services
+                                        if (label.includes('stripe')) return CreditCard;
+                                        if (label.includes('twilio') || label.includes('sms')) return Smartphone;
+                                        if (label.includes('sendgrid') || label.includes('mailgun') || label.includes('email')) return Mail;
+                                        if (label.includes('api')) return Zap;
+                                        if (label.includes('webhook')) return LinkIcon;
+
+                                        // Analytics & Monitoring
+                                        if (label.includes('analytics') || label.includes('ga4')) return BarChart3;
+                                        if (label.includes('sentry') || label.includes('monitoring')) return AlertCircle;
+                                        if (label.includes('hotjar') || label.includes('heatmap')) return Target;
+
+                                        // AI & ML
+                                        if (label.includes('openai') || label.includes('gpt') || label.includes('ai')) return Brain;
+                                        if (label.includes('claude') || label.includes('anthropic')) return Bot;
+
+                                        // Styling
+                                        if (label.includes('tailwind') || label.includes('css')) return Palette;
+                                        if (label.includes('sass') || label.includes('scss')) return Paintbrush;
+
+                                        // Default
+                                        return Cpu;
+                                    };
+
+                                    return (
+                                        <div
+                                            key={item.id}
+                                            className="rounded-xl bg-card/20 border border-white/5 hover:border-white/10 transition-all overflow-hidden"
+                                        >
+                                            <div className="flex items-center justify-between py-3 px-4">
+                                                <div className="flex items-center gap-3 flex-1 min-w-0">
+                                                    <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/30 flex items-center justify-center flex-shrink-0">
+                                                        {React.createElement(getIcon(), { className: "w-4 h-4 text-blue-400" })}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-sm font-medium text-foreground truncate">{item.label}</p>
+                                                        {item.description && (
+                                                            <p className="text-[10px] text-muted-foreground truncate">{item.description}</p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <button
+                                                                className="p-1 rounded hover:bg-white/5 transition-colors"
+                                                                onClick={(e) => e.stopPropagation()}
+                                                            >
+                                                                <MoreVertical className="w-4 h-4 text-muted-foreground" />
+                                                            </button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end" className="bg-zinc-900 border-white/10">
+                                                            <DropdownMenuItem
+                                                                onClick={() => {
+                                                                    const newLabel = prompt('Edit label:', item.label);
+                                                                    if (newLabel && newLabel.trim()) {
+                                                                        const newDesc = prompt('Edit description:', item.description);
+                                                                        editTechStackItem(item.id, newLabel.trim(), newDesc || '');
+                                                                    }
+                                                                }}
+                                                                className="text-xs cursor-pointer"
+                                                            >
+                                                                <Edit2 className="w-3 h-3 mr-2" />
+                                                                Edit
+                                                            </DropdownMenuItem>
+                                                            {!item.isDefault && (
+                                                                <DropdownMenuItem
+                                                                    onClick={() => {
+                                                                        if (confirm('Delete this tech stack item from all clients?')) {
+                                                                            deleteTechStackItem(item.id);
+                                                                        }
+                                                                    }}
+                                                                    className="text-xs cursor-pointer text-red-400"
+                                                                >
+                                                                    <Trash2 className="w-3 h-3 mr-2" />
+                                                                    Delete
+                                                                </DropdownMenuItem>
+                                                            )}
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                    <Switch
+                                                        checked={item.enabled}
+                                                        onCheckedChange={(checked) => updateTechStackItem(item.id, checked)}
+                                                        className="data-[state=checked]:bg-blue-500"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+
+                                {/* Add New Tech Stack Item Button */}
+                                <Dialog open={showAddTechStackDialog} onOpenChange={setShowAddTechStackDialog}>
+                                    <DialogTrigger asChild>
+                                        <button className="w-full py-3 px-4 rounded-xl bg-blue-500/10 border border-blue-500/20 border-dashed hover:bg-blue-500/20 hover:border-blue-500/40 transition-all flex items-center justify-center gap-2 text-blue-400">
+                                            <Plus className="w-4 h-4" />
+                                            <span className="text-sm font-medium">Add Tech Stack Item</span>
+                                        </button>
+                                    </DialogTrigger>
+                                    <DialogContent className="bg-zinc-900 border-blue-500/30">
+                                        <DialogHeader>
+                                            <DialogTitle className="font-orbitron text-blue-400">Add New Tech Stack Item</DialogTitle>
+                                            <DialogDescription className="text-muted-foreground">
+                                                This item will be added to all client profiles. Toggle states are per-client.
+                                            </DialogDescription>
+                                        </DialogHeader>
+                                        <div className="space-y-4 pt-4">
+                                            <div className="space-y-2">
+                                                <Label className="text-xs font-orbitron text-muted-foreground uppercase tracking-widest">Technology Name</Label>
+                                                <Input
+                                                    value={newTechStackLabel}
+                                                    onChange={(e) => setNewTechStackLabel(e.target.value)}
+                                                    placeholder="e.g., Vercel, Supabase, React"
+                                                    className="bg-background border-blue-500/30 focus:border-blue-400"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label className="text-xs font-orbitron text-muted-foreground uppercase tracking-widest">Description (Optional)</Label>
+                                                <Input
+                                                    value={newTechStackDescription}
+                                                    onChange={(e) => setNewTechStackDescription(e.target.value)}
+                                                    placeholder="e.g., Hosting platform, Database, Frontend framework"
+                                                    className="bg-background border-blue-500/30 focus:border-blue-400"
+                                                />
+                                            </div>
+                                            <div className="flex gap-2 pt-2">
+                                                <Button
+                                                    variant="outline"
+                                                    onClick={() => {
+                                                        setShowAddTechStackDialog(false);
+                                                        setNewTechStackLabel('');
+                                                        setNewTechStackDescription('');
+                                                    }}
+                                                    className="flex-1 border-white/10"
+                                                >
+                                                    Cancel
+                                                </Button>
+                                                <Button
+                                                    onClick={addTechStackItem}
+                                                    disabled={!newTechStackLabel.trim()}
+                                                    className="flex-1 bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 border border-blue-500/30"
+                                                >
+                                                    <Plus className="w-4 h-4 mr-2" />
+                                                    Add Item
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </DialogContent>
+                                </Dialog>
+                            </div>
+                        </div>
 
                     </div>
                 </div>

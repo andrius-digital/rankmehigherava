@@ -387,6 +387,98 @@ export type Database = {
           }
         ]
       }
+      global_tech_stack_items: {
+        Row: {
+          id: string
+          label: string
+          description: string
+          display_order: number
+          is_default: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          label: string
+          description?: string
+          display_order?: number
+          is_default?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          label?: string
+          description?: string
+          display_order?: number
+          is_default?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      client_tech_stack_status: {
+        Row: {
+          id: string
+          client_id: string
+          tech_stack_item_id: string
+          enabled: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          client_id: string
+          tech_stack_item_id: string
+          enabled?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          client_id?: string
+          tech_stack_item_id?: string
+          enabled?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_tech_stack_status_tech_stack_item_id_fkey"
+            columns: ["tech_stack_item_id"]
+            isOneToOne: false
+            referencedRelation: "global_tech_stack_items"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      client_tech_stack_choices: {
+        Row: {
+          id: string
+          client_id: string
+          framework: 'react' | 'html' | null
+          hosting: 'vercel' | 'namecheap' | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          client_id: string
+          framework?: 'react' | 'html' | null
+          hosting?: 'vercel' | 'namecheap' | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          client_id?: string
+          framework?: 'react' | 'html' | null
+          hosting?: 'vercel' | 'namecheap' | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       blog_posts: {
         Row: {
           id: string
