@@ -32,6 +32,7 @@ interface FormData {
   additionalNotes: string;
   specialOffersExplanation: string;
   financingExplanation: string;
+  websiteColors: string;
   [key: string]: string;
 }
 
@@ -65,23 +66,22 @@ const isFilled = (value: string | undefined | null): boolean => {
   return Boolean(value && value.trim().length > 0);
 };
 
-// Helper to check if at least one checkbox is selected
-const hasSelection = (obj: Record<string, boolean>): boolean => {
-  return Object.values(obj).some(v => v === true);
-};
-
 // Helper to check if at least one service is defined
 const hasServices = (services: Service[]): boolean => {
   return services.some(s => isFilled(s.name));
 };
 
 // Step 1: Business Info
-// Required: companyName, ownsDomain, domainName (if yes), businessPhone, businessEmail, jobRequestEmail
+// Required: companyName, hasGoogleProfile (moved here), ownsDomain, domainName (if yes), businessPhone, businessEmail, jobRequestEmail
 export function calculateStep1Completion(state: FormState): number {
-  const { formData } = state;
+  const { formData, hasGoogleProfile } = state;
   const fields: boolean[] = [];
   
   fields.push(isFilled(formData.companyName));
+  fields.push(isFilled(hasGoogleProfile)); // GBP question moved to Step 1
+  if (hasGoogleProfile === "yes") {
+    fields.push(isFilled(formData.googleBusinessProfileLink));
+  }
   fields.push(isFilled(formData.ownsDomain));
   if (formData.ownsDomain === "yes") {
     fields.push(isFilled(formData.domainName));
@@ -96,8 +96,6 @@ export function calculateStep1Completion(state: FormState): number {
 
 // Step 2: Location & Hours
 // Required: mainCity, serviceAreas, showAddress, showHours
-// If showAddress=yes: streetAddress, city, stateProvince, postalCode
-// If showHours=yes: at least one day with hours
 export function calculateStep2Completion(state: FormState): number {
   const { formData, operatingHours } = state;
   const fields: boolean[] = [];
@@ -170,45 +168,42 @@ export function calculateStep5Completion(state: FormState): number {
   return Math.round((completed / fields.length) * 100);
 }
 
-// Step 6: Team & Story
-// Required: founderMessage, founderPhotos
+// Step 6: Team & Story (now includes logo + all photos)
+// Required: founderMessage, logoFiles (moved here from step 7)
+// Optional but tracked: founderPhotos
 export function calculateStep6Completion(state: FormState): number {
-  const { formData, founderPhotos } = state;
+  const { formData, logoFiles, founderPhotos } = state;
   const fields: boolean[] = [];
   
   fields.push(isFilled(formData.founderMessage));
-  fields.push(founderPhotos.length > 0);
+  fields.push(logoFiles.length > 0); // Logo moved to step 6
+  fields.push(founderPhotos.length > 0); // Founder photos
   
   const completed = fields.filter(Boolean).length;
   return Math.round((completed / fields.length) * 100);
 }
 
-// Step 7: Branding
-// Required: logoFiles
+// Step 7: Branding Details (now just colors, fonts, brand book - logo moved to step 6)
+// All optional - just check if colors or font preference is set
 export function calculateStep7Completion(state: FormState): number {
-  const { logoFiles } = state;
+  const { formData, hasSpecificFont, hasBrandBook } = state;
   const fields: boolean[] = [];
   
-  fields.push(logoFiles.length > 0);
+  // Colors are optional but good to have
+  fields.push(isFilled(formData.websiteColors) || true); // Always count as done since optional
+  fields.push(isFilled(hasSpecificFont) || true); // Always count as done since optional
+  fields.push(isFilled(hasBrandBook) || true); // Always count as done since optional
   
-  const completed = fields.filter(Boolean).length;
-  return Math.round((completed / fields.length) * 100);
+  // Since all are optional, step 7 is always 100%
+  return 100;
 }
 
-// Step 8: Online Presence
-// Required: hasGoogleProfile selection, if yes -> googleBusinessProfileLink
+// Step 8: Reviews & Social (GBP moved to step 1)
+// All optional now - reviews, social links
 export function calculateStep8Completion(state: FormState): number {
-  const { formData, hasGoogleProfile } = state;
-  const fields: boolean[] = [];
-  
-  fields.push(isFilled(hasGoogleProfile));
-  
-  if (hasGoogleProfile === "yes") {
-    fields.push(isFilled(formData.googleBusinessProfileLink));
-  }
-  
-  const completed = fields.filter(Boolean).length;
-  return Math.round((completed / fields.length) * 100);
+  // Since GBP moved to step 1 and everything else is optional
+  // Step 8 is always complete
+  return 100;
 }
 
 // Step 9: Offers
@@ -236,17 +231,10 @@ export function calculateStep9Completion(state: FormState): number {
 }
 
 // Step 10: Final - Has 2 optional fields
-// competitorWebsites and additionalNotes
+// competitorWebsites and additionalNotes - both optional
 export function calculateStep10Completion(state: FormState): number {
-  const { formData } = state;
-  const fields: boolean[] = [];
-  
-  // Both fields are optional but count toward completion
-  fields.push(isFilled(formData.competitorWebsites));
-  fields.push(isFilled(formData.additionalNotes));
-  
-  const completed = fields.filter(Boolean).length;
-  return Math.round((completed / fields.length) * 100);
+  // Both fields are optional, so step 10 is always complete
+  return 100;
 }
 
 // Calculate all step completions

@@ -205,7 +205,7 @@ const KPIDashboard = () => {
         <h2 className="text-xl font-semibold">Overview</h2>
         <Dialog>
           <DialogTrigger asChild>
-            <Button className="gap-2">
+            <Button className="gap-2 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 border border-cyan-500/30 hover:border-cyan-500/50 transition-all">
               <UserPlus className="h-4 w-4" />
               Onboard New Client
             </Button>
@@ -219,47 +219,47 @@ const KPIDashboard = () => {
         </Dialog>
       </div>
 
-      {/* Summary row */}
+      {/* Summary row - AVA Style */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <Card>
+        <Card className="bg-cyan-500/5 border-cyan-500/20 hover:border-cyan-500/30 transition-colors">
           <CardContent className="pt-4">
             <p className="text-sm text-muted-foreground">Total Budget</p>
-            <p className="text-2xl font-bold">${totalBudget.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-foreground">${totalBudget.toLocaleString()}</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-cyan-500/5 border-cyan-500/20 hover:border-cyan-500/30 transition-colors">
           <CardContent className="pt-4">
             <p className="text-sm text-muted-foreground">Current Spend</p>
-            <p className="text-2xl font-bold text-green-600">${totalSpent.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-emerald-400">${totalSpent.toLocaleString()}</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-cyan-500/5 border-cyan-500/20 hover:border-cyan-500/30 transition-colors">
           <CardContent className="pt-4">
             <p className="text-sm text-muted-foreground">Budget Remaining</p>
-            <p className={`text-2xl font-bold ${totalBudgetRemaining < 0 ? 'text-destructive' : 'text-amber-600'}`}>
+            <p className={`text-2xl font-bold ${totalBudgetRemaining < 0 ? 'text-red-400' : 'text-amber-400'}`}>
               ${totalBudgetRemaining.toLocaleString()}
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-cyan-500/5 border-cyan-500/20 hover:border-cyan-500/30 transition-colors">
           <CardContent className="pt-4">
             <p className="text-sm text-muted-foreground">Total Leads</p>
-            <p className="text-2xl font-bold">{totalLeads}</p>
+            <p className="text-2xl font-bold text-foreground">{totalLeads}</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-cyan-500/5 border-cyan-500/20 hover:border-cyan-500/30 transition-colors">
           <CardContent className="pt-4">
             <p className="text-sm text-muted-foreground">Avg Cost/Lead</p>
-            <p className="text-2xl font-bold text-blue-600">${avgCostPerLead.toFixed(2)}</p>
+            <p className="text-2xl font-bold text-cyan-400">${avgCostPerLead.toFixed(2)}</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Leads Chart */}
       {clients.length > 0 && (
-        <Card>
+        <Card className="bg-cyan-500/5 border-cyan-500/20">
           <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-lg">
+            <CardTitle className="flex items-center gap-2 text-lg text-cyan-400">
               <TrendingUp className="h-5 w-5" />
               Leads Over Time (Last 14 Days)
             </CardTitle>
@@ -307,9 +307,9 @@ const KPIDashboard = () => {
       )}
 
       {/* Clients table */}
-      <Card>
+      <Card className="bg-cyan-500/5 border-cyan-500/20">
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-lg">
+          <CardTitle className="flex items-center gap-2 text-lg text-cyan-400">
             <Building2 className="h-5 w-5" />
             All Clients
           </CardTitle>
@@ -369,9 +369,9 @@ const KPIDashboard = () => {
       </Card>
 
       {/* Leads Table with Date Filter */}
-      <Card>
+      <Card className="bg-cyan-500/5 border-cyan-500/20">
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-lg">
+          <CardTitle className="flex items-center gap-2 text-lg text-cyan-400">
             <Calendar className="h-5 w-5" />
             Leads ({getTimeFilterLabel()})
           </CardTitle>
@@ -381,32 +381,43 @@ const KPIDashboard = () => {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex flex-wrap gap-2">
               <Button 
-                variant={timeFilter === 'today' ? 'default' : 'outline'} 
+                variant="outline"
                 size="sm"
                 onClick={() => setTimeFilter('today')}
+                className={timeFilter === 'today' 
+                  ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30 hover:bg-cyan-500/30 hover:text-cyan-300' 
+                  : 'hover:bg-cyan-500/10 hover:text-cyan-400 hover:border-cyan-500/30'}
               >
                 Today
               </Button>
               <Button 
-                variant={timeFilter === 'this_week' ? 'default' : 'outline'} 
+                variant="outline"
                 size="sm"
                 onClick={() => setTimeFilter('this_week')}
+                className={timeFilter === 'this_week' 
+                  ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30 hover:bg-cyan-500/30 hover:text-cyan-300' 
+                  : 'hover:bg-cyan-500/10 hover:text-cyan-400 hover:border-cyan-500/30'}
               >
                 This Week
               </Button>
               <Button 
-                variant={timeFilter === 'last_week' ? 'default' : 'outline'} 
+                variant="outline"
                 size="sm"
                 onClick={() => setTimeFilter('last_week')}
+                className={timeFilter === 'last_week' 
+                  ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30 hover:bg-cyan-500/30 hover:text-cyan-300' 
+                  : 'hover:bg-cyan-500/10 hover:text-cyan-400 hover:border-cyan-500/30'}
               >
                 Last Week
               </Button>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button 
-                    variant={timeFilter === 'custom' ? 'default' : 'outline'} 
+                    variant="outline"
                     size="sm"
-                    className="gap-2"
+                    className={`gap-2 ${timeFilter === 'custom' 
+                      ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30 hover:bg-cyan-500/30 hover:text-cyan-300' 
+                      : 'hover:bg-cyan-500/10 hover:text-cyan-400 hover:border-cyan-500/30'}`}
                   >
                     <CalendarDays className="h-4 w-4" />
                     {timeFilter === 'custom' && dateRange?.from && dateRange?.to 

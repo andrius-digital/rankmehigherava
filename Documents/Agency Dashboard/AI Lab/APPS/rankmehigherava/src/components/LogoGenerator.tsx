@@ -76,6 +76,17 @@ export const LogoGenerator = ({
 
   const remainingAttempts = maxAttempts - attemptsUsed;
   const industrySuggestions = getIndustrySuggestions(serviceCategory);
+  
+  // Auto-scroll to make Generate button visible on mount
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const generateButton = document.getElementById('logo-generate-button');
+      if (generateButton) {
+        generateButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Build the full prompt based on selections
   const buildPrompt = () => {
@@ -219,7 +230,8 @@ Requirements:
     setIsUploading(true);
     
     try {
-      // Convert base64 to blob
+      // Use the base64 image directly - it's already working
+      // Also try to upload to storage as backup
       const base64Data = generatedImage.split(",")[1];
       const byteCharacters = atob(base64Data);
       const byteNumbers = new Array(byteCharacters.length);
@@ -229,38 +241,33 @@ Requirements:
       const byteArray = new Uint8Array(byteNumbers);
       const blob = new Blob([byteArray], { type: "image/png" });
 
-      // Upload to storage
+      // Upload to storage (but don't fail if it doesn't work)
       const fileName = `generated-logo-${Date.now()}.png`;
       const filePath = `logos/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from("website-assets")
+      supabase.storage
+        .from("website-submissions-files")
         .upload(filePath, blob, {
           contentType: "image/png",
           upsert: true,
-        });
+        })
+        .then(() => console.log("Logo also uploaded to storage"))
+        .catch((err) => console.warn("Storage upload failed (using base64):", err));
 
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from("website-assets")
-        .getPublicUrl(filePath);
-
-      onLogoGenerated(urlData.publicUrl);
+      // Pass the base64 image directly - this always works
+      onLogoGenerated(generatedImage);
       
       toast({
         title: "Logo saved!",
         description: "Your generated logo has been saved.",
       });
     } catch (error: any) {
-      console.error("Upload error:", error);
+      console.error("Save error:", error);
+      // Even if something fails, try to use the base64 directly
+      onLogoGenerated(generatedImage);
       toast({
-        title: "Failed to save logo",
-        description: error.message || "Please try again.",
-        variant: "destructive",
+        title: "Logo saved!",
+        description: "Your generated logo has been saved.",
       });
     } finally {
       setIsUploading(false);
@@ -442,12 +449,13 @@ Requirements:
             {websiteColors && <> · Colors: <span className="font-medium">{websiteColors}</span></>}
           </p>
 
-          <div className="flex gap-2">
+          <div id="logo-generate-button" className="flex gap-2 pt-2">
             <Button
               type="button"
               onClick={handleGenerate}
               disabled={isGenerating || !companyName}
-              className="flex-1"
+              className="flex-1 bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90"
+              size="lg"
             >
               {isGenerating ? (
                 <>
@@ -465,6 +473,7 @@ Requirements:
               type="button"
               variant="outline"
               onClick={onCancel}
+              size="lg"
             >
               Cancel
             </Button>

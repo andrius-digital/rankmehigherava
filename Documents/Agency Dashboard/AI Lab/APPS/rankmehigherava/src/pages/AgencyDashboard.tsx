@@ -102,7 +102,7 @@ const AgencyDashboard: React.FC = () => {
                 },
                 {
                     id: 'cdl-agency',
-                    title: 'CDL Agency',
+                    title: 'CDL Agency Onboard',
                     icon: Users,
                     description: 'Driver brokerage',
                     href: '/cdl-agency-portal',
@@ -128,7 +128,7 @@ const AgencyDashboard: React.FC = () => {
                     id: 'client-portal',
                     title: 'Client Portal',
                     icon: UsersRound,
-                    description: 'Manage clients',
+                    description: 'Manage Active Websites & Funnels - Agency View',
                     href: '/client-portal',
                     color: 'green' as const
                 },
@@ -339,7 +339,7 @@ const AgencyDashboard: React.FC = () => {
                                     </div>
                                 </section>
 
-                                {/* Call Center Section - Coming Soon */}
+                                {/* Call Center Section */}
                                 <section className="space-y-6">
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500/20 to-orange-600/20 border border-orange-500/30 flex items-center justify-center">
@@ -347,8 +347,25 @@ const AgencyDashboard: React.FC = () => {
                                         </div>
                                         <h2 className="font-orbitron text-2xl font-bold text-foreground">Call Center</h2>
                                     </div>
-                                    <div className="bg-card/10 backdrop-blur-md border border-primary/10 rounded-2xl p-8 text-center">
-                                        <p className="text-muted-foreground">Call Center cards coming soon...</p>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        <Link
+                                            to="/call-center-kpi"
+                                            className="group relative bg-card/20 backdrop-blur-md border border-orange-500/20 rounded-2xl p-6 hover:border-orange-500/40 transition-all hover:translate-y-[-4px] overflow-hidden"
+                                        >
+                                            <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full blur-3xl group-hover:bg-orange-500/10 transition-colors" />
+                                            <div className="relative z-10 space-y-4">
+                                                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500/20 to-orange-600/20 border border-orange-500/30 flex items-center justify-center">
+                                                    <Phone className="w-6 h-6 text-orange-400" />
+                                                </div>
+                                                <div>
+                                                    <h3 className="font-orbitron font-bold text-lg text-foreground mb-2">Call Center KPI</h3>
+                                                    <p className="text-sm text-muted-foreground">Leads, metrics & analytics</p>
+                                                </div>
+                                                <div className="flex items-center gap-2 text-orange-400 text-sm font-orbitron font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    View KPIs <ArrowRight className="w-4 h-4" />
+                                                </div>
+                                            </div>
+                                        </Link>
                                     </div>
                                 </section>
                             </>

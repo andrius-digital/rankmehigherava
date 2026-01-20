@@ -3,9 +3,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Building2, MapPin, Palette, ArrowLeft, RotateCcw } from "lucide-react";
-import { useEffect } from "react";
-import { GeneratedPrompt } from "@/components/GeneratedPrompt";
+import { CheckCircle2, Building2, MapPin, Palette, ArrowLeft, Mail, Phone, Globe, ChevronDown, ChevronUp } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface SubmissionData {
   companyName: string;
@@ -24,6 +23,12 @@ const WebsiteSubmissionConfirmation = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const submissionData = location.state as SubmissionData | null;
+  const [showDetails, setShowDetails] = useState(false);
+
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, []);
 
   useEffect(() => {
     if (!submissionData) {
@@ -44,125 +49,119 @@ const WebsiteSubmissionConfirmation = () => {
 
       <Navbar />
 
-      <main className="flex-1 pt-24 pb-16">
-        <div className="container mx-auto px-4 max-w-4xl">
-          {/* Success Header */}
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-6 animate-fade-in">
-              <CheckCircle2 className="w-12 h-12 text-primary" />
+      <main className="flex-1 pt-20 pb-8">
+        <div className="container mx-auto px-4 max-w-3xl">
+          {/* Compact Success Card */}
+          <div className="bg-gradient-to-br from-primary/10 via-background to-background border border-primary/20 rounded-2xl p-6 md:p-8 text-center mb-6">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/20 mb-4">
+              <CheckCircle2 className="w-10 h-10 text-primary" />
             </div>
-            <h1 className="font-heading text-3xl md:text-4xl font-bold text-foreground mb-4 animate-fade-in-up">
+            <h1 className="font-heading text-2xl md:text-3xl font-bold text-foreground mb-2">
               Submission Confirmed!
             </h1>
-            <p className="text-muted-foreground text-lg animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
+            <p className="text-muted-foreground text-sm md:text-base mb-6">
               Thank you for completing the website onboarding form. Our team will review your submission and get back to you soon.
             </p>
-          </div>
 
-          {/* Generated Website Prompt */}
-          <div className="mb-8 animate-fade-in-up" style={{ animationDelay: "0.15s" }}>
-            <GeneratedPrompt formData={submissionData} />
-          </div>
-
-          {/* Summary Cards */}
-          <div className="space-y-6 animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
-            {/* Business Info */}
-            <div className="bg-card border border-border rounded-lg p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <Building2 className="w-6 h-6 text-primary" />
-                <h2 className="font-heading text-xl font-bold text-foreground">Business Information</h2>
+            {/* Quick Info Summary - Always visible */}
+            <div className="bg-card/50 rounded-xl p-4 mb-4 text-left">
+              <div className="flex items-center gap-3 mb-3">
+                <Building2 className="w-5 h-5 text-primary shrink-0" />
+                <span className="font-semibold text-lg">{submissionData.companyName}</span>
               </div>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Company Name</p>
-                  <p className="text-foreground font-medium">{submissionData.companyName}</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Mail className="w-4 h-4 shrink-0" />
+                  <span className="truncate">{submissionData.businessEmail}</span>
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Business Email</p>
-                  <p className="text-foreground font-medium">{submissionData.businessEmail}</p>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Phone className="w-4 h-4 shrink-0" />
+                  <span>{submissionData.businessPhone}</span>
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Phone</p>
-                  <p className="text-foreground font-medium">{submissionData.businessPhone}</p>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <MapPin className="w-4 h-4 shrink-0" />
+                  <span>{submissionData.mainCity}</span>
                 </div>
                 {submissionData.domainName && (
-                  <div>
-                    <p className="text-sm text-muted-foreground">Domain</p>
-                    <p className="text-foreground font-medium">{submissionData.domainName}</p>
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Globe className="w-4 h-4 shrink-0" />
+                    <span className="truncate">{submissionData.domainName}</span>
                   </div>
                 )}
               </div>
+              {submissionData.serviceCategory && (
+                <div className="mt-3 pt-3 border-t border-border/50">
+                  <span className="text-xs text-muted-foreground">Service: </span>
+                  <span className="text-sm font-medium">{submissionData.serviceCategory}</span>
+                </div>
+              )}
             </div>
 
-            {/* Location & Services */}
-            <div className="bg-card border border-border rounded-lg p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <MapPin className="w-6 h-6 text-primary" />
-                <h2 className="font-heading text-xl font-bold text-foreground">Location & Services</h2>
-              </div>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Main City</p>
-                  <p className="text-foreground font-medium">{submissionData.mainCity}</p>
-                </div>
-                {submissionData.serviceCategory && (
-                  <div>
-                    <p className="text-sm text-muted-foreground">Service Category</p>
-                    <p className="text-foreground font-medium">{submissionData.serviceCategory}</p>
-                  </div>
-                )}
-                {submissionData.serviceAreas && (
-                  <div className="md:col-span-2">
-                    <p className="text-sm text-muted-foreground">Service Areas</p>
-                    <p className="text-foreground font-medium">{submissionData.serviceAreas}</p>
-                  </div>
-                )}
-              </div>
+            {/* Show More Details Toggle */}
+            <button
+              onClick={() => setShowDetails(!showDetails)}
+              className="inline-flex items-center gap-1 text-sm text-primary hover:text-primary/80 transition-colors mb-4"
+            >
+              {showDetails ? (
+                <>
+                  <ChevronUp className="w-4 h-4" />
+                  Hide Details
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="w-4 h-4" />
+                  View Full Details
+                </>
+              )}
+            </button>
+
+            {/* Action Button */}
+            <div className="flex justify-center">
+              <Button
+                variant="outline"
+                onClick={() => navigate("/")}
+                className="gap-2"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Return to Home
+              </Button>
             </div>
-
-            {/* Branding */}
-            {submissionData.websiteColors && (
-              <div className="bg-card border border-border rounded-lg p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <Palette className="w-6 h-6 text-primary" />
-                  <h2 className="font-heading text-xl font-bold text-foreground">Branding Preferences</h2>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Website Colors</p>
-                  <p className="text-foreground font-medium">{submissionData.websiteColors}</p>
-                </div>
-              </div>
-            )}
-
-            {/* Additional Notes */}
-            {submissionData.additionalNotes && (
-              <div className="bg-card border border-border rounded-lg p-6">
-                <h2 className="font-heading text-xl font-bold text-foreground mb-4">Additional Notes</h2>
-                <p className="text-foreground">{submissionData.additionalNotes}</p>
-              </div>
-            )}
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10 animate-fade-in-up" style={{ animationDelay: "0.3s" }}>
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={() => navigate("/")}
-              className="gap-2"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Return to Home
-            </Button>
-            <Button
-              size="lg"
-              onClick={() => navigate("/website-submissions")}
-              className="gap-2"
-            >
-              <RotateCcw className="w-4 h-4" />
-              Submit Another
-            </Button>
-          </div>
+          {/* Expandable Details Section */}
+          {showDetails && (
+            <div className="space-y-4 animate-fade-in">
+              {/* Service Areas */}
+              {submissionData.serviceAreas && (
+                <div className="bg-card border border-border rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <MapPin className="w-5 h-5 text-primary" />
+                    <h3 className="font-semibold">Service Areas</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{submissionData.serviceAreas}</p>
+                </div>
+              )}
+
+              {/* Branding */}
+              {submissionData.websiteColors && (
+                <div className="bg-card border border-border rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Palette className="w-5 h-5 text-primary" />
+                    <h3 className="font-semibold">Branding Preferences</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{submissionData.websiteColors}</p>
+                </div>
+              )}
+
+              {/* Additional Notes */}
+              {submissionData.additionalNotes && (
+                <div className="bg-card border border-border rounded-lg p-4">
+                  <h3 className="font-semibold mb-2">Additional Notes</h3>
+                  <p className="text-sm text-muted-foreground">{submissionData.additionalNotes}</p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </main>
 

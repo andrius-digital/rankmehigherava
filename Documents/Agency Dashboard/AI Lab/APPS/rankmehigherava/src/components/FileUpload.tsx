@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Upload, X, Loader2, FileImage } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -39,6 +39,14 @@ const FileUpload = ({
   const [uploadedUrls, setUploadedUrls] = useState<string[]>(existingUrls);
   const [dragActive, setDragActive] = useState(false);
   const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
+
+  // Sync internal state with external existingUrls prop when it changes
+  useEffect(() => {
+    setUploadedUrls(existingUrls);
+  }, [existingUrls.length, existingUrls.join(',')]);
+
+  // Compute display URLs - prefer internal state, fall back to prop  
+  const displayUrls = uploadedUrls.length > 0 ? uploadedUrls : existingUrls;
 
   const uploadFile = async (
     file: File,
@@ -247,24 +255,28 @@ const FileUpload = ({
       )}
 
       {/* Preview uploaded files */}
-      {uploadedUrls.length > 0 && (
+      {displayUrls.length > 0 && (
         <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-3">
-          {uploadedUrls.map((url, index) => (
+          {displayUrls.map((url, index) => (
             <div
               key={index}
               className="relative group rounded-lg overflow-hidden border border-border bg-card"
             >
-              {url.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
-                <img
-                  src={url}
-                  alt={`Upload ${index + 1}`}
-                  className="w-full h-24 object-cover"
-                />
-              ) : (
-                <div className="w-full h-24 flex items-center justify-center bg-muted">
-                  <FileImage className="w-8 h-8 text-muted-foreground" />
-                </div>
-              )}
+              <img
+                src={url}
+                alt={`Upload ${index + 1}`}
+                className="w-full h-24 object-cover bg-muted"
+                onError={(e) => {
+                  // Show fallback icon on error
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  const fallback = target.nextElementSibling;
+                  if (fallback) fallback.classList.remove('hidden');
+                }}
+              />
+              <div className="hidden w-full h-24 flex items-center justify-center bg-muted absolute inset-0">
+                <FileImage className="w-8 h-8 text-muted-foreground" />
+              </div>
               <Button
                 type="button"
                 variant="destructive"

@@ -96,7 +96,7 @@ import {
     Palette,
     Paintbrush,
     Scissors,
-    Tool,
+    Wrench as ToolIcon,
     Hammer,
     Cpu,
     HardDrive,
@@ -164,6 +164,62 @@ interface ChecklistItem {
     checked: boolean;
     notes: string;
     isDefault?: boolean; // Default items cannot be deleted
+    display_order?: number;
+}
+
+// Global checklist item from Supabase
+interface GlobalChecklistItem {
+    id: string;
+    label: string;
+    description: string;
+    display_order: number;
+    is_default: boolean;
+    created_at: string;
+    updated_at: string;
+}
+
+// Client-specific checklist status from Supabase
+interface ClientChecklistStatus {
+    id: string;
+    client_id: string;
+    checklist_item_id: string;
+    checked: boolean;
+    notes: string;
+    created_at: string;
+    updated_at: string;
+}
+
+// Global client service item from Supabase
+interface GlobalClientService {
+    id: string;
+    label: string;
+    description: string;
+    display_order: number;
+    is_default: boolean;
+    created_at: string;
+    updated_at: string;
+}
+
+// Client-specific service status from Supabase
+interface ClientServiceStatus {
+    id: string;
+    client_id: string;
+    service_item_id: string;
+    checked: boolean;
+    notes: string;
+    created_at: string;
+    updated_at: string;
+}
+
+// Service item interface (combined)
+interface ServiceItem {
+    id: string;
+    label: string;
+    description: string;
+    checked: boolean;
+    notes: string;
+    isDefault?: boolean;
+    display_order?: number;
 }
 
 // Toggle Item Component with expandable notes, edit and delete functionality
@@ -733,68 +789,392 @@ const IndividualClientProfile: React.FC = () => {
     const isPropertyRefresh = id === 'property-refresh-maids';
     const isFeaturedClient = isOffTint || isKleanAndFresh || isPropertyRefresh;
 
-    // Client-facing toggles state
-    // Active Website Subscription = ON by default (they submitted form = they're subscribing)
-    // For Off Tint demo, everything is ON. For Klean And Fresh and all new clients from form submissions:
-    // - Website Subscription: ON
-    // - Everything else: OFF (pending setup)
-    const [activeSubscription, setActiveSubscription] = useState(true);
-    // SMS Automations = OFF by default (needs to be set up after website is complete)
-    const [activeSmsAutomations, setActiveSmsAutomations] = useState(isOffTint);
-    // Monthly Website Upgrades = OFF by default (client opts in for monthly updates/upgrades)
-    const [monthlyUpgrades, setMonthlyUpgrades] = useState(false);
+    // Client Services state - now synced with Supabase
+    const [clientServices, setClientServices] = useState<ServiceItem[]>([]);
+    const [servicesLoading, setServicesLoading] = useState(true);
 
-    // Management checklist state - dynamic array for add/edit/delete functionality
-    // Only Off Tint demo has everything complete (website already live)
-    // Klean And Fresh and all form submission clients start with all OFF
-    const [managementChecklist, setManagementChecklist] = useState<ChecklistItem[]>([
-        { id: 'telegram', label: 'Telegram Group', description: 'Telegram group has been created with the client', checked: isOffTint, notes: '', isDefault: false },
-        { id: 'github', label: 'Github Repository Active', description: 'In Rank Me Higher Websites org', checked: isOffTint, notes: '', isDefault: false },
-        { id: 'dns', label: 'DNS Pointing to Our NameServers', description: 'DNS configured & live - UPDATED', checked: isOffTint, notes: '', isDefault: false },
-        { id: 'vps', label: 'Auto VPS Updates', description: 'Automatic deploys via Github', checked: isOffTint, notes: '', isDefault: false },
-        { id: 'leads', label: 'Lead Form Submissions', description: 'Telegram Channel & Email Notifications', checked: isOffTint, notes: '', isDefault: false },
-    ]);
+    // Add new service dialog state
+    const [showAddServiceDialog, setShowAddServiceDialog] = useState(false);
+    const [newServiceLabel, setNewServiceLabel] = useState('');
+    const [newServiceDescription, setNewServiceDescription] = useState('');
+
+    // Fetch global client services from Supabase
+    const { data: globalClientServices, refetch: refetchGlobalServices } = useQuery({
+        queryKey: ['global-client-services'],
+        queryFn: async () => {
+            const { data, error } = await supabase
+                .from('global_client_services')
+                .select('*')
+                .order('display_order', { ascending: true });
+            if (error) throw error;
+            return data as GlobalClientService[];
+        },
+    });
+
+    // Fetch client-specific service status from Supabase
+    const { data: clientServicesStatus, refetch: refetchServicesStatus } = useQuery({
+        queryKey: ['client-services-status', id],
+        queryFn: async () => {
+            if (!id) return [];
+            const { data, error } = await supabase
+                .from('client_services_status')
+                .select('*')
+                .eq('client_id', id);
+            if (error) throw error;
+            return data as ClientServiceStatus[];
+        },
+        enabled: !!id,
+    });
+
+    // Combine global services with client-specific status
+    useEffect(() => {
+        if (globalClientServices) {
+            const combined: ServiceItem[] = globalClientServices.map(item => {
+                const clientStatus = clientServicesStatus?.find(s => s.service_item_id === item.id);
+                return {
+                    id: item.id,
+                    label: item.label,
+                    description: item.description,
+                    checked: clientStatus?.checked ?? false,
+                    notes: clientStatus?.notes ?? '',
+                    isDefault: item.is_default,
+                    display_order: item.display_order,
+                };
+            });
+            setClientServices(combined);
+            setServicesLoading(false);
+        }
+    }, [globalClientServices, clientServicesStatus]);
+
+    // Helper functions for client services management
+    const updateServiceItem = async (itemId: string, updates: Partial<ServiceItem>) => {
+        // Optimistic update
+        setClientServices(prev =>
+            prev.map(item => item.id === itemId ? { ...item, ...updates } : item)
+        );
+
+        // Only sync 'checked' and 'notes' to client_services_status (per-client)
+        if (id && ('checked' in updates || 'notes' in updates)) {
+            const existingStatus = clientServicesStatus?.find(s => s.service_item_id === itemId);
+
+            if (existingStatus) {
+                // Update existing status
+                await supabase
+                    .from('client_services_status')
+                    .update({
+                        checked: 'checked' in updates ? updates.checked : existingStatus.checked,
+                        notes: 'notes' in updates ? updates.notes : existingStatus.notes,
+                    })
+                    .eq('id', existingStatus.id);
+            } else {
+                // Insert new status
+                await supabase
+                    .from('client_services_status')
+                    .insert({
+                        client_id: id,
+                        service_item_id: itemId,
+                        checked: 'checked' in updates ? updates.checked : false,
+                        notes: 'notes' in updates ? updates.notes : '',
+                    });
+            }
+            refetchServicesStatus();
+        }
+    };
+
+    const addServiceItem = async () => {
+        if (!newServiceLabel.trim()) return;
+
+        // Get the next display order
+        const maxOrder = Math.max(...(globalClientServices?.map(i => i.display_order) || [0]), 0);
+
+        // Insert into global_client_services (syncs to all clients)
+        const { error } = await supabase
+            .from('global_client_services')
+            .insert({
+                label: newServiceLabel.trim(),
+                description: newServiceDescription.trim(),
+                display_order: maxOrder + 1,
+                is_default: false,
+            });
+
+        if (error) {
+            toast({
+                title: 'Error',
+                description: 'Failed to add service item',
+                variant: 'destructive',
+            });
+            return;
+        }
+
+        // Refetch to sync
+        refetchGlobalServices();
+
+        setNewServiceLabel('');
+        setNewServiceDescription('');
+        setShowAddServiceDialog(false);
+
+        toast({
+            title: 'Service Added',
+            description: 'Service item added and synced to all clients',
+        });
+    };
+
+    const deleteServiceItem = async (itemId: string) => {
+        // Delete from global_client_services (cascades to client_services_status)
+        const { error } = await supabase
+            .from('global_client_services')
+            .delete()
+            .eq('id', itemId);
+
+        if (error) {
+            toast({
+                title: 'Error',
+                description: 'Failed to delete service item',
+                variant: 'destructive',
+            });
+            return;
+        }
+
+        // Optimistic update
+        setClientServices(prev => prev.filter(item => item.id !== itemId));
+        refetchGlobalServices();
+
+        toast({
+            title: 'Service Deleted',
+            description: 'Service item removed from all clients',
+        });
+    };
+
+    const editServiceItem = async (itemId: string, newLabel: string, newDescription: string) => {
+        // Update global_client_services (syncs to all clients)
+        const { error } = await supabase
+            .from('global_client_services')
+            .update({
+                label: newLabel,
+                description: newDescription,
+            })
+            .eq('id', itemId);
+
+        if (error) {
+            toast({
+                title: 'Error',
+                description: 'Failed to update service item',
+                variant: 'destructive',
+            });
+            return;
+        }
+
+        // Optimistic update
+        setClientServices(prev =>
+            prev.map(item => item.id === itemId ? { ...item, label: newLabel, description: newDescription } : item)
+        );
+        refetchGlobalServices();
+
+        toast({
+            title: 'Service Updated',
+            description: 'Service item updated across all clients',
+        });
+    };
+
+    // Calculate services completion percentage
+    const servicesCompletionPercent = clientServices.length > 0
+        ? Math.round((clientServices.filter(item => item.checked).length / clientServices.length) * 100)
+        : 0;
+
+    // Management checklist state - now synced with Supabase
+    const [managementChecklist, setManagementChecklist] = useState<ChecklistItem[]>([]);
+    const [checklistLoading, setChecklistLoading] = useState(true);
 
     // Add new checklist item dialog state
     const [showAddChecklistDialog, setShowAddChecklistDialog] = useState(false);
     const [newChecklistLabel, setNewChecklistLabel] = useState('');
     const [newChecklistDescription, setNewChecklistDescription] = useState('');
 
+    // Fetch global checklist items from Supabase
+    const { data: globalChecklistItems, refetch: refetchGlobalChecklist } = useQuery({
+        queryKey: ['global-checklist-items'],
+        queryFn: async () => {
+            const { data, error } = await supabase
+                .from('global_checklist_items')
+                .select('*')
+                .order('display_order', { ascending: true });
+            if (error) throw error;
+            return data as GlobalChecklistItem[];
+        },
+    });
+
+    // Fetch client-specific checklist status from Supabase
+    const { data: clientChecklistStatus, refetch: refetchClientStatus } = useQuery({
+        queryKey: ['client-checklist-status', id],
+        queryFn: async () => {
+            if (!id) return [];
+            const { data, error } = await supabase
+                .from('client_checklist_status')
+                .select('*')
+                .eq('client_id', id);
+            if (error) throw error;
+            return data as ClientChecklistStatus[];
+        },
+        enabled: !!id,
+    });
+
+    // Combine global items with client-specific status
+    useEffect(() => {
+        if (globalChecklistItems) {
+            const combined: ChecklistItem[] = globalChecklistItems.map(item => {
+                const clientStatus = clientChecklistStatus?.find(s => s.checklist_item_id === item.id);
+                return {
+                    id: item.id,
+                    label: item.label,
+                    description: item.description,
+                    checked: clientStatus?.checked ?? false,
+                    notes: clientStatus?.notes ?? '',
+                    isDefault: item.is_default,
+                    display_order: item.display_order,
+                };
+            });
+            setManagementChecklist(combined);
+            setChecklistLoading(false);
+        }
+    }, [globalChecklistItems, clientChecklistStatus]);
+
     // Helper functions for checklist management
-    const updateChecklistItem = (itemId: string, updates: Partial<ChecklistItem>) => {
+    const updateChecklistItem = async (itemId: string, updates: Partial<ChecklistItem>) => {
+        // Optimistic update
         setManagementChecklist(prev =>
             prev.map(item => item.id === itemId ? { ...item, ...updates } : item)
         );
+
+        // Only sync 'checked' and 'notes' to client_checklist_status (per-client)
+        if (id && ('checked' in updates || 'notes' in updates)) {
+            const existingStatus = clientChecklistStatus?.find(s => s.checklist_item_id === itemId);
+
+            if (existingStatus) {
+                // Update existing status
+                await supabase
+                    .from('client_checklist_status')
+                    .update({
+                        checked: 'checked' in updates ? updates.checked : existingStatus.checked,
+                        notes: 'notes' in updates ? updates.notes : existingStatus.notes,
+                    })
+                    .eq('id', existingStatus.id);
+            } else {
+                // Insert new status
+                const currentItem = managementChecklist.find(i => i.id === itemId);
+                await supabase
+                    .from('client_checklist_status')
+                    .insert({
+                        client_id: id,
+                        checklist_item_id: itemId,
+                        checked: 'checked' in updates ? updates.checked : false,
+                        notes: 'notes' in updates ? updates.notes : '',
+                    });
+            }
+            refetchClientStatus();
+        }
     };
 
-    const addChecklistItem = () => {
+    const addChecklistItem = async () => {
         if (!newChecklistLabel.trim()) return;
-        const newItem: ChecklistItem = {
-            id: `custom-${Date.now()}`,
-            label: newChecklistLabel.trim(),
-            description: newChecklistDescription.trim(),
-            checked: false,
-            notes: '',
-            isDefault: false
-        };
-        setManagementChecklist(prev => [...prev, newItem]);
+
+        // Get the next display order
+        const maxOrder = Math.max(...(globalChecklistItems?.map(i => i.display_order) || [0]), 0);
+
+        // Insert into global_checklist_items (syncs to all clients)
+        const { data: newItem, error } = await supabase
+            .from('global_checklist_items')
+            .insert({
+                label: newChecklistLabel.trim(),
+                description: newChecklistDescription.trim(),
+                display_order: maxOrder + 1,
+                is_default: false,
+            })
+            .select()
+            .single();
+
+        if (error) {
+            toast({
+                title: 'Error',
+                description: 'Failed to add checklist item',
+                variant: 'destructive',
+            });
+            return;
+        }
+
+        // Refetch to sync
+        refetchGlobalChecklist();
+
         setNewChecklistLabel('');
         setNewChecklistDescription('');
         setShowAddChecklistDialog(false);
+
+        toast({
+            title: 'Item Added',
+            description: 'Checklist item added and synced to all clients',
+        });
     };
 
-    const deleteChecklistItem = (itemId: string) => {
+    const deleteChecklistItem = async (itemId: string) => {
+        // Delete from global_checklist_items (cascades to client_checklist_status)
+        const { error } = await supabase
+            .from('global_checklist_items')
+            .delete()
+            .eq('id', itemId);
+
+        if (error) {
+            toast({
+                title: 'Error',
+                description: 'Failed to delete checklist item',
+                variant: 'destructive',
+            });
+            return;
+        }
+
+        // Optimistic update
         setManagementChecklist(prev => prev.filter(item => item.id !== itemId));
+        refetchGlobalChecklist();
+
+        toast({
+            title: 'Item Deleted',
+            description: 'Checklist item removed from all clients',
+        });
     };
 
-    const editChecklistItem = (itemId: string, newLabel: string, newDescription: string) => {
-        updateChecklistItem(itemId, { label: newLabel, description: newDescription });
+    const editChecklistItem = async (itemId: string, newLabel: string, newDescription: string) => {
+        // Update global_checklist_items (syncs to all clients)
+        const { error } = await supabase
+            .from('global_checklist_items')
+            .update({
+                label: newLabel,
+                description: newDescription,
+            })
+            .eq('id', itemId);
+
+        if (error) {
+            toast({
+                title: 'Error',
+                description: 'Failed to update checklist item',
+                variant: 'destructive',
+            });
+            return;
+        }
+
+        // Optimistic update
+        setManagementChecklist(prev =>
+            prev.map(item => item.id === itemId ? { ...item, label: newLabel, description: newDescription } : item)
+        );
+        refetchGlobalChecklist();
+
+        toast({
+            title: 'Item Updated',
+            description: 'Checklist item updated across all clients',
+        });
     };
 
     // Calculate completion percentage
-    const checklistCompletionPercent = Math.round(
-        (managementChecklist.filter(item => item.checked).length / managementChecklist.length) * 100
-    ) || 0;
+    const checklistCompletionPercent = managementChecklist.length > 0
+        ? Math.round((managementChecklist.filter(item => item.checked).length / managementChecklist.length) * 100)
+        : 0;
 
     // Image popup state
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -807,7 +1187,9 @@ const IndividualClientProfile: React.FC = () => {
         website_url: '',
         email: '',
         phone: '',
+        services: [] as string[],
     });
+    const [newService, setNewService] = useState('');
     const [isSaving, setIsSaving] = useState(false);
     
     // Logo upload state
@@ -961,6 +1343,7 @@ const IndividualClientProfile: React.FC = () => {
                     website_url: client.website_url || '',
                     email: client.email || '',
                     phone: client.phone || '',
+                    services: client.primary_services || [],
                 });
             }
         }
@@ -975,6 +1358,7 @@ const IndividualClientProfile: React.FC = () => {
                 website_url: client.website_url || '',
                 email: client.email || '',
                 phone: client.phone || '',
+                services: client.primary_services || [],
             });
             
             // Initialize logo from form_submission
@@ -1095,26 +1479,38 @@ const IndividualClientProfile: React.FC = () => {
     // Handle save
     const handleSave = async () => {
         if (isFeaturedClient || !id || !dbClient) return;
-        
+
         setIsSaving(true);
         try {
-            const { error } = await supabase
+            const updateData = {
+                name: editFields.name || null,
+                company_name: editFields.company_name || null,
+                website_url: editFields.website_url || null,
+                email: editFields.email || null,
+                phone: editFields.phone || null,
+                primary_services: editFields.services.length > 0 ? editFields.services : null,
+            };
+
+            console.log('Saving client data:', updateData);
+
+            const { data, error } = await supabase
                 .from('clients')
-                .update({
-                    name: editFields.name || null,
-                    company_name: editFields.company_name || null,
-                    website_url: editFields.website_url || null,
-                    email: editFields.email || null,
-                    phone: editFields.phone || null,
-                })
-                .eq('id', id);
+                .update(updateData)
+                .eq('id', id)
+                .select();
+
+            console.log('Save result:', { data, error });
 
             if (error) throw error;
 
-            queryClient.invalidateQueries({ queryKey: ['client', id] });
-            queryClient.invalidateQueries({ queryKey: ['all-clients'] });
-            queryClient.invalidateQueries({ queryKey: ['client-onboarding-number', id] });
-            
+            // Force refetch all client-related queries
+            await queryClient.invalidateQueries({ queryKey: ['client', id] });
+            await queryClient.invalidateQueries({ queryKey: ['all-clients'] });
+            await queryClient.invalidateQueries({ queryKey: ['client-onboarding-number', id] });
+
+            // Refetch immediately
+            await queryClient.refetchQueries({ queryKey: ['client', id] });
+
             setIsEditing(false);
             toast({
                 title: "Client updated",
@@ -1141,7 +1537,9 @@ const IndividualClientProfile: React.FC = () => {
                 website_url: client.website_url || '',
                 email: client.email || '',
                 phone: client.phone || '',
+                services: client.primary_services || [],
             });
+            setNewService('');
         }
         setIsEditing(false);
     };
@@ -1396,15 +1794,71 @@ const IndividualClientProfile: React.FC = () => {
                                 {/* Services */}
                                 <div>
                                     <p className="text-[10px] font-orbitron text-muted-foreground uppercase tracking-widest mb-2">Services</p>
-                                    <div className="flex flex-wrap gap-1">
-                                        {services.length > 0 ? services.map((service: string, i: number) => (
-                                            <span key={i} className="px-2 py-1 rounded-md bg-cyan-500/10 border border-cyan-500/20 text-[10px] font-orbitron text-cyan-400">
-                                                {service}
-                                            </span>
-                                        )) : (
-                                            <span className="text-muted-foreground text-sm">No services listed</span>
-                                        )}
-                                    </div>
+                                    {isEditing && !isFeaturedClient ? (
+                                        <div className="space-y-2">
+                                            <div className="flex flex-wrap gap-1">
+                                                {editFields.services.map((service: string, i: number) => (
+                                                    <span key={i} className="px-2 py-1 rounded-md bg-cyan-500/10 border border-cyan-500/20 text-[10px] font-orbitron text-cyan-400 flex items-center gap-1">
+                                                        {service}
+                                                        <button
+                                                            onClick={() => setEditFields({
+                                                                ...editFields,
+                                                                services: editFields.services.filter((_, idx) => idx !== i)
+                                                            })}
+                                                            className="ml-1 text-cyan-400 hover:text-red-400 transition-colors"
+                                                        >
+                                                            <X className="w-3 h-3" />
+                                                        </button>
+                                                    </span>
+                                                ))}
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <Input
+                                                    value={newService}
+                                                    onChange={(e) => setNewService(e.target.value)}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter' && newService.trim()) {
+                                                            e.preventDefault();
+                                                            setEditFields({
+                                                                ...editFields,
+                                                                services: [...editFields.services, newService.trim()]
+                                                            });
+                                                            setNewService('');
+                                                        }
+                                                    }}
+                                                    placeholder="Add service..."
+                                                    className="bg-background border-cyan-500/30 focus:border-cyan-400 text-sm h-8"
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    size="sm"
+                                                    onClick={() => {
+                                                        if (newService.trim()) {
+                                                            setEditFields({
+                                                                ...editFields,
+                                                                services: [...editFields.services, newService.trim()]
+                                                            });
+                                                            setNewService('');
+                                                        }
+                                                    }}
+                                                    disabled={!newService.trim()}
+                                                    className="bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 border border-cyan-500/30 h-8"
+                                                >
+                                                    <Plus className="w-4 h-4" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-wrap gap-1">
+                                            {services.length > 0 ? services.map((service: string, i: number) => (
+                                                <span key={i} className="px-2 py-1 rounded-md bg-cyan-500/10 border border-cyan-500/20 text-[10px] font-orbitron text-cyan-400">
+                                                    {service}
+                                                </span>
+                                            )) : (
+                                                <span className="text-muted-foreground text-sm">No services listed</span>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -1412,36 +1866,137 @@ const IndividualClientProfile: React.FC = () => {
                         {/* Client Services */}
                         <div className="bg-card/20 backdrop-blur-xl border border-emerald-500/20 rounded-2xl overflow-hidden">
                             <div className="px-5 py-4 border-b border-emerald-500/10 bg-emerald-500/5">
-                                <div className="flex items-center gap-2">
-                                    <CreditCard className="w-4 h-4 text-emerald-400" />
-                                    <h2 className="font-orbitron text-xs font-bold tracking-wider text-emerald-400 uppercase">Client Services</h2>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <CreditCard className="w-4 h-4 text-emerald-400" />
+                                        <h2 className="font-orbitron text-xs font-bold tracking-wider text-emerald-400 uppercase">Client Services</h2>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[10px] font-orbitron text-muted-foreground">Completion</span>
+                                        <span className="text-sm font-orbitron font-bold text-emerald-400">
+                                            {servicesCompletionPercent}%
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                             <div className="p-4 space-y-3">
-                                <ToggleItem
-                                    label="Active Website Subscription"
-                                    description="Monthly website hosting & maintenance"
-                                    icon={Globe}
-                                    checked={activeSubscription}
-                                    onChange={setActiveSubscription}
-                                    color="emerald"
-                                />
-                                <ToggleItem
-                                    label="Monthly Website Upgrades"
-                                    description="Opt-in for regular feature updates & enhancements"
-                                    icon={TrendingUp}
-                                    checked={monthlyUpgrades}
-                                    onChange={setMonthlyUpgrades}
-                                    color="emerald"
-                                />
-                                <ToggleItem
-                                    label="SMS/Phone Automations"
-                                    description="Active SMS & call automations"
-                                    icon={MessageSquare}
-                                    checked={activeSmsAutomations}
-                                    onChange={setActiveSmsAutomations}
-                                    color="emerald"
-                                />
+                                {/* Loading state */}
+                                {servicesLoading && (
+                                    <div className="text-center py-4 text-sm text-muted-foreground">
+                                        Loading services...
+                                    </div>
+                                )}
+                                {/* Dynamic service items */}
+                                {!servicesLoading && clientServices.map((item) => {
+                                    // Smart icon selection based on keywords in label
+                                    const getServiceIcon = () => {
+                                        const label = item.label.toLowerCase();
+
+                                        // Default items by known IDs
+                                        if (item.id === 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa') return Globe;
+                                        if (item.id === 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb') return TrendingUp;
+                                        if (item.id === 'cccccccc-cccc-cccc-cccc-cccccccccccc') return MessageSquare;
+
+                                        // Keyword-based icons
+                                        if (label.includes('website') || label.includes('hosting') || label.includes('domain')) return Globe;
+                                        if (label.includes('upgrade') || label.includes('update') || label.includes('enhance')) return TrendingUp;
+                                        if (label.includes('sms') || label.includes('phone') || label.includes('call') || label.includes('automation')) return MessageSquare;
+                                        if (label.includes('email') || label.includes('mail')) return Mail;
+                                        if (label.includes('seo') || label.includes('search')) return Search;
+                                        if (label.includes('social') || label.includes('media')) return Share2;
+                                        if (label.includes('design') || label.includes('graphic')) return Palette;
+                                        if (label.includes('support') || label.includes('help')) return HelpCircle;
+                                        if (label.includes('analytics') || label.includes('report')) return BarChart3;
+                                        if (label.includes('content') || label.includes('blog')) return FileText;
+                                        if (label.includes('video') || label.includes('youtube')) return Video;
+                                        if (label.includes('photo') || label.includes('image')) return Camera;
+                                        if (label.includes('ad') || label.includes('marketing') || label.includes('campaign')) return Target;
+                                        if (label.includes('maintenance') || label.includes('manage')) return Settings;
+                                        if (label.includes('security') || label.includes('ssl')) return Shield;
+                                        if (label.includes('backup') || label.includes('storage')) return HardDrive;
+                                        if (label.includes('ai') || label.includes('bot') || label.includes('ava')) return Bot;
+
+                                        // Default
+                                        return CheckCircle2;
+                                    };
+
+                                    return (
+                                        <ToggleItem
+                                            key={item.id}
+                                            label={item.label}
+                                            description={item.description}
+                                            icon={getServiceIcon()}
+                                            checked={item.checked}
+                                            onChange={(checked) => updateServiceItem(item.id, { checked })}
+                                            color="emerald"
+                                            notes={item.notes}
+                                            onNotesChange={(notes) => updateServiceItem(item.id, { notes })}
+                                            placeholder="Add notes..."
+                                            onEdit={(newLabel, newDescription) => editServiceItem(item.id, newLabel, newDescription)}
+                                            onDelete={() => deleteServiceItem(item.id)}
+                                            canDelete={!item.isDefault}
+                                        />
+                                    );
+                                })}
+
+                                {/* Add New Service Button */}
+                                <Dialog open={showAddServiceDialog} onOpenChange={setShowAddServiceDialog}>
+                                    <DialogTrigger asChild>
+                                        <button className="w-full py-3 px-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 border-dashed hover:bg-emerald-500/20 hover:border-emerald-500/40 transition-all flex items-center justify-center gap-2 text-emerald-400">
+                                            <Plus className="w-4 h-4" />
+                                            <span className="text-sm font-medium">Add Service</span>
+                                        </button>
+                                    </DialogTrigger>
+                                    <DialogContent className="bg-zinc-900 border-emerald-500/30">
+                                        <DialogHeader>
+                                            <DialogTitle className="font-orbitron text-emerald-400">Add New Service</DialogTitle>
+                                            <DialogDescription className="text-muted-foreground">
+                                                This service will be added to all client profiles. Toggle states remain per-client.
+                                            </DialogDescription>
+                                        </DialogHeader>
+                                        <div className="space-y-4 pt-4">
+                                            <div className="space-y-2">
+                                                <Label className="text-xs font-orbitron text-muted-foreground uppercase tracking-widest">Service Name</Label>
+                                                <Input
+                                                    value={newServiceLabel}
+                                                    onChange={(e) => setNewServiceLabel(e.target.value)}
+                                                    placeholder="e.g., SEO Optimization"
+                                                    className="bg-background border-emerald-500/30 focus:border-emerald-400"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label className="text-xs font-orbitron text-muted-foreground uppercase tracking-widest">Description (Optional)</Label>
+                                                <Input
+                                                    value={newServiceDescription}
+                                                    onChange={(e) => setNewServiceDescription(e.target.value)}
+                                                    placeholder="e.g., Monthly SEO reports & optimization"
+                                                    className="bg-background border-emerald-500/30 focus:border-emerald-400"
+                                                />
+                                            </div>
+                                            <div className="flex gap-2 pt-2">
+                                                <Button
+                                                    variant="outline"
+                                                    onClick={() => {
+                                                        setShowAddServiceDialog(false);
+                                                        setNewServiceLabel('');
+                                                        setNewServiceDescription('');
+                                                    }}
+                                                    className="flex-1 border-white/10"
+                                                >
+                                                    Cancel
+                                                </Button>
+                                                <Button
+                                                    onClick={addServiceItem}
+                                                    disabled={!newServiceLabel.trim()}
+                                                    className="flex-1 bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 border border-emerald-500/30"
+                                                >
+                                                    <Plus className="w-4 h-4 mr-2" />
+                                                    Add Service
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </DialogContent>
+                                </Dialog>
                             </div>
                         </div>
                     </div>
@@ -1464,8 +2019,14 @@ const IndividualClientProfile: React.FC = () => {
                                 </div>
                             </div>
                             <div className="p-4 space-y-3">
+                                {/* Loading state */}
+                                {checklistLoading && (
+                                    <div className="text-center py-4 text-sm text-muted-foreground">
+                                        Loading checklist...
+                                    </div>
+                                )}
                                 {/* Dynamic checklist items */}
-                                {managementChecklist.map((item) => {
+                                {!checklistLoading && managementChecklist.map((item) => {
                                     // Smart icon selection based on keywords in label
                                     const getIcon = () => {
                                         const label = item.label.toLowerCase();
@@ -1495,7 +2056,7 @@ const IndividualClientProfile: React.FC = () => {
                                         if (label.includes('deploy') || label.includes('release') || label.includes('launch')) return Rocket;
                                         if (label.includes('build') || label.includes('compile')) return Hammer;
                                         if (label.includes('test') || label.includes('qa') || label.includes('quality')) return ClipboardCheck;
-                                        if (label.includes('bug') || label.includes('fix') || label.includes('debug')) return Tool;
+                                        if (label.includes('bug') || label.includes('fix') || label.includes('debug')) return ToolIcon;
 
                                         // Domain & DNS
                                         if (label.includes('dns') || label.includes('nameserver') || label.includes('domain')) return Link2;
@@ -1610,7 +2171,7 @@ const IndividualClientProfile: React.FC = () => {
                                         <DialogHeader>
                                             <DialogTitle className="font-orbitron text-purple-400">Add New Checklist Item</DialogTitle>
                                             <DialogDescription className="text-muted-foreground">
-                                                Create a new item for the management checklist.
+                                                This item will be added to all client profiles. Toggle states remain per-client.
                                             </DialogDescription>
                                         </DialogHeader>
                                         <div className="space-y-4 pt-4">

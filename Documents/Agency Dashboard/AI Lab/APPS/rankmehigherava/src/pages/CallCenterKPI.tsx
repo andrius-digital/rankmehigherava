@@ -14,7 +14,7 @@ import ClientManagement from "@/components/call-center/ClientManagement";
 import WorkDayManager from "@/components/call-center/WorkDayManager";
 import ClientOnboarding from "@/components/call-center/ClientOnboarding";
 import AgentViewDashboard from "@/components/call-center/AgentViewDashboard";
-import { Shield, Eye, User } from "lucide-react";
+import { Shield, Eye, User, Phone } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 type ViewMode = 'admin' | 'client' | 'agent';
@@ -63,25 +63,31 @@ const CallCenterKPI = () => {
       
       <main className="min-h-screen bg-background pt-20">
         <div className="container mx-auto px-4 py-8">
-          {/* Header with View Toggle */}
+          {/* AVA-Style Header with View Toggle */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-                {getViewTitle()}
-              </h1>
-              <p className="text-muted-foreground">
-                {getViewDescription()}
-              </p>
+            <div className="flex items-center gap-4">
+              {/* AVA Icon */}
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/30 flex items-center justify-center">
+                <Phone className="w-6 h-6 text-cyan-400" />
+              </div>
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold text-foreground font-orbitron">
+                  {getViewTitle()}
+                </h1>
+                <p className="text-muted-foreground text-sm">
+                  {getViewDescription()}
+                </p>
+              </div>
             </div>
             
-            {/* View Toggle */}
-            <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg border">
+            {/* View Toggle - AVA Style */}
+            <div className="flex items-center gap-1 p-1 bg-cyan-500/5 rounded-xl border border-cyan-500/20">
               <button
                 onClick={() => setViewMode('client')}
-                className={`flex items-center gap-2 px-3 py-2 rounded-md transition-colors ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
                   viewMode === 'client' 
-                    ? 'bg-background text-primary shadow-sm' 
-                    : 'text-muted-foreground hover:text-foreground'
+                    ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 shadow-sm' 
+                    : 'text-muted-foreground hover:text-cyan-400 hover:bg-cyan-500/10'
                 }`}
               >
                 <Eye className="h-4 w-4" />
@@ -89,10 +95,10 @@ const CallCenterKPI = () => {
               </button>
               <button
                 onClick={() => setViewMode('admin')}
-                className={`flex items-center gap-2 px-3 py-2 rounded-md transition-colors ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
                   viewMode === 'admin' 
-                    ? 'bg-background text-primary shadow-sm' 
-                    : 'text-muted-foreground hover:text-foreground'
+                    ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 shadow-sm' 
+                    : 'text-muted-foreground hover:text-cyan-400 hover:bg-cyan-500/10'
                 }`}
               >
                 <Shield className="h-4 w-4" />
@@ -100,10 +106,10 @@ const CallCenterKPI = () => {
               </button>
               <button
                 onClick={() => setViewMode('agent')}
-                className={`flex items-center gap-2 px-3 py-2 rounded-md transition-colors ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
                   viewMode === 'agent' 
-                    ? 'bg-background text-primary shadow-sm' 
-                    : 'text-muted-foreground hover:text-foreground'
+                    ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 shadow-sm' 
+                    : 'text-muted-foreground hover:text-cyan-400 hover:bg-cyan-500/10'
                 }`}
               >
                 <User className="h-4 w-4" />
@@ -114,14 +120,14 @@ const CallCenterKPI = () => {
           
           {viewMode === 'admin' && (
             <Tabs defaultValue="dashboard" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-4 md:grid-cols-7 gap-2 h-auto p-1">
-                <TabsTrigger value="dashboard" className="py-2">Dashboard</TabsTrigger>
-                <TabsTrigger value="onboard" className="py-2">Add Client</TabsTrigger>
-                <TabsTrigger value="clients" className="py-2">Clients</TabsTrigger>
-                <TabsTrigger value="workdays" className="py-2">Work Days</TabsTrigger>
-                <TabsTrigger value="agents" className="py-2">Agents</TabsTrigger>
-                <TabsTrigger value="leads" className="py-2">Add Lead</TabsTrigger>
-                <TabsTrigger value="calls" className="py-2">Log Calls</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-4 md:grid-cols-7 gap-1 h-auto p-1 bg-cyan-500/5 border border-cyan-500/20 rounded-xl">
+                <TabsTrigger value="dashboard" className="py-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400 data-[state=active]:border-cyan-500/30 rounded-lg">Dashboard</TabsTrigger>
+                <TabsTrigger value="onboard" className="py-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400 data-[state=active]:border-cyan-500/30 rounded-lg">Add Client</TabsTrigger>
+                <TabsTrigger value="clients" className="py-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400 data-[state=active]:border-cyan-500/30 rounded-lg">Clients</TabsTrigger>
+                <TabsTrigger value="workdays" className="py-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400 data-[state=active]:border-cyan-500/30 rounded-lg">Work Days</TabsTrigger>
+                <TabsTrigger value="agents" className="py-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400 data-[state=active]:border-cyan-500/30 rounded-lg">Agents</TabsTrigger>
+                <TabsTrigger value="leads" className="py-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400 data-[state=active]:border-cyan-500/30 rounded-lg">Add Lead</TabsTrigger>
+                <TabsTrigger value="calls" className="py-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400 data-[state=active]:border-cyan-500/30 rounded-lg">Log Calls</TabsTrigger>
               </TabsList>
               
               <TabsContent value="dashboard">

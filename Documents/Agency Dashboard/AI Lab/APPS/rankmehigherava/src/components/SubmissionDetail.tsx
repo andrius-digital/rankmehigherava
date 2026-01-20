@@ -159,7 +159,7 @@ export const SubmissionDetail = ({ submission, onBack, showBackButton }: Submiss
 
   const sections = [
     {
-      title: "Section 1: Business Information",
+      title: "1. Business Info",
       fields: [
         { label: "1.1 Official company name", value: formData.companyName },
         { label: "1.2 Do you own a domain name?", value: formData.ownsDomain },
@@ -170,7 +170,7 @@ export const SubmissionDetail = ({ submission, onBack, showBackButton }: Submiss
       ]
     },
     {
-      title: "Section 2: Location & Hours",
+      title: "2. Location & Hours",
       fields: [
         { label: "2.1 Main City", value: formData.mainCity },
         { label: "2.2 Service Areas", value: formData.serviceAreas },
@@ -184,7 +184,7 @@ export const SubmissionDetail = ({ submission, onBack, showBackButton }: Submiss
       ]
     },
     {
-      title: "Section 3: Services",
+      title: "3. Services",
       fields: [
         { label: "3.1 Service Category", value: formData.serviceCategory },
         { label: "3.2 Services", value: formData.services },
@@ -197,7 +197,7 @@ export const SubmissionDetail = ({ submission, onBack, showBackButton }: Submiss
       ]
     },
     {
-      title: "Section 4: Operations",
+      title: "4. Operations",
       fields: [
         { label: "4.1 Emergency services", value: formData.emergencyServices },
         { label: "4.2 Homeowner challenges", value: formData.homeownerChallenges },
@@ -208,7 +208,7 @@ export const SubmissionDetail = ({ submission, onBack, showBackButton }: Submiss
       ]
     },
     {
-      title: "Section 5: Trust & Credentials",
+      title: "5. Trust",
       fields: [
         { label: "5.1 Quality & trust factors", value: formData.qualityTrust },
         { label: "5.2 Insurance help", value: formData.insuranceHelp },
@@ -217,7 +217,7 @@ export const SubmissionDetail = ({ submission, onBack, showBackButton }: Submiss
       ]
     },
     {
-      title: "Section 6: Team & Story",
+      title: "6. Team & Story",
       fields: [
         { label: "6.1 Founder message", value: formData.founderMessage },
         { label: "6.2 Founder photos", value: formData.founderPhotos },
@@ -228,7 +228,7 @@ export const SubmissionDetail = ({ submission, onBack, showBackButton }: Submiss
       ]
     },
     {
-      title: "Section 7: Branding",
+      title: "7. Branding",
       fields: [
         { label: "7.1 Logo files", value: formData.logoFiles },
         { label: "7.2 Website colors", value: formData.websiteColors },
@@ -239,7 +239,7 @@ export const SubmissionDetail = ({ submission, onBack, showBackButton }: Submiss
       ]
     },
     {
-      title: "Section 8: Online Presence",
+      title: "8. Online Presence",
       fields: [
         { label: "8.1 Has Google Profile?", value: formData.hasGoogleProfile },
         { label: "8.2 Google Profile link", value: formData.googleBusinessProfileLink },
@@ -253,7 +253,7 @@ export const SubmissionDetail = ({ submission, onBack, showBackButton }: Submiss
       ]
     },
     {
-      title: "Section 9: Offers & Financing",
+      title: "9. Offers",
       fields: [
         { label: "9.1 Has special offers?", value: formData.hasSpecialOffers },
         { label: "9.2 Special offers", value: formData.specialOffersExplanation },
@@ -262,7 +262,7 @@ export const SubmissionDetail = ({ submission, onBack, showBackButton }: Submiss
       ]
     },
     {
-      title: "Section 10: Final Notes",
+      title: "10. Final",
       fields: [
         { label: "10.1 Competitor websites", value: formData.competitorWebsites },
         { label: "10.2 Additional notes", value: formData.additionalNotes },

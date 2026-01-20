@@ -127,3 +127,5 @@ To reply to a visitor, simply reply to their message thread.
 - `supabase/functions/telegram-webhook/index.ts` - Receives your replies
 - Updated `src/components/Chatbot.tsx` - Frontend integration
 
+
+

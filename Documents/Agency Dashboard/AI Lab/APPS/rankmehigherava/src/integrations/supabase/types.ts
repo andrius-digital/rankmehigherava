@@ -251,6 +251,142 @@ export type Database = {
         }
         Relationships: []
       }
+      global_checklist_items: {
+        Row: {
+          id: string
+          label: string
+          description: string
+          display_order: number
+          is_default: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          label: string
+          description?: string
+          display_order?: number
+          is_default?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          label?: string
+          description?: string
+          display_order?: number
+          is_default?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      client_checklist_status: {
+        Row: {
+          id: string
+          client_id: string
+          checklist_item_id: string
+          checked: boolean
+          notes: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          client_id: string
+          checklist_item_id: string
+          checked?: boolean
+          notes?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          client_id?: string
+          checklist_item_id?: string
+          checked?: boolean
+          notes?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_checklist_status_checklist_item_id_fkey"
+            columns: ["checklist_item_id"]
+            isOneToOne: false
+            referencedRelation: "global_checklist_items"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      global_client_services: {
+        Row: {
+          id: string
+          label: string
+          description: string
+          display_order: number
+          is_default: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          label: string
+          description?: string
+          display_order?: number
+          is_default?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          label?: string
+          description?: string
+          display_order?: number
+          is_default?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      client_services_status: {
+        Row: {
+          id: string
+          client_id: string
+          service_item_id: string
+          checked: boolean
+          notes: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          client_id: string
+          service_item_id: string
+          checked?: boolean
+          notes?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          client_id?: string
+          service_item_id?: string
+          checked?: boolean
+          notes?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_services_status_service_item_id_fkey"
+            columns: ["service_item_id"]
+            isOneToOne: false
+            referencedRelation: "global_client_services"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       blog_posts: {
         Row: {
           id: string

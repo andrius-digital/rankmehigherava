@@ -89,3 +89,5 @@ CREATE POLICY "Service role full access messages"
   ON telegram_chat_messages FOR ALL 
   TO service_role USING (true) WITH CHECK (true);
 
+
+
