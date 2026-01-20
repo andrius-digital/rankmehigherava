@@ -259,6 +259,13 @@ interface ClientTechStackChoices {
     client_id: string;
     framework: 'react' | 'html' | null;
     hosting: 'vercel' | 'namecheap' | null;
+    branch_dev: boolean;
+    branch_staging: boolean;
+    branch_main: boolean;
+    domain_registrar: string | null;
+    domain_login_url: string | null;
+    domain_username: string | null;
+    domain_password: string | null;
     created_at: string;
     updated_at: string;
 }
@@ -298,6 +305,8 @@ const ToggleItem = ({
     const [editLabel, setEditLabel] = useState(label);
     const [editDescription, setEditDescription] = useState(description || '');
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [deletePassword, setDeletePassword] = useState('');
+    const [deletePasswordError, setDeletePasswordError] = useState(false);
 
     const colorClasses = {
         cyan: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30',
@@ -469,26 +478,59 @@ const ToggleItem = ({
                 </div>
             )}
 
-            {/* Delete Confirmation Dialog */}
-            <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+            {/* Delete Confirmation Dialog with Password */}
+            <AlertDialog open={showDeleteConfirm} onOpenChange={(open) => {
+                setShowDeleteConfirm(open);
+                if (!open) {
+                    setDeletePassword('');
+                    setDeletePasswordError(false);
+                }
+            }}>
                 <AlertDialogContent className="bg-zinc-900 border-red-500/30">
                     <AlertDialogHeader>
-                        <AlertDialogTitle className="text-red-400">Delete Checklist Item</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Are you sure you want to delete "{label}"? This action cannot be undone.
+                        <AlertDialogTitle className="text-red-400">Delete Item</AlertDialogTitle>
+                        <AlertDialogDescription className="space-y-3">
+                            <span className="block">Are you sure you want to delete "<span className="text-white font-medium">{label}</span>"?</span>
+                            <span className="block text-yellow-400/80 text-xs">This will remove it from ALL clients and cannot be undone.</span>
                         </AlertDialogDescription>
                     </AlertDialogHeader>
+                    <div className="py-2">
+                        <label className="text-xs text-muted-foreground block mb-2">Enter admin password to confirm:</label>
+                        <input
+                            type="password"
+                            value={deletePassword}
+                            onChange={(e) => {
+                                setDeletePassword(e.target.value);
+                                setDeletePasswordError(false);
+                            }}
+                            placeholder="Password"
+                            className={`w-full px-3 py-2 text-sm bg-zinc-800 border rounded-lg focus:outline-none ${
+                                deletePasswordError
+                                    ? 'border-red-500 focus:border-red-500'
+                                    : 'border-white/10 focus:border-red-500/50'
+                            }`}
+                        />
+                        {deletePasswordError && (
+                            <p className="text-xs text-red-400 mt-1">Incorrect password</p>
+                        )}
+                    </div>
                     <AlertDialogFooter>
                         <AlertDialogCancel className="border-white/10">Cancel</AlertDialogCancel>
-                        <AlertDialogAction
+                        <button
                             onClick={() => {
-                                onDelete?.();
-                                setShowDeleteConfirm(false);
+                                if (deletePassword === 'mundelein') {
+                                    onDelete?.();
+                                    setShowDeleteConfirm(false);
+                                    setDeletePassword('');
+                                    setDeletePasswordError(false);
+                                } else {
+                                    setDeletePasswordError(true);
+                                }
                             }}
-                            className="bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30"
+                            className="inline-flex items-center justify-center rounded-md text-sm font-medium px-4 py-2 bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30 transition-colors"
                         >
                             Delete
-                        </AlertDialogAction>
+                        </button>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
@@ -1269,6 +1311,107 @@ const IndividualClientProfile: React.FC = () => {
             description: `${field === 'framework' ? 'Framework' : 'Hosting'} updated successfully`,
         });
     };
+
+    // Update branch setup status
+    const updateBranchSetup = async (branch: 'branch_dev' | 'branch_staging' | 'branch_main', value: boolean) => {
+        if (!id) return;
+
+        if (techStackChoices) {
+            // Update existing record
+            const { error } = await supabase
+                .from('client_tech_stack_choices')
+                .update({ [branch]: value })
+                .eq('client_id', id);
+
+            if (error) {
+                toast({
+                    title: 'Error',
+                    description: `Failed to update branch status`,
+                    variant: 'destructive',
+                });
+                return;
+            }
+        } else {
+            // Insert new record
+            const { error } = await supabase
+                .from('client_tech_stack_choices')
+                .insert({
+                    client_id: id,
+                    [branch]: value,
+                });
+
+            if (error) {
+                toast({
+                    title: 'Error',
+                    description: `Failed to set branch status`,
+                    variant: 'destructive',
+                });
+                return;
+            }
+        }
+
+        refetchTechStackChoices();
+    };
+
+    // Update domain registrar info
+    const updateDomainRegistrar = async (field: 'domain_registrar' | 'domain_login_url' | 'domain_username' | 'domain_password', value: string) => {
+        if (!id) return;
+
+        if (techStackChoices) {
+            const { error } = await supabase
+                .from('client_tech_stack_choices')
+                .update({ [field]: value || null })
+                .eq('client_id', id);
+
+            if (error) {
+                toast({
+                    title: 'Error',
+                    description: `Failed to update domain info`,
+                    variant: 'destructive',
+                });
+                return;
+            }
+        } else {
+            const { error } = await supabase
+                .from('client_tech_stack_choices')
+                .insert({
+                    client_id: id,
+                    [field]: value || null,
+                });
+
+            if (error) {
+                toast({
+                    title: 'Error',
+                    description: `Failed to set domain info`,
+                    variant: 'destructive',
+                });
+                return;
+            }
+        }
+
+        refetchTechStackChoices();
+    };
+
+    // Domain registrar expanded state and local input values
+    const [domainExpanded, setDomainExpanded] = useState(false);
+    const [localDomainRegistrar, setLocalDomainRegistrar] = useState('');
+    const [localDomainLoginUrl, setLocalDomainLoginUrl] = useState('');
+    const [localDomainUsername, setLocalDomainUsername] = useState('');
+    const [localDomainPassword, setLocalDomainPassword] = useState('');
+    const [showDomainPassword, setShowDomainPassword] = useState(false);
+    const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+    const [passwordInput, setPasswordInput] = useState('');
+    const [passwordError, setPasswordError] = useState(false);
+
+    // Sync local domain state when techStackChoices loads
+    useEffect(() => {
+        if (techStackChoices) {
+            setLocalDomainRegistrar(techStackChoices.domain_registrar || '');
+            setLocalDomainLoginUrl(techStackChoices.domain_login_url || '');
+            setLocalDomainUsername(techStackChoices.domain_username || '');
+            setLocalDomainPassword(techStackChoices.domain_password || '');
+        }
+    }, [techStackChoices]);
 
     // Management checklist state - now synced with Supabase
     const [managementChecklist, setManagementChecklist] = useState<ChecklistItem[]>([]);
@@ -2223,7 +2366,7 @@ const IndividualClientProfile: React.FC = () => {
                                             placeholder="Add notes..."
                                             onEdit={(newLabel, newDescription) => editServiceItem(item.id, newLabel, newDescription)}
                                             onDelete={() => deleteServiceItem(item.id)}
-                                            canDelete={!item.isDefault}
+                                            canDelete={true}
                                         />
                                     );
                                 })}
@@ -2443,7 +2586,7 @@ const IndividualClientProfile: React.FC = () => {
                                             placeholder="Add notes..."
                                             onEdit={(newLabel, newDescription) => editChecklistItem(item.id, newLabel, newDescription)}
                                             onDelete={() => deleteChecklistItem(item.id)}
-                                            canDelete={!item.isDefault}
+                                            canDelete={true}
                                         />
                                     );
                                 })}
@@ -3639,18 +3782,25 @@ const IndividualClientProfile: React.FC = () => {
                                     </div>
                                 </div>
 
-                                {/* GitHub Branches - Info Only (Not Clickable) */}
+                                {/* GitHub Branches - Single Toggle */}
                                 <div className="rounded-xl bg-card/30 border border-blue-500/20 p-3">
-                                    <div className="flex items-center gap-3 mb-3">
-                                        <div className="w-8 h-8 rounded-lg bg-gray-500/20 flex items-center justify-center">
-                                            <Github className="w-4 h-4 text-gray-400" />
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-lg bg-gray-500/20 flex items-center justify-center">
+                                                <Github className="w-4 h-4 text-gray-400" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-medium text-white">GitHub Branches</p>
+                                                <p className="text-[10px] text-muted-foreground">Deployment workflow</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="text-sm font-medium text-white">GitHub Branches</p>
-                                            <p className="text-[10px] text-muted-foreground">Deployment workflow guide</p>
-                                        </div>
+                                        <Switch
+                                            checked={techStackChoices?.branch_dev || false}
+                                            onCheckedChange={(checked) => updateBranchSetup('branch_dev', checked)}
+                                            className="data-[state=checked]:bg-green-500"
+                                        />
                                     </div>
-                                    <div className="space-y-2 pl-11">
+                                    <div className="space-y-2 pl-11 mt-3">
                                         <div className="flex items-center gap-2 py-1.5 px-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
                                             <div className="w-2 h-2 rounded-full bg-yellow-400"></div>
                                             <span className="text-xs font-medium text-yellow-300">dev</span>
@@ -3668,6 +3818,167 @@ const IndividualClientProfile: React.FC = () => {
                                         </div>
                                     </div>
                                 </div>
+
+                                {/* Domain Registrar - Expandable with login details */}
+                                <div className="rounded-xl bg-card/30 border border-blue-500/20 p-3">
+                                    <div
+                                        className="flex items-center justify-between cursor-pointer"
+                                        onClick={() => setDomainExpanded(!domainExpanded)}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                                                <Globe className="w-4 h-4 text-amber-400" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-medium text-white">Domain Registrar</p>
+                                                <p className="text-[10px] text-muted-foreground">
+                                                    {localDomainRegistrar || 'Click to add domain info'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${domainExpanded ? 'rotate-180' : ''}`} />
+                                    </div>
+
+                                    {domainExpanded && (
+                                        <div className="mt-3 pl-11 space-y-3">
+                                            <div className="space-y-1.5">
+                                                <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Registrar Name</label>
+                                                <input
+                                                    type="text"
+                                                    value={localDomainRegistrar}
+                                                    onChange={(e) => setLocalDomainRegistrar(e.target.value)}
+                                                    onBlur={() => updateDomainRegistrar('domain_registrar', localDomainRegistrar)}
+                                                    placeholder="e.g., GoDaddy, Namecheap, Cloudflare"
+                                                    className="w-full px-3 py-2 text-sm bg-card/50 border border-white/10 rounded-lg focus:border-amber-500/50 focus:outline-none text-white placeholder:text-muted-foreground"
+                                                />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Login URL</label>
+                                                <input
+                                                    type="text"
+                                                    value={localDomainLoginUrl}
+                                                    onChange={(e) => setLocalDomainLoginUrl(e.target.value)}
+                                                    onBlur={() => updateDomainRegistrar('domain_login_url', localDomainLoginUrl)}
+                                                    placeholder="https://..."
+                                                    className="w-full px-3 py-2 text-sm bg-card/50 border border-white/10 rounded-lg focus:border-amber-500/50 focus:outline-none text-white placeholder:text-muted-foreground"
+                                                />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Username / Email</label>
+                                                <input
+                                                    type="text"
+                                                    value={localDomainUsername}
+                                                    onChange={(e) => setLocalDomainUsername(e.target.value)}
+                                                    onBlur={() => updateDomainRegistrar('domain_username', localDomainUsername)}
+                                                    placeholder="username@email.com"
+                                                    className="w-full px-3 py-2 text-sm bg-card/50 border border-white/10 rounded-lg focus:border-amber-500/50 focus:outline-none text-white placeholder:text-muted-foreground"
+                                                />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <div className="flex items-center justify-between">
+                                                    <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Password</label>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            if (showDomainPassword) {
+                                                                setShowDomainPassword(false);
+                                                            } else {
+                                                                setShowPasswordDialog(true);
+                                                            }
+                                                        }}
+                                                        className="text-[10px] text-amber-400 hover:text-amber-300 flex items-center gap-1"
+                                                    >
+                                                        {showDomainPassword ? (
+                                                            <>
+                                                                <EyeOff className="w-3 h-3" />
+                                                                Hide
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <Eye className="w-3 h-3" />
+                                                                Show
+                                                            </>
+                                                        )}
+                                                    </button>
+                                                </div>
+                                                <input
+                                                    type={showDomainPassword ? "text" : "password"}
+                                                    value={localDomainPassword}
+                                                    onChange={(e) => setLocalDomainPassword(e.target.value)}
+                                                    onBlur={() => updateDomainRegistrar('domain_password', localDomainPassword)}
+                                                    placeholder="••••••••"
+                                                    className="w-full px-3 py-2 text-sm bg-card/50 border border-white/10 rounded-lg focus:border-amber-500/50 focus:outline-none text-white placeholder:text-muted-foreground"
+                                                />
+                                            </div>
+                                            {localDomainLoginUrl && (
+                                                <a
+                                                    href={localDomainLoginUrl.startsWith('http') ? localDomainLoginUrl : `https://${localDomainLoginUrl}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-lg hover:bg-amber-500/20 transition-colors"
+                                                >
+                                                    <ExternalLink className="w-3 h-3" />
+                                                    Open Login Page
+                                                </a>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Password Dialog for viewing domain password */}
+                                <AlertDialog open={showPasswordDialog} onOpenChange={(open) => {
+                                    setShowPasswordDialog(open);
+                                    if (!open) {
+                                        setPasswordInput('');
+                                        setPasswordError(false);
+                                    }
+                                }}>
+                                    <AlertDialogContent className="bg-zinc-900 border-amber-500/30">
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle className="text-amber-400">View Password</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                Enter admin password to view the stored password.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <div className="py-2">
+                                            <input
+                                                type="password"
+                                                value={passwordInput}
+                                                onChange={(e) => {
+                                                    setPasswordInput(e.target.value);
+                                                    setPasswordError(false);
+                                                }}
+                                                placeholder="Enter password"
+                                                className={`w-full px-3 py-2 text-sm bg-zinc-800 border rounded-lg focus:outline-none ${
+                                                    passwordError
+                                                        ? 'border-red-500 focus:border-red-500'
+                                                        : 'border-white/10 focus:border-amber-500/50'
+                                                }`}
+                                            />
+                                            {passwordError && (
+                                                <p className="text-xs text-red-400 mt-1">Incorrect password</p>
+                                            )}
+                                        </div>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel className="border-white/10">Cancel</AlertDialogCancel>
+                                            <button
+                                                onClick={() => {
+                                                    if (passwordInput === 'domain') {
+                                                        setShowDomainPassword(true);
+                                                        setShowPasswordDialog(false);
+                                                        setPasswordInput('');
+                                                        setPasswordError(false);
+                                                    } else {
+                                                        setPasswordError(true);
+                                                    }
+                                                }}
+                                                className="inline-flex items-center justify-center rounded-md text-sm font-medium px-4 py-2 bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 border border-amber-500/30 transition-colors"
+                                            >
+                                                View Password
+                                            </button>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
 
                                 {/* Divider */}
                                 <div className="border-t border-white/5 my-2"></div>
