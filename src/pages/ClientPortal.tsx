@@ -36,7 +36,8 @@ import {
     ToggleRight,
     PlusCircle,
     Code,
-    ShoppingCart
+    ShoppingCart,
+    Users
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
@@ -53,6 +54,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import FileUpload from '@/components/FileUpload';
 import LogoGenerator from '@/components/LogoGenerator';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Helper function to check if client is new (created within last 7 days)
 const isNewClient = (client: any): boolean => {
@@ -141,7 +143,8 @@ const ClientPortal: React.FC = () => {
     
     const { toast } = useToast();
     const queryClient = useQueryClient();
-    
+    const { isAdmin } = useAuth();
+
     // Funnel form modal state
     const [showFunnelForm, setShowFunnelForm] = useState(false);
     const [funnelStep, setFunnelStep] = useState(1);
@@ -941,8 +944,17 @@ const ClientPortal: React.FC = () => {
                         >
                             <RefreshCw className={`w-2.5 h-2.5 ${isLoading ? 'animate-spin' : ''}`} />
                         </button>
-                        <Link 
-                            to="/avaadminpanel" 
+                        {isAdmin && (
+                            <Link
+                                to="/reseller-management"
+                                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 hover:from-purple-500/30 hover:to-pink-500/30 transition-all font-orbitron text-[8px] uppercase tracking-widest text-purple-400"
+                            >
+                                <Users className="w-2.5 h-2.5" />
+                                Resellers
+                            </Link>
+                        )}
+                        <Link
+                            to="/avaadminpanel"
                             className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all font-orbitron text-[8px] uppercase tracking-widest text-muted-foreground"
                         >
                             AVA Admin <Layout className="w-2.5 h-2.5" />
