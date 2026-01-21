@@ -36,7 +36,10 @@ import {
     ToggleRight,
     PlusCircle,
     Code,
-    ShoppingCart
+    ShoppingCart,
+    Users,
+    Eye,
+    EyeOff
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
@@ -79,6 +82,133 @@ const isExistingClient = (client: any): boolean => {
         } catch {}
     }
     return false;
+};
+
+// Helper function to check if client is a reseller account
+const isResellerAccount = (client: any): boolean => {
+    if (client.notes) {
+        try {
+            const parsed = JSON.parse(client.notes);
+            return parsed?.is_reseller === true;
+        } catch {}
+    }
+    return false;
+};
+
+// Helper function to get reseller details from client data
+const getResellerDetails = (client: any): { resellerType: string; resellerPlatform: string; loginUrl: string; username: string; password: string } | null => {
+    if (client.notes) {
+        try {
+            const parsed = JSON.parse(client.notes);
+            if (parsed?.is_reseller) {
+                return {
+                    resellerType: parsed?.reseller_type || '',
+                    resellerPlatform: parsed?.reseller_platform || '',
+                    loginUrl: parsed?.login_url || '',
+                    username: parsed?.username || '',
+                    password: parsed?.password || '',
+                };
+            }
+        } catch {}
+    }
+    return null;
+};
+
+// Reseller Card Component with password toggle state
+const ResellerCard: React.FC<{
+    client: any;
+    isHighlighted: boolean;
+    onDeleteClick: (e: React.MouseEvent, client: any) => void;
+}> = ({ client, isHighlighted, onDeleteClick }) => {
+    const [showPassword, setShowPassword] = useState(false);
+    const resellerDetails = getResellerDetails(client);
+
+    return (
+        <div className={`relative group flex-shrink-0 w-[300px] snap-start ${isHighlighted ? 'ring-2 ring-purple-400/60 ring-offset-2 ring-offset-background rounded-xl' : ''}`}>
+            <div className={`h-full bg-gradient-to-br from-card/40 via-card/20 to-transparent backdrop-blur-xl border rounded-xl p-4 hover:border-purple-400/60 transition-all duration-200 hover:shadow-lg hover:shadow-purple-500/20 ${isHighlighted ? 'border-purple-400/60 shadow-lg shadow-purple-500/20' : 'border-purple-500/30'}`}>
+                <div className="flex items-center gap-3 mb-3">
+                    <div className="relative">
+                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500/20 to-pink-600/20 border border-purple-500/30 flex items-center justify-center">
+                            <Users className="w-5 h-5 text-purple-400" />
+                        </div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 mb-0.5">
+                            <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30 font-orbitron text-[7px] px-1 py-0">
+                                RESELLER
+                            </Badge>
+                            {resellerDetails?.resellerType && (
+                                <Badge className="bg-pink-500/20 text-pink-400 border-pink-500/30 font-orbitron text-[7px] px-1 py-0">
+                                    {resellerDetails.resellerType.toUpperCase()}
+                                </Badge>
+                            )}
+                        </div>
+                        <h3 className="font-orbitron font-bold text-sm text-foreground truncate">
+                            {client.company_name || client.name}
+                        </h3>
+                    </div>
+                </div>
+
+                {resellerDetails?.resellerPlatform && (
+                    <div className="flex flex-wrap gap-1 mb-3">
+                        <span className="px-1.5 py-0.5 rounded bg-white/5 text-[8px] font-orbitron text-muted-foreground">
+                            {resellerDetails.resellerPlatform}
+                        </span>
+                    </div>
+                )}
+
+                {/* Login Details */}
+                <div className="mt-2 pt-2 border-t border-purple-500/10 space-y-1.5">
+                    {resellerDetails?.loginUrl && (
+                        <a
+                            href={resellerDetails.loginUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-[9px] text-purple-400 hover:text-purple-300 transition-colors truncate"
+                        >
+                            <Globe className="w-2.5 h-2.5 flex-shrink-0" />
+                            <span className="truncate">{resellerDetails.loginUrl.replace('https://', '').replace('http://', '')}</span>
+                            <ExternalLink className="w-2.5 h-2.5 flex-shrink-0" />
+                        </a>
+                    )}
+                    {resellerDetails?.username && (
+                        <div className="flex items-center gap-1 text-[9px] text-muted-foreground">
+                            <Mail className="w-2.5 h-2.5 flex-shrink-0 text-purple-400" />
+                            <span className="truncate">{resellerDetails.username}</span>
+                        </div>
+                    )}
+                    {resellerDetails?.password && (
+                        <div className="flex items-center gap-1 text-[9px] text-muted-foreground">
+                            <Lock className="w-2.5 h-2.5 flex-shrink-0 text-purple-400" />
+                            <span className="truncate font-mono">
+                                {showPassword ? resellerDetails.password : '••••••••'}
+                            </span>
+                            <button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setShowPassword(!showPassword);
+                                }}
+                                className="ml-1 p-0.5 hover:bg-purple-500/20 rounded transition-colors"
+                            >
+                                {showPassword ? (
+                                    <EyeOff className="w-2.5 h-2.5 text-purple-400" />
+                                ) : (
+                                    <Eye className="w-2.5 h-2.5 text-purple-400" />
+                                )}
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </div>
+            <button
+                onClick={(e) => onDeleteClick(e, client)}
+                className="absolute top-2 right-2 p-1.5 rounded-lg bg-red-500/10 border border-red-500/20 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/20"
+            >
+                <Trash2 className="w-3 h-3 text-red-400" />
+            </button>
+        </div>
+    );
 };
 
 // Helper function to get logo from client data - uses Google favicon service
@@ -247,7 +377,25 @@ const ClientPortal: React.FC = () => {
     });
     const [isSubmittingExistingWebsite, setIsSubmittingExistingWebsite] = useState(false);
     const [isSubmittingExistingFunnel, setIsSubmittingExistingFunnel] = useState(false);
-    
+
+    // Reseller modal and form state
+    const [showResellerForm, setShowResellerForm] = useState(false);
+    const [isSubmittingReseller, setIsSubmittingReseller] = useState(false);
+    const [showAllResellers, setShowAllResellers] = useState(false);
+    const resellerScrollRef = useRef<HTMLDivElement>(null);
+    const [resellerFormData, setResellerFormData] = useState({
+        companyName: '',
+        contactName: '',
+        contactEmail: '',
+        contactPhone: '',
+        resellerType: '', // 'hosting', 'domains', 'both'
+        resellerPlatform: '', // e.g., 'GoDaddy', 'Namecheap', 'Cloudflare', etc.
+        loginUrl: '',
+        username: '',
+        password: '',
+        notes: '',
+    });
+
     const DELETE_PASSWORD = 'mundelein';
 
     const handleDeleteClick = (e: React.MouseEvent, client: any) => {
@@ -779,6 +927,90 @@ const ClientPortal: React.FC = () => {
         }
     };
 
+    // Reset reseller form
+    const resetResellerForm = () => {
+        setResellerFormData({
+            companyName: '',
+            contactName: '',
+            contactEmail: '',
+            contactPhone: '',
+            resellerType: '',
+            resellerPlatform: '',
+            loginUrl: '',
+            username: '',
+            password: '',
+            notes: '',
+        });
+    };
+
+    // Handle reseller account submission
+    const handleResellerSubmit = async () => {
+        if (!resellerFormData.companyName || !resellerFormData.resellerPlatform) {
+            toast({
+                title: "Missing required fields",
+                description: "Please fill in company name and reseller platform.",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        setIsSubmittingReseller(true);
+
+        try {
+            const notesData = {
+                submission_type: 'reseller-account',
+                is_reseller: true,
+                contact_name: resellerFormData.contactName,
+                reseller_type: resellerFormData.resellerType,
+                reseller_platform: resellerFormData.resellerPlatform,
+                login_url: resellerFormData.loginUrl,
+                username: resellerFormData.username,
+                password: resellerFormData.password,
+                additional_notes: resellerFormData.notes,
+                submitted_at: new Date().toISOString(),
+            };
+
+            const resellerServices = [
+                resellerFormData.resellerType || 'Reseller',
+                resellerFormData.resellerPlatform,
+            ].filter(Boolean);
+
+            const { error: clientError } = await supabase
+                .from('clients')
+                .insert({
+                    name: resellerFormData.companyName,
+                    company_name: resellerFormData.companyName,
+                    email: resellerFormData.contactEmail || null,
+                    phone: resellerFormData.contactPhone || null,
+                    brand_voice: 'Reseller Account',
+                    status: 'PENDING',
+                    primary_services: resellerServices,
+                    notes: JSON.stringify(notesData),
+                });
+
+            if (clientError) throw new Error(clientError.message);
+
+            queryClient.invalidateQueries({ queryKey: ['all-clients'] });
+
+            toast({
+                title: "Reseller account created!",
+                description: `${resellerFormData.companyName} has been added.`,
+            });
+
+            resetResellerForm();
+            setShowResellerForm(false);
+        } catch (error) {
+            console.error('Reseller submission error:', error);
+            toast({
+                title: "Submission failed",
+                description: error instanceof Error ? error.message : "Please try again.",
+                variant: "destructive",
+            });
+        } finally {
+            setIsSubmittingReseller(false);
+        }
+    };
+
     // Fetch ALL clients from database - no limit
     const { data: dbClients = [], isLoading, error: queryError, refetch } = useQuery({
         queryKey: ['all-clients'],
@@ -846,17 +1078,23 @@ const ClientPortal: React.FC = () => {
         return false;
     };
     
-    // ALL website clients (NOT funnel clients)
-    const websiteClientsRaw = activeClients.filter(c => !isFunnelClient(c));
+    // ALL reseller accounts
+    const resellerClientsRaw = activeClients.filter(c => isResellerAccount(c));
+    const resellerClients = sortAndFilterClients(resellerClientsRaw, globalSearch);
+
+    // ALL website clients (NOT funnel clients, NOT resellers)
+    const websiteClientsRaw = activeClients.filter(c => !isFunnelClient(c) && !isResellerAccount(c));
     const websiteClients = sortAndFilterClients(websiteClientsRaw, globalSearch);
-    
-    // ALL funnel clients
-    const funnelClientsRaw = activeClients.filter(c => isFunnelClient(c));
+
+    // ALL funnel clients (NOT resellers)
+    const funnelClientsRaw = activeClients.filter(c => isFunnelClient(c) && !isResellerAccount(c));
     const funnelClients = sortAndFilterClients(funnelClientsRaw, globalSearch);
-    
+
     // Archived separated by type
-    const archivedWebsitesRaw = archivedClients.filter(c => !isFunnelClient(c));
-    const archivedFunnelsRaw = archivedClients.filter(c => isFunnelClient(c));
+    const archivedResellersRaw = archivedClients.filter(c => isResellerAccount(c));
+    const archivedWebsitesRaw = archivedClients.filter(c => !isFunnelClient(c) && !isResellerAccount(c));
+    const archivedFunnelsRaw = archivedClients.filter(c => isFunnelClient(c) && !isResellerAccount(c));
+    const archivedResellers = sortAndFilterClients(archivedResellersRaw, globalSearch);
     const archivedWebsites = sortAndFilterClients(archivedWebsitesRaw, globalSearch);
     const archivedFunnels = sortAndFilterClients(archivedFunnelsRaw, globalSearch);
 
@@ -927,12 +1165,19 @@ const ClientPortal: React.FC = () => {
                             <MonitorSmartphone className="w-2.5 h-2.5" />
                             Onboard New Website
                         </Link>
-                        <button 
+                        <button
                             onClick={() => setShowFunnelForm(true)}
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 transition-all font-orbitron text-[8px] uppercase tracking-widest text-white font-bold"
                         >
                             <Layers className="w-2.5 h-2.5" />
                             Onboard New Funnel
+                        </button>
+                        <button
+                            onClick={() => setShowResellerForm(true)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 transition-all font-orbitron text-[8px] uppercase tracking-widest text-white font-bold"
+                        >
+                            <Users className="w-2.5 h-2.5" />
+                            Create Reseller
                         </button>
                         <button
                             onClick={() => refetch()}
@@ -1389,6 +1634,116 @@ const ClientPortal: React.FC = () => {
                     {funnelClients.length === 0 && (
                         <div className="text-center py-8 text-muted-foreground font-orbitron text-xs">
                             No funnel clients yet. Add your first one!
+                        </div>
+                    )}
+                </div>
+
+                {/* RESELLERS SECTION */}
+                <div className="mt-8">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500/20 to-pink-600/20 border border-purple-500/30 flex items-center justify-center">
+                                <Users className="w-4 h-4 text-purple-400" />
+                            </div>
+                            <h2 className="font-orbitron text-lg font-bold text-foreground">Resellers</h2>
+                            <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30 font-orbitron text-[8px]">
+                                {resellerClients.length}
+                            </Badge>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            {/* Scroll Navigation */}
+                            <button
+                                onClick={() => scrollLeft(resellerScrollRef)}
+                                className="p-1.5 rounded-lg bg-card/40 border border-purple-500/20 hover:border-purple-500/50 transition-colors"
+                            >
+                                <ChevronLeft className="w-4 h-4 text-purple-400" />
+                            </button>
+                            <button
+                                onClick={() => scrollRight(resellerScrollRef)}
+                                className="p-1.5 rounded-lg bg-card/40 border border-purple-500/20 hover:border-purple-500/50 transition-colors"
+                            >
+                                <ChevronRight className="w-4 h-4 text-purple-400" />
+                            </button>
+                            {/* See All Dialog */}
+                            {resellerClients.length > MAX_VISIBLE_CARDS && (
+                                <Dialog open={showAllResellers} onOpenChange={setShowAllResellers}>
+                                    <DialogTrigger asChild>
+                                        <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-500/10 border border-purple-500/30 text-purple-400 hover:bg-purple-500/20 transition-all font-orbitron text-[10px]">
+                                            <MoreHorizontal className="w-3 h-3" />
+                                            See All
+                                        </button>
+                                    </DialogTrigger>
+                                    <DialogContent className="max-w-4xl max-h-[80vh] bg-background/95 backdrop-blur-xl border-purple-500/30">
+                                        <DialogHeader>
+                                            <DialogTitle className="font-orbitron text-purple-400 flex items-center gap-2">
+                                                <Users className="w-5 h-5" />
+                                                All Reseller Accounts ({resellerClients.length})
+                                            </DialogTitle>
+                                        </DialogHeader>
+                                        <ScrollArea className="max-h-[60vh] pr-4">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                {resellerClients.map((client) => {
+                                                    const resellerDetails = getResellerDetails(client);
+                                                    return (
+                                                    <div
+                                                        key={client.id}
+                                                        className="block bg-gradient-to-br from-card/60 via-card/40 to-transparent border border-purple-500/30 rounded-xl p-4 hover:border-purple-400/60 transition-all"
+                                                    >
+                                                        <div className="flex items-center gap-3 mb-2">
+                                                            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500/20 to-pink-600/20 border border-purple-500/30 flex items-center justify-center">
+                                                                <Users className="w-5 h-5 text-purple-400" />
+                                                            </div>
+                                                            <div>
+                                                                <div className="flex items-center gap-1 mb-0.5">
+                                                                    <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30 font-orbitron text-[7px] px-1 py-0">
+                                                                        RESELLER
+                                                                    </Badge>
+                                                                    {resellerDetails?.resellerType && (
+                                                                        <Badge className="bg-pink-500/20 text-pink-400 border-pink-500/30 font-orbitron text-[7px] px-1 py-0">
+                                                                            {resellerDetails.resellerType.toUpperCase()}
+                                                                        </Badge>
+                                                                    )}
+                                                                </div>
+                                                                <h3 className="font-orbitron font-bold text-sm">{client.company_name || client.name}</h3>
+                                                                {resellerDetails?.resellerPlatform && (
+                                                                    <p className="text-[10px] text-muted-foreground">{resellerDetails.resellerPlatform}</p>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </ScrollArea>
+                                    </DialogContent>
+                                </Dialog>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Horizontal Scrollable Cards */}
+                    <div
+                        ref={resellerScrollRef}
+                        className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory"
+                        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                    >
+                        {/* Reseller Clients - Show max 6 */}
+                        {resellerClients.slice(0, MAX_VISIBLE_CARDS).map((client) => {
+                            const isHighlighted = globalSearch && clientMatchesSearch(client, globalSearch);
+                            return (
+                                <ResellerCard
+                                    key={client.id}
+                                    client={client}
+                                    isHighlighted={isHighlighted}
+                                    onDeleteClick={handleDeleteClick}
+                                />
+                            );
+                        })}
+                    </div>
+
+                    {resellerClients.length === 0 && (
+                        <div className="text-center py-8 text-muted-foreground font-orbitron text-xs">
+                            No reseller accounts yet. Create your first one!
                         </div>
                     )}
                 </div>
@@ -2422,6 +2777,190 @@ const ClientPortal: React.FC = () => {
                                     <>
                                         <Send className="w-4 h-4" />
                                         Add Existing Funnel
+                                    </>
+                                )}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Create Reseller Account Modal */}
+            {showResellerForm && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div
+                        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+                        onClick={() => { setShowResellerForm(false); resetResellerForm(); }}
+                    />
+                    <div className="relative z-10 w-full max-w-xl bg-gradient-to-br from-card via-card/95 to-background border border-purple-500/30 rounded-2xl shadow-2xl shadow-purple-500/20 flex flex-col max-h-[90vh]">
+                        <div className="p-6 border-b border-purple-500/20 shrink-0">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center">
+                                        <Users className="w-5 h-5 text-white" />
+                                    </div>
+                                    <div>
+                                        <h2 className="font-orbitron text-lg font-bold text-foreground">Create Reseller Account</h2>
+                                        <p className="text-xs text-muted-foreground">Add hosting/domain reseller account</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => { setShowResellerForm(false); resetResellerForm(); }}
+                                    className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                                >
+                                    <X className="w-5 h-5 text-muted-foreground" />
+                                </button>
+                            </div>
+                        </div>
+                        <div className="p-6 space-y-4 overflow-y-auto flex-grow">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <Label className="text-sm">Account Name *</Label>
+                                    <Input
+                                        className="mt-1"
+                                        value={resellerFormData.companyName}
+                                        onChange={(e) => setResellerFormData({ ...resellerFormData, companyName: e.target.value })}
+                                        placeholder="e.g., Main GoDaddy Account"
+                                    />
+                                </div>
+                                <div>
+                                    <Label className="text-sm">Contact Name</Label>
+                                    <Input
+                                        className="mt-1"
+                                        value={resellerFormData.contactName}
+                                        onChange={(e) => setResellerFormData({ ...resellerFormData, contactName: e.target.value })}
+                                        placeholder="Account holder name"
+                                    />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <Label className="text-sm">Contact Email</Label>
+                                    <Input
+                                        type="email"
+                                        className="mt-1"
+                                        value={resellerFormData.contactEmail}
+                                        onChange={(e) => setResellerFormData({ ...resellerFormData, contactEmail: e.target.value })}
+                                        placeholder="email@example.com"
+                                    />
+                                </div>
+                                <div>
+                                    <Label className="text-sm">Contact Phone</Label>
+                                    <Input
+                                        type="tel"
+                                        className="mt-1"
+                                        value={resellerFormData.contactPhone}
+                                        onChange={(e) => setResellerFormData({ ...resellerFormData, contactPhone: e.target.value })}
+                                        placeholder="(555) 123-4567"
+                                    />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <Label className="text-sm">Account Type</Label>
+                                    <select
+                                        className="mt-1 w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
+                                        value={resellerFormData.resellerType}
+                                        onChange={(e) => setResellerFormData({ ...resellerFormData, resellerType: e.target.value })}
+                                    >
+                                        <option value="">Select type...</option>
+                                        <option value="Hosting">Hosting</option>
+                                        <option value="Domains">Domains</option>
+                                        <option value="Hosting & Domains">Hosting & Domains</option>
+                                        <option value="Email">Email</option>
+                                        <option value="SSL Certificates">SSL Certificates</option>
+                                        <option value="DNS Management">DNS Management</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <Label className="text-sm">Platform/Provider *</Label>
+                                    <select
+                                        className="mt-1 w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
+                                        value={resellerFormData.resellerPlatform}
+                                        onChange={(e) => setResellerFormData({ ...resellerFormData, resellerPlatform: e.target.value })}
+                                    >
+                                        <option value="">Select platform...</option>
+                                        <option value="GoDaddy">GoDaddy</option>
+                                        <option value="Namecheap">Namecheap</option>
+                                        <option value="Cloudflare">Cloudflare</option>
+                                        <option value="Google Domains">Google Domains</option>
+                                        <option value="AWS Route 53">AWS Route 53</option>
+                                        <option value="DigitalOcean">DigitalOcean</option>
+                                        <option value="Hostinger">Hostinger</option>
+                                        <option value="Bluehost">Bluehost</option>
+                                        <option value="SiteGround">SiteGround</option>
+                                        <option value="Name.com">Name.com</option>
+                                        <option value="Porkbun">Porkbun</option>
+                                        <option value="Hover">Hover</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <Label className="text-sm">Login URL</Label>
+                                <Input
+                                    type="url"
+                                    className="mt-1"
+                                    value={resellerFormData.loginUrl}
+                                    onChange={(e) => setResellerFormData({ ...resellerFormData, loginUrl: e.target.value })}
+                                    placeholder="https://www.godaddy.com/login"
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <Label className="text-sm">Username/Email</Label>
+                                    <Input
+                                        className="mt-1"
+                                        value={resellerFormData.username}
+                                        onChange={(e) => setResellerFormData({ ...resellerFormData, username: e.target.value })}
+                                        placeholder="Login username or email"
+                                    />
+                                </div>
+                                <div>
+                                    <Label className="text-sm">Password</Label>
+                                    <Input
+                                        type="password"
+                                        className="mt-1"
+                                        value={resellerFormData.password}
+                                        onChange={(e) => setResellerFormData({ ...resellerFormData, password: e.target.value })}
+                                        placeholder="Account password"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <Label className="text-sm">Notes</Label>
+                                <Textarea
+                                    className="mt-1"
+                                    rows={3}
+                                    value={resellerFormData.notes}
+                                    onChange={(e) => setResellerFormData({ ...resellerFormData, notes: e.target.value })}
+                                    placeholder="Any additional details about this reseller account..."
+                                />
+                            </div>
+                        </div>
+                        <div className="flex justify-between p-4 border-t border-purple-500/20 bg-card/50 shrink-0">
+                            <Button
+                                variant="outline"
+                                onClick={() => { setShowResellerForm(false); resetResellerForm(); }}
+                                className="gap-2"
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={handleResellerSubmit}
+                                disabled={isSubmittingReseller}
+                                className="gap-2 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700"
+                            >
+                                {isSubmittingReseller ? (
+                                    <>
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        Creating...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Send className="w-4 h-4" />
+                                        Create Reseller
                                     </>
                                 )}
                             </Button>
