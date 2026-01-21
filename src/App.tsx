@@ -219,11 +219,7 @@ const App = () => (
               <Route path="/avabyrankmehigher/admin" element={<ProtectedRoute requireAdmin><SEOSpiderAdmin /></ProtectedRoute>} />
 
               {/* Reseller Portal Routes */}
-              <Route path="/reseller-management" element={
-                <ProtectedRoute requireAdmin>
-                  <ResellerManagement />
-                </ProtectedRoute>
-              } />
+              <Route path="/reseller-management" element={<ResellerManagement />} />
               <Route path="/reseller/:slug" element={<ResellerPortal />} />
 
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
