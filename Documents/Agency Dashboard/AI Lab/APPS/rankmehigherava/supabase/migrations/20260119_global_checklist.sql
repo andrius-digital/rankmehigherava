@@ -27,8 +27,7 @@ INSERT INTO global_checklist_items (id, label, description, display_order, is_de
     ('11111111-1111-1111-1111-111111111111', 'Telegram Group', 'Telegram group has been created with the client', 1, true),
     ('22222222-2222-2222-2222-222222222222', 'Github Repository Active', 'In Rank Me Higher Websites org', 2, true),
     ('33333333-3333-3333-3333-333333333333', 'DNS Pointing to Our NameServers', 'DNS configured & live - UPDATED', 3, true),
-    ('44444444-4444-4444-4444-444444444444', 'Auto VPS Updates', 'Automatic deploys via Github', 4, true),
-    ('55555555-5555-5555-5555-555555555555', 'Lead Form Submissions', 'Telegram Channel & Email Notifications', 5, true)
+    ('55555555-5555-5555-5555-555555555555', 'Lead Form Submissions', 'Telegram Channel & Email Notifications', 4, true)
 ON CONFLICT DO NOTHING;
 
 -- Enable RLS

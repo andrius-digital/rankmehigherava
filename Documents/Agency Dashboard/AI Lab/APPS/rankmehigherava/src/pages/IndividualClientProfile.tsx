@@ -155,6 +155,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { compressImage } from '@/utils/imageCompression';
+import { PopupSection } from '@/components/ui/popup-section';
+import ClientRequestsTracker from '@/components/ClientRequestsTracker';
 
 // Checklist item interface
 interface ChecklistItem {
@@ -1764,6 +1766,23 @@ const IndividualClientProfile: React.FC = () => {
         refetchInterval: 60000, // Refetch every minute to keep data fresh
     });
 
+    // Fetch pending client requests count for notification badge
+    const { data: pendingRequestsCount } = useQuery({
+        queryKey: ['pending-requests-count', id],
+        queryFn: async () => {
+            if (!id) return 0;
+            const { count, error } = await supabase
+                .from('client_requests')
+                .select('*', { count: 'exact', head: true })
+                .eq('client_id', id)
+                .in('status', ['pending', 'in_progress']);
+            if (error) throw error;
+            return count || 0;
+        },
+        enabled: !!id,
+        refetchInterval: 30000, // Refetch every 30 seconds
+    });
+
     // Initialize edit fields when entering edit mode
     useEffect(() => {
         if (client && !isFeaturedClient && isEditing) {
@@ -2020,19 +2039,19 @@ const IndividualClientProfile: React.FC = () => {
 
             <HUDOverlay />
 
-            <div className="relative z-10 container mx-auto px-4 py-8 max-w-7xl">
+            <div className="relative z-10 container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-7xl">
                 {/* Back Button */}
-                <Link 
-                    to="/client-portal" 
-                    className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors mb-6 font-orbitron text-sm"
+                <Link
+                    to="/client-portal"
+                    className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors mb-4 sm:mb-6 font-orbitron text-xs sm:text-sm"
                 >
                     <ArrowLeft className="w-4 h-4" />
                     Back to Portal
                 </Link>
 
                 {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-6">
-                    <div className="flex items-start gap-4">
+                <div className="flex flex-col gap-4 sm:gap-6 mb-6 sm:mb-8">
+                    <div className="flex items-start gap-3 sm:gap-4">
                         {/* Client Logo - from form submission or uploaded */}
                         {(() => {
                             // Get favicon from website URL using Google's favicon service
@@ -2041,7 +2060,7 @@ const IndividualClientProfile: React.FC = () => {
 
                             if (faviconUrl) {
                                 return (
-                                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden border-2 border-cyan-500/30 bg-zinc-900 p-2 shadow-lg shadow-cyan-500/20 flex items-center justify-center flex-shrink-0">
+                                    <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-xl overflow-hidden border-2 border-cyan-500/30 bg-zinc-900 p-1.5 sm:p-2 shadow-lg shadow-cyan-500/20 flex items-center justify-center flex-shrink-0">
                                         <img
                                             src={faviconUrl}
                                             alt={`${client.company_name || client.name} logo`}
@@ -2053,110 +2072,106 @@ const IndividualClientProfile: React.FC = () => {
 
                             // No website URL - show building icon
                             return (
-                                <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border-2 border-cyan-500/30 flex items-center justify-center flex-shrink-0">
-                                    <Building2 className="w-8 h-8 text-cyan-400" />
+                                <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border-2 border-cyan-500/30 flex items-center justify-center flex-shrink-0">
+                                    <Building2 className="w-6 h-6 sm:w-8 sm:h-8 text-cyan-400" />
                                 </div>
                             );
                         })()}
-                        <div>
-                            <div className="flex items-center gap-2 mb-2">
+                        <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 mb-1 sm:mb-2">
                                 <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                                <span className="font-orbitron text-[10px] tracking-[0.2em] text-emerald-400 uppercase">Active Client</span>
+                                <span className="font-orbitron text-[8px] sm:text-[10px] tracking-[0.2em] text-emerald-400 uppercase">Active Client</span>
                             </div>
-                            <h1 className="font-orbitron text-3xl font-bold bg-gradient-to-r from-white via-cyan-400 to-blue-500 bg-clip-text text-transparent">
+                            <h1 className="font-orbitron text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-white via-cyan-400 to-blue-500 bg-clip-text text-transparent truncate">
                                 {client.company_name || client.name}
                             </h1>
-                            <p className="text-xs text-muted-foreground font-orbitron tracking-widest uppercase mt-2">
+                            <p className="text-[10px] sm:text-xs text-muted-foreground font-orbitron tracking-widest uppercase mt-1 sm:mt-2">
                                 Client ID: #{onboardingNumber !== null && onboardingNumber !== undefined ? onboardingNumber : (isFeaturedClient ? 'N/A' : '...')}
                             </p>
                         </div>
                     </div>
 
-                    <div className="flex gap-3">
+                    {/* Action buttons - stack on mobile */}
+                    <div className="flex flex-wrap gap-2 sm:gap-3">
                         {client.website_url && (
                             <a
                                 href={client.website_url.startsWith('http') ? client.website_url : `https://${client.website_url}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-500/10 border border-cyan-500/30 hover:bg-cyan-500/20 transition-all font-orbitron text-sm text-cyan-400"
+                                className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-xl bg-cyan-500/10 border border-cyan-500/30 hover:bg-cyan-500/20 transition-all font-orbitron text-xs sm:text-sm text-cyan-400"
                             >
-                                <Globe className="w-4 h-4" />
-                                Visit Website
+                                <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                                <span className="hidden xs:inline">Visit</span> Website
                                 <ExternalLink className="w-3 h-3" />
                             </a>
                         )}
                         {!isFeaturedClient && (
-                            <Button 
+                            <Button
                                 variant="ghost"
-                                size="sm" 
-                                className="font-orbitron text-[10px] bg-transparent border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-400/50 hover:text-cyan-300"
+                                size="sm"
+                                className="font-orbitron text-[10px] sm:text-xs bg-transparent border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-400/50 hover:text-cyan-300 px-3 sm:px-4"
                                 onClick={() => setIsEditing(!isEditing)}
                             >
-                                <Settings className="w-3 h-3 mr-2" />
+                                <Settings className="w-3 h-3 mr-1.5 sm:mr-2" />
                                 {isEditing ? 'Cancel' : 'Edit Client'}
                             </Button>
                         )}
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* LEFT COLUMN - Client Info */}
-                    <div className="lg:col-span-1 space-y-6">
-                        {/* Basic Info Card */}
-                        <div className="bg-card/20 backdrop-blur-xl border border-cyan-500/20 rounded-2xl overflow-hidden">
-                            <div className="px-5 py-4 border-b border-cyan-500/10 bg-cyan-500/5">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <Building2 className="w-4 h-4 text-cyan-400" />
-                                        <h2 className="font-orbitron text-xs font-bold tracking-wider text-cyan-400 uppercase">Client Information</h2>
-                                    </div>
-                                    {!isFeaturedClient && (
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => setIsEditing(!isEditing)}
-                                            className="h-7 px-2 text-[10px] font-orbitron text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10"
-                                        >
-                                            <Edit2 className="w-3 h-3 mr-1" />
-                                            {isEditing ? 'Cancel' : 'Edit'}
-                                        </Button>
-                                    )}
-                                </div>
-                            </div>
-                            <div className="p-5 space-y-4">
+                {/* Main Dashboard Card */}
+                <div className="bg-card/20 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+                    {/* Card Header */}
+                    <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-white/5 bg-white/5">
+                        <div className="flex items-center gap-2">
+                            <LayoutDashboard className="w-4 h-4 text-cyan-400" />
+                            <h2 className="font-orbitron text-xs sm:text-sm font-bold text-foreground uppercase tracking-wider">Client Dashboard</h2>
+                        </div>
+                    </div>
+
+                    {/* Sections Grid */}
+                    <div className="p-3 sm:p-4">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3">
+                    {/* Client Information Section */}
+                    <PopupSection
+                        title="Client Information"
+                        icon={Building2}
+                        color="cyan"
+                    >
+                        <div className="space-y-3 sm:space-y-4">
                                 <div>
-                                    <p className="text-[10px] font-orbitron text-muted-foreground uppercase tracking-widest mb-1">Client Name</p>
+                                    <p className="text-[9px] sm:text-[10px] font-orbitron text-muted-foreground uppercase tracking-widest mb-1">Client Name</p>
                                     {isEditing && !isFeaturedClient ? (
                                         <Input
                                             value={editFields.name}
                                             onChange={(e) => setEditFields({ ...editFields, name: e.target.value })}
-                                            className="bg-background border-cyan-500/30 focus:border-cyan-400"
+                                            className="bg-background border-cyan-500/30 focus:border-cyan-400 text-sm"
                                             placeholder="Client name"
                                         />
                                     ) : (
-                                        <p className="text-foreground font-medium">{client.name || 'Not set'}</p>
+                                        <p className="text-foreground font-medium text-sm sm:text-base">{client.name || 'Not set'}</p>
                                     )}
                                 </div>
                                 <div>
-                                    <p className="text-[10px] font-orbitron text-muted-foreground uppercase tracking-widest mb-1">Company Name</p>
+                                    <p className="text-[9px] sm:text-[10px] font-orbitron text-muted-foreground uppercase tracking-widest mb-1">Company Name</p>
                                     {isEditing && !isFeaturedClient ? (
                                         <Input
                                             value={editFields.company_name}
                                             onChange={(e) => setEditFields({ ...editFields, company_name: e.target.value })}
-                                            className="bg-background border-cyan-500/30 focus:border-cyan-400"
+                                            className="bg-background border-cyan-500/30 focus:border-cyan-400 text-sm"
                                             placeholder="Company name"
                                         />
                                     ) : (
-                                        <p className="text-foreground font-medium">{client.company_name || 'Not set'}</p>
+                                        <p className="text-foreground font-medium text-sm sm:text-base">{client.company_name || 'Not set'}</p>
                                     )}
                                 </div>
                                 <div>
-                                    <p className="text-[10px] font-orbitron text-muted-foreground uppercase tracking-widest mb-1">Website URL</p>
+                                    <p className="text-[9px] sm:text-[10px] font-orbitron text-muted-foreground uppercase tracking-widest mb-1">Website URL</p>
                                     {isEditing && !isFeaturedClient ? (
                                         <Input
                                             value={editFields.website_url}
                                             onChange={(e) => setEditFields({ ...editFields, website_url: e.target.value })}
-                                            className="bg-background border-cyan-500/30 focus:border-cyan-400"
+                                            className="bg-background border-cyan-500/30 focus:border-cyan-400 text-sm"
                                             placeholder="https://example.com"
                                         />
                                     ) : (
@@ -2165,10 +2180,10 @@ const IndividualClientProfile: React.FC = () => {
                                                 href={client.website_url.startsWith('http') ? client.website_url : `https://${client.website_url}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="text-cyan-400 font-medium text-sm hover:text-cyan-300 hover:underline transition-colors inline-flex items-center gap-1"
+                                                className="text-cyan-400 font-medium text-xs sm:text-sm hover:text-cyan-300 hover:underline transition-colors inline-flex items-center gap-1 break-all"
                                             >
                                                 {client.website_url}
-                                                <ExternalLink className="w-3 h-3" />
+                                                <ExternalLink className="w-3 h-3 shrink-0" />
                                             </a>
                                         ) : (
                                             <p className="text-foreground text-sm">Not set</p>
@@ -2176,27 +2191,27 @@ const IndividualClientProfile: React.FC = () => {
                                     )}
                                 </div>
                                 <div>
-                                    <p className="text-[10px] font-orbitron text-muted-foreground uppercase tracking-widest mb-1">Contact Email</p>
+                                    <p className="text-[9px] sm:text-[10px] font-orbitron text-muted-foreground uppercase tracking-widest mb-1">Contact Email</p>
                                     {isEditing && !isFeaturedClient ? (
                                         <Input
                                             type="email"
                                             value={editFields.email}
                                             onChange={(e) => setEditFields({ ...editFields, email: e.target.value })}
-                                            className="bg-background border-cyan-500/30 focus:border-cyan-400"
+                                            className="bg-background border-cyan-500/30 focus:border-cyan-400 text-sm"
                                             placeholder="email@example.com"
                                         />
                                     ) : (
-                                        <p className="text-foreground text-sm">{client.email || 'Not set'}</p>
+                                        <p className="text-foreground text-xs sm:text-sm break-all">{client.email || 'Not set'}</p>
                                     )}
                                 </div>
                                 <div>
-                                    <p className="text-[10px] font-orbitron text-muted-foreground uppercase tracking-widest mb-1">Phone</p>
+                                    <p className="text-[9px] sm:text-[10px] font-orbitron text-muted-foreground uppercase tracking-widest mb-1">Phone</p>
                                     {isEditing && !isFeaturedClient ? (
                                         <Input
                                             type="tel"
                                             value={editFields.phone}
                                             onChange={(e) => setEditFields({ ...editFields, phone: e.target.value })}
-                                            className="bg-background border-cyan-500/30 focus:border-cyan-400"
+                                            className="bg-background border-cyan-500/30 focus:border-cyan-400 text-sm"
                                             placeholder="(123) 456-7890"
                                         />
                                     ) : (
@@ -2292,26 +2307,17 @@ const IndividualClientProfile: React.FC = () => {
                                         </div>
                                     )}
                                 </div>
-                            </div>
                         </div>
+                    </PopupSection>
 
-                        {/* Client Services */}
-                        <div className="bg-card/20 backdrop-blur-xl border border-emerald-500/20 rounded-2xl overflow-hidden">
-                            <div className="px-5 py-4 border-b border-emerald-500/10 bg-emerald-500/5">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <CreditCard className="w-4 h-4 text-emerald-400" />
-                                        <h2 className="font-orbitron text-xs font-bold tracking-wider text-emerald-400 uppercase">Client Services</h2>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-[10px] font-orbitron text-muted-foreground">Completion</span>
-                                        <span className="text-sm font-orbitron font-bold text-emerald-400">
-                                            {servicesCompletionPercent}%
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="p-4 space-y-3">
+                    {/* Client Services Section */}
+                    <PopupSection
+                        title="Client Services"
+                        icon={CreditCard}
+                        color="emerald"
+                        metric={{ value: servicesCompletionPercent, suffix: '%' }}
+                    >
+                        <div className="space-y-3">
                                 {/* Loading state */}
                                 {servicesLoading && (
                                     <div className="text-center py-4 text-sm text-muted-foreground">
@@ -2429,28 +2435,17 @@ const IndividualClientProfile: React.FC = () => {
                                         </div>
                                     </DialogContent>
                                 </Dialog>
-                            </div>
                         </div>
-                    </div>
+                    </PopupSection>
 
-                    {/* MIDDLE COLUMN - Management Toggles */}
-                    <div className="lg:col-span-1 space-y-6">
-                        <div className="bg-card/20 backdrop-blur-xl border border-purple-500/20 rounded-2xl overflow-hidden">
-                            <div className="px-5 py-4 border-b border-purple-500/10 bg-purple-500/5">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <Wrench className="w-4 h-4 text-purple-400" />
-                                        <h2 className="font-orbitron text-xs font-bold tracking-wider text-purple-400 uppercase">Management Checklist</h2>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-[10px] font-orbitron text-muted-foreground">Completion</span>
-                                        <span className="text-sm font-orbitron font-bold text-cyan-400">
-                                            {checklistCompletionPercent}%
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="p-4 space-y-3">
+                    {/* Management Checklist Section */}
+                    <PopupSection
+                        title="Management Checklist"
+                        icon={Wrench}
+                        color="purple"
+                        metric={{ value: checklistCompletionPercent, suffix: '%' }}
+                    >
+                        <div className="space-y-3">
                                 {/* Loading state */}
                                 {checklistLoading && (
                                     <div className="text-center py-4 text-sm text-muted-foreground">
@@ -2649,20 +2644,20 @@ const IndividualClientProfile: React.FC = () => {
                                         </div>
                                     </DialogContent>
                                 </Dialog>
-                            </div>
                         </div>
+                    </PopupSection>
 
-                        {/* Stripe Payment & Subscription Card */}
-                        <div className="bg-card/20 backdrop-blur-xl border border-emerald-500/20 rounded-2xl overflow-hidden">
-                            <div className="px-5 py-4 border-b border-emerald-500/10 bg-emerald-500/5">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <CreditCard className="w-4 h-4 text-emerald-400" />
-                                        <h2 className="font-orbitron text-xs font-bold tracking-wider text-emerald-400 uppercase">Payment & Subscription</h2>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="p-4 space-y-4">
+                    {/* Payment & Subscription Section */}
+                    <PopupSection
+                        title="Payment & Subscription"
+                        icon={Wallet}
+                        color="emerald"
+                        badge={stripeData?.currentSubscription ?
+                            { label: 'ACTIVE', variant: 'success' as const } :
+                            { label: 'NO PLAN', variant: 'warning' as const }
+                        }
+                    >
+                        <div className="space-y-4">
                                 {/* Current Subscription Info */}
                                 <div className="space-y-2">
                                     {stripeData?.currentSubscription ? (
@@ -3084,105 +3079,89 @@ const IndividualClientProfile: React.FC = () => {
                                         </div>
                                     </DialogContent>
                                 </Dialog>
-                            </div>
                         </div>
-                    </div>
+                    </PopupSection>
 
-                    {/* RIGHT COLUMN - Onboarding Form Card */}
-                    <div className="lg:col-span-1 space-y-4">
-                        {/* Onboarding Form Card - Shows Website or Funnel based on client type */}
+                    {/* Website Onboarding Form / Funnel Submission Section */}
+                    <PopupSection
+                        title={isFunnelClient ? 'Funnel Submission' : 'Website Onboarding Form'}
+                        icon={isFunnelClient ? Layers : FileText}
+                        color={isFunnelClient ? 'cyan' : 'orange'}
+                        badge={{ label: 'SUBMITTED', variant: 'success' as const }}
+                    >
                         <Dialog>
-                            <DialogTrigger asChild>
-                                <div className={`bg-gradient-to-br ${isFunnelClient ? 'from-cyan-500/10' : 'from-orange-500/10'} via-card/20 to-transparent backdrop-blur-xl border ${isFunnelClient ? 'border-cyan-500/30 hover:border-cyan-400/50' : 'border-orange-500/30 hover:border-orange-400/50'} rounded-2xl overflow-hidden cursor-pointer transition-all group`}>
-                                    <div className={`px-5 py-4 border-b ${isFunnelClient ? 'border-cyan-500/10 bg-cyan-500/5' : 'border-orange-500/10 bg-orange-500/5'}`}>
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                {isFunnelClient ? (
-                                                    <Layers className="w-5 h-5 text-cyan-400" />
-                                                ) : (
-                                                    <FileText className="w-5 h-5 text-orange-400" />
-                                                )}
-                                                <h2 className={`font-orbitron text-sm font-bold tracking-wider uppercase ${isFunnelClient ? 'text-cyan-400' : 'text-orange-400'}`}>
-                                                    {isFunnelClient ? 'Funnel Submission' : 'Website Onboarding Form'}
-                                                </h2>
-                                            </div>
-                                            <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 font-orbitron text-[8px]">
-                                                SUBMITTED
-                                            </Badge>
-                                        </div>
-                                    </div>
-                                    <div className="p-5">
-                                        <div className="flex items-center gap-3 text-sm mb-4">
-                                            <Calendar className={`w-4 h-4 ${isFunnelClient ? 'text-cyan-400' : 'text-orange-400'}`} />
-                                            <span className="text-muted-foreground">Submitted:</span>
-                                            <span className="text-foreground font-medium">
-                                                {client.created_at ? new Date(client.created_at).toLocaleDateString('en-US', {
-                                                    year: 'numeric',
-                                                    month: 'long',
-                                                    day: 'numeric'
-                                                }) : 'N/A'}
-                                            </span>
-                                        </div>
-                                        
-                                        {/* Preview of sections - Different for funnel vs website */}
-                                        {isFunnelClient ? (
-                                            <div className="grid grid-cols-2 gap-2 mb-4">
-                                                <div className="flex items-center gap-2 p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
-                                                    <Building2 className="w-3 h-3 text-cyan-400" />
-                                                    <span className="text-[9px] font-orbitron text-cyan-400">Business Info</span>
-                                                </div>
-                                                <div className="flex items-center gap-2 p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
-                                                    <Layers className="w-3 h-3 text-cyan-400" />
-                                                    <span className="text-[9px] font-orbitron text-cyan-400">Funnel Details</span>
-                                                </div>
-                                                <div className="flex items-center gap-2 p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
-                                                    <ImageIcon className="w-3 h-3 text-cyan-400" />
-                                                    <span className="text-[9px] font-orbitron text-cyan-400">Branding</span>
-                                                </div>
-                                                <div className="flex items-center gap-2 p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
-                                                    <FileText className="w-3 h-3 text-cyan-400" />
-                                                    <span className="text-[9px] font-orbitron text-cyan-400">Notes</span>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <div className="grid grid-cols-2 gap-2 mb-4">
-                                                <div className="flex items-center gap-2 p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
-                                                    <Building2 className="w-3 h-3 text-cyan-400" />
-                                                    <span className="text-[9px] font-orbitron text-cyan-400">Business Info</span>
-                                                </div>
-                                                <div className="flex items-center gap-2 p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                                                    <MapPin className="w-3 h-3 text-emerald-400" />
-                                                    <span className="text-[9px] font-orbitron text-emerald-400">Location</span>
-                                                </div>
-                                                <div className="flex items-center gap-2 p-2 rounded-lg bg-purple-500/10 border border-purple-500/20">
-                                                    <Briefcase className="w-3 h-3 text-purple-400" />
-                                                    <span className="text-[9px] font-orbitron text-purple-400">Services</span>
-                                                </div>
-                                                <div className="flex items-center gap-2 p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
-                                                    <Settings className="w-3 h-3 text-yellow-400" />
-                                                    <span className="text-[9px] font-orbitron text-yellow-400">Operations</span>
-                                                </div>
-                                            </div>
-                                        )}
-                                        
-                                        <div className={`flex items-center justify-center gap-2 font-orbitron text-xs transition-colors ${isFunnelClient ? 'text-cyan-400 group-hover:text-cyan-300' : 'text-orange-400 group-hover:text-orange-300'}`}>
-                                            <Eye className="w-4 h-4" />
-                                            <span>Click to View Full Application</span>
-                                        </div>
-                                    </div>
+                            <div className="space-y-3 sm:space-y-4">
+                                <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm">
+                                    <Calendar className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isFunnelClient ? 'text-cyan-400' : 'text-orange-400'}`} />
+                                    <span className="text-muted-foreground">Submitted:</span>
+                                    <span className="text-foreground font-medium">
+                                        {client.created_at ? new Date(client.created_at).toLocaleDateString('en-US', {
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric'
+                                        }) : 'N/A'}
+                                    </span>
                                 </div>
-                            </DialogTrigger>
-                            
+
+                                {/* Preview of sections - Different for funnel vs website */}
+                                {isFunnelClient ? (
+                                    <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
+                                        <div className="flex items-center gap-1.5 sm:gap-2 p-1.5 sm:p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
+                                            <Building2 className="w-3 h-3 text-cyan-400 shrink-0" />
+                                            <span className="text-[8px] sm:text-[9px] font-orbitron text-cyan-400 truncate">Business Info</span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5 sm:gap-2 p-1.5 sm:p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
+                                            <Layers className="w-3 h-3 text-cyan-400 shrink-0" />
+                                            <span className="text-[8px] sm:text-[9px] font-orbitron text-cyan-400 truncate">Funnel Details</span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5 sm:gap-2 p-1.5 sm:p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
+                                            <ImageIcon className="w-3 h-3 text-cyan-400 shrink-0" />
+                                            <span className="text-[8px] sm:text-[9px] font-orbitron text-cyan-400 truncate">Branding</span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5 sm:gap-2 p-1.5 sm:p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
+                                            <FileText className="w-3 h-3 text-cyan-400 shrink-0" />
+                                            <span className="text-[8px] sm:text-[9px] font-orbitron text-cyan-400 truncate">Notes</span>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
+                                        <div className="flex items-center gap-1.5 sm:gap-2 p-1.5 sm:p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
+                                            <Building2 className="w-3 h-3 text-cyan-400 shrink-0" />
+                                            <span className="text-[8px] sm:text-[9px] font-orbitron text-cyan-400 truncate">Business Info</span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5 sm:gap-2 p-1.5 sm:p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                                            <MapPin className="w-3 h-3 text-emerald-400 shrink-0" />
+                                            <span className="text-[8px] sm:text-[9px] font-orbitron text-emerald-400 truncate">Location</span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5 sm:gap-2 p-1.5 sm:p-2 rounded-lg bg-purple-500/10 border border-purple-500/20">
+                                            <Briefcase className="w-3 h-3 text-purple-400 shrink-0" />
+                                            <span className="text-[8px] sm:text-[9px] font-orbitron text-purple-400 truncate">Services</span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5 sm:gap-2 p-1.5 sm:p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                                            <Settings className="w-3 h-3 text-yellow-400 shrink-0" />
+                                            <span className="text-[8px] sm:text-[9px] font-orbitron text-yellow-400 truncate">Operations</span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <DialogTrigger asChild>
+                                    <button className={`w-full flex items-center justify-center gap-2 py-2 rounded-lg font-orbitron text-[10px] sm:text-xs transition-colors ${isFunnelClient ? 'text-cyan-400 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30' : 'text-orange-400 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30'}`}>
+                                        <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                                        <span>View Full Application</span>
+                                    </button>
+                                </DialogTrigger>
+                            </div>
+
                             {/* Full Form Modal */}
-                            <DialogContent className={`max-w-4xl max-h-[90vh] p-0 bg-background/95 backdrop-blur-xl border ${isFunnelClient ? 'border-cyan-500/30' : 'border-orange-500/30'}`}>
-                                <DialogHeader className={`px-6 py-4 border-b ${isFunnelClient ? 'border-cyan-500/20 bg-cyan-500/5' : 'border-orange-500/20 bg-orange-500/5'}`}>
-                                    <DialogTitle className="flex items-center gap-3">
+                            <DialogContent className={`max-w-4xl max-h-[90vh] w-[95vw] sm:w-full p-0 bg-background/95 backdrop-blur-xl border ${isFunnelClient ? 'border-cyan-500/30' : 'border-orange-500/30'}`}>
+                                <DialogHeader className={`px-4 sm:px-6 py-3 sm:py-4 border-b ${isFunnelClient ? 'border-cyan-500/20 bg-cyan-500/5' : 'border-orange-500/20 bg-orange-500/5'}`}>
+                                    <DialogTitle className="flex items-center gap-2 sm:gap-3">
                                         {isFunnelClient ? (
-                                            <Layers className="w-5 h-5 text-cyan-400" />
+                                            <Layers className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400" />
                                         ) : (
-                                            <FileText className="w-5 h-5 text-orange-400" />
+                                            <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-orange-400" />
                                         )}
-                                        <span className={`font-orbitron text-lg ${isFunnelClient ? 'text-cyan-400' : 'text-orange-400'}`}>
+                                        <span className={`font-orbitron text-sm sm:text-lg ${isFunnelClient ? 'text-cyan-400' : 'text-orange-400'}`}>
                                             {isFunnelClient ? 'Funnel Submission' : 'Website Onboarding Form'}
                                         </span>
                                         <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 font-orbitron text-[10px] ml-2">
@@ -3690,24 +3669,16 @@ const IndividualClientProfile: React.FC = () => {
                                 </ScrollArea>
                             </DialogContent>
                         </Dialog>
+                    </PopupSection>
 
-                        {/* Tech Stack Card */}
-                        <div className="bg-card/20 backdrop-blur-xl border border-blue-500/20 rounded-2xl overflow-hidden">
-                            <div className="px-5 py-4 border-b border-blue-500/10 bg-blue-500/5">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <Layers className="w-4 h-4 text-blue-400" />
-                                        <h2 className="font-orbitron text-xs font-bold tracking-wider text-blue-400 uppercase">Tech Stack</h2>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-[10px] font-orbitron text-muted-foreground">Active</span>
-                                        <span className="text-sm font-orbitron font-bold text-cyan-400">
-                                            {techStackCompletionPercent}%
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="p-4 space-y-3">
+                    {/* Tech Stack Section */}
+                    <PopupSection
+                        title="Tech Stack"
+                        icon={Layers}
+                        color="blue"
+                        metric={{ value: techStackCompletionPercent, suffix: '%' }}
+                    >
+                        <div className="space-y-3">
                                 {/* Fixed Tech Stack Choices - Framework */}
                                 <div className="rounded-xl bg-card/30 border border-blue-500/20 p-3">
                                     <div className="flex items-center justify-between">
@@ -4199,9 +4170,23 @@ const IndividualClientProfile: React.FC = () => {
                                         </div>
                                     </DialogContent>
                                 </Dialog>
-                            </div>
                         </div>
+                    </PopupSection>
 
+                    {/* Client Requests Section */}
+                    <PopupSection
+                        title="Client Requests"
+                        icon={MessageSquare}
+                        color="orange"
+                        notificationCount={pendingRequestsCount || 0}
+                    >
+                        <ClientRequestsTracker
+                            clientId={id || ''}
+                            clientName={client?.name || 'Client'}
+                            isAgencyView={true}
+                        />
+                    </PopupSection>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -21,6 +21,8 @@ import ClientProfile from "./pages/ClientProfile";
 import IndividualClientProfile from "./pages/IndividualClientProfile";
 import AgencyDashboard from "./pages/AgencyDashboard";
 import ClientPortal from "./pages/ClientPortal";
+import ClientDashboard from "./pages/ClientDashboard";
+import ResellerPortal from "./pages/ResellerPortal";
 import CDLAgencyPortal from "./pages/CDLAgencyPortal";
 import WebsiteSubmissionConfirmation from "./pages/WebsiteSubmissionConfirmation";
 import FunnelSubmissions from "./pages/FunnelSubmissions";
@@ -145,10 +147,22 @@ const App = () => (
                   <WebsiteCommandCenter />
                 </ProtectedRoute>
               } />
-              {/* Redirect old client-portal to new agency-dashboard */}
+              {/* Agency Portal (previously Client Portal) */}
               <Route path="/client-portal" element={
                 <ProtectedRoute>
                   <ClientPortal />
+                </ProtectedRoute>
+              } />
+              {/* Client Dashboard - what clients see */}
+              <Route path="/client-dashboard" element={
+                <ProtectedRoute>
+                  <ClientDashboard />
+                </ProtectedRoute>
+              } />
+              {/* Reseller Portal */}
+              <Route path="/reseller-portal" element={
+                <ProtectedRoute>
+                  <ResellerPortal />
                 </ProtectedRoute>
               } />
               <Route path="/ava-voice-calls" element={

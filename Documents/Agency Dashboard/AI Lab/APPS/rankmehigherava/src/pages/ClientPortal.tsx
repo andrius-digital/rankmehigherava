@@ -42,6 +42,7 @@ import {
     EyeOff
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import PortalSwitcher from '@/components/PortalSwitcher';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -119,12 +120,19 @@ const ResellerCard: React.FC<{
     client: any;
     isHighlighted: boolean;
     onDeleteClick: (e: React.MouseEvent, client: any) => void;
-}> = ({ client, isHighlighted, onDeleteClick }) => {
+    pendingRequests?: number;
+}> = ({ client, isHighlighted, onDeleteClick, pendingRequests = 0 }) => {
     const [showPassword, setShowPassword] = useState(false);
     const resellerDetails = getResellerDetails(client);
 
     return (
         <div className={`relative group flex-shrink-0 w-[300px] snap-start ${isHighlighted ? 'ring-2 ring-purple-400/60 ring-offset-2 ring-offset-background rounded-xl' : ''}`}>
+            {/* Notification Badge for Pending Requests */}
+            {pendingRequests > 0 && (
+                <div className="absolute -top-2 -left-2 z-20 min-w-[24px] h-6 px-2 rounded-full bg-orange-500 text-white text-xs font-bold flex items-center justify-center animate-pulse shadow-lg shadow-orange-500/50 border-2 border-slate-900">
+                    {pendingRequests}
+                </div>
+            )}
             <div className={`h-full bg-gradient-to-br from-card/40 via-card/20 to-transparent backdrop-blur-xl border rounded-xl p-4 hover:border-purple-400/60 transition-all duration-200 hover:shadow-lg hover:shadow-purple-500/20 ${isHighlighted ? 'border-purple-400/60 shadow-lg shadow-purple-500/20' : 'border-purple-500/30'}`}>
                 <div className="flex items-center gap-3 mb-3">
                     <div className="relative">
@@ -945,10 +953,10 @@ const ClientPortal: React.FC = () => {
 
     // Handle reseller account submission
     const handleResellerSubmit = async () => {
-        if (!resellerFormData.companyName || !resellerFormData.resellerPlatform) {
+        if (!resellerFormData.companyName) {
             toast({
-                title: "Missing required fields",
-                description: "Please fill in company name and reseller platform.",
+                title: "Missing required field",
+                description: "Please enter the company name.",
                 variant: "destructive",
             });
             return;
@@ -961,19 +969,11 @@ const ClientPortal: React.FC = () => {
                 submission_type: 'reseller-account',
                 is_reseller: true,
                 contact_name: resellerFormData.contactName,
-                reseller_type: resellerFormData.resellerType,
-                reseller_platform: resellerFormData.resellerPlatform,
-                login_url: resellerFormData.loginUrl,
-                username: resellerFormData.username,
-                password: resellerFormData.password,
                 additional_notes: resellerFormData.notes,
                 submitted_at: new Date().toISOString(),
             };
 
-            const resellerServices = [
-                resellerFormData.resellerType || 'Reseller',
-                resellerFormData.resellerPlatform,
-            ].filter(Boolean);
+            const resellerServices = ['Reseller'];
 
             const { error: clientError } = await supabase
                 .from('clients')
@@ -1027,7 +1027,30 @@ const ClientPortal: React.FC = () => {
         gcTime: 1000 * 60 * 10,
         refetchOnWindowFocus: true, // Refetch when window is focused
     });
-    
+
+    // Fetch pending request counts for all clients (for notification badges)
+    const { data: pendingRequestsData = [] } = useQuery({
+        queryKey: ['all-pending-requests'],
+        queryFn: async () => {
+            const { data, error } = await supabase
+                .from('client_requests')
+                .select('client_id, status')
+                .in('status', ['pending', 'in_progress']);
+            if (error) throw error;
+            return data || [];
+        },
+        staleTime: 1000 * 30, // Refresh every 30 seconds
+        refetchInterval: 30000,
+    });
+
+    // Create a map of client_id -> pending request count
+    const pendingRequestsMap: Record<string, number> = {};
+    pendingRequestsData.forEach((req: any) => {
+        if (req.client_id) {
+            pendingRequestsMap[req.client_id] = (pendingRequestsMap[req.client_id] || 0) + 1;
+        }
+    });
+
     // Log any query errors
     if (queryError) {
         console.error('Query error:', queryError);
@@ -1050,16 +1073,25 @@ const ClientPortal: React.FC = () => {
     // Helper function to sort and filter clients
     const sortAndFilterClients = (clients: any[], searchTerm: string) => {
         const search = searchTerm.toLowerCase().trim();
-        
-        // Sort alphabetically by company name
+
+        // Sort: clients with pending requests first, then alphabetically
         const sorted = [...clients].sort((a, b) => {
+            const pendingA = pendingRequestsMap[a.id] || 0;
+            const pendingB = pendingRequestsMap[b.id] || 0;
+
+            // First sort by pending requests (descending - more pending = higher priority)
+            if (pendingA !== pendingB) {
+                return pendingB - pendingA;
+            }
+
+            // Then sort alphabetically by company name
             const nameA = (a.company_name || a.name || '').toLowerCase();
             const nameB = (b.company_name || b.name || '').toLowerCase();
             return nameA.localeCompare(nameB);
         });
-        
+
         if (!search) return sorted;
-        
+
         // Filter: only show matching clients when searching
         return sorted.filter(c => clientMatchesSearch(c, search));
     };
@@ -1130,7 +1162,7 @@ const ClientPortal: React.FC = () => {
     return (
         <div className="min-h-screen bg-background relative overflow-hidden">
             <Helmet>
-                <title>Agency Client Portal | Rank Me Higher</title>
+                <title>Agency Portal | Rank Me Higher</title>
                 <meta name="description" content="Manage your agency clients and their websites." />
             </Helmet>
 
@@ -1141,13 +1173,14 @@ const ClientPortal: React.FC = () => {
                 <div className="flex flex-col gap-4 mb-8">
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                         <div>
-                            <div className="flex items-center gap-2 mb-1">
+                            <div className="flex items-center gap-2 mb-2">
                                 <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
                                 <span className="font-orbitron text-[10px] tracking-[0.2em] text-cyan-400 uppercase">System Active</span>
                             </div>
-                            <h1 className="font-orbitron text-3xl font-bold bg-gradient-to-r from-white via-cyan-400 to-blue-500 bg-clip-text text-transparent">
-                                CLIENT PORTAL
+                            <h1 className="font-orbitron text-3xl font-bold bg-gradient-to-r from-white via-cyan-400 to-blue-500 bg-clip-text text-transparent mb-3">
+                                AGENCY PORTAL
                             </h1>
+                            <PortalSwitcher />
                         </div>
 
                         <div className="flex gap-1.5 flex-wrap">
@@ -1321,9 +1354,9 @@ const ClientPortal: React.FC = () => {
                     </div>
 
                     {/* Horizontal Scrollable Cards */}
-                    <div 
+                    <div
                         ref={websiteScrollRef}
-                        className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory"
+                        className="flex gap-4 overflow-x-auto pt-4 pl-4 pb-2 -ml-4 -mt-2 scrollbar-hide snap-x snap-mandatory"
                         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                     >
                         {/* All Website Clients */}
@@ -1333,8 +1366,15 @@ const ClientPortal: React.FC = () => {
                             const clientIsNew = isNewClient(client);
                             const clientIsExisting = isExistingClient(client);
                             const isHighlighted = globalSearch && clientMatchesSearch(client, globalSearch);
+                            const clientPendingRequests = pendingRequestsMap[client.id] || 0;
                             return (
                             <div key={client.id} className={`relative group flex-shrink-0 w-[300px] snap-start ${isHighlighted ? 'ring-2 ring-cyan-400/60 ring-offset-2 ring-offset-background rounded-xl' : ''}`}>
+                                {/* Notification Badge for Pending Requests */}
+                                {clientPendingRequests > 0 && (
+                                    <div className="absolute -top-2 -left-2 z-20 min-w-[24px] h-6 px-2 rounded-full bg-orange-500 text-white text-xs font-bold flex items-center justify-center animate-pulse shadow-lg shadow-orange-500/50 border-2 border-slate-900">
+                                        {clientPendingRequests}
+                                    </div>
+                                )}
                                 <Link
                                     to={`/agency/client/${client.id}`}
                                     className={`block h-full bg-gradient-to-br from-card/40 via-card/20 to-transparent backdrop-blur-xl border rounded-xl p-4 hover:border-cyan-400/60 transition-all duration-200 hover:shadow-lg hover:shadow-cyan-500/20 ${isHighlighted ? 'border-cyan-400/60 shadow-lg shadow-cyan-500/20' : 'border-cyan-500/30'}`}
@@ -1500,9 +1540,9 @@ const ClientPortal: React.FC = () => {
                     </div>
 
                     {/* Horizontal Scrollable Cards */}
-                    <div 
+                    <div
                         ref={funnelScrollRef}
-                        className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory"
+                        className="flex gap-4 overflow-x-auto pt-4 pl-4 pb-2 -ml-4 -mt-2 scrollbar-hide snap-x snap-mandatory"
                         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                     >
                         {/* Funnel Clients - Show max 6 */}
@@ -1516,9 +1556,16 @@ const ClientPortal: React.FC = () => {
                             const clientIsExisting = isExistingClient(client);
                             const clientIsNew = isNewClient(client);
                             const isHighlighted = globalSearch && clientMatchesSearch(client, globalSearch);
-                            
+                            const clientPendingRequests = pendingRequestsMap[client.id] || 0;
+
                             return (
                             <div key={client.id} className={`relative group flex-shrink-0 w-[300px] snap-start ${isHighlighted ? 'ring-2 ring-cyan-400/60 ring-offset-2 ring-offset-background rounded-xl' : ''}`}>
+                                {/* Notification Badge for Pending Requests */}
+                                {clientPendingRequests > 0 && (
+                                    <div className="absolute -top-2 -left-2 z-20 min-w-[24px] h-6 px-2 rounded-full bg-orange-500 text-white text-xs font-bold flex items-center justify-center animate-pulse shadow-lg shadow-orange-500/50 border-2 border-slate-900">
+                                        {clientPendingRequests}
+                                    </div>
+                                )}
                                 <div className={`h-full bg-gradient-to-br from-card/40 via-card/20 to-transparent backdrop-blur-xl border rounded-xl p-4 hover:border-cyan-400/60 transition-all duration-200 hover:shadow-lg hover:shadow-cyan-500/20 ${isHighlighted ? 'border-cyan-400/60 shadow-lg shadow-cyan-500/20' : 'border-cyan-500/30'}`}>
                                     <Link to={`/agency/client/${client.id}`}>
                                         <div className="flex items-center gap-3 mb-3">
@@ -1724,18 +1771,20 @@ const ClientPortal: React.FC = () => {
                     {/* Horizontal Scrollable Cards */}
                     <div
                         ref={resellerScrollRef}
-                        className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory"
+                        className="flex gap-4 overflow-x-auto pt-4 pl-4 pb-2 -ml-4 -mt-2 scrollbar-hide snap-x snap-mandatory"
                         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                     >
                         {/* Reseller Clients - Show max 6 */}
                         {resellerClients.slice(0, MAX_VISIBLE_CARDS).map((client) => {
                             const isHighlighted = globalSearch && clientMatchesSearch(client, globalSearch);
+                            const clientPendingRequests = pendingRequestsMap[client.id] || 0;
                             return (
                                 <ResellerCard
                                     key={client.id}
                                     client={client}
                                     isHighlighted={isHighlighted}
                                     onDeleteClick={handleDeleteClick}
+                                    pendingRequests={clientPendingRequests}
                                 />
                             );
                         })}
@@ -2785,23 +2834,23 @@ const ClientPortal: React.FC = () => {
                 </div>
             )}
 
-            {/* Create Reseller Account Modal */}
+            {/* Add Reseller Modal */}
             {showResellerForm && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                     <div
                         className="absolute inset-0 bg-black/80 backdrop-blur-sm"
                         onClick={() => { setShowResellerForm(false); resetResellerForm(); }}
                     />
-                    <div className="relative z-10 w-full max-w-xl bg-gradient-to-br from-card via-card/95 to-background border border-purple-500/30 rounded-2xl shadow-2xl shadow-purple-500/20 flex flex-col max-h-[90vh]">
-                        <div className="p-6 border-b border-purple-500/20 shrink-0">
+                    <div className="relative z-10 w-full max-w-md bg-gradient-to-br from-card via-card/95 to-background border border-purple-500/30 rounded-2xl shadow-2xl shadow-purple-500/20">
+                        <div className="p-6 border-b border-purple-500/20">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center">
                                         <Users className="w-5 h-5 text-white" />
                                     </div>
                                     <div>
-                                        <h2 className="font-orbitron text-lg font-bold text-foreground">Create Reseller Account</h2>
-                                        <p className="text-xs text-muted-foreground">Add hosting/domain reseller account</p>
+                                        <h2 className="font-orbitron text-lg font-bold text-foreground">Add Reseller</h2>
+                                        <p className="text-xs text-muted-foreground">Onboard a marketing agency</p>
                                     </div>
                                 </div>
                                 <button
@@ -2812,138 +2861,60 @@ const ClientPortal: React.FC = () => {
                                 </button>
                             </div>
                         </div>
-                        <div className="p-6 space-y-4 overflow-y-auto flex-grow">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <Label className="text-sm">Account Name *</Label>
-                                    <Input
-                                        className="mt-1"
-                                        value={resellerFormData.companyName}
-                                        onChange={(e) => setResellerFormData({ ...resellerFormData, companyName: e.target.value })}
-                                        placeholder="e.g., Main GoDaddy Account"
-                                    />
-                                </div>
-                                <div>
-                                    <Label className="text-sm">Contact Name</Label>
-                                    <Input
-                                        className="mt-1"
-                                        value={resellerFormData.contactName}
-                                        onChange={(e) => setResellerFormData({ ...resellerFormData, contactName: e.target.value })}
-                                        placeholder="Account holder name"
-                                    />
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <Label className="text-sm">Contact Email</Label>
-                                    <Input
-                                        type="email"
-                                        className="mt-1"
-                                        value={resellerFormData.contactEmail}
-                                        onChange={(e) => setResellerFormData({ ...resellerFormData, contactEmail: e.target.value })}
-                                        placeholder="email@example.com"
-                                    />
-                                </div>
-                                <div>
-                                    <Label className="text-sm">Contact Phone</Label>
-                                    <Input
-                                        type="tel"
-                                        className="mt-1"
-                                        value={resellerFormData.contactPhone}
-                                        onChange={(e) => setResellerFormData({ ...resellerFormData, contactPhone: e.target.value })}
-                                        placeholder="(555) 123-4567"
-                                    />
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <Label className="text-sm">Account Type</Label>
-                                    <select
-                                        className="mt-1 w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
-                                        value={resellerFormData.resellerType}
-                                        onChange={(e) => setResellerFormData({ ...resellerFormData, resellerType: e.target.value })}
-                                    >
-                                        <option value="">Select type...</option>
-                                        <option value="Hosting">Hosting</option>
-                                        <option value="Domains">Domains</option>
-                                        <option value="Hosting & Domains">Hosting & Domains</option>
-                                        <option value="Email">Email</option>
-                                        <option value="SSL Certificates">SSL Certificates</option>
-                                        <option value="DNS Management">DNS Management</option>
-                                        <option value="Other">Other</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <Label className="text-sm">Platform/Provider *</Label>
-                                    <select
-                                        className="mt-1 w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
-                                        value={resellerFormData.resellerPlatform}
-                                        onChange={(e) => setResellerFormData({ ...resellerFormData, resellerPlatform: e.target.value })}
-                                    >
-                                        <option value="">Select platform...</option>
-                                        <option value="GoDaddy">GoDaddy</option>
-                                        <option value="Namecheap">Namecheap</option>
-                                        <option value="Cloudflare">Cloudflare</option>
-                                        <option value="Google Domains">Google Domains</option>
-                                        <option value="AWS Route 53">AWS Route 53</option>
-                                        <option value="DigitalOcean">DigitalOcean</option>
-                                        <option value="Hostinger">Hostinger</option>
-                                        <option value="Bluehost">Bluehost</option>
-                                        <option value="SiteGround">SiteGround</option>
-                                        <option value="Name.com">Name.com</option>
-                                        <option value="Porkbun">Porkbun</option>
-                                        <option value="Hover">Hover</option>
-                                        <option value="Other">Other</option>
-                                    </select>
-                                </div>
-                            </div>
+                        <div className="p-6 space-y-4">
                             <div>
-                                <Label className="text-sm">Login URL</Label>
+                                <Label className="text-sm">Company Name *</Label>
                                 <Input
-                                    type="url"
                                     className="mt-1"
-                                    value={resellerFormData.loginUrl}
-                                    onChange={(e) => setResellerFormData({ ...resellerFormData, loginUrl: e.target.value })}
-                                    placeholder="https://www.godaddy.com/login"
+                                    value={resellerFormData.companyName}
+                                    onChange={(e) => setResellerFormData({ ...resellerFormData, companyName: e.target.value })}
+                                    placeholder="Agency name"
                                 />
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <Label className="text-sm">Username/Email</Label>
-                                    <Input
-                                        className="mt-1"
-                                        value={resellerFormData.username}
-                                        onChange={(e) => setResellerFormData({ ...resellerFormData, username: e.target.value })}
-                                        placeholder="Login username or email"
-                                    />
-                                </div>
-                                <div>
-                                    <Label className="text-sm">Password</Label>
-                                    <Input
-                                        type="password"
-                                        className="mt-1"
-                                        value={resellerFormData.password}
-                                        onChange={(e) => setResellerFormData({ ...resellerFormData, password: e.target.value })}
-                                        placeholder="Account password"
-                                    />
-                                </div>
+                            <div>
+                                <Label className="text-sm">Contact Name</Label>
+                                <Input
+                                    className="mt-1"
+                                    value={resellerFormData.contactName}
+                                    onChange={(e) => setResellerFormData({ ...resellerFormData, contactName: e.target.value })}
+                                    placeholder="Primary contact"
+                                />
+                            </div>
+                            <div>
+                                <Label className="text-sm">Email</Label>
+                                <Input
+                                    type="email"
+                                    className="mt-1"
+                                    value={resellerFormData.contactEmail}
+                                    onChange={(e) => setResellerFormData({ ...resellerFormData, contactEmail: e.target.value })}
+                                    placeholder="contact@agency.com"
+                                />
+                            </div>
+                            <div>
+                                <Label className="text-sm">Phone</Label>
+                                <Input
+                                    type="tel"
+                                    className="mt-1"
+                                    value={resellerFormData.contactPhone}
+                                    onChange={(e) => setResellerFormData({ ...resellerFormData, contactPhone: e.target.value })}
+                                    placeholder="(555) 123-4567"
+                                />
                             </div>
                             <div>
                                 <Label className="text-sm">Notes</Label>
                                 <Textarea
                                     className="mt-1"
-                                    rows={3}
+                                    rows={2}
                                     value={resellerFormData.notes}
                                     onChange={(e) => setResellerFormData({ ...resellerFormData, notes: e.target.value })}
-                                    placeholder="Any additional details about this reseller account..."
+                                    placeholder="Any additional details..."
                                 />
                             </div>
                         </div>
-                        <div className="flex justify-between p-4 border-t border-purple-500/20 bg-card/50 shrink-0">
+                        <div className="flex justify-between p-4 border-t border-purple-500/20 bg-card/50">
                             <Button
                                 variant="outline"
                                 onClick={() => { setShowResellerForm(false); resetResellerForm(); }}
-                                className="gap-2"
                             >
                                 Cancel
                             </Button>
@@ -2955,12 +2926,12 @@ const ClientPortal: React.FC = () => {
                                 {isSubmittingReseller ? (
                                     <>
                                         <Loader2 className="w-4 h-4 animate-spin" />
-                                        Creating...
+                                        Adding...
                                     </>
                                 ) : (
                                     <>
                                         <Send className="w-4 h-4" />
-                                        Create Reseller
+                                        Add Reseller
                                     </>
                                 )}
                             </Button>
