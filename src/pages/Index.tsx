@@ -17,7 +17,7 @@ const services = [
   {
     id: "websites",
     title: "High-Conversion Sales Machines",
-    description: "Go live in 7 days. We install proprietary AI systems that capture and close every lead 24/7.",
+    description: "Go live in 10 days. We install proprietary AI systems that capture and close every lead 24/7.",
     icon: Globe,
     link: "/services/websites",
   },
@@ -191,7 +191,7 @@ const Index = () => {
         <title>Chicago AI Website Agency | Rank Page 1 On Google Guaranteed</title>
         <meta
           name="description"
-          content="Stop wasting money on digital paperweights. We build SEO-machines that dominate Google rankings and automate your business. Complete business revamp in 7 days."
+          content="Stop wasting money on digital paperweights. We build SEO-machines that dominate Google rankings and automate your business. Complete business revamp in 10 days."
         />
       </Helmet>
 
@@ -220,7 +220,7 @@ const Index = () => {
                       ))}
                     </div>
                     <span className="text-sm text-muted-foreground font-orbitron">
-                      <span className="text-foreground font-bold">Actively manage 100+ Websites</span> on <span className="text-cyan-400 font-bold">AVA</span>
+                      <span className="text-foreground font-bold">Actively manage 54 Websites</span> on <span className="text-cyan-400 font-bold">AVA</span>
                     </span>
                   </div>
 
@@ -243,7 +243,7 @@ const Index = () => {
                     <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/5 backdrop-blur-md border border-white/10">
                       <CheckCircle2 className="w-5 h-5 text-green-400" />
                       <span className="text-white font-bold text-sm font-orbitron">
-                        Built fully active in 7 days. Dashboard, leads pipeline & 24/7 support included.
+                        Built fully active in 10 days. Dashboard, leads pipeline & 24/7 support included.
                       </span>
                     </div>
                     <div className="text-sm text-muted-foreground pl-2">
@@ -314,11 +314,11 @@ const Index = () => {
 
                   <div className="grid grid-cols-3 gap-3">
                     <div className="p-4 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 text-center">
-                      <div className="text-2xl font-bold text-green-400 font-orbitron">7</div>
+                      <div className="text-2xl font-bold text-green-400 font-orbitron">10</div>
                       <div className="text-xs text-muted-foreground">Days to Launch</div>
                     </div>
                     <div className="p-4 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 text-center">
-                      <div className="text-2xl font-bold text-cyan-400 font-orbitron">100+</div>
+                      <div className="text-2xl font-bold text-cyan-400 font-orbitron">54</div>
                       <div className="text-xs text-muted-foreground">Active Websites</div>
                     </div>
                     <div className="p-4 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 text-center">
@@ -341,7 +341,7 @@ const Index = () => {
                 ))}
               </div>
               <span className="text-sm text-muted-foreground font-orbitron">
-                <span className="text-foreground font-bold">Actively manage 100+ Websites</span> on <span className="text-cyan-400 font-bold">AVA</span>
+                <span className="text-foreground font-bold">Actively manage 54 Websites</span> on <span className="text-cyan-400 font-bold">AVA</span>
               </span>
             </div>
 
@@ -815,8 +815,8 @@ const Index = () => {
 
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                  { value: '100+', label: 'Websites Built', color: 'text-red-400' },
-                  { value: '7', label: 'Days to Launch', color: 'text-green-400' },
+                  { value: '54', label: 'Websites Built', color: 'text-red-400' },
+                  { value: '10', label: 'Days to Launch', color: 'text-green-400' },
                   { value: '24/7', label: 'AVA Support', color: 'text-cyan-400' },
                   { value: '4.9', label: 'Client Rating', color: 'text-yellow-400' },
                 ].map((stat, i) => (
@@ -839,7 +839,7 @@ const Index = () => {
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-red-500">Works</span>
                 </h2>
                 <p className="text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto">
-                  From first call to live website in 7 days. Here's exactly what happens.
+                  From first call to live website in 10 days. Here's exactly what happens.
                 </p>
               </div>
 
@@ -979,7 +979,7 @@ const Index = () => {
                 {[
                   {
                     q: 'How long does it take to build my website?',
-                    a: 'Most websites are fully live within 7 days. More complex projects with custom features may take 10-14 days. You\'ll get daily updates in your Telegram group.',
+                    a: 'Most websites are fully live within 10 days. More complex projects with custom features may take up to 14 days. You\'ll get daily updates in your Telegram group.',
                   },
                   {
                     q: 'Do I own my website?',
@@ -1038,7 +1038,7 @@ const Index = () => {
                     Ready to Stop Losing Leads?
                   </h2>
                   <p className="text-base lg:text-lg text-muted-foreground max-w-xl mx-auto mb-8">
-                    Get a custom-coded website with built-in automations, AI support, and full management. Live in 7 days.
+                    Get a custom-coded website with built-in automations, AI support, and full management. Live in 10 days.
                   </p>
 
                   <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
@@ -1062,7 +1062,7 @@ const Index = () => {
                   </div>
 
                   <div className="flex flex-wrap justify-center gap-3">
-                    {['Free consultation', 'No obligations', 'Live in 7 days', 'Cancel anytime'].map((item) => (
+                    {['Free consultation', 'No obligations', 'Live in 10 days', 'Cancel anytime'].map((item) => (
                       <div key={item} className="flex items-center gap-1.5 text-xs text-muted-foreground">
                         <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
                         <span>{item}</span>
