@@ -548,7 +548,6 @@ const Index = () => {
                           'Website hosting & security (SSL)',
                           'Emergency support via Telegram group',
                           'Go High Level sub account (free)',
-                          'AVA AI assistant (chat + voice)',
                           'Client dashboard & task platform',
                           'Weekly client coaching calls',
                           'Performance monitoring & backups',
