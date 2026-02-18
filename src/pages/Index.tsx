@@ -1176,122 +1176,93 @@ const Index = () => {
       <Dialog open={isQualifyDialogOpen} onOpenChange={setIsQualifyDialogOpen}>
         <DialogContent className="bg-background/95 backdrop-blur-xl border-2 border-red-500/30 rounded-3xl max-w-lg shadow-2xl shadow-red-500/20">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-3 text-2xl font-orbitron">
-              <Globe className="w-7 h-7 text-red-400" />
+            <DialogTitle className="flex items-center gap-2 text-xl font-orbitron">
+              <Globe className="w-5 h-5 text-red-400" />
               <span>Get Your Custom Website</span>
             </DialogTitle>
-            <DialogDescription className="text-muted-foreground">
-              Tell us about your business and we'll put together a custom game plan — what your website could look like, what features you need, and how we'd build it. No obligations, no pressure. We'll reach out within 24 hours.
+            <DialogDescription className="text-muted-foreground text-xs">
+              Tell us about your business — we'll build a custom game plan and reach out within 24 hours.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="mt-3 p-2.5 rounded-lg bg-red-500/10 border border-red-500/30 flex items-start gap-2">
-            <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-red-300 leading-relaxed">
-              We work with businesses that take their online presence seriously. This is cutting-edge technology — we're selective about who we partner with because we invest real time and resources into every project.
-            </p>
+          <div className="mt-2 p-2 rounded-lg bg-red-500/10 border border-red-500/30 flex items-center gap-2">
+            <AlertTriangle className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
+            <p className="text-[10px] text-red-300">We partner with businesses serious about their online presence. This is cutting-edge tech — not for everyone.</p>
           </div>
 
-          <div className="grid grid-cols-3 gap-2 mt-3">
-            <div className="p-2 rounded-lg bg-red-500/5 border border-red-500/20 text-center">
-              <span className="block text-sm font-black font-orbitron text-foreground">$2K</span>
-              <span className="text-[9px] text-muted-foreground">Setup Fee</span>
+          <div className="grid grid-cols-3 gap-2 mt-2">
+            <div className="p-1.5 rounded-lg bg-red-500/5 border border-red-500/20 text-center">
+              <span className="block text-xs font-black font-orbitron text-foreground">$2K</span>
+              <span className="text-[8px] text-muted-foreground">Setup</span>
             </div>
-            <div className="p-2 rounded-lg bg-red-500/5 border border-red-500/20 text-center">
-              <span className="block text-sm font-black font-orbitron text-foreground">10 Days</span>
-              <span className="text-[9px] text-muted-foreground">To Launch</span>
+            <div className="p-1.5 rounded-lg bg-red-500/5 border border-red-500/20 text-center">
+              <span className="block text-xs font-black font-orbitron text-foreground">10 Days</span>
+              <span className="text-[8px] text-muted-foreground">Launch</span>
             </div>
-            <div className="p-2 rounded-lg bg-red-500/5 border border-red-500/20 text-center">
-              <span className="block text-sm font-black font-orbitron text-foreground">Unlimited</span>
-              <span className="text-[9px] text-muted-foreground">Revisions</span>
+            <div className="p-1.5 rounded-lg bg-red-500/5 border border-red-500/20 text-center">
+              <span className="block text-xs font-black font-orbitron text-foreground">Unlimited</span>
+              <span className="text-[8px] text-muted-foreground">Revisions</span>
             </div>
           </div>
           
-          <form onSubmit={handleQualifySubmit} className="space-y-3 mt-3">
-            <div className="space-y-2">
-              <Label htmlFor="qualify-name" className="font-orbitron text-sm">Your Name *</Label>
+          <form onSubmit={handleQualifySubmit} className="space-y-2 mt-2">
+            <div className="grid grid-cols-2 gap-2">
               <Input
                 id="qualify-name"
                 type="text"
                 value={qualifyForm.name}
                 onChange={(e) => setQualifyForm({ ...qualifyForm, name: e.target.value })}
-                placeholder="John Smith"
+                placeholder="Your Name *"
                 required
-                className="bg-red-500/5 border-red-500/20 focus:border-red-500/40 focus-visible:ring-0 focus-visible:ring-offset-0"
+                className="bg-red-500/5 border-red-500/20 focus:border-red-500/40 focus-visible:ring-0 focus-visible:ring-offset-0 h-9 text-sm"
+              />
+              <Input
+                id="qualify-phone"
+                type="tel"
+                value={qualifyForm.phone}
+                onChange={(e) => setQualifyForm({ ...qualifyForm, phone: e.target.value })}
+                placeholder="Phone *"
+                required
+                className="bg-red-500/5 border-red-500/20 focus:border-red-500/40 focus-visible:ring-0 focus-visible:ring-offset-0 h-9 text-sm"
               />
             </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label htmlFor="qualify-email" className="font-orbitron text-sm">Email *</Label>
-                <Input
-                  id="qualify-email"
-                  type="email"
-                  value={qualifyForm.email}
-                  onChange={(e) => setQualifyForm({ ...qualifyForm, email: e.target.value })}
-                  placeholder="your@email.com"
-                  required
-                  className="bg-red-500/5 border-red-500/20 focus:border-red-500/40 focus-visible:ring-0 focus-visible:ring-offset-0"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="qualify-phone" className="font-orbitron text-sm">Phone *</Label>
-                <Input
-                  id="qualify-phone"
-                  type="tel"
-                  value={qualifyForm.phone}
-                  onChange={(e) => setQualifyForm({ ...qualifyForm, phone: e.target.value })}
-                  placeholder="(555) 123-4567"
-                  required
-                  className="bg-red-500/5 border-red-500/20 focus:border-red-500/40 focus-visible:ring-0 focus-visible:ring-offset-0"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="qualify-website" className="font-orbitron text-sm">Current Website (if any)</Label>
+            <Input
+              id="qualify-email"
+              type="email"
+              value={qualifyForm.email}
+              onChange={(e) => setQualifyForm({ ...qualifyForm, email: e.target.value })}
+              placeholder="Email *"
+              required
+              className="bg-red-500/5 border-red-500/20 focus:border-red-500/40 focus-visible:ring-0 focus-visible:ring-offset-0 h-9 text-sm"
+            />
+            <div className="grid grid-cols-2 gap-2">
               <Input
                 id="qualify-website"
                 type="url"
                 value={qualifyForm.businessWebsite}
                 onChange={(e) => setQualifyForm({ ...qualifyForm, businessWebsite: e.target.value })}
-                placeholder="https://yourbusiness.com"
-                className="bg-red-500/5 border-red-500/20 focus:border-red-500/40 focus-visible:ring-0 focus-visible:ring-offset-0"
+                placeholder="Current Website (optional)"
+                className="bg-red-500/5 border-red-500/20 focus:border-red-500/40 focus-visible:ring-0 focus-visible:ring-offset-0 h-9 text-sm"
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="qualify-gbp" className="font-orbitron text-sm">Google Business Profile Link</Label>
               <Input
                 id="qualify-gbp"
                 type="url"
                 value={qualifyForm.googleBusinessProfile}
                 onChange={(e) => setQualifyForm({ ...qualifyForm, googleBusinessProfile: e.target.value })}
-                placeholder="https://maps.google.com/..."
-                className="bg-red-500/5 border-red-500/20 focus:border-red-500/40 focus-visible:ring-0 focus-visible:ring-offset-0"
+                placeholder="Google Profile (optional)"
+                className="bg-red-500/5 border-red-500/20 focus:border-red-500/40 focus-visible:ring-0 focus-visible:ring-offset-0 h-9 text-sm"
               />
             </div>
 
-            <div className="flex gap-4 pt-4">
-              <button
-                type="button"
-                onClick={() => setIsQualifyDialogOpen(false)}
-                className="flex-1 px-6 py-4 rounded-2xl bg-transparent border-2 border-red-500/30 text-white font-bold text-base font-orbitron hover:bg-red-500/5 hover:border-red-500/50 transition-all duration-300 flex items-center justify-center h-[60px]"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="flex-1 px-6 py-4 rounded-2xl bg-red-500/10 backdrop-blur-md border-2 border-red-500/30 text-white font-bold text-base shadow-xl hover:shadow-2xl hover:shadow-red-500/20 hover:bg-red-500/20 hover:scale-[1.02] transition-all duration-300 font-orbitron flex items-center justify-center gap-3 group relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed h-[60px]"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/10 to-red-500/0 group-hover:from-red-500/10 group-hover:via-red-500/20 group-hover:to-red-500/10 transition-all duration-500" />
-                <Globe className="w-5 h-5 text-red-400 relative z-10" />
-                <span className="relative z-10">{isSubmitting ? 'Submitting...' : 'Get My Game Plan'}</span>
-                {!isSubmitting && <ArrowRight className="w-5 h-5 text-red-400 relative z-10 group-hover:translate-x-1 transition-transform" />}
-              </button>
-            </div>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full px-6 py-3 rounded-xl bg-red-500/10 backdrop-blur-md border-2 border-red-500/30 text-white font-bold text-sm shadow-xl hover:shadow-2xl hover:shadow-red-500/20 hover:bg-red-500/20 hover:scale-[1.01] transition-all duration-300 font-orbitron flex items-center justify-center gap-2 group relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/10 to-red-500/0 group-hover:from-red-500/10 group-hover:via-red-500/20 group-hover:to-red-500/10 transition-all duration-500" />
+              <span className="relative z-10">{isSubmitting ? 'Submitting...' : 'Get My Game Plan'}</span>
+              {!isSubmitting && <ArrowRight className="w-4 h-4 text-red-400 relative z-10 group-hover:translate-x-1 transition-transform" />}
+            </button>
           </form>
         </DialogContent>
       </Dialog>
