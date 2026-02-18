@@ -12,7 +12,7 @@ const Blog = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const featuredPosts = blogPosts.filter(post => post.featured);
+  const featuredPosts = blogPosts.filter(post => post.featured).reverse();
   const trendingPosts = blogPosts.filter(post => post.trending);
   const filteredPosts = blogPosts.filter(post => {
     const matchesCategory = selectedCategory === "All" || post.category === selectedCategory;
@@ -82,7 +82,9 @@ const Blog = () => {
                 {/* CTA Buttons */}
                 <div className="hidden lg:flex flex-row gap-3">
                   <a
-                    href="tel:773-572-4686"
+                    href="https://calendly.com/rankmehigher/30min"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="group relative px-4 py-2 rounded-lg bg-red-500/10 backdrop-blur-md border border-red-500/30 text-white font-bold text-xs shadow-lg hover:shadow-red-500/30 hover:bg-red-500/20 hover:border-red-500/50 transition-all duration-300 font-orbitron overflow-hidden"
                   >
                     <div className="relative flex items-center gap-2">
@@ -334,13 +336,15 @@ const Blog = () => {
                   </button>
                   
                   <a 
-                    href="tel:773-572-4686" 
+                    href="https://calendly.com/rankmehigher/30min"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="group relative px-8 py-4 rounded-2xl bg-white/5 backdrop-blur-md border border-white/20 text-white font-bold text-base hover:bg-white/10 hover:border-white/30 hover:scale-[1.02] transition-all duration-300 font-orbitron overflow-hidden"
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 group-hover:from-white/5 group-hover:via-white/10 group-hover:to-white/5 transition-all duration-500" />
                     <div className="relative flex items-center gap-2">
                       <Phone className="w-5 h-5" />
-                      <span>(773) 572-4686</span>
+                      <span>Book a Call</span>
                     </div>
                   </a>
                 </div>

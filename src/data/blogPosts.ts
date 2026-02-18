@@ -455,7 +455,7 @@ Need help? We build websites specifically designed for local service businessesâ
     trending: false,
   },
   {
-    id: "6",
+    id: "7",
     slug: "custom-coded-websites-local-businesses-2026",
     title: "Why Custom-Coded Web Apps Are the Way to Build Websites in 2026",
     excerpt: "Template builders had their moment. In 2026, local businesses that want to dominate search results, convert more visitors, and actually own their digital presence are switching to custom-coded web applications. Here's why â€” and what it means for your bottom line.",

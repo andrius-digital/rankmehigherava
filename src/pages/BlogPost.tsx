@@ -158,6 +158,7 @@ const BlogPost = () => {
                 prose-img:rounded-2xl prose-img:border prose-img:border-white/10 prose-img:shadow-xl prose-img:my-8
                 prose-ol:my-6 prose-ol:text-muted-foreground
                 prose-blockquote:border-l-primary prose-blockquote:bg-white/5 prose-blockquote:rounded-r-xl prose-blockquote:py-2 prose-blockquote:px-4
+                prose-table:border-collapse prose-th:bg-white/10 prose-th:p-3 prose-th:text-left prose-th:font-orbitron prose-td:p-3 prose-td:border-t prose-td:border-white/10
               ">
                 <ReactMarkdown>{firstHalf}</ReactMarkdown>
               </div>
