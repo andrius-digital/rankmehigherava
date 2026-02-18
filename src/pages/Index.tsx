@@ -613,22 +613,23 @@ const Index = () => {
                   <div className="p-6 rounded-2xl bg-red-500/5 border-2 border-red-500/30 relative overflow-hidden flex flex-col flex-1">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 rounded-full blur-2xl" />
                     
-                    <div className="mt-4 mb-6 rounded-xl bg-gray-800/80 border border-gray-700 relative overflow-hidden">
+                    <div className="mt-4 mb-2 rounded-xl bg-gray-800/80 border border-gray-700 relative overflow-hidden">
                       <div className="flex items-center gap-2 p-2 bg-gray-900/80">
                         <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
                         <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
                         <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
                         <div className="ml-2 flex-1 h-4 rounded bg-gray-700/50" />
                       </div>
-                      <div className="relative">
+                      <div className="relative aspect-[16/10] overflow-hidden">
                         <img 
                           src="/images/template-website-example.webp" 
                           alt="Example of a template-built website" 
-                          className="w-full h-auto opacity-80"
+                          className="w-full h-full object-cover object-top opacity-80"
                         />
                         <div className="absolute inset-0 bg-red-500/10" />
                       </div>
                     </div>
+                    <p className="text-[10px] text-red-400/50 text-center mb-4 italic">Typical template-built website</p>
 
                     <div className="space-y-3 flex-1">
                       {[
@@ -675,11 +676,11 @@ const Index = () => {
                           <span className="text-cyan-400/60 text-[8px]">🔒 yourbusiness.com</span>
                         </div>
                       </div>
-                      <div className="relative">
+                      <div className="relative aspect-[16/10] overflow-hidden">
                         <img 
                           src="/images/custom-coded-website-example.png" 
                           alt="Example of a custom-coded website by Rank Me Higher" 
-                          className="w-full h-auto"
+                          className="w-full h-full object-cover object-top"
                         />
                         <div className="absolute inset-0 bg-cyan-500/5" />
                       </div>
