@@ -235,7 +235,7 @@ const Index = () => {
                       <span className="text-foreground text-4xl xl:text-5xl 2xl:text-6xl">That Actually Make Money.</span>
                     </h1>
                     <p className="text-lg xl:text-xl text-muted-foreground max-w-xl leading-relaxed">
-                      Stop paying $5K+ for WordPress template websites that lag and look like 2015. We <strong>custom code</strong> SEO-ready website applications with <strong>lead capture, SMS & email automations</strong>—then manage everything with <span className="text-cyan-400 font-bold">AVA</span>. Dashboard, leads pipeline & <strong>24/7 support</strong> included.
+                      Stop paying $5K+ for WordPress template websites that lag and look like 2015. We <strong>custom code</strong> SEO-ready website applications with <strong>lead capture, SMS & email automations</strong>—then manage everything with <span className="text-cyan-400 font-bold">AVA</span>. Your business gets its own real app. <strong>You own the code</strong>, no contracts — if you ever leave, we hand you the GitHub files. Dashboard, leads pipeline & <strong>24/7 support</strong> included.
                     </p>
                   </div>
 
