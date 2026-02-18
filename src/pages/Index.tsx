@@ -235,7 +235,7 @@ const Index = () => {
                       <span className="text-foreground text-4xl xl:text-5xl 2xl:text-6xl">That Actually Make Money.</span>
                     </h1>
                     <p className="text-lg xl:text-xl text-muted-foreground max-w-xl leading-relaxed">
-                      Stop paying $5K+ for websites that sit there doing nothing. We <strong>custom code</strong> SEO-ready websites with <strong>lead capture, SMS & email automations</strong>—then manage everything on our server with <span className="text-cyan-400 font-bold">AVA</span>. Dashboard, leads pipeline & <strong>24/7 support</strong> included.
+                      Stop paying $5K+ for websites that sit there doing nothing. We <strong>custom code</strong> SEO-ready websites with <strong>lead capture, SMS & email automations</strong>—then manage everything with <span className="text-cyan-400 font-bold">AVA</span>. Dashboard, leads pipeline & <strong>24/7 support</strong> included.
                     </p>
                   </div>
 
@@ -243,13 +243,13 @@ const Index = () => {
                     <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/5 backdrop-blur-md border border-white/10">
                       <CheckCircle2 className="w-5 h-5 text-green-400" />
                       <span className="text-white font-bold text-sm font-orbitron">
-                        Built fully active in 7 days. Your server, dashboard & leads pipeline included.
+                        Built fully active in 7 days. Dashboard, leads pipeline & 24/7 support included.
                       </span>
                     </div>
                     <div className="text-sm text-muted-foreground pl-2">
                       <div className="flex items-start gap-2">
                         <span className="text-cyan-400 font-bold shrink-0">•</span>
-                        <span><strong className="text-foreground">All-Inclusive:</strong> 24/7 support • Full server management • Lead pipeline • SMS & email automations • 1 monthly upgrade included • We handle everything</span>
+                        <span><strong className="text-foreground">All-Inclusive:</strong> 24/7 AI support • Lead pipeline • SMS & email automations • Task request platform • Custom integrations available • We handle everything</span>
                       </div>
                     </div>
                   </div>
@@ -278,7 +278,7 @@ const Index = () => {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-border/40">
-                    {['Custom Coded', 'Own Server', '24/7 Support', 'Fast Response'].map((item) => (
+                    {['Custom Coded', '24/7 AI Support', 'Task Platform', 'Fast Response'].map((item) => (
                       <div key={item} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/5 border border-red-500/20">
                         <CheckCircle2 className="w-4 h-4 text-red-400" />
                         <span className="text-xs text-muted-foreground font-orbitron">{item}</span>
@@ -355,7 +355,7 @@ const Index = () => {
 
             {/* Description */}
             <p className="text-sm text-muted-foreground leading-relaxed mb-5 text-center">
-              Custom websites with lead capture & automations. Dashboard, server & <span className="text-cyan-400 font-bold">24/7 AVA</span> support included. Based in Chicago, IL — proudly serving businesses nationwide.
+              Custom websites with lead capture & automations. Dashboard & <span className="text-cyan-400 font-bold">24/7 AVA</span> support included. Based in Chicago, IL — proudly serving businesses nationwide.
             </p>
 
             {/* Video Player */}
@@ -755,7 +755,7 @@ const Index = () => {
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-red-500 to-primary">A Complete Growth System.</span>
                 </h2>
                 <p className="text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto">
-                  Every client gets a custom-coded website, automation systems, their own server, a client dashboard, and 24/7 AI support. All managed by us.
+                  Every client gets a custom-coded website, automation systems, a client dashboard, and 24/7 AI support. All managed by us.
                 </p>
               </div>
 
@@ -780,21 +780,21 @@ const Index = () => {
                     color: 'cyan',
                   },
                   {
-                    icon: Shield,
-                    title: 'Your Own Server',
-                    description: 'Your website lives on its own managed server. We handle updates, security, backups, and performance. You never touch a thing.',
+                    icon: Sparkles,
+                    title: '24/7 AI Support',
+                    description: 'You get a platform to request tasks and track their progress. All extra adjustments are charged a fixed fee — no surprises.',
+                    color: 'cyan',
+                  },
+                  {
+                    icon: Zap,
+                    title: 'Custom Automations & Integrations',
+                    description: 'AI voice agents, reminders, booking systems — whatever you need. All custom coded and billed per hour. No limits on what we can build.',
                     color: 'red',
                   },
                   {
                     icon: MessageCircle,
-                    title: 'Direct Telegram Support',
-                    description: 'Every client gets a private Telegram group. Need a change? Have a question? Message us directly. Fast responses, real people.',
-                    color: 'red',
-                  },
-                  {
-                    icon: Search,
-                    title: 'SEO Built In',
-                    description: 'Every page is optimized for Google from day one. Proper meta tags, fast loading, structured data, and mobile-first design.',
+                    title: 'Telegram Support',
+                    description: 'Every client gets a private Telegram group for quick responses on urgent issues. Real people, fast turnaround.',
                     color: 'red',
                   },
                 ].map((feature, i) => {
@@ -855,7 +855,7 @@ const Index = () => {
                   {
                     step: '02',
                     title: 'We Build Everything',
-                    description: 'Our team custom codes your website, sets up automations, configures your server, and installs AVA. You get updates in your Telegram group along the way.',
+                    description: 'Our team custom codes your website, sets up automations, and installs AVA. You get updates in your Telegram group along the way.',
                     icon: Globe,
                     color: 'red',
                   },
@@ -869,7 +869,7 @@ const Index = () => {
                   {
                     step: '04',
                     title: 'We Manage It All',
-                    description: 'Server management, security updates, performance monitoring, and ongoing support. Need changes? Submit a request through your dashboard or message us on Telegram.',
+                    description: 'Ongoing support, performance monitoring, and updates. Need changes? Submit a request through your dashboard or message us on Telegram.',
                     icon: Shield,
                     color: 'cyan',
                   },
@@ -923,10 +923,10 @@ const Index = () => {
                     <h3 className="font-orbitron font-bold text-xl text-foreground mb-4">How Our Pricing Works</h3>
                     <ul className="space-y-4">
                       {[
-                        { title: 'One-time build fee', desc: 'Your website, fully custom coded and deployed on your own server' },
-                        { title: 'Small monthly fee', desc: 'Covers hosting, server management, security updates, and AVA support' },
-                        { title: 'Changes priced per project', desc: 'No hourly billing. You know the cost before we start any work' },
-                        { title: 'Usage-based add-ons', desc: 'SMS, automations, and extra features — only pay for what you use' },
+                        { title: 'One-time build fee', desc: 'Your website, fully custom coded and ready to go' },
+                        { title: 'Small monthly fee', desc: 'Covers hosting, security updates, and AVA AI support' },
+                        { title: 'Adjustments at a fixed fee', desc: 'All extra changes through your task platform — clear pricing, no surprises' },
+                        { title: 'Custom work billed per hour', desc: 'AI voice agents, booking systems, automations — whatever you need, custom coded' },
                       ].map((item, i) => (
                         <li key={i} className="flex items-start gap-3">
                           <CheckCircle2 className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
@@ -942,14 +942,12 @@ const Index = () => {
                     <h4 className="font-orbitron font-bold text-base text-foreground mb-3">What's Included Every Month</h4>
                     <ul className="space-y-2">
                       {[
-                        'Server hosting & management',
-                        'SSL certificate & security',
-                        'Performance monitoring',
+                        'Website hosting & security (SSL)',
                         'AVA AI assistant (chat + voice)',
-                        '1 content update per month',
+                        'Client dashboard & task platform',
                         'Telegram group support',
-                        'Client dashboard access',
-                        'Uptime monitoring & backups',
+                        'Performance & uptime monitoring',
+                        'Backups & updates',
                       ].map((item, i) => (
                         <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
                           <CheckCircle2 className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
@@ -1006,7 +1004,7 @@ const Index = () => {
                   },
                   {
                     q: 'What\'s included in the monthly fee?',
-                    a: 'Server hosting, security updates, SSL, performance monitoring, AVA AI support, 1 monthly content update, Telegram group access, client dashboard, and uptime monitoring with backups.',
+                    a: 'Hosting, security updates, SSL, performance monitoring, AVA AI support, Telegram group access, client dashboard with task platform, and uptime monitoring with backups.',
                   },
                 ].map((faq, i) => (
                   <details key={i} className="group rounded-xl bg-white/5 border border-white/10 overflow-hidden">
