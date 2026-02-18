@@ -391,76 +391,6 @@ const Index = () => {
             </div>
           </section>
 
-          {/* PRICING SECTION */}
-          <section className="py-8 lg:py-12 relative overflow-hidden">
-            <div className="container mx-auto px-4 lg:px-8 max-w-5xl relative z-10">
-              <div className="text-center mb-6">
-                <h2 className="text-3xl lg:text-5xl font-black leading-tight font-orbitron mb-3">
-                  <span className="text-foreground">Simple, </span>
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-red-500">Transparent Pricing</span>
-                </h2>
-                <p className="text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto">
-                  No hidden fees, no long-term contracts. Know exactly what you're paying before we even talk.
-                </p>
-              </div>
-
-              <div className="relative p-5 lg:p-6 rounded-2xl bg-gradient-to-br from-white/8 to-white/3 backdrop-blur-xl border border-white/15">
-                <div className="grid lg:grid-cols-2 gap-6 items-center">
-                  <div className="text-center lg:text-left">
-                    <div className="mb-1">
-                      <span className="text-5xl lg:text-6xl font-black font-orbitron text-foreground">$1,500</span>
-                    </div>
-                    <p className="text-base text-muted-foreground mb-1">One-time setup fee</p>
-                    <div className="flex items-baseline gap-2 justify-center lg:justify-start">
-                      <span className="text-3xl lg:text-4xl font-black font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-primary to-red-500">+ $99</span>
-                      <span className="text-muted-foreground text-base">/month</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">Billed every 1st of the month</p>
-                    <p className="text-sm text-cyan-400 font-bold mt-3">No sales call needed to know our pricing. It's all right here.</p>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30">
-                      <h4 className="font-orbitron font-bold text-sm text-foreground mb-2">What's Included Every Month</h4>
-                      <ul className="space-y-1.5">
-                        {[
-                          '1 hour of monthly adjustments',
-                          'Website hosting & security (SSL)',
-                          'Emergency support via Telegram group',
-                          'Go High Level sub account (free)',
-                          'AVA AI assistant (chat + voice)',
-                          'Client dashboard & task platform',
-                          'Weekly coaching call recordings',
-                          'Performance monitoring & backups',
-                        ].map((item, i) => (
-                          <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    <div className="p-3 rounded-xl bg-white/5 border border-white/10">
-                      <h4 className="font-orbitron font-bold text-xs text-foreground mb-1">Need More?</h4>
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        Additional adjustments billed at <strong className="text-foreground">$100/hr</strong>. We only recommend what you actually need — no high retainers. You choose what gets built.
-                      </p>
-                    </div>
-
-                    <button
-                      onClick={openCalendly}
-                      className="group w-full px-6 py-3.5 rounded-xl bg-white/5 backdrop-blur-md border border-white/15 text-white font-bold text-sm shadow-lg hover:shadow-xl hover:shadow-red-500/20 hover:bg-white/10 hover:border-white/25 hover:scale-[1.01] transition-all duration-300 font-orbitron flex items-center justify-center gap-2 relative overflow-hidden"
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/5 to-red-500/0 group-hover:from-red-500/10 group-hover:via-red-500/15 group-hover:to-red-500/10 transition-all duration-500" />
-                      <span className="relative z-10">Lock In This Price — Book a Call</span>
-                      <ArrowRight className="w-4 h-4 relative z-10 group-hover:translate-x-1 transition-transform" />
-                    </button>
-                    <p className="text-[11px] text-muted-foreground text-center">Free consultation. No credit card needed.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-
           {/* PORTFOLIO SHOWCASE SECTION */}
           <section className="pt-4 pb-2 lg:pt-6 lg:pb-4 relative overflow-hidden">
             <div className="container mx-auto px-4 lg:px-8 max-w-7xl relative z-10">
@@ -802,6 +732,76 @@ const Index = () => {
                 Want Results Like These? Book a Free Call
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
+            </div>
+          </section>
+
+          {/* PRICING SECTION */}
+          <section className="py-8 lg:py-12 relative overflow-hidden">
+            <div className="container mx-auto px-4 lg:px-8 max-w-5xl relative z-10">
+              <div className="text-center mb-6">
+                <h2 className="text-3xl lg:text-5xl font-black leading-tight font-orbitron mb-3">
+                  <span className="text-foreground">Simple, </span>
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-red-500">Transparent Pricing</span>
+                </h2>
+                <p className="text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto">
+                  No hidden fees, no long-term contracts. Know exactly what you're paying before we even talk.
+                </p>
+              </div>
+
+              <div className="relative p-5 lg:p-6 rounded-2xl bg-gradient-to-br from-white/8 to-white/3 backdrop-blur-xl border border-white/15">
+                <div className="grid lg:grid-cols-2 gap-6 items-center">
+                  <div className="text-center lg:text-left">
+                    <div className="mb-1">
+                      <span className="text-5xl lg:text-6xl font-black font-orbitron text-foreground">$1,500</span>
+                    </div>
+                    <p className="text-base text-muted-foreground mb-1">One-time setup fee</p>
+                    <div className="flex items-baseline gap-2 justify-center lg:justify-start">
+                      <span className="text-3xl lg:text-4xl font-black font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-primary to-red-500">+ $99</span>
+                      <span className="text-muted-foreground text-base">/month</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">Billed every 1st of the month</p>
+                    <p className="text-sm text-cyan-400 font-bold mt-3">No sales call needed to know our pricing. It's all right here.</p>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30">
+                      <h4 className="font-orbitron font-bold text-sm text-foreground mb-2">What's Included Every Month</h4>
+                      <ul className="space-y-1.5">
+                        {[
+                          '1 hour of monthly adjustments',
+                          'Website hosting & security (SSL)',
+                          'Emergency support via Telegram group',
+                          'Go High Level sub account (free)',
+                          'AVA AI assistant (chat + voice)',
+                          'Client dashboard & task platform',
+                          'Weekly coaching call recordings',
+                          'Performance monitoring & backups',
+                        ].map((item, i) => (
+                          <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div className="p-3 rounded-xl bg-white/5 border border-white/10">
+                      <h4 className="font-orbitron font-bold text-xs text-foreground mb-1">Need More?</h4>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        Additional adjustments billed at <strong className="text-foreground">$100/hr</strong>. We only recommend what you actually need — no high retainers. You choose what gets built.
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={openCalendly}
+                      className="group w-full px-6 py-3.5 rounded-xl bg-white/5 backdrop-blur-md border border-white/15 text-white font-bold text-sm shadow-lg hover:shadow-xl hover:shadow-red-500/20 hover:bg-white/10 hover:border-white/25 hover:scale-[1.01] transition-all duration-300 font-orbitron flex items-center justify-center gap-2 relative overflow-hidden"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/5 to-red-500/0 group-hover:from-red-500/10 group-hover:via-red-500/15 group-hover:to-red-500/10 transition-all duration-500" />
+                      <span className="relative z-10">Lock In This Price — Book a Call</span>
+                      <ArrowRight className="w-4 h-4 relative z-10 group-hover:translate-x-1 transition-transform" />
+                    </button>
+                    <p className="text-[11px] text-muted-foreground text-center">Free consultation. No credit card needed.</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </section>
 
