@@ -30,6 +30,31 @@ const BlogPost = () => {
       <Helmet>
         <title>{post.title} | Rank Me Higher Blog</title>
         <meta name="description" content={post.excerpt} />
+        <meta name="author" content={post.author} />
+        <meta property="og:title" content={post.title} />
+        <meta property="og:description" content={post.excerpt} />
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content={`https://rankmehigher.io/blog/${post.slug}`} />
+        {post.image && <meta property="og:image" content={post.image} />}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={post.title} />
+        <meta name="twitter:description" content={post.excerpt} />
+        {post.image && <meta name="twitter:image" content={post.image} />}
+        <meta property="article:published_time" content={post.date} />
+        <meta property="article:author" content={post.author} />
+        <meta property="article:section" content={post.category} />
+        <link rel="canonical" href={`https://rankmehigher.io/blog/${post.slug}`} />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BlogPosting",
+          "headline": post.title,
+          "description": post.excerpt,
+          "author": { "@type": "Person", "name": post.author },
+          "datePublished": post.date,
+          "publisher": { "@type": "Organization", "name": "Rank Me Higher" },
+          "image": post.image || "",
+          "mainEntityOfPage": { "@type": "WebPage", "@id": `https://rankmehigher.io/blog/${post.slug}` }
+        })}</script>
       </Helmet>
 
       <div className="min-h-screen bg-background relative overflow-hidden">
@@ -109,6 +134,12 @@ const BlogPost = () => {
                 </div>
               </div>
             </div>
+
+            {post.image && (
+              <div className="mt-8 rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
+                <img src={post.image} alt={post.title} className="w-full h-auto object-cover" />
+              </div>
+            )}
           </div>
 
           {/* Article Content */}
@@ -124,6 +155,9 @@ const BlogPost = () => {
                 prose-ul:my-6 prose-ul:text-muted-foreground
                 prose-li:my-2
                 prose-a:text-primary prose-a:no-underline hover:prose-a:underline
+                prose-img:rounded-2xl prose-img:border prose-img:border-white/10 prose-img:shadow-xl prose-img:my-8
+                prose-ol:my-6 prose-ol:text-muted-foreground
+                prose-blockquote:border-l-primary prose-blockquote:bg-white/5 prose-blockquote:rounded-r-xl prose-blockquote:py-2 prose-blockquote:px-4
               ">
                 <ReactMarkdown>{firstHalf}</ReactMarkdown>
               </div>
@@ -141,6 +175,10 @@ const BlogPost = () => {
                 prose-ul:my-6 prose-ul:text-muted-foreground
                 prose-li:my-2
                 prose-a:text-primary prose-a:no-underline hover:prose-a:underline
+                prose-img:rounded-2xl prose-img:border prose-img:border-white/10 prose-img:shadow-xl prose-img:my-8
+                prose-ol:my-6 prose-ol:text-muted-foreground
+                prose-blockquote:border-l-primary prose-blockquote:bg-white/5 prose-blockquote:rounded-r-xl prose-blockquote:py-2 prose-blockquote:px-4
+                prose-table:border-collapse prose-th:bg-white/10 prose-th:p-3 prose-th:text-left prose-th:font-orbitron prose-td:p-3 prose-td:border-t prose-td:border-white/10
               ">
                 <ReactMarkdown>{secondHalf}</ReactMarkdown>
               </div>
