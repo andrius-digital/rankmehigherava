@@ -1017,7 +1017,7 @@ const Index = () => {
                   className="group inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 text-white font-bold text-sm hover:bg-primary/10 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 font-orbitron"
                 >
                   <Phone className="w-4 h-4 text-primary" />
-                  Talk to Us — It's Free
+                  Talk to Us
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
@@ -1030,11 +1030,11 @@ const Index = () => {
               <div className="relative p-8 lg:p-12 rounded-3xl bg-gradient-to-br from-red-500/15 via-red-600/10 to-red-500/15 border border-red-500/30 text-center overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/5 to-red-500/0" />
                 <div className="relative z-10">
-                  <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black font-orbitron mb-4 text-foreground">
-                    Ready to Stop Losing Leads?
+                  <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black font-orbitron mb-3 text-foreground">
+                    We're Selective About Who We Work With
                   </h2>
-                  <p className="text-base lg:text-lg text-muted-foreground max-w-xl mx-auto mb-8">
-                    Get a custom-coded website with built-in automations, AI support, and full management. Live in 10 days.
+                  <p className="text-base lg:text-lg text-muted-foreground max-w-xl mx-auto mb-6">
+                    We take on businesses that are serious about growth — not tire-kickers looking for the cheapest option. If you value quality code, real results, and a team that operates like yours, let's talk.
                   </p>
 
                   <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
@@ -1045,7 +1045,7 @@ const Index = () => {
                       <div className="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/10 to-red-500/0 group-hover:from-red-500/10 group-hover:via-red-500/20 group-hover:to-red-500/10 transition-all duration-500" />
                       <span className="relative flex items-center justify-center gap-2">
                         <Globe className="w-5 h-5 text-red-400" />
-                        See If You Qualify — Free
+                        See If We're a Fit
                       </span>
                     </button>
                     <button
@@ -1057,8 +1057,8 @@ const Index = () => {
                     </button>
                   </div>
 
-                  <div className="flex flex-wrap justify-center gap-3">
-                    {['Free consultation', 'No obligations', 'Live in 10 days', 'Cancel anytime'].map((item) => (
+                  <div className="flex flex-wrap justify-center gap-x-4 gap-y-2">
+                    {['You own your code', 'No contracts', 'Live in 10 days', 'Cancel anytime'].map((item) => (
                       <div key={item} className="flex items-center gap-1.5 text-xs text-muted-foreground">
                         <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
                         <span>{item}</span>
