@@ -235,7 +235,7 @@ const Index = () => {
                       <span className="text-foreground text-3xl xl:text-4xl 2xl:text-5xl">That Actually Make Money.</span>
                     </h1>
                     <p className="text-base xl:text-lg text-muted-foreground max-w-xl leading-relaxed">
-                      Stop paying $5K+ for WordPress templates that lag and look like 2015. We <strong>custom code</strong> web apps with <strong>lead capture, SMS & email automations</strong>—managed by <span className="text-cyan-400 font-bold">AVA</span>. <strong>You own the code</strong>, no contracts — if you leave, we hand you the GitHub files. Dashboard, leads pipeline & <strong>24/7 support</strong> included.
+                      Stop paying $5K+ for WordPress templates that lag and look like 2015. We <strong>custom code</strong> web apps with <strong>lead capture, SMS & email automations</strong>—managed by <span className="text-cyan-400 font-bold">AVA</span>. <strong>You own the code</strong>, no contracts. Dashboard, leads pipeline & <strong>24/7 support</strong> included.
                     </p>
                   </div>
 
@@ -562,7 +562,7 @@ const Index = () => {
                     <div className="p-3 rounded-xl bg-white/5 border border-white/10">
                       <h4 className="font-orbitron font-bold text-xs text-foreground mb-1">How It Works</h4>
                       <p className="text-xs text-muted-foreground leading-relaxed mb-2">
-                        We build your website with <strong className="text-foreground">unlimited revisions</strong> until you're 100% happy. You only approve — we don't bill hourly during the build. Once your site is live, any future changes are billed at <strong className="text-foreground">$100/hr</strong>. Because these are custom-coded React apps (not WordPress), 1 hour of adjustments here equals weeks of work on a traditional site.
+                        We build your website with <strong className="text-foreground">unlimited revisions</strong> until you're 100% happy. You only approve — we don't bill hourly during the build. Once your site is live, any future changes are billed at <strong className="text-foreground">$100/hr</strong>. Because these are custom-coded React apps (not WordPress), 1 hour of adjustments here equals weeks of work on a traditional site. You own the code — if you ever leave, we hand you the full project files via GitHub.
                       </p>
                     </div>
                     <div className="p-3 rounded-xl bg-cyan-500/5 border border-cyan-500/20">
