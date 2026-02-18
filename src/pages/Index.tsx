@@ -939,9 +939,9 @@ const Index = () => {
               <div className="text-center mt-8">
                 <button
                   onClick={openCalendly}
-                  className="group inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-primary to-red-600 text-white font-bold text-sm shadow-lg hover:shadow-xl hover:shadow-red-500/30 hover:scale-[1.02] transition-all duration-300 font-orbitron"
+                  className="group inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-red-500/15 backdrop-blur-md border border-red-500/30 text-white font-bold text-sm shadow-lg hover:bg-red-500/25 hover:border-red-500/50 hover:shadow-xl hover:shadow-red-500/20 hover:scale-[1.02] transition-all duration-300 font-orbitron"
                 >
-                  Get All of This — Book a Free Call
+                  Get All of This — Book a Call
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </button>
                 <p className="text-xs text-muted-foreground mt-3">No commitment. See if we're a good fit.</p>
