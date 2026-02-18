@@ -405,30 +405,20 @@ const Index = () => {
               </div>
 
               <div className="relative p-5 lg:p-6 rounded-2xl bg-gradient-to-br from-white/8 to-white/3 backdrop-blur-xl border border-white/15">
-                <div className="grid lg:grid-cols-[280px_1fr] gap-6 items-stretch">
-                  <div className="flex flex-col">
-                    <div className="text-center lg:text-left mb-4">
-                      <span className="text-5xl lg:text-5xl font-black font-orbitron text-foreground">$1,500</span>
-                      <p className="text-sm text-muted-foreground mt-1">One-time setup fee</p>
-                      <div className="flex items-baseline gap-2 justify-center lg:justify-start mt-1">
-                        <span className="text-2xl lg:text-3xl font-black font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-primary to-red-500">+ $99</span>
-                        <span className="text-muted-foreground text-sm">/month</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1">Billed every 1st of the month</p>
-                      <p className="text-xs text-cyan-400 font-bold mt-2">No sales call needed to know our pricing.</p>
+                <div className="grid lg:grid-cols-2 gap-6 items-center">
+                  <div className="text-center lg:text-left">
+                    <div className="mb-1">
+                      <span className="text-5xl lg:text-6xl font-black font-orbitron text-foreground">$1,500</span>
                     </div>
-
-                    <div className="rounded-xl overflow-hidden border border-white/15 shadow-lg flex-1 min-h-0">
-                      <div dangerouslySetInnerHTML={{ __html: `
-                        <script src="https://fast.wistia.com/player.js" async></script>
-                        <script src="https://fast.wistia.com/embed/plkbh1ssks.js" async type="module"></script>
-                        <style>wistia-player[media-id='plkbh1ssks']:not(:defined) { background: center / contain no-repeat url('https://fast.wistia.com/embed/medias/plkbh1ssks/swatch'); display: block; filter: blur(5px); padding-top:177.78%; }</style>
-                        <wistia-player media-id="plkbh1ssks" aspect="0.5625"></wistia-player>
-                      ` }} />
+                    <p className="text-base text-muted-foreground mb-1">One-time setup fee</p>
+                    <div className="flex items-baseline gap-2 justify-center lg:justify-start">
+                      <span className="text-3xl lg:text-4xl font-black font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-primary to-red-500">+ $99</span>
+                      <span className="text-muted-foreground text-base">/month</span>
                     </div>
+                    <p className="text-sm text-muted-foreground mt-1">Billed every 1st of the month</p>
+                    <p className="text-sm text-cyan-400 font-bold mt-3">No sales call needed to know our pricing. It's all right here.</p>
                   </div>
-
-                  <div className="flex flex-col gap-3 justify-between">
+                  <div className="space-y-4">
                     <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30">
                       <h4 className="font-orbitron font-bold text-sm text-foreground mb-2">What's Included Every Month</h4>
                       <ul className="space-y-1.5">
@@ -449,7 +439,6 @@ const Index = () => {
                         ))}
                       </ul>
                     </div>
-
                     <div className="p-3 rounded-xl bg-white/5 border border-white/10">
                       <h4 className="font-orbitron font-bold text-xs text-foreground mb-1">Need More?</h4>
                       <p className="text-xs text-muted-foreground leading-relaxed">
@@ -457,24 +446,15 @@ const Index = () => {
                       </p>
                     </div>
 
-                    <div className="p-3 rounded-xl bg-cyan-500/5 border border-cyan-500/20">
-                      <h4 className="font-orbitron font-bold text-xs text-foreground mb-1">What You're Getting</h4>
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        A fully custom-coded website, not a template. Hand-built for speed, SEO, and conversions — designed to generate leads on autopilot.
-                      </p>
-                    </div>
-
-                    <div>
-                      <button
-                        onClick={openCalendly}
-                        className="group w-full px-6 py-3.5 rounded-xl bg-white/5 backdrop-blur-md border border-white/15 text-white font-bold text-sm shadow-lg hover:shadow-xl hover:shadow-red-500/20 hover:bg-white/10 hover:border-white/25 hover:scale-[1.01] transition-all duration-300 font-orbitron flex items-center justify-center gap-2 relative overflow-hidden"
-                      >
-                        <div className="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/5 to-red-500/0 group-hover:from-red-500/10 group-hover:via-red-500/15 group-hover:to-red-500/10 transition-all duration-500" />
-                        <span className="relative z-10">Lock In This Price — Book a Call</span>
-                        <ArrowRight className="w-4 h-4 relative z-10 group-hover:translate-x-1 transition-transform" />
-                      </button>
-                      <p className="text-[11px] text-muted-foreground text-center mt-1.5">Free consultation. No credit card needed.</p>
-                    </div>
+                    <button
+                      onClick={openCalendly}
+                      className="group w-full px-6 py-3.5 rounded-xl bg-white/5 backdrop-blur-md border border-white/15 text-white font-bold text-sm shadow-lg hover:shadow-xl hover:shadow-red-500/20 hover:bg-white/10 hover:border-white/25 hover:scale-[1.01] transition-all duration-300 font-orbitron flex items-center justify-center gap-2 relative overflow-hidden"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/5 to-red-500/0 group-hover:from-red-500/10 group-hover:via-red-500/15 group-hover:to-red-500/10 transition-all duration-500" />
+                      <span className="relative z-10">Lock In This Price — Book a Call</span>
+                      <ArrowRight className="w-4 h-4 relative z-10 group-hover:translate-x-1 transition-transform" />
+                    </button>
+                    <p className="text-[11px] text-muted-foreground text-center">Free consultation. No credit card needed.</p>
                   </div>
                 </div>
               </div>
