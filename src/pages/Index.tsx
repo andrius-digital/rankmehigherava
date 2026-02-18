@@ -798,34 +798,34 @@ const Index = () => {
                 </p>
               </div>
 
-              <div className="space-y-0">
+              <div className="max-w-2xl mx-auto space-y-0">
                 {[
                   {
                     step: '01',
                     title: 'Discovery Call',
-                    description: 'We learn about your business, your goals, and what you need. We review your current website (if any) and your Google presence. 15 minutes.',
+                    description: 'We present how we build new-technology local business websites and why they outperform what you have now. You then submit our detailed application form — with AI assistance — so we get super detailed info to build out your website exactly right.',
                     icon: Phone,
                     color: 'red',
                   },
                   {
                     step: '02',
                     title: 'We Build Everything',
-                    description: 'Our team custom codes your website, sets up automations, and installs AVA. You get updates in your Telegram group along the way.',
+                    description: 'We custom code your website and set up all the automations you listed in the application form. You get updates on Telegram along the way so you always know where things stand.',
                     icon: Globe,
                     color: 'red',
                   },
                   {
                     step: '03',
                     title: 'Review & Launch',
-                    description: 'You review the finished product in your client dashboard. We make any final tweaks, then push it live. Domain, SSL, and everything configured.',
+                    description: 'You review the finished product with unlimited revisions until you\'re 100% happy. We then push it live — domain, SSL, and everything configured.',
                     icon: CheckCircle2,
                     color: 'red',
                   },
                   {
                     step: '04',
-                    title: 'We Manage It All',
-                    description: 'Ongoing support, performance monitoring, and updates. Need changes? Submit a request through your dashboard or message us on Telegram.',
-                    icon: Shield,
+                    title: 'Weekly Reports & Ongoing Growth',
+                    description: 'We send weekly suggestions and performance reports free of charge. You can opt in to keep upgrading your website app — including new functions, SEO improvements, and more.',
+                    icon: TrendingUp,
                     color: 'cyan',
                   },
                 ].map((item, i) => (
@@ -848,7 +848,7 @@ const Index = () => {
                         <span className="text-xs font-orbitron text-muted-foreground font-bold">STEP {item.step}</span>
                       </div>
                       <h3 className="font-orbitron font-bold text-lg lg:text-xl text-foreground mb-2">{item.title}</h3>
-                      <p className="text-sm text-muted-foreground leading-relaxed max-w-lg">{item.description}</p>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{item.description}</p>
                     </div>
                   </div>
                 ))}
