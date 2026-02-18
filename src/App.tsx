@@ -40,6 +40,7 @@ import AvaVoiceCallsDashboard from "./pages/AvaVoiceCallsDashboard";
 import AvaTrainingDashboard from "./pages/AvaTrainingDashboard";
 import TaskFlow from "./pages/TaskFlow";
 import ClientSitesTracker from "./pages/ClientSitesTracker";
+import Contact from "./pages/Contact";
 
 // AVA by Rank Me Higher Pages
 import SEOSpiderDashboard from "./pages/seo-spider/Dashboard";
@@ -81,6 +82,7 @@ const App = () => (
               <Route path="/services/outbound" element={<Outbound />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:slug" element={<BlogPost />} />
+              <Route path="/contact" element={<Contact />} />
               <Route path="/website-submissions" element={<WebsiteSubmissions />} />
               <Route path="/website-submission-confirmation" element={<WebsiteSubmissionConfirmation />} />
               <Route path="/funnel-submissions" element={<FunnelSubmissions />} />

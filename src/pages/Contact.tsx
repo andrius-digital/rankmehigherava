@@ -132,7 +132,7 @@ const Contact = () => {
     <>
       <Helmet>
         <title>Contact Rank Me Higher | AI Website & SEO Platform from Chicago</title>
-        <meta name="description" content="Contact Rank Me Higher - AI, Software & Website Development Company from Chicago by Andrius Digital. Home of AVA, our AI-powered website & SEO platform managing 100+ websites. Call (773) 572-4686." />
+        <meta name="description" content="Contact Rank Me Higher - AI, Software & Website Development Company from Chicago by Andrius Digital. Home of AVA, our AI-powered website & SEO platform managing 54 websites. Call (773) 572-4686." />
         <meta name="keywords" content="Chicago SEO agency, contact SEO company, web development Chicago, local SEO services, Google Maps optimization, digital marketing agency Illinois" />
         <link rel="canonical" href="https://rankmehigher.com/contact" />
         
@@ -363,7 +363,7 @@ const Contact = () => {
 
                   <div className="space-y-4">
                     {[
-                      { title: "100+ Websites Built", desc: "Real businesses we've launched. Check our portfolio." },
+                      { title: "54 Websites Built", desc: "Real businesses we've launched. Check our portfolio." },
                       { title: "No Templates", desc: "Hand-coded sites. No WordPress, no page builders." },
                       { title: "Chicago Based", desc: "Local team you can actually meet in person." },
                       { title: "Direct Communication", desc: "You talk to Andrius, not a random support agent." },
