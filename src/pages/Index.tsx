@@ -405,8 +405,8 @@ const Index = () => {
               </div>
             </div>
 
-            {/* Auto-scrolling portfolio ticker — Row 1 (scrolls left) */}
-            <div className="relative mb-4">
+            {/* Auto-scrolling portfolio ticker */}
+            <div className="relative">
               <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
               <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
               <div className="overflow-hidden">
@@ -418,53 +418,27 @@ const Index = () => {
                     { name: "XXII Century", desc: "Trucking · Chicago, IL", img: "/goxxii.png" },
                     { name: "Pro Repair", desc: "Truck Repair · Lockport, IL", img: "/images/portfolio-pro-repair.png" },
                     { name: "Property Refresh", desc: "Maid Service · Chicago, IL", img: "/images/portfolio-property-refresh-maids.png" },
+                    { name: "Chicago Valley", desc: "Video Production · Chicago, IL", img: "/images/portfolio-chicago-valley.png" },
+                    { name: "LTS Mechanical", desc: "Truck Repair · Romeoville, IL", img: "/images/portfolio-lts-mechanical.png" },
+                    { name: "Paddock Parking", desc: "Storage Yard · Phoenix, AZ", img: "/images/portfolio-paddock-parking.png" },
+                    { name: "QTA Tax", desc: "Tax & Accounting · Oak Brook, IL", img: "/images/portfolio-qtatax.png" },
+                    { name: "Midwest Express", desc: "Trucking · Chicago, IL", img: "/images/portfolio-midwest-express.png" },
                     { name: "Klean AF", desc: "Cleaning · San Diego", img: "/kleanaf.png" },
                     { name: "Truck Clinic", desc: "Truck Repair · Romeoville, IL", img: "/truckclinic.png" },
                     { name: "Off-Tint", desc: "PPF & Tinting · Lisle, IL", img: "/off-tint-screenshot.png" },
                     { name: "XXII Century", desc: "Trucking · Chicago, IL", img: "/goxxii.png" },
                     { name: "Pro Repair", desc: "Truck Repair · Lockport, IL", img: "/images/portfolio-pro-repair.png" },
                     { name: "Property Refresh", desc: "Maid Service · Chicago, IL", img: "/images/portfolio-property-refresh-maids.png" },
-                  ].map((item, i) => (
-                    <div key={i} className="flex-shrink-0 w-[280px] md:w-[340px] group">
-                      <div className="rounded-xl overflow-hidden bg-white/5 border border-white/10 hover:border-primary/40 transition-all duration-300 shadow-lg hover:shadow-primary/20">
-                        <div className="relative overflow-hidden">
-                          <img src={item.img} alt={item.name} className="w-full h-auto block" />
-                        </div>
-                        <div className="px-3 py-2.5 flex items-center justify-between">
-                          <div>
-                            <h4 className="font-orbitron font-bold text-xs text-foreground">{item.name}</h4>
-                            <p className="text-[10px] text-muted-foreground">{item.desc}</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Auto-scrolling portfolio ticker — Row 2 (scrolls right) */}
-            <div className="relative">
-              <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
-              <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
-              <div className="overflow-hidden">
-                <div className="flex gap-4 animate-scroll-right hover:[animation-play-state:paused]">
-                  {[
-                    { name: "Chicago Valley", desc: "Video Production · Chicago, IL", img: "/images/portfolio-chicago-valley.png" },
-                    { name: "LTS Mechanical", desc: "Truck Repair · Romeoville, IL", img: "/images/portfolio-lts-mechanical.png" },
-                    { name: "Paddock Parking", desc: "Storage Yard · Phoenix, AZ", img: "/images/portfolio-paddock-parking.png" },
-                    { name: "QTA Tax", desc: "Tax & Accounting · Oak Brook, IL", img: "/images/portfolio-qtatax.png" },
-                    { name: "Midwest Express", desc: "Trucking · Chicago, IL", img: "/images/portfolio-midwest-express.png" },
                     { name: "Chicago Valley", desc: "Video Production · Chicago, IL", img: "/images/portfolio-chicago-valley.png" },
                     { name: "LTS Mechanical", desc: "Truck Repair · Romeoville, IL", img: "/images/portfolio-lts-mechanical.png" },
                     { name: "Paddock Parking", desc: "Storage Yard · Phoenix, AZ", img: "/images/portfolio-paddock-parking.png" },
                     { name: "QTA Tax", desc: "Tax & Accounting · Oak Brook, IL", img: "/images/portfolio-qtatax.png" },
                     { name: "Midwest Express", desc: "Trucking · Chicago, IL", img: "/images/portfolio-midwest-express.png" },
                   ].map((item, i) => (
-                    <div key={i} className="flex-shrink-0 w-[280px] md:w-[340px] group">
+                    <div key={i} className="flex-shrink-0 w-[260px] md:w-[300px] group">
                       <div className="rounded-xl overflow-hidden bg-white/5 border border-white/10 hover:border-primary/40 transition-all duration-300 shadow-lg hover:shadow-primary/20">
-                        <div className="relative overflow-hidden">
-                          <img src={item.img} alt={item.name} className="w-full h-auto block" />
+                        <div className="relative overflow-hidden aspect-[16/9] bg-black">
+                          <img src={item.img} alt={item.name} className="w-full h-full object-cover object-top block" />
                         </div>
                         <div className="px-3 py-2.5 flex items-center justify-between">
                           <div>
