@@ -897,7 +897,7 @@ const Index = () => {
                   },
                   {
                     q: 'Why custom code instead of WordPress?',
-                    a: 'WordPress template sites lag, break with plugin updates, and look like 2015. Our custom-coded websites load faster, rank better on Google, and give us complete control over every feature. No bloat, no vulnerabilities.',
+                    a: 'WordPress template sites lag, break with plugin updates, and look like 2015. Our custom-coded websites load faster, rank better on Google, and give us complete control over every feature. No bloat, no vulnerabilities. And the design is unmatched — you just can\'t compare.',
                   },
                   {
                     q: 'What happens if I need changes after launch?',
