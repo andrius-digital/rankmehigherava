@@ -1188,7 +1188,7 @@ const Index = () => {
           <div className="mt-2 p-2.5 rounded-lg bg-red-500/10 border border-red-500/30 flex items-start gap-2">
             <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
             <p className="text-[11px] text-red-300 leading-relaxed">
-              We build with cutting-edge AI technology that most agencies don't even know exists yet. We're looking for businesses that take their website seriously — not bargain shoppers. If you're ready to invest in a real web application that generates leads and grows with your business, we'd love to work with you.
+              We don't build templates — we code real React & Node.js applications using AI-powered development tools most agencies don't even know exist yet. We're looking for businesses that take their website seriously — not bargain shoppers. If you're ready to invest in a real web application that generates leads and grows with your business, we'd love to work with you.
             </p>
           </div>
 
