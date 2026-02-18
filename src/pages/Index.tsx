@@ -548,7 +548,7 @@ const Index = () => {
                     <div className="p-3 rounded-xl bg-cyan-500/5 border border-cyan-500/20">
                       <h4 className="font-orbitron font-bold text-xs text-cyan-400 mb-1">AI-Powered Development</h4>
                       <p className="text-xs text-muted-foreground leading-relaxed">
-                        Your website is built using next-gen AI coding tools — the same technology powering Silicon Valley startups. A small <strong className="text-foreground">$2–$20/mo</strong> AI infrastructure fee covers the compute used to build and maintain your site, billed at cost on the 1st of each month. No markup, fully transparent.
+                        Your website isn't a template — it's a real <strong className="text-foreground">React application</strong>, the same technology used by Netflix, Airbnb, and top startups. We can integrate anything you imagine: booking systems, dashboards, AI chat, payment processing — you name it. Every adjustment uses AI-powered coding tools that require API compute. We pass that cost directly to you at <strong className="text-foreground">$2–$20/mo</strong>, billed on the 1st — zero markup, fully transparent.
                       </p>
                     </div>
 
