@@ -391,6 +391,88 @@ const Index = () => {
             </div>
           </section>
 
+          {/* PRICING SECTION */}
+          <section className="py-8 lg:py-12 relative overflow-hidden">
+            <div className="container mx-auto px-4 lg:px-8 max-w-5xl relative z-10">
+              <div className="text-center mb-10">
+                <h2 className="text-3xl lg:text-5xl font-black leading-tight font-orbitron mb-4">
+                  <span className="text-foreground">Simple, </span>
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-red-500">Transparent Pricing</span>
+                </h2>
+                <p className="text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto">
+                  Our pricing is straightforward — no hidden fees, no long-term contracts. We want you to come on a discovery call already knowing what we charge.
+                </p>
+              </div>
+
+              <div className="grid lg:grid-cols-[1fr_auto] gap-8 items-start">
+                <div className="relative p-6 lg:p-8 rounded-2xl bg-gradient-to-br from-white/8 to-white/3 backdrop-blur-xl border border-white/15">
+                  <div className="grid lg:grid-cols-2 gap-8 items-center">
+                    <div className="text-center lg:text-left">
+                      <div className="mb-2">
+                        <span className="text-5xl lg:text-6xl font-black font-orbitron text-foreground">$1,500</span>
+                      </div>
+                      <p className="text-lg text-muted-foreground mb-1">One-time setup fee</p>
+                      <div className="flex items-baseline gap-2 justify-center lg:justify-start">
+                        <span className="text-3xl lg:text-4xl font-black font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-primary to-red-500">+ $99</span>
+                        <span className="text-muted-foreground text-lg">/month</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-1">Billed every 1st of the month</p>
+                      <p className="text-sm text-cyan-400 font-bold mt-4">No sales call needed to know our pricing. It's all right here.</p>
+                    </div>
+                    <div className="space-y-6">
+                      <div className="p-5 rounded-xl bg-red-500/10 border border-red-500/30">
+                        <h4 className="font-orbitron font-bold text-base text-foreground mb-3">What's Included Every Month</h4>
+                        <ul className="space-y-2">
+                          {[
+                            '1 hour of monthly adjustments',
+                            'Website hosting & security (SSL)',
+                            'Emergency support via Telegram group',
+                            'Go High Level sub account (free)',
+                            'AVA AI assistant (chat + voice)',
+                            'Client dashboard & task platform',
+                            'Weekly coaching call recordings',
+                            'Performance monitoring & backups',
+                          ].map((item, i) => (
+                            <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                        <h4 className="font-orbitron font-bold text-sm text-foreground mb-2">Need More?</h4>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          Additional adjustments billed at <strong className="text-foreground">$100/hr</strong>. We only recommend what we think you actually need — no high retainers. You choose what gets built.
+                        </p>
+                      </div>
+
+                      <button
+                        onClick={openCalendly}
+                        className="group w-full mt-4 px-8 py-4 rounded-xl bg-gradient-to-r from-primary to-red-600 text-white font-bold text-sm shadow-lg hover:shadow-xl hover:shadow-red-500/30 hover:scale-[1.01] transition-all duration-300 font-orbitron flex items-center justify-center gap-2"
+                      >
+                        Lock In This Price — Book a Call
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      </button>
+                      <p className="text-xs text-muted-foreground mt-2 text-center">Free consultation. No credit card needed.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="w-full lg:w-[280px] xl:w-[320px] mx-auto">
+                  <div className="rounded-2xl overflow-hidden border border-white/15 shadow-2xl shadow-primary/10">
+                    <div dangerouslySetInnerHTML={{ __html: `
+                      <script src="https://fast.wistia.com/player.js" async></script>
+                      <script src="https://fast.wistia.com/embed/plkbh1ssks.js" async type="module"></script>
+                      <style>wistia-player[media-id='plkbh1ssks']:not(:defined) { background: center / contain no-repeat url('https://fast.wistia.com/embed/medias/plkbh1ssks/swatch'); display: block; filter: blur(5px); padding-top:177.78%; }</style>
+                      <wistia-player media-id="plkbh1ssks" aspect="0.5625"></wistia-player>
+                    ` }} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
           {/* PORTFOLIO SHOWCASE SECTION */}
           <section className="pt-4 pb-2 lg:pt-6 lg:pb-4 relative overflow-hidden">
             <div className="container mx-auto px-4 lg:px-8 max-w-7xl relative z-10">
@@ -732,75 +814,6 @@ const Index = () => {
                 Want Results Like These? Book a Free Call
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
-            </div>
-          </section>
-
-          {/* PRICING SECTION */}
-          <section className="py-8 lg:py-12 relative overflow-hidden">
-            <div className="container mx-auto px-4 lg:px-8 max-w-5xl relative z-10">
-              <div className="text-center mb-10">
-                <h2 className="text-3xl lg:text-5xl font-black leading-tight font-orbitron mb-4">
-                  <span className="text-foreground">Simple, </span>
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-red-500">Transparent Pricing</span>
-                </h2>
-                <p className="text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto">
-                  Our pricing is straightforward — no hidden fees, no long-term contracts. We want you to come on a discovery call already knowing what we charge.
-                </p>
-              </div>
-
-              <div className="relative p-6 lg:p-8 rounded-2xl bg-gradient-to-br from-white/8 to-white/3 backdrop-blur-xl border border-white/15 mb-8">
-                <div className="grid lg:grid-cols-2 gap-8 items-center">
-                  <div className="text-center lg:text-left">
-                    <div className="mb-2">
-                      <span className="text-5xl lg:text-6xl font-black font-orbitron text-foreground">$1,500</span>
-                    </div>
-                    <p className="text-lg text-muted-foreground mb-1">One-time setup fee</p>
-                    <div className="flex items-baseline gap-2 justify-center lg:justify-start">
-                      <span className="text-3xl lg:text-4xl font-black font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-primary to-red-500">+ $99</span>
-                      <span className="text-muted-foreground text-lg">/month</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">Billed every 1st of the month</p>
-                    <p className="text-sm text-cyan-400 font-bold mt-4">No sales call needed to know our pricing. It's all right here.</p>
-                  </div>
-                  <div className="space-y-6">
-                    <div className="p-5 rounded-xl bg-red-500/10 border border-red-500/30">
-                      <h4 className="font-orbitron font-bold text-base text-foreground mb-3">What's Included Every Month</h4>
-                      <ul className="space-y-2">
-                        {[
-                          '1 hour of monthly adjustments',
-                          'Website hosting & security (SSL)',
-                          'Emergency support via Telegram group',
-                          'Go High Level sub account (free)',
-                          'AVA AI assistant (chat + voice)',
-                          'Client dashboard & task platform',
-                          'Weekly coaching call recordings',
-                          'Performance monitoring & backups',
-                        ].map((item, i) => (
-                          <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    <div className="p-4 rounded-xl bg-white/5 border border-white/10">
-                      <h4 className="font-orbitron font-bold text-sm text-foreground mb-2">Need More?</h4>
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        Additional adjustments billed at <strong className="text-foreground">$100/hr</strong>. We only recommend what we think you actually need — no high retainers. You choose what gets built.
-                      </p>
-                    </div>
-
-                    <button
-                      onClick={openCalendly}
-                      className="group w-full mt-4 px-8 py-4 rounded-xl bg-gradient-to-r from-primary to-red-600 text-white font-bold text-sm shadow-lg hover:shadow-xl hover:shadow-red-500/30 hover:scale-[1.01] transition-all duration-300 font-orbitron flex items-center justify-center gap-2"
-                    >
-                      Lock In This Price — Book a Call
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </button>
-                    <p className="text-xs text-muted-foreground mt-2 text-center">Free consultation. No credit card needed.</p>
-                  </div>
-                </div>
-              </div>
             </div>
           </section>
 
