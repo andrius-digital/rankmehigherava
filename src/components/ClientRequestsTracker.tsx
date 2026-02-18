@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import {
     Clock,
     CheckCircle2,
@@ -25,7 +25,8 @@ import {
     AlertTriangle,
     Truck,
     LayoutGrid,
-    List
+    List,
+    Columns3
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -47,6 +48,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
 import TaskPipelineDashboard from './TaskPipelineDashboard';
+import KanbanTaskBoard from './KanbanTaskBoard';
 
 interface ClientRequest {
     id: string;
@@ -79,7 +81,7 @@ interface ClientRequestsTrackerProps {
     clientId: string;
     clientName: string;
     isAgencyView?: boolean;
-    defaultView?: 'compact' | 'pipeline';
+    defaultView?: 'compact' | 'pipeline' | 'kanban';
 }
 
 const requestTypeIcons: Record<string, React.ElementType> = {
@@ -181,17 +183,66 @@ const priorityConfig = {
     urgent: { label: 'Urgent', color: 'text-red-400' },
 };
 
+// View Toggle Component
+const ViewToggle = memo(({
+    viewMode,
+    setViewMode
+}: {
+    viewMode: 'compact' | 'pipeline' | 'kanban';
+    setViewMode: (mode: 'compact' | 'pipeline' | 'kanban') => void;
+}) => (
+    <div className="flex items-center gap-1 p-0.5 bg-slate-800/50 rounded-lg border border-white/10">
+        <Button
+            size="sm"
+            variant={viewMode === 'kanban' ? 'default' : 'ghost'}
+            onClick={() => setViewMode('kanban')}
+            className={cn(
+                "h-7 text-xs px-2",
+                viewMode === 'kanban' && "bg-orange-500/20 text-orange-400 border border-orange-500/30"
+            )}
+        >
+            <Columns3 className="w-3.5 h-3.5 mr-1" />
+            Board
+        </Button>
+        <Button
+            size="sm"
+            variant={viewMode === 'pipeline' ? 'default' : 'ghost'}
+            onClick={() => setViewMode('pipeline')}
+            className={cn(
+                "h-7 text-xs px-2",
+                viewMode === 'pipeline' && "bg-orange-500/20 text-orange-400 border border-orange-500/30"
+            )}
+        >
+            <LayoutGrid className="w-3.5 h-3.5 mr-1" />
+            Pipeline
+        </Button>
+        <Button
+            size="sm"
+            variant={viewMode === 'compact' ? 'default' : 'ghost'}
+            onClick={() => setViewMode('compact')}
+            className={cn(
+                "h-7 text-xs px-2",
+                viewMode === 'compact' && "bg-orange-500/20 text-orange-400 border border-orange-500/30"
+            )}
+        >
+            <List className="w-3.5 h-3.5 mr-1" />
+            List
+        </Button>
+    </div>
+));
+ViewToggle.displayName = 'ViewToggle';
+
 const ClientRequestsTracker: React.FC<ClientRequestsTrackerProps> = ({
     clientId,
     clientName,
     isAgencyView = true,
-    defaultView = 'pipeline'
+    defaultView = 'kanban'
 }) => {
     const [requests, setRequests] = useState<ClientRequest[]>([]);
     const [loading, setLoading] = useState(true);
     const [expandedId, setExpandedId] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'active' | 'completed'>('active');
-    const [viewMode, setViewMode] = useState<'compact' | 'pipeline'>(defaultView);
+    const [viewMode, setViewMode] = useState<'compact' | 'pipeline' | 'kanban'>(defaultView);
     const [agencyNote, setAgencyNote] = useState('');
     const { toast } = useToast();
     const queryClient = useQueryClient();
@@ -223,11 +274,12 @@ const ClientRequestsTracker: React.FC<ClientRequestsTrackerProps> = ({
         queryClient.invalidateQueries({ queryKey: ['pending-requests-count', clientId] });
         queryClient.invalidateQueries({ queryKey: ['client-requests-count', clientId] });
         queryClient.invalidateQueries({ queryKey: ['pipeline-tasks', clientId] });
+        queryClient.invalidateQueries({ queryKey: ['kanban-tasks', clientId] });
     };
 
     const updateStatus = async (requestId: string, newStatus: string) => {
         try {
-            const updates: any = { status: newStatus };
+            const updates: Record<string, unknown> = { status: newStatus };
 
             if (newStatus === 'in_progress') {
                 updates.started_at = new Date().toISOString();
@@ -273,7 +325,6 @@ const ClientRequestsTracker: React.FC<ClientRequestsTrackerProps> = ({
         if (!agencyNote.trim()) return;
 
         try {
-            // Add to task_notes table
             const { error } = await supabase
                 .from('task_notes')
                 .insert({
@@ -291,7 +342,6 @@ const ClientRequestsTracker: React.FC<ClientRequestsTrackerProps> = ({
             invalidateAllQueries();
             fetchRequests();
         } catch (error) {
-            // Fallback to old method if task_notes table doesn't exist yet
             try {
                 const request = requests.find(r => r.id === requestId);
                 const existingNotes = request?.agency_notes || '';
@@ -341,7 +391,7 @@ const ClientRequestsTracker: React.FC<ClientRequestsTrackerProps> = ({
         }
     };
 
-    // Filter requests by tab - include pipeline statuses
+    // Filter requests by tab
     const activeStatuses = ['pending', 'in_progress', 'ready_for_qa', 'in_qa', 'qa_failed'];
     const completedStatuses = ['qa_passed', 'delivered', 'completed', 'cancelled'];
 
@@ -369,35 +419,21 @@ const ClientRequestsTracker: React.FC<ClientRequestsTrackerProps> = ({
         );
     }
 
-    // Show pipeline view
+    // Kanban View (New Trello-style)
+    if (viewMode === 'kanban') {
+        return (
+            <div className="space-y-3">
+                <ViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+                <KanbanTaskBoard clientId={clientId} isAgencyView={isAgencyView} />
+            </div>
+        );
+    }
+
+    // Pipeline View
     if (viewMode === 'pipeline') {
         return (
             <div className="space-y-3">
-                {/* View Toggle */}
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <Button
-                            size="sm"
-                            variant={viewMode === 'pipeline' ? 'default' : 'ghost'}
-                            onClick={() => setViewMode('pipeline')}
-                            className="h-7 text-xs"
-                        >
-                            <LayoutGrid className="w-3 h-3 mr-1" />
-                            Pipeline
-                        </Button>
-                        <Button
-                            size="sm"
-                            variant={viewMode === 'compact' ? 'default' : 'ghost'}
-                            onClick={() => setViewMode('compact')}
-                            className="h-7 text-xs"
-                        >
-                            <List className="w-3 h-3 mr-1" />
-                            Compact
-                        </Button>
-                    </div>
-                </div>
-
-                {/* Pipeline Dashboard */}
+                <ViewToggle viewMode={viewMode} setViewMode={setViewMode} />
                 <TaskPipelineDashboard
                     clientId={clientId}
                     userRole={isAgencyView ? 'admin' : 'client'}
@@ -407,31 +443,12 @@ const ClientRequestsTracker: React.FC<ClientRequestsTrackerProps> = ({
         );
     }
 
-    // Compact view (original)
+    // Compact List View
     return (
         <div className="space-y-3">
             {/* View Toggle + Stats */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <Button
-                        size="sm"
-                        variant={viewMode === 'pipeline' ? 'default' : 'ghost'}
-                        onClick={() => setViewMode('pipeline')}
-                        className="h-7 text-xs"
-                    >
-                        <LayoutGrid className="w-3 h-3 mr-1" />
-                        Pipeline
-                    </Button>
-                    <Button
-                        size="sm"
-                        variant={viewMode === 'compact' ? 'default' : 'ghost'}
-                        onClick={() => setViewMode('compact')}
-                        className="h-7 text-xs"
-                    >
-                        <List className="w-3 h-3 mr-1" />
-                        Compact
-                    </Button>
-                </div>
+            <div className="flex items-center justify-between flex-wrap gap-2">
+                <ViewToggle viewMode={viewMode} setViewMode={setViewMode} />
                 <div className="flex items-center gap-2 text-xs">
                     <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-amber-500/10 border border-amber-500/20">
                         <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
@@ -540,6 +557,15 @@ const ClientRequestsTracker: React.FC<ClientRequestsTrackerProps> = ({
                                                     <span className={priority.color}>{priority.label}</span>
                                                     <span className="text-muted-foreground">•</span>
                                                     <span className="text-muted-foreground">{formatDate(request.created_at)}</span>
+                                                    {request.actual_hours > 0 && (
+                                                        <>
+                                                            <span className="text-muted-foreground">•</span>
+                                                            <span className="text-cyan-400 flex items-center gap-0.5">
+                                                                <Timer className="w-3 h-3" />
+                                                                {request.actual_hours}h
+                                                            </span>
+                                                        </>
+                                                    )}
                                                     {request.revision_count > 0 && (
                                                         <>
                                                             <span className="text-muted-foreground">•</span>

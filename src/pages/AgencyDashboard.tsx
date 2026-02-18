@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import {
     Brain,
@@ -18,7 +18,8 @@ import {
     CreditCard,
     Clock,
     ChevronRight,
-    Layers
+    Layers,
+    BookOpen
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -28,6 +29,7 @@ import AvaAvatar from '@/components/agency/AvaAvatar';
 import StatusIndicator from '@/components/agency/StatusIndicator';
 import MissionClock from '@/components/agency/MissionClock';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { SOPDocumentationCard, SOPModal } from '@/components/sop';
 
 // Color classes for card styling
 const colorClasses = {
@@ -51,6 +53,7 @@ interface CardItem {
 const AgencyDashboard: React.FC = () => {
     const { signOut } = useAuth();
     const isMobile = useIsMobile();
+    const [sopModalOpen, setSopModalOpen] = useState(false);
 
     // All cards organized by section
     const sections = [
@@ -303,6 +306,29 @@ const AgencyDashboard: React.FC = () => {
                                         <span className="text-[8px] bg-muted/50 px-1 rounded text-muted-foreground/70">Soon</span>
                                     </div>
                                 </div>
+
+                                {/* Documentation - Mobile */}
+                                <section>
+                                    <div className="flex items-center gap-1.5 mb-1.5">
+                                        <div className="w-5 h-5 rounded bg-gradient-to-br from-cyan-500/20 to-cyan-600/20 border border-cyan-500/30 flex items-center justify-center">
+                                            <BookOpen className="w-3 h-3 text-cyan-400" />
+                                        </div>
+                                        <h2 className="font-orbitron text-xs font-bold text-foreground uppercase tracking-wide">Documentation</h2>
+                                    </div>
+                                    <button
+                                        onClick={() => setSopModalOpen(true)}
+                                        className="w-full flex items-center gap-2 py-2 px-2.5 bg-card/20 border border-cyan-500/20 rounded-lg active:scale-[0.97] active:bg-card/40 transition-all"
+                                    >
+                                        <div className="w-8 h-8 rounded-md bg-gradient-to-br from-cyan-500/20 to-cyan-600/20 border border-cyan-500/30 flex items-center justify-center flex-shrink-0">
+                                            <BookOpen className="w-4 h-4 text-cyan-400" />
+                                        </div>
+                                        <div className="flex-1 min-w-0 text-left">
+                                            <h3 className="font-medium text-xs text-foreground truncate">SOPs & Guides</h3>
+                                        </div>
+                                        <span className="text-[9px] text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded">7 Phases</span>
+                                        <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/50 flex-shrink-0" />
+                                    </button>
+                                </section>
                             </>
                         ) : (
                             <>
@@ -368,8 +394,31 @@ const AgencyDashboard: React.FC = () => {
                                         </Link>
                                     </div>
                                 </section>
+
+                                {/* Documentation Section */}
+                                <section className="space-y-6">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-cyan-600/20 border border-cyan-500/30 flex items-center justify-center">
+                                            <BookOpen className="w-5 h-5 text-cyan-400" />
+                                        </div>
+                                        <h2 className="font-orbitron text-2xl font-bold text-foreground">Documentation</h2>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        <SOPDocumentationCard
+                                            onClick={() => setSopModalOpen(true)}
+                                            phasesCount={7}
+                                            delay={100}
+                                        />
+                                    </div>
+                                </section>
                             </>
                         )}
+
+                        {/* SOP Documentation Modal */}
+                        <SOPModal
+                            isOpen={sopModalOpen}
+                            onClose={() => setSopModalOpen(false)}
+                        />
                     </div>
                 </main>
 

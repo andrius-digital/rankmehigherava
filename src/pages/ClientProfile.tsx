@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import {
   Brain,
@@ -19,7 +19,8 @@ import {
   Search,
   Wallet,
   Cpu,
-  Palette
+  Palette,
+  BookOpen
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -29,9 +30,11 @@ import HUDOverlay from '@/components/ui/HUDOverlay';
 import MissionClock from '@/components/agency/MissionClock';
 import CommandCenterGrid from '@/components/agency/CommandCenterGrid';
 import AvaAvatar from '@/components/agency/AvaAvatar';
+import { SOPDocumentationCard, SOPModal } from '@/components/sop';
 
 const ClientProfile: React.FC = () => {
   const { signOut, user } = useAuth();
+  const [sopModalOpen, setSopModalOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
@@ -244,7 +247,26 @@ const ClientProfile: React.FC = () => {
                   />
                 </div>
               </div>
+
+              {/* SECTION: DOCUMENTATION */}
+              <div className="lg:col-span-1 space-y-4">
+                <div className="flex items-center gap-2 px-2">
+                  <BookOpen className="w-4 h-4 text-cyan-400" />
+                  <h2 className="font-orbitron text-xs font-bold tracking-[0.2em] text-cyan-400 uppercase">Documentation</h2>
+                </div>
+                <SOPDocumentationCard
+                  onClick={() => setSopModalOpen(true)}
+                  phasesCount={7}
+                  delay={550}
+                />
+              </div>
             </CommandCenterGrid>
+
+            {/* SOP Documentation Modal */}
+            <SOPModal
+              isOpen={sopModalOpen}
+              onClose={() => setSopModalOpen(false)}
+            />
           </div>
         </main>
 

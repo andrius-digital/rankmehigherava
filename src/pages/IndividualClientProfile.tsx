@@ -157,6 +157,9 @@ import { useQueryClient } from '@tanstack/react-query';
 import { compressImage } from '@/utils/imageCompression';
 import { PopupSection } from '@/components/ui/popup-section';
 import ClientRequestsTracker from '@/components/ClientRequestsTracker';
+import { SOPModal } from '@/components/sop';
+import { BookOpen } from 'lucide-react';
+import TelegramSettingsCard from '@/components/TelegramSettingsCard';
 
 // Checklist item interface
 interface ChecklistItem {
@@ -873,6 +876,9 @@ const IndividualClientProfile: React.FC = () => {
     const isKleanAndFresh = id === 'klean-and-fresh';
     const isPropertyRefresh = id === 'property-refresh-maids';
     const isFeaturedClient = isOffTint || isKleanAndFresh || isPropertyRefresh;
+
+    // SOP Documentation Modal state
+    const [sopModalOpen, setSopModalOpen] = useState(false);
 
     // Client Services state - now synced with Supabase
     const [clientServices, setClientServices] = useState<ServiceItem[]>([]);
@@ -2106,15 +2112,21 @@ const IndividualClientProfile: React.FC = () => {
                             </a>
                         )}
                         {!isFeaturedClient && (
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="font-orbitron text-[10px] sm:text-xs bg-transparent border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-400/50 hover:text-cyan-300 px-3 sm:px-4"
-                                onClick={() => setIsEditing(!isEditing)}
-                            >
-                                <Settings className="w-3 h-3 mr-1.5 sm:mr-2" />
-                                {isEditing ? 'Cancel' : 'Edit Client'}
-                            </Button>
+                            <>
+                                <TelegramSettingsCard
+                                    clientId={id || ''}
+                                    clientName={client?.name || 'Client'}
+                                />
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="font-orbitron text-[10px] sm:text-xs bg-transparent border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-400/50 hover:text-cyan-300 px-3 sm:px-4"
+                                    onClick={() => setIsEditing(!isEditing)}
+                                >
+                                    <Settings className="w-3 h-3 mr-1.5 sm:mr-2" />
+                                    {isEditing ? 'Cancel' : 'Edit Client'}
+                                </Button>
+                            </>
                         )}
                     </div>
                 </div>
@@ -4186,10 +4198,38 @@ const IndividualClientProfile: React.FC = () => {
                             isAgencyView={true}
                         />
                     </PopupSection>
+
+                    {/* SOP Documentation Section - Agency View Only */}
+                    <button
+                        onClick={() => setSopModalOpen(true)}
+                        className="flex flex-col w-full p-2.5 sm:p-3 rounded-xl transition-all cursor-pointer relative bg-card/30 border border-cyan-500/20 hover:border-cyan-500/50 hover:bg-cyan-500/10"
+                    >
+                        {/* Top row: Icon and Title */}
+                        <div className="flex items-center gap-2 w-full mb-1.5">
+                            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-md flex items-center justify-center border shrink-0 bg-cyan-500/10 border-cyan-500/30">
+                                <BookOpen className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-cyan-400" />
+                            </div>
+                            <h2 className="font-orbitron text-[9px] sm:text-[10px] font-bold tracking-wider uppercase truncate text-left text-cyan-400">
+                                SOPs & Docs
+                            </h2>
+                        </div>
+                        {/* Bottom row: Badge */}
+                        <div className="flex items-center gap-1.5 w-full">
+                            <span className="text-[8px] px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 font-orbitron">
+                                7 Phases
+                            </span>
+                        </div>
+                    </button>
                         </div>
                     </div>
                 </div>
             </div>
+
+            {/* SOP Documentation Modal */}
+            <SOPModal
+                isOpen={sopModalOpen}
+                onClose={() => setSopModalOpen(false)}
+            />
 
             {/* Image Popup Modal */}
             {selectedImage && (

@@ -558,7 +558,17 @@ const WebsiteSubmissions = () => {
     founderPhotos,
   }), [formData, hasGoogleProfile, hasSpecialOffers, hasFinancing, emergencyServices, insuranceHelp, hasSpecificFont, hasBrandBook, operatingHours, services, logoFiles, founderPhotos]);
 
-  const stepCompletions = useMemo(() => calculateAllStepCompletions(formState), [formState]);
+  // Debounced step completions to prevent re-renders on every keystroke
+  const [debouncedFormState, setDebouncedFormState] = useState(formState);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedFormState(formState);
+    }, 500); // Update completions after 500ms of no changes
+    return () => clearTimeout(timer);
+  }, [formState]);
+
+  const stepCompletions = useMemo(() => calculateAllStepCompletions(debouncedFormState), [debouncedFormState]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -865,6 +875,16 @@ const WebsiteSubmissions = () => {
     }));
   };
 
+  // Memoized handler for form field changes - prevents focus loss on re-render
+  const handleFieldChange = useCallback((field: keyof typeof formData) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData(prev => ({ ...prev, [field]: e.target.value }));
+  }, []);
+
+  // Memoized handler for direct value changes (Select, custom components)
+  const handleValueChange = useCallback((field: keyof typeof formData) => (value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  }, []);
+
   // Step 1: Business Info
   const renderStep1 = () => (
     <MobileSection title="1. Business Info" icon={Building2}>
@@ -872,7 +892,7 @@ const WebsiteSubmissions = () => {
         <Input
           className={`${isMobile ? 'h-11' : ''} max-w-md`}
           value={formData.companyName}
-          onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+          onChange={handleFieldChange('companyName')}
           placeholder="Enter company name"
         />
       </FormField>
@@ -901,7 +921,7 @@ const WebsiteSubmissions = () => {
         <div className="space-y-2">
           <GBPScanner
             value={formData.googleBusinessProfileLink}
-            onChange={(value) => setFormData({ ...formData, googleBusinessProfileLink: value })}
+            onChange={handleValueChange('googleBusinessProfileLink')}
             onLocationFound={handleGBPLocationFound}
           />
           <p className="text-xs text-muted-foreground">
@@ -913,7 +933,7 @@ const WebsiteSubmissions = () => {
       <FormField label="1.3 Do you own a domain name?" required>
         <Select
           value={formData.ownsDomain}
-          onValueChange={(value) => setFormData({ ...formData, ownsDomain: value })}
+          onValueChange={handleValueChange('ownsDomain')}
         >
           <SelectTrigger className={`${isMobile ? 'h-11' : ''} max-w-md`}>
             <SelectValue placeholder="Please Select" />
@@ -930,7 +950,7 @@ const WebsiteSubmissions = () => {
           <Input
             className={`${isMobile ? 'h-11' : ''} max-w-md`}
             value={formData.domainName}
-            onChange={(e) => setFormData({ ...formData, domainName: e.target.value })}
+            onChange={handleFieldChange('domainName')}
             placeholder="www.domainname.com"
           />
         </FormField>
@@ -941,7 +961,7 @@ const WebsiteSubmissions = () => {
           type="tel"
           className={`${isMobile ? 'h-11' : ''} max-w-md`}
           value={formData.businessPhone}
-          onChange={(e) => setFormData({ ...formData, businessPhone: e.target.value })}
+          onChange={handleFieldChange('businessPhone')}
           placeholder="(000) 000-0000"
         />
       </FormField>
@@ -951,7 +971,7 @@ const WebsiteSubmissions = () => {
           type="email"
           className={`${isMobile ? 'h-11' : ''} max-w-md`}
           value={formData.businessEmail}
-          onChange={(e) => setFormData({ ...formData, businessEmail: e.target.value })}
+          onChange={handleFieldChange('businessEmail')}
           placeholder="example@example.com"
         />
       </FormField>
@@ -961,7 +981,7 @@ const WebsiteSubmissions = () => {
           type="email"
           className={`${isMobile ? 'h-11' : ''} max-w-md`}
           value={formData.jobRequestEmail}
-          onChange={(e) => setFormData({ ...formData, jobRequestEmail: e.target.value })}
+          onChange={handleFieldChange('jobRequestEmail')}
           placeholder="example@example.com"
         />
       </FormField>
@@ -985,7 +1005,7 @@ const WebsiteSubmissions = () => {
           <Input
             className="mt-2 max-w-md"
             value={formData.mainCity}
-            onChange={(e) => setFormData({ ...formData, mainCity: e.target.value })}
+            onChange={handleFieldChange('mainCity')}
           />
           <p className="text-sm text-muted-foreground mt-1">
             What city, region or state do you primarily serve? (e.g., Chicago)
@@ -1000,7 +1020,7 @@ const WebsiteSubmissions = () => {
             className="mt-2"
             rows={5}
             value={formData.serviceAreas}
-            onChange={(e) => setFormData({ ...formData, serviceAreas: e.target.value })}
+            onChange={handleFieldChange('serviceAreas')}
           />
           <p className="text-sm text-muted-foreground mt-1">
             List all suburbs you work in around your main city. Example: Lemont, IL; Buffalo Grove, IL; Naperville, IL.
@@ -1013,7 +1033,7 @@ const WebsiteSubmissions = () => {
           </Label>
           <Select
             value={formData.showAddress}
-            onValueChange={(value) => setFormData({ ...formData, showAddress: value })}
+            onValueChange={handleValueChange('showAddress')}
           >
             <SelectTrigger className="mt-2 max-w-md">
               <SelectValue placeholder="Please Select" />
@@ -1032,14 +1052,14 @@ const WebsiteSubmissions = () => {
               <div>
                 <Input
                   value={formData.streetAddress}
-                  onChange={(e) => setFormData({ ...formData, streetAddress: e.target.value })}
+                  onChange={handleFieldChange('streetAddress')}
                 />
                 <p className="text-sm text-muted-foreground mt-1">Street Address</p>
               </div>
               <div>
                 <Input
                   value={formData.streetAddress2}
-                  onChange={(e) => setFormData({ ...formData, streetAddress2: e.target.value })}
+                  onChange={handleFieldChange('streetAddress2')}
                 />
                 <p className="text-sm text-muted-foreground mt-1">Street Address Line 2</p>
               </div>
@@ -1047,14 +1067,14 @@ const WebsiteSubmissions = () => {
                 <div>
                   <Input
                     value={formData.city}
-                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                    onChange={handleFieldChange('city')}
                   />
                   <p className="text-sm text-muted-foreground mt-1">City</p>
                 </div>
                 <div>
                   <Input
                     value={formData.stateProvince}
-                    onChange={(e) => setFormData({ ...formData, stateProvince: e.target.value })}
+                    onChange={handleFieldChange('stateProvince')}
                   />
                   <p className="text-sm text-muted-foreground mt-1">State / Province</p>
                 </div>
@@ -1062,7 +1082,7 @@ const WebsiteSubmissions = () => {
               <div>
                 <Input
                   value={formData.postalCode}
-                  onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
+                  onChange={handleFieldChange('postalCode')}
                 />
                 <p className="text-sm text-muted-foreground mt-1">Postal / Zip Code</p>
               </div>
@@ -1076,7 +1096,7 @@ const WebsiteSubmissions = () => {
           </Label>
           <Select
             value={formData.showHours}
-            onValueChange={(value) => setFormData({ ...formData, showHours: value })}
+            onValueChange={handleValueChange('showHours')}
           >
             <SelectTrigger className="mt-2 max-w-md">
               <SelectValue placeholder="Please Select" />
@@ -1188,7 +1208,7 @@ const WebsiteSubmissions = () => {
           <Input
             className="mt-2 max-w-md"
             value={formData.serviceCategory}
-            onChange={(e) => setFormData({ ...formData, serviceCategory: e.target.value })}
+            onChange={handleFieldChange('serviceCategory')}
           />
           <p className="text-sm text-muted-foreground mt-1">
             E.g., roofing, landscaping, window cleaning, TV installation, etc.
@@ -1256,7 +1276,7 @@ const WebsiteSubmissions = () => {
           </Label>
           <Select
             value={formData.includeServicePage}
-            onValueChange={(value) => setFormData({ ...formData, includeServicePage: value })}
+            onValueChange={handleValueChange('includeServicePage')}
           >
             <SelectTrigger className="mt-2 max-w-md">
               <SelectValue placeholder="Please Select" />
@@ -1274,7 +1294,7 @@ const WebsiteSubmissions = () => {
           </Label>
           <Select
             value={formData.showPricing}
-            onValueChange={(value) => setFormData({ ...formData, showPricing: value })}
+            onValueChange={handleValueChange('showPricing')}
           >
             <SelectTrigger className="mt-2 max-w-md">
               <SelectValue placeholder="Please Select" />
@@ -1292,7 +1312,7 @@ const WebsiteSubmissions = () => {
           </Label>
           <Select
             value={formData.servicePageType}
-            onValueChange={(value) => setFormData({ ...formData, servicePageType: value })}
+            onValueChange={handleValueChange('servicePageType')}
           >
             <SelectTrigger className="mt-2 max-w-md">
               <SelectValue placeholder="Please Select" />
@@ -1353,7 +1373,7 @@ const WebsiteSubmissions = () => {
           </Label>
           <Select
             value={formData.freeEstimates}
-            onValueChange={(value) => setFormData({ ...formData, freeEstimates: value })}
+            onValueChange={handleValueChange('freeEstimates')}
           >
             <SelectTrigger className="mt-2 max-w-md">
               <SelectValue placeholder="Please Select" />
@@ -1371,7 +1391,7 @@ const WebsiteSubmissions = () => {
           </Label>
           <Select
             value={formData.customerAction}
-            onValueChange={(value) => setFormData({ ...formData, customerAction: value })}
+            onValueChange={handleValueChange('customerAction')}
           >
             <SelectTrigger className="mt-2 max-w-md">
               <SelectValue placeholder="Please Select" />
@@ -1391,7 +1411,7 @@ const WebsiteSubmissions = () => {
           </Label>
           <Select
             value={formData.clientType}
-            onValueChange={(value) => setFormData({ ...formData, clientType: value })}
+            onValueChange={handleValueChange('clientType')}
           >
             <SelectTrigger className="mt-2 max-w-md">
               <SelectValue placeholder="Please Select" />
@@ -1411,7 +1431,7 @@ const WebsiteSubmissions = () => {
           <Input
             className="mt-2 max-w-md"
             value={formData.serviceJobDuration}
-            onChange={(e) => setFormData({ ...formData, serviceJobDuration: e.target.value })}
+            onChange={handleFieldChange('serviceJobDuration')}
             placeholder="e.g., 1-2 hours, half day, 2-3 days"
           />
         </div>
@@ -1423,7 +1443,7 @@ const WebsiteSubmissions = () => {
           <Input
             className="mt-2 max-w-md"
             value={formData.serviceAreaPages}
-            onChange={(e) => setFormData({ ...formData, serviceAreaPages: e.target.value })}
+            onChange={handleFieldChange('serviceAreaPages')}
           />
         </div>
 
@@ -1435,7 +1455,7 @@ const WebsiteSubmissions = () => {
             className="mt-2"
             rows={4}
             value={formData.homeownerChallenges}
-            onChange={(e) => setFormData({ ...formData, homeownerChallenges: e.target.value })}
+            onChange={handleFieldChange('homeownerChallenges')}
             placeholder="Describe common problems your customers experience..."
           />
         </div>
@@ -1461,7 +1481,7 @@ const WebsiteSubmissions = () => {
             className="mt-2"
             rows={5}
             value={formData.serviceProcess}
-            onChange={(e) => setFormData({ ...formData, serviceProcess: e.target.value })}
+            onChange={handleFieldChange('serviceProcess')}
             placeholder="Step 1: Initial call/inquiry. Step 2: Free estimate. Step 3: Schedule work..."
           />
           <p className="text-sm text-muted-foreground mt-1">
@@ -1496,7 +1516,7 @@ const WebsiteSubmissions = () => {
             className="mt-2"
             rows={4}
             value={formData.serviceOptions}
-            onChange={(e) => setFormData({ ...formData, serviceOptions: e.target.value })}
+            onChange={handleFieldChange('serviceOptions')}
             placeholder="e.g., Basic, Standard, Premium packages..."
           />
         </div>
@@ -1509,7 +1529,7 @@ const WebsiteSubmissions = () => {
             className="mt-2"
             rows={4}
             value={formData.guarantees}
-            onChange={(e) => setFormData({ ...formData, guarantees: e.target.value })}
+            onChange={handleFieldChange('guarantees')}
             placeholder="e.g., 5-year workmanship warranty, satisfaction guarantee..."
           />
         </div>
@@ -1522,7 +1542,7 @@ const WebsiteSubmissions = () => {
             className="mt-2"
             rows={5}
             value={formData.businessUnique}
-            onChange={(e) => setFormData({ ...formData, businessUnique: e.target.value })}
+            onChange={handleFieldChange('businessUnique')}
             placeholder="What sets you apart from competitors?"
           />
         </div>
@@ -1548,7 +1568,7 @@ const WebsiteSubmissions = () => {
             className="mt-2"
             rows={5}
             value={formData.qualityTrust}
-            onChange={(e) => setFormData({ ...formData, qualityTrust: e.target.value })}
+            onChange={handleFieldChange('qualityTrust')}
             placeholder="Years in business, licenses, insurance, certifications, awards..."
           />
         </div>
@@ -1561,7 +1581,7 @@ const WebsiteSubmissions = () => {
             className="mt-2"
             rows={4}
             value={formData.accreditations}
-            onChange={(e) => setFormData({ ...formData, accreditations: e.target.value })}
+            onChange={handleFieldChange('accreditations')}
             placeholder="e.g., BBB Accredited, ISO 9001 Certified..."
           />
         </div>
@@ -1593,7 +1613,7 @@ const WebsiteSubmissions = () => {
             className="mt-2"
             rows={4}
             value={formData.insuranceElaboration}
-            onChange={(e) => setFormData({ ...formData, insuranceElaboration: e.target.value })}
+            onChange={handleFieldChange('insuranceElaboration')}
           />
         </div>
       </div>
@@ -1618,7 +1638,7 @@ const WebsiteSubmissions = () => {
             className="mt-2"
             rows={5}
             value={formData.founderMessage}
-            onChange={(e) => setFormData({ ...formData, founderMessage: e.target.value })}
+            onChange={handleFieldChange('founderMessage')}
             placeholder="Your name, title, and story about why you started the business..."
           />
         </div>
@@ -1631,7 +1651,7 @@ const WebsiteSubmissions = () => {
             className="mt-2"
             rows={4}
             value={formData.teamMembers}
-            onChange={(e) => setFormData({ ...formData, teamMembers: e.target.value })}
+            onChange={handleFieldChange('teamMembers')}
             placeholder="John Smith – Project Manager, Jane Doe – Lead Technician..."
           />
         </div>
@@ -1851,7 +1871,7 @@ const WebsiteSubmissions = () => {
             className="mt-2"
             rows={4}
             value={formData.communityGiving}
-            onChange={(e) => setFormData({ ...formData, communityGiving: e.target.value })}
+            onChange={handleFieldChange('communityGiving')}
             placeholder="Sponsorships, donations, volunteer work..."
           />
         </div>
@@ -1864,7 +1884,7 @@ const WebsiteSubmissions = () => {
             className="mt-2"
             rows={4}
             value={formData.coreValues}
-            onChange={(e) => setFormData({ ...formData, coreValues: e.target.value })}
+            onChange={handleFieldChange('coreValues')}
             placeholder="List 3-4 values that define your company..."
           />
         </div>
@@ -1890,7 +1910,7 @@ const WebsiteSubmissions = () => {
             className="mt-2"
             rows={3}
             value={formData.websiteColors}
-            onChange={(e) => setFormData({ ...formData, websiteColors: e.target.value })}
+            onChange={handleFieldChange('websiteColors')}
             placeholder="Skip if you'd like us to match your logo colors"
           />
         </div>
@@ -1923,7 +1943,7 @@ const WebsiteSubmissions = () => {
             <Input
               className="mt-2 max-w-md"
               value={formData.fontName}
-              onChange={(e) => setFormData({ ...formData, fontName: e.target.value })}
+              onChange={handleFieldChange('fontName')}
             />
           </div>
         )}
@@ -1959,7 +1979,7 @@ const WebsiteSubmissions = () => {
               className="mt-2"
               rows={2}
               value={formData.brandBookLink}
-              onChange={(e) => setFormData({ ...formData, brandBookLink: e.target.value })}
+              onChange={handleFieldChange('brandBookLink')}
             />
           </div>
         )}
@@ -1985,7 +2005,7 @@ const WebsiteSubmissions = () => {
             <Input
               className="mt-2 max-w-md"
               value={formData.googleReviews}
-              onChange={(e) => setFormData({ ...formData, googleReviews: e.target.value })}
+              onChange={handleFieldChange('googleReviews')}
               placeholder="e.g., 50+ reviews, 4.8 stars"
             />
           </div>
@@ -1998,7 +2018,7 @@ const WebsiteSubmissions = () => {
               className="mt-2"
               rows={3}
               value={formData.otherReviewsLink}
-              onChange={(e) => setFormData({ ...formData, otherReviewsLink: e.target.value })}
+              onChange={handleFieldChange('otherReviewsLink')}
               placeholder="Yelp, HomeAdvisor, Angi, etc."
             />
           </div>
@@ -2009,10 +2029,10 @@ const WebsiteSubmissions = () => {
             instagramLink={formData.instagramLink}
             facebookLink={formData.facebookLink}
             tiktokLink={formData.tiktokLink}
-            onYelpChange={(value) => setFormData({ ...formData, yelpLink: value })}
-            onInstagramChange={(value) => setFormData({ ...formData, instagramLink: value })}
-            onFacebookChange={(value) => setFormData({ ...formData, facebookLink: value })}
-            onTiktokChange={(value) => setFormData({ ...formData, tiktokLink: value })}
+            onYelpChange={handleValueChange('yelpLink')}
+            onInstagramChange={handleValueChange('instagramLink')}
+            onFacebookChange={handleValueChange('facebookLink')}
+            onTiktokChange={handleValueChange('tiktokLink')}
           />
 
           <div>
@@ -2022,7 +2042,7 @@ const WebsiteSubmissions = () => {
             <Input
               className="mt-2 max-w-md"
               value={formData.workPhotosLink}
-              onChange={(e) => setFormData({ ...formData, workPhotosLink: e.target.value })}
+              onChange={handleFieldChange('workPhotosLink')}
               placeholder="Google Drive, Dropbox, etc."
             />
             <p className="text-xs text-muted-foreground mt-1">
@@ -2075,7 +2095,7 @@ const WebsiteSubmissions = () => {
               className="mt-2"
               rows={4}
               value={formData.specialOffersExplanation}
-              onChange={(e) => setFormData({ ...formData, specialOffersExplanation: e.target.value })}
+              onChange={handleFieldChange('specialOffersExplanation')}
               placeholder="e.g., 10% off first service, seasonal discounts..."
             />
           </div>
@@ -2112,7 +2132,7 @@ const WebsiteSubmissions = () => {
               className="mt-2"
               rows={4}
               value={formData.financingExplanation}
-              onChange={(e) => setFormData({ ...formData, financingExplanation: e.target.value })}
+              onChange={handleFieldChange('financingExplanation')}
               placeholder="e.g., 0% APR for 12 months, payment plans..."
             />
           </div>
@@ -2139,7 +2159,7 @@ const WebsiteSubmissions = () => {
             className="mt-2"
             rows={4}
             value={formData.competitorWebsites}
-            onChange={(e) => setFormData({ ...formData, competitorWebsites: e.target.value })}
+            onChange={handleFieldChange('competitorWebsites')}
             placeholder="List URLs of websites you like..."
           />
           <p className="text-sm text-muted-foreground mt-1">
@@ -2155,7 +2175,7 @@ const WebsiteSubmissions = () => {
             className="mt-2"
             rows={6}
             value={formData.additionalNotes}
-            onChange={(e) => setFormData({ ...formData, additionalNotes: e.target.value })}
+            onChange={handleFieldChange('additionalNotes')}
             placeholder="Any other information you'd like us to know..."
           />
           <p className="text-sm text-muted-foreground mt-1">
