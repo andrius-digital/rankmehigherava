@@ -740,17 +740,53 @@ const Index = () => {
 
               <div className="relative p-5 lg:p-6 rounded-2xl bg-gradient-to-br from-white/8 to-white/3 backdrop-blur-xl border border-white/15">
                 <div className="grid lg:grid-cols-2 gap-6 items-center">
-                  <div className="text-center lg:text-left">
-                    <div className="mb-1">
-                      <span className="text-5xl lg:text-6xl font-black font-orbitron text-foreground">$1,500</span>
+                  <div className="text-center lg:text-left space-y-5">
+                    <div>
+                      <div className="mb-1">
+                        <span className="text-5xl lg:text-6xl font-black font-orbitron text-foreground">$1,500</span>
+                      </div>
+                      <p className="text-base text-muted-foreground mb-1">One-time setup fee</p>
+                      <div className="flex items-baseline gap-2 justify-center lg:justify-start">
+                        <span className="text-3xl lg:text-4xl font-black font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-primary to-red-500">+ $99</span>
+                        <span className="text-muted-foreground text-base">/month</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-1">Billed every 1st of the month</p>
+                      <p className="text-sm text-cyan-400 font-bold mt-3">No sales call needed to know our pricing. It's all right here.</p>
                     </div>
-                    <p className="text-base text-muted-foreground mb-1">One-time setup fee</p>
-                    <div className="flex items-baseline gap-2 justify-center lg:justify-start">
-                      <span className="text-3xl lg:text-4xl font-black font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-primary to-red-500">+ $99</span>
-                      <span className="text-muted-foreground text-base">/month</span>
+
+                    <div className="p-4 rounded-xl bg-white/5 border border-white/10 text-left">
+                      <h4 className="font-orbitron font-bold text-xs text-foreground mb-2">What's in the Setup Fee</h4>
+                      <ul className="space-y-1.5">
+                        {[
+                          'Custom-coded website (not a template)',
+                          'Mobile-first responsive design',
+                          'SEO-optimized structure & meta tags',
+                          'Lead capture forms & automations',
+                          'Google Business Profile optimization',
+                          'Speed optimization (90+ PageSpeed)',
+                        ].map((item, i) => (
+                          <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1">Billed every 1st of the month</p>
-                    <p className="text-sm text-cyan-400 font-bold mt-3">No sales call needed to know our pricing. It's all right here.</p>
+
+                    <div className="grid grid-cols-3 gap-2 text-center">
+                      <div className="p-3 rounded-xl bg-white/5 border border-white/10">
+                        <span className="block text-xl font-black font-orbitron text-foreground">10</span>
+                        <span className="text-[10px] text-muted-foreground">Days to Launch</span>
+                      </div>
+                      <div className="p-3 rounded-xl bg-white/5 border border-white/10">
+                        <span className="block text-xl font-black font-orbitron text-foreground">95+</span>
+                        <span className="text-[10px] text-muted-foreground">PageSpeed Score</span>
+                      </div>
+                      <div className="p-3 rounded-xl bg-white/5 border border-white/10">
+                        <span className="block text-xl font-black font-orbitron text-foreground">24/7</span>
+                        <span className="text-[10px] text-muted-foreground">Support Access</span>
+                      </div>
+                    </div>
                   </div>
                   <div className="space-y-4">
                     <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30">
