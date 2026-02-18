@@ -11,14 +11,14 @@ export default defineConfig(({ mode }) => ({
     },
   },
   server: {
+    host: '0.0.0.0',
+    port: 5000,
+    allowedHosts: true,
     watch: {
-      // Use polling to detect file changes reliably (fixes issue on macOS)
-      // This ensures changes made in Cursor are detected immediately
       usePolling: true,
-      interval: 1000, // Check every second
+      interval: 1000,
     },
     hmr: {
-      // Ensure HMR is working properly
       overlay: true,
     },
   },
