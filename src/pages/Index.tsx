@@ -1185,6 +1185,13 @@ const Index = () => {
             </DialogDescription>
           </DialogHeader>
 
+          <div className="mt-3 p-2.5 rounded-lg bg-red-500/10 border border-red-500/30 flex items-start gap-2">
+            <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-red-300 leading-relaxed">
+              We work with businesses that take their online presence seriously. This is cutting-edge technology — we're selective about who we partner with because we invest real time and resources into every project.
+            </p>
+          </div>
+
           <div className="grid grid-cols-3 gap-2 mt-3">
             <div className="p-2 rounded-lg bg-red-500/5 border border-red-500/20 text-center">
               <span className="block text-sm font-black font-orbitron text-foreground">$2K</span>
