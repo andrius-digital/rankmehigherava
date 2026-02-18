@@ -893,7 +893,7 @@ const Index = () => {
                   },
                   {
                     q: 'What is AVA?',
-                    a: 'AVA is our proprietary AI assistant that gets installed on your website. She handles voice chat, answers questions, qualifies leads, and books appointments automatically — 24/7, even while you sleep.',
+                    a: 'AVA is a software developed by Rank Me Higher to manage client communication, task management, and SEO — all in one place. She handles voice chat, answers questions, qualifies leads, and books appointments automatically — 24/7, even while you sleep.',
                   },
                   {
                     q: 'Why custom code instead of WordPress?',
