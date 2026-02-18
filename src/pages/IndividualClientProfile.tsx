@@ -1625,7 +1625,9 @@ const IndividualClientProfile: React.FC = () => {
     });
     const [newService, setNewService] = useState('');
     const [isSaving, setIsSaving] = useState(false);
-    
+    const [isEditingName, setIsEditingName] = useState(false);
+    const [inlineName, setInlineName] = useState('');
+
     // Logo upload state
     const [logoFiles, setLogoFiles] = useState<string[]>([]);
     const [isUploadingLogo, setIsUploadingLogo] = useState(false);
@@ -1979,6 +1981,25 @@ const IndividualClientProfile: React.FC = () => {
         }
     };
 
+    // Inline name edit save
+    const handleInlineNameSave = async () => {
+        if (isFeaturedClient || !id || !dbClient || !inlineName.trim()) return;
+        try {
+            const { error } = await supabase
+                .from('clients')
+                .update({ company_name: inlineName.trim() })
+                .eq('id', id)
+                .select();
+            if (error) throw error;
+            await queryClient.invalidateQueries({ queryKey: ['client', id] });
+            await queryClient.refetchQueries({ queryKey: ['client', id] });
+            setIsEditingName(false);
+            toast({ title: "Name updated", description: "Company name has been saved." });
+        } catch (error) {
+            toast({ title: "Save failed", description: "Please try again.", variant: "destructive" });
+        }
+    };
+
     // Handle cancel
     const handleCancel = () => {
         if (client) {
@@ -2082,9 +2103,32 @@ const IndividualClientProfile: React.FC = () => {
                                 <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                                 <span className="font-orbitron text-[8px] sm:text-[10px] tracking-[0.2em] text-emerald-400 uppercase">Active Client</span>
                             </div>
-                            <h1 className="font-orbitron text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-white via-cyan-400 to-blue-500 bg-clip-text text-transparent truncate">
-                                {client.company_name || client.name}
-                            </h1>
+                            {isEditingName && !isFeaturedClient ? (
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="text"
+                                        value={inlineName}
+                                        onChange={(e) => setInlineName(e.target.value)}
+                                        onKeyDown={(e) => { if (e.key === 'Enter') handleInlineNameSave(); if (e.key === 'Escape') setIsEditingName(false); }}
+                                        autoFocus
+                                        className="font-orbitron text-xl sm:text-2xl md:text-3xl font-bold bg-transparent border-b-2 border-cyan-400/50 focus:border-cyan-400 outline-none text-white w-full"
+                                    />
+                                    <button onClick={handleInlineNameSave} className="p-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 transition-colors">
+                                        <CheckCircle2 className="w-5 h-5" />
+                                    </button>
+                                    <button onClick={() => setIsEditingName(false)} className="p-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-400 transition-colors">
+                                        <X className="w-5 h-5" />
+                                    </button>
+                                </div>
+                            ) : (
+                                <h1
+                                    className="font-orbitron text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-white via-cyan-400 to-blue-500 bg-clip-text text-transparent truncate group/name cursor-pointer inline-flex items-center gap-2"
+                                    onClick={() => { if (!isFeaturedClient) { setInlineName(client.company_name || client.name || ''); setIsEditingName(true); } }}
+                                >
+                                    {client.company_name || client.name}
+                                    {!isFeaturedClient && <Edit2 className="w-4 h-4 text-slate-600 opacity-0 group-hover/name:opacity-100 transition-opacity" />}
+                                </h1>
+                            )}
                             <p className="text-[10px] sm:text-xs text-muted-foreground font-orbitron tracking-widest uppercase mt-1 sm:mt-2">
                                 Client ID: #{onboardingNumber !== null && onboardingNumber !== undefined ? onboardingNumber : (isFeaturedClient ? 'N/A' : '...')}
                             </p>
