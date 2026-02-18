@@ -391,6 +391,24 @@ const Index = () => {
             </div>
           </section>
 
+          {/* NEW SCHOOL AGENCY COMMUNICATION BANNER */}
+          <section className="py-4 lg:py-6 relative overflow-hidden">
+            <div className="container mx-auto px-4 lg:px-8 max-w-4xl relative z-10">
+              <div className="relative p-5 lg:p-6 rounded-2xl bg-gradient-to-br from-cyan-500/5 to-cyan-500/0 border border-cyan-500/20 text-center">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 mb-3">
+                  <Zap className="w-3 h-3 text-cyan-400" />
+                  <span className="text-[10px] font-orbitron text-cyan-400 font-bold uppercase tracking-wider">New-School Agency</span>
+                </div>
+                <h3 className="font-orbitron font-black text-xl lg:text-2xl text-foreground mb-2">
+                  Marketers on <span className="text-cyan-400">Speed Dial</span>
+                </h3>
+                <p className="text-sm text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+                  We're not a faceless agency that takes weeks to reply. You get <strong className="text-foreground">fast, direct responses</strong> from real people who actually know your business. Need something? Text us. Have a question? We're already on it. You'll feel like you have a full marketing team sitting right next to you.
+                </p>
+              </div>
+            </div>
+          </section>
+
           {/* PORTFOLIO SHOWCASE SECTION */}
           <section className="pt-4 pb-2 lg:pt-6 lg:pb-4 relative overflow-hidden">
             <div className="container mx-auto px-4 lg:px-8 max-w-7xl relative z-10">
