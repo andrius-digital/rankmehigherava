@@ -723,16 +723,6 @@ const Index = () => {
 
             </div>
 
-            <div className="text-center mt-4">
-              <button
-                onClick={openCalendly}
-                className="group inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 text-white font-bold text-sm hover:bg-primary/10 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 font-orbitron"
-              >
-                <Phone className="w-4 h-4 text-primary" />
-                Want Results Like These? Book a Free Call
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </button>
-            </div>
           </section>
 
           {/* PRICING SECTION */}
