@@ -485,7 +485,7 @@ const Index = () => {
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-red-500">Transparent Pricing</span>
                 </h2>
                 <p className="text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto">
-                  No hidden fees, no long-term contracts. Know exactly what you're paying before we even talk.
+                  No hidden fees, no long-term contracts. You own your code — it's yours forever. Know exactly what you're paying before we even talk.
                 </p>
               </div>
 
