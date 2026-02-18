@@ -629,9 +629,9 @@ const Index = () => {
                         <div className="absolute inset-0 bg-red-500/10" />
                       </div>
                     </div>
-                    <p className="text-[10px] text-red-400/50 text-center mb-4 italic">Typical template-built website</p>
+                    <p className="text-[9px] text-red-400/40 text-center mb-3 italic">Typical template-built website</p>
 
-                    <div className="space-y-3 flex-1">
+                    <div className="space-y-1.5 flex-1">
                       {[
                         "Same layout as 10,000+ other businesses",
                         "Slow loading — 4-8 second load times",
@@ -640,9 +640,9 @@ const Index = () => {
                         "Looks 'fine' but doesn't convert visitors",
                         "Monthly plugin updates break your site"
                       ].map((item, i) => (
-                        <div key={i} className="flex items-start gap-3">
-                          <X className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
-                          <span className="text-sm text-muted-foreground">{item}</span>
+                        <div key={i} className="flex items-start gap-2">
+                          <X className="w-3 h-3 text-red-400 shrink-0 mt-0.5" />
+                          <span className="text-xs text-muted-foreground/80">{item}</span>
                         </div>
                       ))}
                     </div>
@@ -685,9 +685,9 @@ const Index = () => {
                         <div className="absolute inset-0 bg-cyan-500/5" />
                       </div>
                     </div>
-                    <p className="text-[10px] text-cyan-400/50 text-center mb-4 italic">This is what a custom-coded website looks like</p>
+                    <p className="text-[9px] text-cyan-400/40 text-center mb-3 italic">This is what a custom-coded website looks like</p>
 
-                    <div className="space-y-3 flex-1">
+                    <div className="space-y-1.5 flex-1">
                       {[
                         "100% unique design built for your brand",
                         "Lightning fast — under 1 second load time",
@@ -696,9 +696,9 @@ const Index = () => {
                         "Engineered to convert visitors into customers",
                         "We maintain it — you never worry about updates"
                       ].map((item, i) => (
-                        <div key={i} className="flex items-start gap-3">
-                          <Check className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
-                          <span className="text-sm text-muted-foreground">{item}</span>
+                        <div key={i} className="flex items-start gap-2">
+                          <Check className="w-3 h-3 text-cyan-400 shrink-0 mt-0.5" />
+                          <span className="text-xs text-muted-foreground/80">{item}</span>
                         </div>
                       ))}
                     </div>
