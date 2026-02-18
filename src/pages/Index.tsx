@@ -1185,9 +1185,11 @@ const Index = () => {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="mt-2 p-2 rounded-lg bg-red-500/10 border border-red-500/30 flex items-center gap-2">
-            <AlertTriangle className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
-            <p className="text-[10px] text-red-300">We partner with businesses serious about their online presence. This is cutting-edge tech — not for everyone.</p>
+          <div className="mt-2 p-2.5 rounded-lg bg-red-500/10 border border-red-500/30 flex items-start gap-2">
+            <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+            <p className="text-[11px] text-red-300 leading-relaxed">
+              We build with cutting-edge AI technology that most agencies don't even know exists yet. We're looking for businesses that take their website seriously — not bargain shoppers. If you're ready to invest in a real web application that generates leads and grows with your business, we'd love to work with you.
+            </p>
           </div>
 
           <div className="grid grid-cols-3 gap-2 mt-2">
