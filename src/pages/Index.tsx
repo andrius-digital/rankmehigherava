@@ -419,7 +419,7 @@ const Index = () => {
                 {/* Scrollable container with peek effect */}
                 <div className="overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
                   <div className="flex gap-4 px-4" style={{ width: 'max-content' }}>
-                    {[1, 2, 3, 4, 5, 6, 7].map((num) => (
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
                       <div key={num} className="group flex-shrink-0 snap-center" style={{ width: 'calc(100vw - 32px)' }}>
                       <div className="relative rounded-2xl overflow-hidden bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/40 transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-primary/20">
                         {num === 1 ? (
@@ -597,6 +597,48 @@ const Index = () => {
                               <p className="text-xs text-muted-foreground">Video Production Company in Chicago, IL</p>
                             </div>
                           </>
+                        ) : num === 8 ? (
+                          <>
+                            <div className="relative overflow-hidden bg-black">
+                              <img 
+                                src="/images/portfolio-lts-mechanical.png" 
+                                alt="LTS Mechanical Website Screenshot" 
+                                className="w-full h-auto block"
+                              />
+                            </div>
+                            <div className="p-4 bg-background/80 backdrop-blur-sm">
+                              <h4 className="font-orbitron font-bold text-base text-foreground mb-1">LTS Mechanical</h4>
+                              <p className="text-xs text-muted-foreground">Truck Repair Shop in Romeoville, IL</p>
+                            </div>
+                          </>
+                        ) : num === 9 ? (
+                          <>
+                            <div className="relative overflow-hidden bg-black">
+                              <img 
+                                src="/images/portfolio-paddock-parking.png" 
+                                alt="Paddock Parking Website Screenshot" 
+                                className="w-full h-auto block"
+                              />
+                            </div>
+                            <div className="p-4 bg-background/80 backdrop-blur-sm">
+                              <h4 className="font-orbitron font-bold text-base text-foreground mb-1">Paddock Parking</h4>
+                              <p className="text-xs text-muted-foreground">Outdoor Storage Yard in Phoenix, AZ</p>
+                            </div>
+                          </>
+                        ) : num === 10 ? (
+                          <>
+                            <div className="relative overflow-hidden bg-black">
+                              <img 
+                                src="/images/portfolio-qtatax.png" 
+                                alt="QTA Tax Website Screenshot" 
+                                className="w-full h-auto block"
+                              />
+                            </div>
+                            <div className="p-4 bg-background/80 backdrop-blur-sm">
+                              <h4 className="font-orbitron font-bold text-base text-foreground mb-1">QTA Tax</h4>
+                              <p className="text-xs text-muted-foreground">Tax & Accounting Firm in Oak Brook, IL</p>
+                            </div>
+                          </>
                         ) : (
                           <>
                             <div className="aspect-[2/1] bg-gradient-to-br from-primary/20 to-red-600/20 flex items-center justify-center">
@@ -619,7 +661,7 @@ const Index = () => {
                 
                 {/* Scroll indicator dots */}
                 <div className="flex justify-center gap-2 mt-4">
-                  {[1, 2, 3, 4, 5, 6, 7].map((num) => (
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
                     <div 
                       key={num} 
                       className="w-2 h-2 rounded-full bg-primary/30 transition-colors"
@@ -629,7 +671,7 @@ const Index = () => {
               </div>
 
               {/* Desktop: Overlapping Portfolio Grid */}
-              <div className="hidden lg:block relative min-h-[600px]">
+              <div className="hidden lg:block relative min-h-[700px]">
                 {/* Portfolio Item 1 - Left */}
                 <div className="group absolute top-0 left-[3%] w-[40%] z-10 hover:z-50 transition-all duration-500 hover:scale-105">
                   <div className="relative rounded-2xl overflow-hidden bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/40 transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-primary/20">
@@ -822,6 +864,45 @@ const Index = () => {
                     <div className="p-4 bg-background/80 backdrop-blur-sm">
                       <h4 className="font-orbitron font-bold text-base text-foreground mb-1">Chicago Valley</h4>
                       <p className="text-xs text-muted-foreground">Video Production Company in Chicago, IL</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Portfolio Item 8 - LTS Mechanical */}
+                <div className="group absolute top-[32%] left-[3%] w-[40%] z-[4] hover:z-50 transition-all duration-500 hover:scale-105">
+                  <div className="relative rounded-2xl overflow-hidden bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/40 transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-primary/20">
+                    <div className="relative overflow-hidden bg-black">
+                      <img src="/images/portfolio-lts-mechanical.png" alt="LTS Mechanical Website Screenshot" className="w-full h-auto block" />
+                    </div>
+                    <div className="p-4 bg-background/80 backdrop-blur-sm">
+                      <h4 className="font-orbitron font-bold text-base text-foreground mb-1">LTS Mechanical</h4>
+                      <p className="text-xs text-muted-foreground">Truck Repair Shop in Romeoville, IL</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Portfolio Item 9 - Paddock Parking */}
+                <div className="group absolute top-[32%] left-[30%] w-[40%] z-[3] hover:z-50 transition-all duration-500 hover:scale-105">
+                  <div className="relative rounded-2xl overflow-hidden bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/40 transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-primary/20">
+                    <div className="relative overflow-hidden bg-black">
+                      <img src="/images/portfolio-paddock-parking.png" alt="Paddock Parking Website Screenshot" className="w-full h-auto block" />
+                    </div>
+                    <div className="p-4 bg-background/80 backdrop-blur-sm">
+                      <h4 className="font-orbitron font-bold text-base text-foreground mb-1">Paddock Parking</h4>
+                      <p className="text-xs text-muted-foreground">Outdoor Storage Yard in Phoenix, AZ</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Portfolio Item 10 - QTA Tax */}
+                <div className="group absolute top-[32%] right-[3%] w-[40%] z-[4] hover:z-50 transition-all duration-500 hover:scale-105">
+                  <div className="relative rounded-2xl overflow-hidden bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/40 transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-primary/20">
+                    <div className="relative overflow-hidden bg-black">
+                      <img src="/images/portfolio-qtatax.png" alt="QTA Tax Website Screenshot" className="w-full h-auto block" />
+                    </div>
+                    <div className="p-4 bg-background/80 backdrop-blur-sm">
+                      <h4 className="font-orbitron font-bold text-base text-foreground mb-1">QTA Tax</h4>
+                      <p className="text-xs text-muted-foreground">Tax & Accounting Firm in Oak Brook, IL</p>
                     </div>
                   </div>
                 </div>
