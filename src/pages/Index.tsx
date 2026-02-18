@@ -933,6 +933,89 @@ const Index = () => {
             </div>
           </section>
 
+          {/* HOW IT WORKS SECTION */}
+          <section className="py-8 lg:py-12 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-red-500/[0.03] to-transparent" />
+            <div className="container mx-auto px-4 lg:px-8 max-w-5xl relative z-10">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl lg:text-5xl font-black leading-tight font-orbitron mb-4">
+                  <span className="text-foreground">How It </span>
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-red-500">Works</span>
+                </h2>
+                <p className="text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto">
+                  From first call to live website in 10 days. Here's exactly what happens.
+                </p>
+              </div>
+
+              <div className="space-y-0">
+                {[
+                  {
+                    step: '01',
+                    title: 'Discovery Call',
+                    description: 'We learn about your business, your goals, and what you need. We review your current website (if any) and your Google presence. 15 minutes.',
+                    icon: Phone,
+                    color: 'red',
+                  },
+                  {
+                    step: '02',
+                    title: 'We Build Everything',
+                    description: 'Our team custom codes your website, sets up automations, and installs AVA. You get updates in your Telegram group along the way.',
+                    icon: Globe,
+                    color: 'red',
+                  },
+                  {
+                    step: '03',
+                    title: 'Review & Launch',
+                    description: 'You review the finished product in your client dashboard. We make any final tweaks, then push it live. Domain, SSL, and everything configured.',
+                    icon: CheckCircle2,
+                    color: 'red',
+                  },
+                  {
+                    step: '04',
+                    title: 'We Manage It All',
+                    description: 'Ongoing support, performance monitoring, and updates. Need changes? Submit a request through your dashboard or message us on Telegram.',
+                    icon: Shield,
+                    color: 'cyan',
+                  },
+                ].map((item, i) => (
+                  <div key={i} className="relative flex gap-6 lg:gap-8">
+                    <div className="flex flex-col items-center">
+                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${
+                        item.color === 'cyan' ? 'bg-cyan-500/15 border border-cyan-500/30' :
+                        'bg-red-500/15 border border-red-500/30'
+                      }`}>
+                        <item.icon className={`w-6 h-6 ${
+                          item.color === 'cyan' ? 'text-cyan-400' : 'text-red-400'
+                        }`} />
+                      </div>
+                      {i < 3 && (
+                        <div className="w-px h-full min-h-[40px] bg-gradient-to-b from-white/20 to-transparent my-2" />
+                      )}
+                    </div>
+                    <div className="pb-10">
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="text-xs font-orbitron text-muted-foreground font-bold">STEP {item.step}</span>
+                      </div>
+                      <h3 className="font-orbitron font-bold text-lg lg:text-xl text-foreground mb-2">{item.title}</h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed max-w-lg">{item.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="text-center mt-8">
+                <button
+                  onClick={openCalendly}
+                  className="group inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 text-white font-bold text-sm hover:bg-primary/10 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 font-orbitron"
+                >
+                  <Calendar className="w-4 h-4 text-primary" />
+                  Ready to Start? Book Your Free Strategy Call
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </button>
+              </div>
+            </div>
+          </section>
+
           {/* WHAT YOU GET SECTION */}
           <section className="py-8 lg:py-12 relative overflow-hidden">
             <div className="container mx-auto px-4 lg:px-8 max-w-6xl relative z-10">
@@ -1028,92 +1111,6 @@ const Index = () => {
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </button>
                 <p className="text-xs text-muted-foreground mt-3">No commitment. See if we're a good fit.</p>
-              </div>
-            </div>
-          </section>
-
-          {/* HOW IT WORKS SECTION */}
-          <section className="py-8 lg:py-12 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-red-500/[0.03] to-transparent" />
-            <div className="container mx-auto px-4 lg:px-8 max-w-5xl relative z-10">
-              <div className="text-center mb-12">
-                <h2 className="text-3xl lg:text-5xl font-black leading-tight font-orbitron mb-4">
-                  <span className="text-foreground">How It </span>
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-red-500">Works</span>
-                </h2>
-                <p className="text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto">
-                  From first call to live website in 10 days. Here's exactly what happens.
-                </p>
-              </div>
-
-              <div className="space-y-0">
-                {[
-                  {
-                    step: '01',
-                    title: 'Discovery Call',
-                    description: 'We learn about your business, your goals, and what you need. We review your current website (if any) and your Google presence. 15 minutes.',
-                    icon: Phone,
-                    color: 'red',
-                  },
-                  {
-                    step: '02',
-                    title: 'We Build Everything',
-                    description: 'Our team custom codes your website, sets up automations, and installs AVA. You get updates in your Telegram group along the way.',
-                    icon: Globe,
-                    color: 'red',
-                  },
-                  {
-                    step: '03',
-                    title: 'Review & Launch',
-                    description: 'You review the finished product in your client dashboard. We make any final tweaks, then push it live. Domain, SSL, and everything configured.',
-                    icon: CheckCircle2,
-                    color: 'green',
-                  },
-                  {
-                    step: '04',
-                    title: 'We Manage It All',
-                    description: 'Ongoing support, performance monitoring, and updates. Need changes? Submit a request through your dashboard or message us on Telegram.',
-                    icon: Shield,
-                    color: 'cyan',
-                  },
-                ].map((item, i) => (
-                  <div key={i} className="relative flex gap-6 lg:gap-8">
-                    <div className="flex flex-col items-center">
-                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${
-                        item.color === 'cyan' ? 'bg-cyan-500/15 border border-cyan-500/30' :
-                        item.color === 'green' ? 'bg-green-500/15 border border-green-500/30' :
-                        'bg-red-500/15 border border-red-500/30'
-                      }`}>
-                        <item.icon className={`w-6 h-6 ${
-                          item.color === 'cyan' ? 'text-cyan-400' :
-                          item.color === 'green' ? 'text-green-400' :
-                          'text-red-400'
-                        }`} />
-                      </div>
-                      {i < 3 && (
-                        <div className="w-px h-full min-h-[40px] bg-gradient-to-b from-white/20 to-transparent my-2" />
-                      )}
-                    </div>
-                    <div className="pb-10">
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className="text-xs font-orbitron text-muted-foreground font-bold">STEP {item.step}</span>
-                      </div>
-                      <h3 className="font-orbitron font-bold text-lg lg:text-xl text-foreground mb-2">{item.title}</h3>
-                      <p className="text-sm text-muted-foreground leading-relaxed max-w-lg">{item.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="text-center mt-8">
-                <button
-                  onClick={openCalendly}
-                  className="group inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 text-white font-bold text-sm hover:bg-primary/10 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 font-orbitron"
-                >
-                  <Calendar className="w-4 h-4 text-primary" />
-                  Ready to Start? Book Your Free Strategy Call
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </button>
               </div>
             </div>
           </section>
