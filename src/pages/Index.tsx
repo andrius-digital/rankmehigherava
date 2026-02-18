@@ -885,7 +885,7 @@ const Index = () => {
                 {[
                   {
                     q: 'How long does it take to build my website?',
-                    a: 'Most websites are fully live within 10 days. More complex projects with custom features may take up to 14 days. You\'ll get daily updates in your Telegram group.',
+                    a: 'Most websites are fully live within 10 days. More complex projects with custom features may take up to 14 days. You\'ll get updates in your Telegram group.',
                   },
                   {
                     q: 'Do I own my website?',
