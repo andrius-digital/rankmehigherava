@@ -6,51 +6,20 @@ import {
     Search,
     AlertTriangle,
     Truck,
-    FileText,
-    ChevronDown,
     ChevronRight,
-    MessageSquare,
-    Paperclip,
-    User,
     Calendar,
-    Filter,
     RotateCcw,
-    Eye,
-    ArrowRight,
-    Loader2
+    Loader2,
+    Eye
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
-import {
-    Collapsible,
-    CollapsibleContent,
-    CollapsibleTrigger,
-} from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import TaskDetailModal from './TaskDetailModal';
 
-// Pipeline stage configuration
-const PIPELINE_STAGES = [
-    { id: 'pending', label: 'Pending', icon: Clock, color: 'text-slate-400', bg: 'bg-slate-500/20', border: 'border-slate-500/30' },
-    { id: 'in_progress', label: 'In Progress', icon: Play, color: 'text-blue-400', bg: 'bg-blue-500/20', border: 'border-blue-500/30' },
-    { id: 'ready_for_qa', label: 'Ready for QA', icon: Search, color: 'text-purple-400', bg: 'bg-purple-500/20', border: 'border-purple-500/30' },
-    { id: 'in_qa', label: 'In QA', icon: Eye, color: 'text-amber-400', bg: 'bg-amber-500/20', border: 'border-amber-500/30' },
-    { id: 'qa_failed', label: 'QA Failed', icon: AlertTriangle, color: 'text-red-400', bg: 'bg-red-500/20', border: 'border-red-500/30' },
-    { id: 'qa_passed', label: 'QA Passed', icon: CheckCircle2, color: 'text-emerald-400', bg: 'bg-emerald-500/20', border: 'border-emerald-500/30' },
-    { id: 'delivered', label: 'Delivered', icon: Truck, color: 'text-cyan-400', bg: 'bg-cyan-500/20', border: 'border-cyan-500/30' },
-] as const;
-
-type PipelineStatus = typeof PIPELINE_STAGES[number]['id'];
 type UserRole = 'client' | 'manager' | 'qa_manager' | 'admin';
 
 interface Task {
@@ -60,7 +29,7 @@ interface Task {
     description: string;
     request_type: string;
     priority: string;
-    status: PipelineStatus;
+    status: string;
     client_id: string;
     client_company: string;
     client_email: string;
@@ -83,6 +52,36 @@ interface TaskPipelineDashboardProps {
     showAllClients?: boolean;
 }
 
+const getSimpleStatus = (status: string): 'waiting' | 'working' | 'done' => {
+    if (['pending'].includes(status)) return 'waiting';
+    if (['in_progress', 'ready_for_qa', 'in_qa', 'qa_failed'].includes(status)) return 'working';
+    return 'done';
+};
+
+const getProgressPercent = (status: string): number => {
+    const map: Record<string, number> = {
+        pending: 0, in_progress: 25, ready_for_qa: 50, in_qa: 65,
+        qa_failed: 40, qa_passed: 85, delivered: 95, completed: 100, cancelled: 100,
+    };
+    return map[status] ?? 0;
+};
+
+const getProgressLabel = (status: string): string => {
+    const map: Record<string, string> = {
+        pending: 'In queue', in_progress: 'Being worked on', ready_for_qa: 'Under review',
+        in_qa: 'Quality check', qa_failed: 'Needs revision', qa_passed: 'Approved',
+        delivered: 'Delivered', completed: 'All done', cancelled: 'Cancelled',
+    };
+    return map[status] ?? status;
+};
+
+const priorityDisplay: Record<string, { label: string; dot: string }> = {
+    low: { label: 'Low', dot: 'bg-slate-400' },
+    normal: { label: 'Normal', dot: 'bg-blue-400' },
+    high: { label: 'High', dot: 'bg-orange-400' },
+    urgent: { label: 'Urgent', dot: 'bg-red-400' },
+};
+
 const TaskPipelineDashboard: React.FC<TaskPipelineDashboardProps> = ({
     clientId,
     userRole = 'admin',
@@ -90,17 +89,14 @@ const TaskPipelineDashboard: React.FC<TaskPipelineDashboardProps> = ({
 }) => {
     const queryClient = useQueryClient();
     const [searchQuery, setSearchQuery] = useState('');
-    const [statusFilter, setStatusFilter] = useState<string>('all');
-    const [priorityFilter, setPriorityFilter] = useState<string>('all');
-    const [expandedStages, setExpandedStages] = useState<Set<string>>(new Set(['pending', 'in_progress', 'ready_for_qa', 'in_qa']));
     const [selectedTask, setSelectedTask] = useState<Task | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [activeFilter, setActiveFilter] = useState<'all' | 'waiting' | 'working' | 'done'>('all');
 
-    // Fetch tasks
     const { data: tasks = [], isLoading, refetch } = useQuery({
         queryKey: ['pipeline-tasks', clientId, showAllClients],
         queryFn: async () => {
-            let query = supabase
+            let query = (supabase as any)
                 .from('client_requests')
                 .select('*')
                 .order('created_at', { ascending: false });
@@ -115,76 +111,29 @@ const TaskPipelineDashboard: React.FC<TaskPipelineDashboardProps> = ({
         }
     });
 
-    // Filter tasks
     const filteredTasks = tasks.filter(task => {
         const matchesSearch = searchQuery === '' ||
             task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            task.task_id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            task.description?.toLowerCase().includes(searchQuery.toLowerCase());
+            task.task_id?.toLowerCase().includes(searchQuery.toLowerCase());
 
-        const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
-        const matchesPriority = priorityFilter === 'all' || task.priority === priorityFilter;
+        const matchesFilter = activeFilter === 'all' || getSimpleStatus(task.status) === activeFilter;
 
-        return matchesSearch && matchesStatus && matchesPriority;
+        return matchesSearch && matchesFilter;
     });
 
-    // Group tasks by stage
-    const tasksByStage = PIPELINE_STAGES.reduce((acc, stage) => {
-        acc[stage.id] = filteredTasks.filter(task => task.status === stage.id);
-        return acc;
-    }, {} as Record<PipelineStatus, Task[]>);
-
-    // Calculate stats
-    const stats = {
-        total: tasks.length,
-        pending: tasksByStage.pending?.length || 0,
-        inProgress: (tasksByStage.in_progress?.length || 0) + (tasksByStage.ready_for_qa?.length || 0) + (tasksByStage.in_qa?.length || 0),
-        completed: (tasksByStage.qa_passed?.length || 0) + (tasksByStage.delivered?.length || 0),
-        failed: tasksByStage.qa_failed?.length || 0,
-    };
-
-    const toggleStage = (stageId: string) => {
-        const newExpanded = new Set(expandedStages);
-        if (newExpanded.has(stageId)) {
-            newExpanded.delete(stageId);
-        } else {
-            newExpanded.add(stageId);
-        }
-        setExpandedStages(newExpanded);
-    };
-
-    const openTaskDetail = (task: Task) => {
-        setSelectedTask(task);
-        setIsModalOpen(true);
-    };
+    const waitingCount = tasks.filter(t => getSimpleStatus(t.status) === 'waiting').length;
+    const workingCount = tasks.filter(t => getSimpleStatus(t.status) === 'working').length;
+    const doneCount = tasks.filter(t => getSimpleStatus(t.status) === 'done').length;
 
     const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    };
-
-    const getPriorityColor = (priority: string) => {
-        switch (priority) {
-            case 'urgent': return 'bg-red-500/20 text-red-400 border-red-500/30';
-            case 'high': return 'bg-orange-500/20 text-orange-400 border-orange-500/30';
-            case 'normal': return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
-            case 'low': return 'bg-slate-500/20 text-slate-400 border-slate-500/30';
-            default: return 'bg-slate-500/20 text-slate-400 border-slate-500/30';
-        }
-    };
-
-    const getTypeIcon = (type: string) => {
-        switch (type) {
-            case 'bug_fix': return '🐛';
-            case 'new_feature': return '✨';
-            case 'design_change': return '🎨';
-            case 'content_update': return '📝';
-            default: return '📋';
-        }
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffMs = now.getTime() - date.getTime();
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        if (diffDays === 0) return 'Today';
+        if (diffDays === 1) return 'Yesterday';
+        if (diffDays < 7) return `${diffDays}d ago`;
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     };
 
     if (isLoading) {
@@ -197,188 +146,150 @@ const TaskPipelineDashboard: React.FC<TaskPipelineDashboardProps> = ({
 
     return (
         <div className="space-y-4">
-            {/* Stats Bar */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                <div className="p-3 rounded-lg bg-slate-800/50 border border-white/10">
-                    <div className="text-2xl font-bold font-orbitron text-white">{stats.total}</div>
-                    <div className="text-[10px] uppercase tracking-wider text-slate-400">Total Tasks</div>
-                </div>
-                <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30">
-                    <div className="text-2xl font-bold font-orbitron text-amber-400">{stats.pending}</div>
-                    <div className="text-[10px] uppercase tracking-wider text-amber-400/70">Pending</div>
-                </div>
-                <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/30">
-                    <div className="text-2xl font-bold font-orbitron text-blue-400">{stats.inProgress}</div>
-                    <div className="text-[10px] uppercase tracking-wider text-blue-400/70">In Progress</div>
-                </div>
-                <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
-                    <div className="text-2xl font-bold font-orbitron text-emerald-400">{stats.completed}</div>
-                    <div className="text-[10px] uppercase tracking-wider text-emerald-400/70">Completed</div>
-                </div>
+            <div className="flex items-center gap-3">
+                <button
+                    onClick={() => setActiveFilter('all')}
+                    className={cn(
+                        "flex items-center gap-2 px-3 py-2 rounded-xl border transition-all",
+                        activeFilter === 'all' ? "bg-white/10 border-white/20" : "bg-white/3 border-white/8 hover:border-white/15"
+                    )}
+                >
+                    <span className={cn("text-sm font-semibold", activeFilter === 'all' ? "text-white" : "text-muted-foreground")}>{tasks.length}</span>
+                    <span className="text-xs text-muted-foreground">All</span>
+                </button>
+                <button
+                    onClick={() => setActiveFilter('waiting')}
+                    className={cn(
+                        "flex items-center gap-2 px-3 py-2 rounded-xl border transition-all",
+                        activeFilter === 'waiting' ? "bg-amber-500/15 border-amber-500/30" : "bg-amber-500/5 border-amber-500/15 hover:border-amber-500/25"
+                    )}
+                >
+                    <div className="w-2 h-2 rounded-full bg-amber-400" />
+                    <span className="text-sm font-semibold text-amber-400">{waitingCount}</span>
+                    <span className="text-xs text-muted-foreground">Waiting</span>
+                </button>
+                <button
+                    onClick={() => setActiveFilter('working')}
+                    className={cn(
+                        "flex items-center gap-2 px-3 py-2 rounded-xl border transition-all",
+                        activeFilter === 'working' ? "bg-blue-500/15 border-blue-500/30" : "bg-blue-500/5 border-blue-500/15 hover:border-blue-500/25"
+                    )}
+                >
+                    <div className="w-2 h-2 rounded-full bg-blue-400" />
+                    <span className="text-sm font-semibold text-blue-400">{workingCount}</span>
+                    <span className="text-xs text-muted-foreground">Working</span>
+                </button>
+                <button
+                    onClick={() => setActiveFilter('done')}
+                    className={cn(
+                        "flex items-center gap-2 px-3 py-2 rounded-xl border transition-all",
+                        activeFilter === 'done' ? "bg-emerald-500/15 border-emerald-500/30" : "bg-emerald-500/5 border-emerald-500/15 hover:border-emerald-500/25"
+                    )}
+                >
+                    <div className="w-2 h-2 rounded-full bg-emerald-400" />
+                    <span className="text-sm font-semibold text-emerald-400">{doneCount}</span>
+                    <span className="text-xs text-muted-foreground">Done</span>
+                </button>
             </div>
 
-            {/* Filters */}
-            <div className="flex flex-wrap gap-2 items-center">
-                <div className="relative flex-1 min-w-[200px]">
+            <div className="flex items-center gap-2">
+                <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <Input
-                        placeholder="Search by ID or title..."
+                        placeholder="Search tasks..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-9 bg-slate-800/50 border-white/10 h-9"
+                        className="pl-9 bg-white/5 border-white/10 h-9"
                     />
                 </div>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-[140px] h-9 bg-slate-800/50 border-white/10">
-                        <Filter className="w-3 h-3 mr-1" />
-                        <SelectValue placeholder="Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">All Status</SelectItem>
-                        {PIPELINE_STAGES.map(stage => (
-                            <SelectItem key={stage.id} value={stage.id}>{stage.label}</SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-                <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-                    <SelectTrigger className="w-[130px] h-9 bg-slate-800/50 border-white/10">
-                        <SelectValue placeholder="Priority" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">All Priority</SelectItem>
-                        <SelectItem value="urgent">Urgent</SelectItem>
-                        <SelectItem value="high">High</SelectItem>
-                        <SelectItem value="normal">Normal</SelectItem>
-                        <SelectItem value="low">Low</SelectItem>
-                    </SelectContent>
-                </Select>
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => refetch()}
-                    className="h-9"
-                >
+                <Button variant="ghost" size="sm" onClick={() => refetch()} className="h-9 w-9 p-0">
                     <RotateCcw className="w-4 h-4" />
                 </Button>
             </div>
 
-            {/* Pipeline Stages */}
-            <div className="space-y-2">
-                {PIPELINE_STAGES.map((stage) => {
-                    const stageTasks = tasksByStage[stage.id] || [];
-                    const isExpanded = expandedStages.has(stage.id);
-                    const StageIcon = stage.icon;
+            <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
+                {filteredTasks.length === 0 ? (
+                    <div className="text-center py-10">
+                        <CheckCircle2 className="w-10 h-10 mx-auto mb-3 text-emerald-400/30" />
+                        <p className="text-muted-foreground text-sm">No tasks found</p>
+                    </div>
+                ) : (
+                    filteredTasks.map((task) => {
+                        const simpleStatus = getSimpleStatus(task.status);
+                        const progress = getProgressPercent(task.status);
+                        const progressLabel = getProgressLabel(task.status);
+                        const priority = priorityDisplay[task.priority] || priorityDisplay.normal;
 
-                    return (
-                        <Collapsible
-                            key={stage.id}
-                            open={isExpanded}
-                            onOpenChange={() => toggleStage(stage.id)}
-                        >
-                            <CollapsibleTrigger className="w-full">
-                                <div className={cn(
-                                    "flex items-center justify-between p-3 rounded-lg border transition-all",
-                                    stage.bg,
-                                    stage.border,
-                                    isExpanded && "rounded-b-none"
-                                )}>
-                                    <div className="flex items-center gap-3">
-                                        {isExpanded ? (
-                                            <ChevronDown className={cn("w-4 h-4", stage.color)} />
-                                        ) : (
-                                            <ChevronRight className={cn("w-4 h-4", stage.color)} />
-                                        )}
-                                        <div className={cn(
-                                            "w-7 h-7 rounded-md flex items-center justify-center",
-                                            stage.bg
-                                        )}>
-                                            <StageIcon className={cn("w-4 h-4", stage.color)} />
+                        const progressBarColor =
+                            simpleStatus === 'done' ? 'bg-emerald-400'
+                            : simpleStatus === 'working' ? 'bg-blue-400'
+                            : 'bg-amber-400';
+
+                        return (
+                            <button
+                                key={task.id}
+                                onClick={() => { setSelectedTask(task); setIsModalOpen(true); }}
+                                className="w-full text-left p-4 rounded-xl bg-card/40 border border-white/8 hover:border-white/15 transition-all"
+                            >
+                                <div className="flex items-start justify-between gap-3 mb-3">
+                                    <div className="flex-1 min-w-0">
+                                        <h4 className="font-semibold text-sm text-white leading-snug mb-1 truncate">
+                                            {task.title}
+                                        </h4>
+                                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                            <span>{formatDate(task.created_at)}</span>
+                                            <span className="text-white/20">|</span>
+                                            <div className="flex items-center gap-1">
+                                                <div className={cn("w-1.5 h-1.5 rounded-full", priority.dot)} />
+                                                <span>{priority.label}</span>
+                                            </div>
+                                            {task.task_id && (
+                                                <>
+                                                    <span className="text-white/20">|</span>
+                                                    <span className="font-mono text-[10px]">{task.task_id}</span>
+                                                </>
+                                            )}
+                                            {task.assigned_manager && (
+                                                <>
+                                                    <span className="text-white/20">|</span>
+                                                    <span>{task.assigned_manager}</span>
+                                                </>
+                                            )}
                                         </div>
-                                        <span className={cn("font-orbitron text-sm font-bold", stage.color)}>
-                                            {stage.label}
-                                        </span>
                                     </div>
-                                    <Badge className={cn("font-orbitron", stage.bg, stage.color, stage.border)}>
-                                        {stageTasks.length}
-                                    </Badge>
+                                    <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 mt-1" />
                                 </div>
-                            </CollapsibleTrigger>
-                            <CollapsibleContent>
-                                <div className={cn(
-                                    "border border-t-0 rounded-b-lg p-2 space-y-2",
-                                    stage.border,
-                                    "bg-slate-900/50"
-                                )}>
-                                    {stageTasks.length === 0 ? (
-                                        <div className="text-center py-4 text-sm text-slate-500">
-                                            No tasks in this stage
-                                        </div>
-                                    ) : (
-                                        stageTasks.map((task) => (
-                                            <button
-                                                key={task.id}
-                                                onClick={() => openTaskDetail(task)}
-                                                className="w-full text-left p-3 rounded-lg bg-slate-800/50 border border-white/10 hover:border-orange-500/30 transition-all"
-                                            >
-                                                <div className="flex items-start justify-between gap-2">
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="flex items-center gap-2 mb-1">
-                                                            <span className="text-[10px] font-mono text-slate-500">
-                                                                {task.task_id || 'TSK-????'}
-                                                            </span>
-                                                            <Badge className={cn("text-[9px] px-1.5 py-0", getPriorityColor(task.priority))}>
-                                                                {task.priority}
-                                                            </Badge>
-                                                            <span className="text-sm">{getTypeIcon(task.request_type)}</span>
-                                                        </div>
-                                                        <h4 className="font-medium text-sm text-white truncate">
-                                                            {task.title}
-                                                        </h4>
-                                                        {task.description && (
-                                                            <p className="text-xs text-slate-400 truncate mt-0.5">
-                                                                {task.description}
-                                                            </p>
-                                                        )}
-                                                    </div>
-                                                    <ArrowRight className="w-4 h-4 text-slate-500 shrink-0 mt-1" />
-                                                </div>
-                                                <div className="flex items-center gap-3 mt-2 text-[10px] text-slate-500">
-                                                    <div className="flex items-center gap-1">
-                                                        <Calendar className="w-3 h-3" />
-                                                        {formatDate(task.created_at)}
-                                                    </div>
-                                                    {task.assigned_manager && (
-                                                        <div className="flex items-center gap-1">
-                                                            <User className="w-3 h-3" />
-                                                            {task.assigned_manager}
-                                                        </div>
-                                                    )}
-                                                    {task.revision_count > 0 && (
-                                                        <div className="flex items-center gap-1 text-amber-400">
-                                                            <RotateCcw className="w-3 h-3" />
-                                                            Rev {task.revision_count}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </button>
-                                        ))
-                                    )}
+
+                                <div className="space-y-1.5">
+                                    <div className="flex items-center justify-between">
+                                        <span className={cn(
+                                            "text-xs font-medium",
+                                            simpleStatus === 'done' ? 'text-emerald-400'
+                                            : simpleStatus === 'working' ? 'text-blue-400'
+                                            : 'text-amber-400'
+                                        )}>
+                                            {progressLabel}
+                                        </span>
+                                        <span className="text-[10px] text-muted-foreground">{progress}%</span>
+                                    </div>
+                                    <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                        <div
+                                            className={cn("h-full rounded-full transition-all duration-500", progressBarColor)}
+                                            style={{ width: `${progress}%` }}
+                                        />
+                                    </div>
                                 </div>
-                            </CollapsibleContent>
-                        </Collapsible>
-                    );
-                })}
+                            </button>
+                        );
+                    })
+                )}
             </div>
 
-            {/* Task Detail Modal */}
             {selectedTask && (
                 <TaskDetailModal
                     task={selectedTask}
                     isOpen={isModalOpen}
-                    onClose={() => {
-                        setIsModalOpen(false);
-                        setSelectedTask(null);
-                    }}
+                    onClose={() => { setIsModalOpen(false); setSelectedTask(null); }}
                     userRole={userRole}
                     onUpdate={() => {
                         refetch();

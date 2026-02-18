@@ -25,7 +25,8 @@ import {
     AlertTriangle,
     Truck,
     LayoutGrid,
-    List
+    List,
+    RotateCcw
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -37,16 +38,10 @@ import {
     DropdownMenuTrigger,
     DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import {
-    Collapsible,
-    CollapsibleContent,
-    CollapsibleTrigger,
-} from '@/components/ui/collapsible';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
-import TaskPipelineDashboard from './TaskPipelineDashboard';
 
 interface ClientRequest {
     id: string;
@@ -82,103 +77,47 @@ interface ClientRequestsTrackerProps {
     defaultView?: 'compact' | 'pipeline';
 }
 
-const requestTypeIcons: Record<string, React.ElementType> = {
-    content_update: FileText,
-    design_change: Palette,
-    new_feature: Sparkles,
-    bug_fix: Bug,
-    adjustment: Code,
-    other: HelpCircle,
+const getSimpleStatus = (status: string): 'waiting' | 'working' | 'done' => {
+    if (['pending'].includes(status)) return 'waiting';
+    if (['in_progress', 'ready_for_qa', 'in_qa', 'qa_failed'].includes(status)) return 'working';
+    return 'done';
 };
 
-// Enhanced status config for pipeline
-const statusConfig: Record<string, {
-    icon: React.ElementType;
-    label: string;
-    bg: string;
-    text: string;
-    border: string;
-    dotColor: string;
-}> = {
-    pending: {
-        icon: Circle,
-        label: 'Pending',
-        bg: 'bg-slate-500/10',
-        text: 'text-slate-400',
-        border: 'border-slate-500/30',
-        dotColor: 'bg-slate-400'
-    },
-    in_progress: {
-        icon: Play,
-        label: 'In Progress',
-        bg: 'bg-blue-500/10',
-        text: 'text-blue-400',
-        border: 'border-blue-500/30',
-        dotColor: 'bg-blue-400'
-    },
-    ready_for_qa: {
-        icon: Search,
-        label: 'Ready for QA',
-        bg: 'bg-purple-500/10',
-        text: 'text-purple-400',
-        border: 'border-purple-500/30',
-        dotColor: 'bg-purple-400'
-    },
-    in_qa: {
-        icon: Eye,
-        label: 'In QA',
-        bg: 'bg-amber-500/10',
-        text: 'text-amber-400',
-        border: 'border-amber-500/30',
-        dotColor: 'bg-amber-400'
-    },
-    qa_failed: {
-        icon: AlertTriangle,
-        label: 'QA Failed',
-        bg: 'bg-red-500/10',
-        text: 'text-red-400',
-        border: 'border-red-500/30',
-        dotColor: 'bg-red-400'
-    },
-    qa_passed: {
-        icon: CheckCircle2,
-        label: 'QA Passed',
-        bg: 'bg-emerald-500/10',
-        text: 'text-emerald-400',
-        border: 'border-emerald-500/30',
-        dotColor: 'bg-emerald-400'
-    },
-    delivered: {
-        icon: Truck,
-        label: 'Delivered',
-        bg: 'bg-cyan-500/10',
-        text: 'text-cyan-400',
-        border: 'border-cyan-500/30',
-        dotColor: 'bg-cyan-400'
-    },
-    completed: {
-        icon: CheckCircle2,
-        label: 'Completed',
-        bg: 'bg-emerald-500/10',
-        text: 'text-emerald-400',
-        border: 'border-emerald-500/30',
-        dotColor: 'bg-emerald-400'
-    },
-    cancelled: {
-        icon: AlertCircle,
-        label: 'Cancelled',
-        bg: 'bg-red-500/10',
-        text: 'text-red-400',
-        border: 'border-red-500/30',
-        dotColor: 'bg-red-400'
-    },
+const getProgressPercent = (status: string): number => {
+    const map: Record<string, number> = {
+        pending: 0,
+        in_progress: 25,
+        ready_for_qa: 50,
+        in_qa: 65,
+        qa_failed: 40,
+        qa_passed: 85,
+        delivered: 95,
+        completed: 100,
+        cancelled: 100,
+    };
+    return map[status] ?? 0;
 };
 
-const priorityConfig = {
-    low: { label: 'Low', color: 'text-slate-400' },
-    normal: { label: 'Normal', color: 'text-blue-400' },
-    high: { label: 'High', color: 'text-orange-400' },
-    urgent: { label: 'Urgent', color: 'text-red-400' },
+const getProgressLabel = (status: string): string => {
+    const map: Record<string, string> = {
+        pending: 'In queue',
+        in_progress: 'Being worked on',
+        ready_for_qa: 'Under review',
+        in_qa: 'Quality check',
+        qa_failed: 'Needs revision',
+        qa_passed: 'Approved',
+        delivered: 'Delivered',
+        completed: 'All done',
+        cancelled: 'Cancelled',
+    };
+    return map[status] ?? status;
+};
+
+const priorityDisplay: Record<string, { label: string; dot: string }> = {
+    low: { label: 'Low', dot: 'bg-slate-400' },
+    normal: { label: 'Normal', dot: 'bg-blue-400' },
+    high: { label: 'High', dot: 'bg-orange-400' },
+    urgent: { label: 'Urgent', dot: 'bg-red-400' },
 };
 
 const ClientRequestsTracker: React.FC<ClientRequestsTrackerProps> = ({
@@ -190,15 +129,13 @@ const ClientRequestsTracker: React.FC<ClientRequestsTrackerProps> = ({
     const [requests, setRequests] = useState<ClientRequest[]>([]);
     const [loading, setLoading] = useState(true);
     const [expandedId, setExpandedId] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState<'active' | 'completed'>('active');
-    const [viewMode, setViewMode] = useState<'compact' | 'pipeline'>(defaultView);
     const [agencyNote, setAgencyNote] = useState('');
     const { toast } = useToast();
     const queryClient = useQueryClient();
 
     const fetchRequests = async () => {
         try {
-            const { data, error } = await supabase
+            const { data, error } = await (supabase as any)
                 .from('client_requests')
                 .select('*')
                 .eq('client_id', clientId)
@@ -228,24 +165,13 @@ const ClientRequestsTracker: React.FC<ClientRequestsTrackerProps> = ({
     const updateStatus = async (requestId: string, newStatus: string) => {
         try {
             const updates: any = { status: newStatus };
+            if (newStatus === 'in_progress') updates.started_at = new Date().toISOString();
+            if (newStatus === 'in_qa') updates.qa_started_at = new Date().toISOString();
+            if (newStatus === 'qa_passed' || newStatus === 'qa_failed') updates.qa_completed_at = new Date().toISOString();
+            if (newStatus === 'delivered') updates.delivered_at = new Date().toISOString();
+            if (newStatus === 'completed') updates.completed_at = new Date().toISOString();
 
-            if (newStatus === 'in_progress') {
-                updates.started_at = new Date().toISOString();
-            }
-            if (newStatus === 'in_qa') {
-                updates.qa_started_at = new Date().toISOString();
-            }
-            if (newStatus === 'qa_passed' || newStatus === 'qa_failed') {
-                updates.qa_completed_at = new Date().toISOString();
-            }
-            if (newStatus === 'delivered') {
-                updates.delivered_at = new Date().toISOString();
-            }
-            if (newStatus === 'completed') {
-                updates.completed_at = new Date().toISOString();
-            }
-
-            const { error } = await supabase
+            const { error } = await (supabase as any)
                 .from('client_requests')
                 .update(updates)
                 .eq('id', requestId);
@@ -253,28 +179,22 @@ const ClientRequestsTracker: React.FC<ClientRequestsTrackerProps> = ({
             if (error) throw error;
 
             toast({
-                title: 'Status Updated',
-                description: `Task moved to ${newStatus.replace(/_/g, ' ')}`,
+                title: 'Updated',
+                description: `Task moved to ${getProgressLabel(newStatus)}`,
             });
 
             invalidateAllQueries();
             fetchRequests();
         } catch (error) {
             console.error('Error updating status:', error);
-            toast({
-                title: 'Error',
-                description: 'Failed to update status',
-                variant: 'destructive'
-            });
+            toast({ title: 'Error', description: 'Failed to update', variant: 'destructive' });
         }
     };
 
     const addNote = async (requestId: string) => {
         if (!agencyNote.trim()) return;
-
         try {
-            // Add to task_notes table
-            const { error } = await supabase
+            const { error } = await (supabase as any)
                 .from('task_notes')
                 .insert({
                     task_id: requestId,
@@ -285,13 +205,11 @@ const ClientRequestsTracker: React.FC<ClientRequestsTrackerProps> = ({
                 });
 
             if (error) throw error;
-
             toast({ title: 'Note Added' });
             setAgencyNote('');
             invalidateAllQueries();
             fetchRequests();
         } catch (error) {
-            // Fallback to old method if task_notes table doesn't exist yet
             try {
                 const request = requests.find(r => r.id === requestId);
                 const existingNotes = request?.agency_notes || '';
@@ -300,61 +218,42 @@ const ClientRequestsTracker: React.FC<ClientRequestsTrackerProps> = ({
                     ? `${existingNotes}\n\n[${timestamp}]\n${agencyNote}`
                     : `[${timestamp}]\n${agencyNote}`;
 
-                const { error: updateError } = await supabase
+                const { error: updateError } = await (supabase as any)
                     .from('client_requests')
                     .update({ agency_notes: newNote })
                     .eq('id', requestId);
 
                 if (updateError) throw updateError;
-
                 toast({ title: 'Note Added' });
                 setAgencyNote('');
                 fetchRequests();
             } catch (fallbackError) {
-                toast({
-                    title: 'Error',
-                    description: 'Failed to add note',
-                    variant: 'destructive'
-                });
+                toast({ title: 'Error', description: 'Failed to add note', variant: 'destructive' });
             }
         }
     };
 
     const deleteRequest = async (requestId: string) => {
         try {
-            const { error } = await supabase
+            const { error } = await (supabase as any)
                 .from('client_requests')
                 .delete()
                 .eq('id', requestId);
 
             if (error) throw error;
-
             toast({ title: 'Request Deleted' });
             invalidateAllQueries();
             fetchRequests();
         } catch (error) {
-            toast({
-                title: 'Error',
-                description: 'Failed to delete request',
-                variant: 'destructive'
-            });
+            toast({ title: 'Error', description: 'Failed to delete', variant: 'destructive' });
         }
     };
-
-    // Filter requests by tab - include pipeline statuses
-    const activeStatuses = ['pending', 'in_progress', 'ready_for_qa', 'in_qa', 'qa_failed'];
-    const completedStatuses = ['qa_passed', 'delivered', 'completed', 'cancelled'];
-
-    const activeRequests = requests.filter(r => activeStatuses.includes(r.status));
-    const completedRequests = requests.filter(r => completedStatuses.includes(r.status));
-    const displayedRequests = activeTab === 'active' ? activeRequests : completedRequests;
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
         const now = new Date();
         const diffMs = now.getTime() - date.getTime();
         const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
         if (diffDays === 0) return 'Today';
         if (diffDays === 1) return 'Yesterday';
         if (diffDays < 7) return `${diffDays}d ago`;
@@ -369,383 +268,216 @@ const ClientRequestsTracker: React.FC<ClientRequestsTrackerProps> = ({
         );
     }
 
-    // Show pipeline view
-    if (viewMode === 'pipeline') {
-        return (
-            <div className="space-y-3">
-                {/* View Toggle */}
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <Button
-                            size="sm"
-                            variant={viewMode === 'pipeline' ? 'default' : 'ghost'}
-                            onClick={() => setViewMode('pipeline')}
-                            className="h-7 text-xs"
-                        >
-                            <LayoutGrid className="w-3 h-3 mr-1" />
-                            Pipeline
-                        </Button>
-                        <Button
-                            size="sm"
-                            variant={viewMode === 'compact' ? 'default' : 'ghost'}
-                            onClick={() => setViewMode('compact')}
-                            className="h-7 text-xs"
-                        >
-                            <List className="w-3 h-3 mr-1" />
-                            Compact
-                        </Button>
-                    </div>
-                </div>
+    const waitingRequests = requests.filter(r => getSimpleStatus(r.status) === 'waiting');
+    const workingRequests = requests.filter(r => getSimpleStatus(r.status) === 'working');
+    const doneRequests = requests.filter(r => getSimpleStatus(r.status) === 'done');
 
-                {/* Pipeline Dashboard */}
-                <TaskPipelineDashboard
-                    clientId={clientId}
-                    userRole={isAgencyView ? 'admin' : 'client'}
-                    showAllClients={false}
-                />
-            </div>
-        );
-    }
+    const statusGroups = [
+        { key: 'waiting', label: 'Waiting', count: waitingRequests.length, items: waitingRequests, color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20', dot: 'bg-amber-400', icon: Clock },
+        { key: 'working', label: 'Working on it', count: workingRequests.length, items: workingRequests, color: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/20', dot: 'bg-blue-400', icon: Play },
+        { key: 'done', label: 'Done', count: doneRequests.length, items: doneRequests, color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', dot: 'bg-emerald-400', icon: CheckCircle2 },
+    ];
 
-    // Compact view (original)
     return (
-        <div className="space-y-3">
-            {/* View Toggle + Stats */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <Button
-                        size="sm"
-                        variant={viewMode === 'pipeline' ? 'default' : 'ghost'}
-                        onClick={() => setViewMode('pipeline')}
-                        className="h-7 text-xs"
-                    >
-                        <LayoutGrid className="w-3 h-3 mr-1" />
-                        Pipeline
-                    </Button>
-                    <Button
-                        size="sm"
-                        variant={viewMode === 'compact' ? 'default' : 'ghost'}
-                        onClick={() => setViewMode('compact')}
-                        className="h-7 text-xs"
-                    >
-                        <List className="w-3 h-3 mr-1" />
-                        Compact
-                    </Button>
-                </div>
-                <div className="flex items-center gap-2 text-xs">
-                    <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-amber-500/10 border border-amber-500/20">
-                        <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                        <span className="text-amber-400 font-medium">{requests.filter(r => r.status === 'pending').length}</span>
+        <div className="space-y-4">
+            <div className="flex items-center gap-3">
+                {statusGroups.map(g => (
+                    <div key={g.key} className={cn("flex items-center gap-2 px-3 py-2 rounded-xl", g.bg, "border", g.border)}>
+                        <div className={cn("w-2 h-2 rounded-full", g.dot)} />
+                        <span className={cn("text-sm font-semibold", g.color)}>{g.count}</span>
+                        <span className="text-xs text-muted-foreground">{g.label}</span>
                     </div>
-                    <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-blue-500/10 border border-blue-500/20">
-                        <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-                        <span className="text-blue-400 font-medium">{activeRequests.length}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20">
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                        <span className="text-emerald-400 font-medium">{completedRequests.length}</span>
-                    </div>
-                </div>
+                ))}
             </div>
 
-            {/* Tab Switcher */}
-            <div className="flex gap-1 p-0.5 bg-card/50 rounded-lg border border-white/5">
-                <button
-                    onClick={() => setActiveTab('active')}
-                    className={cn(
-                        "flex-1 py-1.5 px-3 rounded-md text-xs font-medium transition-all",
-                        activeTab === 'active'
-                            ? "bg-orange-500/20 text-orange-400 border border-orange-500/30"
-                            : "text-muted-foreground hover:text-foreground"
-                    )}
-                >
-                    Active ({activeRequests.length})
-                </button>
-                <button
-                    onClick={() => setActiveTab('completed')}
-                    className={cn(
-                        "flex-1 py-1.5 px-3 rounded-md text-xs font-medium transition-all",
-                        activeTab === 'completed'
-                            ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                            : "text-muted-foreground hover:text-foreground"
-                    )}
-                >
-                    Completed ({completedRequests.length})
-                </button>
-            </div>
-
-            {/* Request List */}
-            <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
-                {displayedRequests.length === 0 ? (
-                    <div className="text-center py-6 text-muted-foreground text-sm">
-                        {activeTab === 'active' ? (
-                            <>
-                                <CheckCircle2 className="w-8 h-8 mx-auto mb-2 text-emerald-400/50" />
-                                <p>No active requests</p>
-                            </>
-                        ) : (
-                            <>
-                                <Clock className="w-8 h-8 mx-auto mb-2 text-muted-foreground/50" />
-                                <p>No completed requests yet</p>
-                            </>
-                        )}
+            <div className="space-y-4 max-h-[450px] overflow-y-auto pr-1">
+                {requests.length === 0 ? (
+                    <div className="text-center py-10">
+                        <CheckCircle2 className="w-10 h-10 mx-auto mb-3 text-emerald-400/30" />
+                        <p className="text-muted-foreground text-sm">No requests yet</p>
                     </div>
                 ) : (
-                    displayedRequests.map((request) => {
-                        const TypeIcon = requestTypeIcons[request.request_type] || Code;
-                        const status = statusConfig[request.status] || statusConfig.pending;
-                        const priority = priorityConfig[request.priority] || priorityConfig.normal;
+                    statusGroups.filter(g => g.items.length > 0).map((group) => (
+                        <div key={group.key} className="space-y-2">
+                            <div className="flex items-center gap-2 px-1">
+                                <div className={cn("w-2 h-2 rounded-full", group.dot)} />
+                                <span className={cn("text-xs font-semibold uppercase tracking-wide", group.color)}>{group.label}</span>
+                                <span className="text-[10px] text-muted-foreground">({group.count})</span>
+                            </div>
+                            {group.items.map((request) => {
+                        const simpleStatus = getSimpleStatus(request.status);
+                        const progress = getProgressPercent(request.status);
+                        const progressLabel = getProgressLabel(request.status);
+                        const priority = priorityDisplay[request.priority] || priorityDisplay.normal;
                         const isExpanded = expandedId === request.id;
 
-                        return (
-                            <Collapsible
-                                key={request.id}
-                                open={isExpanded}
-                                onOpenChange={(open) => setExpandedId(open ? request.id : null)}
-                            >
-                                <div className={cn(
-                                    "rounded-lg border transition-all",
-                                    status.bg,
-                                    status.border,
-                                    isExpanded && "ring-1 ring-white/10"
-                                )}>
-                                    {/* Main Row */}
-                                    <CollapsibleTrigger asChild>
-                                        <button className="w-full p-3 flex items-center gap-3 text-left">
-                                            <div className={cn(
-                                                "w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0",
-                                                status.bg,
-                                                "border",
-                                                status.border
-                                            )}>
-                                                <TypeIcon className={cn("w-4 h-4", status.text)} />
-                                            </div>
+                        const progressBarColor =
+                            simpleStatus === 'done' ? 'bg-emerald-400'
+                            : simpleStatus === 'working' ? 'bg-blue-400'
+                            : 'bg-amber-400';
 
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-2 mb-0.5">
-                                                    {request.task_id && (
-                                                        <span className="text-[9px] font-mono text-slate-500">
-                                                            {request.task_id}
-                                                        </span>
-                                                    )}
-                                                    <h4 className="font-medium text-sm text-foreground truncate">
-                                                        {request.title}
-                                                    </h4>
+                        return (
+                            <div
+                                key={request.id}
+                                className={cn(
+                                    "rounded-xl border bg-card/40 transition-all overflow-hidden",
+                                    isExpanded ? "border-white/20 ring-1 ring-white/5" : "border-white/8 hover:border-white/15"
+                                )}
+                            >
+                                <button
+                                    onClick={() => setExpandedId(isExpanded ? null : request.id)}
+                                    className="w-full p-4 text-left"
+                                >
+                                    <div className="flex items-start justify-between gap-3 mb-3">
+                                        <div className="flex-1 min-w-0">
+                                            <h4 className="font-semibold text-sm text-foreground leading-snug mb-1 truncate">
+                                                {request.title}
+                                            </h4>
+                                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                                <span>{formatDate(request.created_at)}</span>
+                                                <span className="text-white/20">|</span>
+                                                <div className="flex items-center gap-1">
+                                                    <div className={cn("w-1.5 h-1.5 rounded-full", priority.dot)} />
+                                                    <span>{priority.label}</span>
                                                 </div>
-                                                <div className="flex items-center gap-2 text-[10px]">
-                                                    <span className={cn("font-medium", status.text)}>
-                                                        {status.label}
-                                                    </span>
-                                                    <span className="text-muted-foreground">•</span>
-                                                    <span className={priority.color}>{priority.label}</span>
-                                                    <span className="text-muted-foreground">•</span>
-                                                    <span className="text-muted-foreground">{formatDate(request.created_at)}</span>
-                                                    {request.revision_count > 0 && (
+                                                {request.task_id && (
+                                                    <>
+                                                        <span className="text-white/20">|</span>
+                                                        <span className="font-mono text-[10px]">{request.task_id}</span>
+                                                    </>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <ChevronRight className={cn(
+                                            "w-4 h-4 text-muted-foreground transition-transform shrink-0 mt-1",
+                                            isExpanded && "rotate-90"
+                                        )} />
+                                    </div>
+
+                                    <div className="space-y-1.5">
+                                        <div className="flex items-center justify-between">
+                                            <span className={cn(
+                                                "text-xs font-medium",
+                                                simpleStatus === 'done' ? 'text-emerald-400'
+                                                : simpleStatus === 'working' ? 'text-blue-400'
+                                                : 'text-amber-400'
+                                            )}>
+                                                {progressLabel}
+                                            </span>
+                                            <span className="text-[10px] text-muted-foreground">{progress}%</span>
+                                        </div>
+                                        <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                            <div
+                                                className={cn("h-full rounded-full transition-all duration-500", progressBarColor)}
+                                                style={{ width: `${progress}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                </button>
+
+                                {isExpanded && (
+                                    <div className="px-4 pb-4 space-y-3 border-t border-white/5 pt-3">
+                                        {request.description && (
+                                            <p className="text-xs text-muted-foreground leading-relaxed">
+                                                {request.description}
+                                            </p>
+                                        )}
+
+                                        {isAgencyView && simpleStatus !== 'done' && (
+                                            <div className="space-y-2">
+                                                <Textarea
+                                                    placeholder="Add a note..."
+                                                    value={agencyNote}
+                                                    onChange={(e) => setAgencyNote(e.target.value)}
+                                                    className="text-xs min-h-[50px] bg-white/5 border-white/10 resize-none"
+                                                />
+
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                    {agencyNote.trim() && (
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            onClick={() => addNote(request.id)}
+                                                            className="text-xs h-7"
+                                                        >
+                                                            <MessageSquare className="w-3 h-3 mr-1" />
+                                                            Add Note
+                                                        </Button>
+                                                    )}
+
+                                                    {request.status === 'pending' && (
+                                                        <Button size="sm" onClick={() => updateStatus(request.id, 'in_progress')} className="text-xs h-7 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 border border-blue-500/30">
+                                                            <Play className="w-3 h-3 mr-1" /> Start
+                                                        </Button>
+                                                    )}
+                                                    {request.status === 'in_progress' && (
+                                                        <Button size="sm" onClick={() => updateStatus(request.id, 'ready_for_qa')} className="text-xs h-7 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 border border-purple-500/30">
+                                                            <Search className="w-3 h-3 mr-1" /> Send to Review
+                                                        </Button>
+                                                    )}
+                                                    {request.status === 'ready_for_qa' && (
+                                                        <Button size="sm" onClick={() => updateStatus(request.id, 'in_qa')} className="text-xs h-7 bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/30">
+                                                            <Eye className="w-3 h-3 mr-1" /> Start Review
+                                                        </Button>
+                                                    )}
+                                                    {request.status === 'in_qa' && (
                                                         <>
-                                                            <span className="text-muted-foreground">•</span>
-                                                            <span className="text-amber-400">Rev {request.revision_count}</span>
+                                                            <Button size="sm" onClick={() => updateStatus(request.id, 'qa_passed')} className="text-xs h-7 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30">
+                                                                <CheckCircle2 className="w-3 h-3 mr-1" /> Approve
+                                                            </Button>
+                                                            <Button size="sm" onClick={() => updateStatus(request.id, 'qa_failed')} className="text-xs h-7 bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30">
+                                                                <AlertTriangle className="w-3 h-3 mr-1" /> Needs Fix
+                                                            </Button>
                                                         </>
                                                     )}
+                                                    {request.status === 'qa_failed' && (
+                                                        <Button size="sm" onClick={() => updateStatus(request.id, 'in_progress')} className="text-xs h-7 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 border border-blue-500/30">
+                                                            <RotateCcw className="w-3 h-3 mr-1" /> Restart
+                                                        </Button>
+                                                    )}
+                                                    {request.status === 'qa_passed' && (
+                                                        <Button size="sm" onClick={() => updateStatus(request.id, 'delivered')} className="text-xs h-7 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 border border-cyan-500/30">
+                                                            <Truck className="w-3 h-3 mr-1" /> Deliver
+                                                        </Button>
+                                                    )}
+
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button size="sm" variant="ghost" className="h-7 w-7 p-0">
+                                                                <MoreVertical className="w-3.5 h-3.5" />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end">
+                                                            <DropdownMenuItem onClick={() => updateStatus(request.id, 'pending')}>
+                                                                <Circle className="w-4 h-4 mr-2" /> Move to Waiting
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuSeparator />
+                                                            <DropdownMenuItem onClick={() => deleteRequest(request.id)} className="text-red-400">
+                                                                <Trash2 className="w-4 h-4 mr-2" /> Delete
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
                                                 </div>
                                             </div>
+                                        )}
 
-                                            <ChevronRight className={cn(
-                                                "w-4 h-4 text-muted-foreground transition-transform flex-shrink-0",
-                                                isExpanded && "rotate-90"
-                                            )} />
-                                        </button>
-                                    </CollapsibleTrigger>
-
-                                    {/* Expanded Content */}
-                                    <CollapsibleContent>
-                                        <div className="px-3 pb-3 space-y-3 border-t border-white/5 pt-3">
-                                            {request.description && (
-                                                <p className="text-xs text-muted-foreground">
-                                                    {request.description}
-                                                </p>
-                                            )}
-
-                                            <div className="flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-muted-foreground">
-                                                <span className="flex items-center gap-1">
-                                                    <Calendar className="w-3 h-3" />
-                                                    Created: {new Date(request.created_at).toLocaleDateString()}
-                                                </span>
-                                                {request.started_at && (
-                                                    <span className="flex items-center gap-1">
-                                                        <Play className="w-3 h-3" />
-                                                        Started: {new Date(request.started_at).toLocaleDateString()}
-                                                    </span>
-                                                )}
-                                                {request.qa_started_at && (
-                                                    <span className="flex items-center gap-1">
-                                                        <Eye className="w-3 h-3" />
-                                                        QA: {new Date(request.qa_started_at).toLocaleDateString()}
-                                                    </span>
-                                                )}
-                                                {request.delivered_at && (
-                                                    <span className="flex items-center gap-1">
-                                                        <Truck className="w-3 h-3" />
-                                                        Delivered: {new Date(request.delivered_at).toLocaleDateString()}
-                                                    </span>
-                                                )}
+                                        {isAgencyView && simpleStatus === 'done' && (
+                                            <div className="flex items-center gap-2">
+                                                <Button size="sm" variant="outline" onClick={() => updateStatus(request.id, 'pending')} className="text-xs h-7">
+                                                    <RotateCcw className="w-3 h-3 mr-1" /> Reopen
+                                                </Button>
+                                                <Button size="sm" variant="ghost" onClick={() => deleteRequest(request.id)} className="text-xs h-7 text-red-400 hover:text-red-300">
+                                                    <Trash2 className="w-3 h-3 mr-1" /> Delete
+                                                </Button>
                                             </div>
-
-                                            {/* Agency Actions */}
-                                            {isAgencyView && !completedStatuses.includes(request.status) && (
-                                                <div className="flex flex-col gap-2">
-                                                    <div className="flex gap-2">
-                                                        <Textarea
-                                                            placeholder="Add a note..."
-                                                            value={agencyNote}
-                                                            onChange={(e) => setAgencyNote(e.target.value)}
-                                                            className="text-xs min-h-[60px] bg-white/5 border-white/10 resize-none"
-                                                        />
-                                                    </div>
-
-                                                    <div className="flex items-center gap-2 flex-wrap">
-                                                        {agencyNote.trim() && (
-                                                            <Button
-                                                                size="sm"
-                                                                variant="outline"
-                                                                onClick={() => addNote(request.id)}
-                                                                className="text-xs h-8"
-                                                            >
-                                                                <MessageSquare className="w-3 h-3 mr-1" />
-                                                                Add Note
-                                                            </Button>
-                                                        )}
-
-                                                        {/* Pipeline progression buttons */}
-                                                        {request.status === 'pending' && (
-                                                            <Button
-                                                                size="sm"
-                                                                onClick={() => updateStatus(request.id, 'in_progress')}
-                                                                className="text-xs h-8 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 border border-blue-500/30"
-                                                            >
-                                                                <Play className="w-3 h-3 mr-1" />
-                                                                Start
-                                                            </Button>
-                                                        )}
-
-                                                        {request.status === 'in_progress' && (
-                                                            <Button
-                                                                size="sm"
-                                                                onClick={() => updateStatus(request.id, 'ready_for_qa')}
-                                                                className="text-xs h-8 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 border border-purple-500/30"
-                                                            >
-                                                                <Search className="w-3 h-3 mr-1" />
-                                                                Ready for QA
-                                                            </Button>
-                                                        )}
-
-                                                        {request.status === 'ready_for_qa' && (
-                                                            <Button
-                                                                size="sm"
-                                                                onClick={() => updateStatus(request.id, 'in_qa')}
-                                                                className="text-xs h-8 bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/30"
-                                                            >
-                                                                <Eye className="w-3 h-3 mr-1" />
-                                                                Start QA
-                                                            </Button>
-                                                        )}
-
-                                                        {request.status === 'in_qa' && (
-                                                            <>
-                                                                <Button
-                                                                    size="sm"
-                                                                    onClick={() => updateStatus(request.id, 'qa_passed')}
-                                                                    className="text-xs h-8 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30"
-                                                                >
-                                                                    <CheckCircle2 className="w-3 h-3 mr-1" />
-                                                                    QA Passed
-                                                                </Button>
-                                                                <Button
-                                                                    size="sm"
-                                                                    onClick={() => updateStatus(request.id, 'qa_failed')}
-                                                                    className="text-xs h-8 bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30"
-                                                                >
-                                                                    <AlertTriangle className="w-3 h-3 mr-1" />
-                                                                    QA Failed
-                                                                </Button>
-                                                            </>
-                                                        )}
-
-                                                        {request.status === 'qa_failed' && (
-                                                            <Button
-                                                                size="sm"
-                                                                onClick={() => updateStatus(request.id, 'in_progress')}
-                                                                className="text-xs h-8 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 border border-blue-500/30"
-                                                            >
-                                                                <Play className="w-3 h-3 mr-1" />
-                                                                Restart Work
-                                                            </Button>
-                                                        )}
-
-                                                        {request.status === 'qa_passed' && (
-                                                            <Button
-                                                                size="sm"
-                                                                onClick={() => updateStatus(request.id, 'delivered')}
-                                                                className="text-xs h-8 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 border border-cyan-500/30"
-                                                            >
-                                                                <Truck className="w-3 h-3 mr-1" />
-                                                                Deliver
-                                                            </Button>
-                                                        )}
-
-                                                        <DropdownMenu>
-                                                            <DropdownMenuTrigger asChild>
-                                                                <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
-                                                                    <MoreVertical className="w-4 h-4" />
-                                                                </Button>
-                                                            </DropdownMenuTrigger>
-                                                            <DropdownMenuContent align="end">
-                                                                <DropdownMenuItem onClick={() => updateStatus(request.id, 'pending')}>
-                                                                    <Circle className="w-4 h-4 mr-2" />
-                                                                    Move to Pending
-                                                                </DropdownMenuItem>
-                                                                <DropdownMenuSeparator />
-                                                                <DropdownMenuItem
-                                                                    onClick={() => deleteRequest(request.id)}
-                                                                    className="text-red-400"
-                                                                >
-                                                                    <Trash2 className="w-4 h-4 mr-2" />
-                                                                    Delete Request
-                                                                </DropdownMenuItem>
-                                                            </DropdownMenuContent>
-                                                        </DropdownMenu>
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {/* Completed Actions */}
-                                            {isAgencyView && completedStatuses.includes(request.status) && (
-                                                <div className="flex items-center gap-2">
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        onClick={() => updateStatus(request.id, 'pending')}
-                                                        className="text-xs h-8"
-                                                    >
-                                                        <Circle className="w-3 h-3 mr-1" />
-                                                        Reopen
-                                                    </Button>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="ghost"
-                                                        onClick={() => deleteRequest(request.id)}
-                                                        className="text-xs h-8 text-red-400 hover:text-red-300"
-                                                    >
-                                                        <Trash2 className="w-3 h-3 mr-1" />
-                                                        Delete
-                                                    </Button>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </CollapsibleContent>
-                                </div>
-                            </Collapsible>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
                         );
-                    })
+                    })}
+                        </div>
+                    ))
                 )}
             </div>
         </div>
