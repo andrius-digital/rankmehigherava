@@ -249,7 +249,7 @@ const Index = () => {
                     <div className="text-sm text-muted-foreground pl-2">
                       <div className="flex items-start gap-2">
                         <span className="text-cyan-400 font-bold shrink-0">•</span>
-                        <span><strong className="text-foreground">$1,500 setup + $99/mo.</strong> 1hr monthly adjustments • Hosting • Emergency Telegram support • Go High Level included • No sales call needed</span>
+                        <span><strong className="text-foreground">$1,500 setup + $99/mo.</strong> 1hr monthly adjustments • Hosting • Emergency Telegram support • Go High Level included • Extra adjustments $100/hr</span>
                       </div>
                     </div>
                   </div>
@@ -913,7 +913,7 @@ const Index = () => {
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-red-500">Transparent Pricing</span>
                 </h2>
                 <p className="text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto">
-                  Our fee is straightforward. No hidden fees, no long-term contracts, no sales call needed.
+                  Our pricing is straightforward — no hidden fees, no long-term contracts. We want you to come on a discovery call already knowing what we charge.
                 </p>
               </div>
 
@@ -929,7 +929,7 @@ const Index = () => {
                       <span className="text-muted-foreground text-lg">/month</span>
                     </div>
                     <p className="text-sm text-muted-foreground mt-1">Billed every 1st of the month</p>
-                    <p className="text-sm text-cyan-400 font-bold mt-4">No sales call needed to figure out our pricing.</p>
+                    <p className="text-sm text-cyan-400 font-bold mt-4">No sales call needed to know our pricing. It's all right here.</p>
                   </div>
                   <div className="space-y-6">
                     <div className="p-5 rounded-xl bg-red-500/10 border border-red-500/30">
