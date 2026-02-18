@@ -460,8 +460,6 @@ Need help? We build websites specifically designed for local service businesses�
     title: "Why Custom-Coded Web Apps Are the Way to Build Websites in 2026",
     excerpt: "Template builders had their moment. In 2026, local businesses that want to dominate search results, convert more visitors, and actually own their digital presence are switching to custom-coded web applications. Here's why — and what it means for your bottom line.",
     content: `
-![Custom-coded website development workspace](/images/blog/custom-coded-hero.png)
-
 ## The Template Era Is Over
 
 Let's be honest — for the last decade, most local businesses have been sold the same story: *"Just pick a template, drag and drop some blocks, and you'll have a website in 20 minutes."*
