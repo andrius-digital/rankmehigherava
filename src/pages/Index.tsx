@@ -419,7 +419,7 @@ const Index = () => {
                 {/* Scrollable container with peek effect */}
                 <div className="overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
                   <div className="flex gap-4 px-4" style={{ width: 'max-content' }}>
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((num) => (
                       <div key={num} className="group flex-shrink-0 snap-center" style={{ width: 'calc(100vw - 32px)' }}>
                       <div className="relative rounded-2xl overflow-hidden bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/40 transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-primary/20">
                         {num === 1 ? (
@@ -639,6 +639,20 @@ const Index = () => {
                               <p className="text-xs text-muted-foreground">Tax & Accounting Firm in Oak Brook, IL</p>
                             </div>
                           </>
+                        ) : num === 11 ? (
+                          <>
+                            <div className="relative overflow-hidden bg-black">
+                              <img 
+                                src="/images/portfolio-midwest-express.png" 
+                                alt="Midwest Express Website Screenshot" 
+                                className="w-full h-auto block"
+                              />
+                            </div>
+                            <div className="p-4 bg-background/80 backdrop-blur-sm">
+                              <h4 className="font-orbitron font-bold text-base text-foreground mb-1">Midwest Express</h4>
+                              <p className="text-xs text-muted-foreground">Trucking Company in Chicago, IL</p>
+                            </div>
+                          </>
                         ) : (
                           <>
                             <div className="aspect-[2/1] bg-gradient-to-br from-primary/20 to-red-600/20 flex items-center justify-center">
@@ -661,7 +675,7 @@ const Index = () => {
                 
                 {/* Scroll indicator dots */}
                 <div className="flex justify-center gap-2 mt-4">
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((num) => (
                     <div 
                       key={num} 
                       className="w-2 h-2 rounded-full bg-primary/30 transition-colors"
@@ -903,6 +917,19 @@ const Index = () => {
                     <div className="p-4 bg-background/80 backdrop-blur-sm">
                       <h4 className="font-orbitron font-bold text-base text-foreground mb-1">QTA Tax</h4>
                       <p className="text-xs text-muted-foreground">Tax & Accounting Firm in Oak Brook, IL</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Portfolio Item 11 - Midwest Express */}
+                <div className="group absolute top-[40%] left-[20%] w-[40%] z-[2] hover:z-50 transition-all duration-500 hover:scale-105">
+                  <div className="relative rounded-2xl overflow-hidden bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/40 transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-primary/20">
+                    <div className="relative overflow-hidden bg-black">
+                      <img src="/images/portfolio-midwest-express.png" alt="Midwest Express Website Screenshot" className="w-full h-auto block" />
+                    </div>
+                    <div className="p-4 bg-background/80 backdrop-blur-sm">
+                      <h4 className="font-orbitron font-bold text-base text-foreground mb-1">Midwest Express</h4>
+                      <p className="text-xs text-muted-foreground">Trucking Company in Chicago, IL</p>
                     </div>
                   </div>
                 </div>
