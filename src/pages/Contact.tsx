@@ -379,7 +379,7 @@ const Contact = () => {
                 </p>
 
                 <p>
-                  With offices in <strong className="text-foreground">Chicago Downtown</strong> and <strong className="text-foreground">Mundelein, IL</strong>, we serve businesses throughout the Chicagoland area and beyond. Whether you're a local service business looking to dominate Google Maps, an e-commerce brand ready to scale, or an established company needing a technology upgrade—we have the expertise and proven tools to deliver results. <strong className="text-foreground">Contact us today</strong> for a free consultation.
+                  With offices in <strong className="text-foreground">Chicago Downtown</strong> and <strong className="text-foreground">Mundelein, IL</strong>, we serve businesses throughout the Chicagoland area and beyond. Whether you're a local service business looking to dominate Google Maps or an established company needing a technology upgrade—we have the expertise and proven tools to deliver results. <strong className="text-foreground">Contact us today</strong> for a free consultation.
                 </p>
               </div>
 
