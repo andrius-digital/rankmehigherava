@@ -235,7 +235,7 @@ const Index = () => {
                       <span className="text-foreground text-4xl xl:text-5xl 2xl:text-6xl">That Actually Make Money.</span>
                     </h1>
                     <p className="text-lg xl:text-xl text-muted-foreground max-w-xl leading-relaxed">
-                      Stop paying $5K+ for websites that sit there doing nothing. We <strong>custom code</strong> SEO-ready websites with <strong>lead capture, SMS & email automations</strong>—then manage everything with <span className="text-cyan-400 font-bold">AVA</span>. Dashboard, leads pipeline & <strong>24/7 support</strong> included.
+                      Stop paying $5K+ for WordPress template websites that lag and look like 2015. We <strong>custom code</strong> SEO-ready websites with <strong>lead capture, SMS & email automations</strong>—then manage everything with <span className="text-cyan-400 font-bold">AVA</span>. Dashboard, leads pipeline & <strong>24/7 support</strong> included.
                     </p>
                   </div>
 
@@ -249,7 +249,7 @@ const Index = () => {
                     <div className="text-sm text-muted-foreground pl-2">
                       <div className="flex items-start gap-2">
                         <span className="text-cyan-400 font-bold shrink-0">•</span>
-                        <span><strong className="text-foreground">All-Inclusive:</strong> 24/7 AI support • Lead pipeline • SMS & email automations • Task request platform • Custom integrations available • We handle everything</span>
+                        <span><strong className="text-foreground">$1,500 setup + $99/mo.</strong> 1hr monthly adjustments • Hosting • Emergency Telegram support • Go High Level included • No sales call needed</span>
                       </div>
                     </div>
                   </div>
@@ -913,48 +913,51 @@ const Index = () => {
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-red-500">Transparent Pricing</span>
                 </h2>
                 <p className="text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto">
-                  No hidden fees. No long-term contracts. Know exactly what you're paying for.
+                  Our fee is straightforward. No hidden fees, no long-term contracts, no sales call needed.
                 </p>
               </div>
 
               <div className="relative p-6 lg:p-8 rounded-2xl bg-gradient-to-br from-white/8 to-white/3 backdrop-blur-xl border border-white/15 mb-8">
-                <div className="grid lg:grid-cols-2 gap-8 items-start">
-                  <div>
-                    <h3 className="font-orbitron font-bold text-xl text-foreground mb-4">How Our Pricing Works</h3>
-                    <ul className="space-y-4">
-                      {[
-                        { title: 'One-time build fee', desc: 'Your website, fully custom coded and ready to go' },
-                        { title: 'Small monthly fee', desc: 'Covers hosting, security updates, and AVA AI support' },
-                        { title: 'Adjustments at a fixed fee', desc: 'All extra changes through your task platform — clear pricing, no surprises' },
-                        { title: 'Custom work billed per hour', desc: 'AI voice agents, booking systems, automations — whatever you need, custom coded' },
-                      ].map((item, i) => (
-                        <li key={i} className="flex items-start gap-3">
-                          <CheckCircle2 className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                          <div>
-                            <span className="text-sm font-bold text-foreground">{item.title}</span>
-                            <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
+                <div className="grid lg:grid-cols-2 gap-8 items-center">
+                  <div className="text-center lg:text-left">
+                    <div className="mb-2">
+                      <span className="text-5xl lg:text-6xl font-black font-orbitron text-foreground">$1,500</span>
+                    </div>
+                    <p className="text-lg text-muted-foreground mb-1">One-time setup fee</p>
+                    <div className="flex items-baseline gap-2 justify-center lg:justify-start">
+                      <span className="text-3xl lg:text-4xl font-black font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-primary to-red-500">+ $99</span>
+                      <span className="text-muted-foreground text-lg">/month</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">Billed every 1st of the month</p>
+                    <p className="text-sm text-cyan-400 font-bold mt-4">No sales call needed to figure out our pricing.</p>
                   </div>
-                  <div className="p-5 rounded-xl bg-red-500/10 border border-red-500/30">
-                    <h4 className="font-orbitron font-bold text-base text-foreground mb-3">What's Included Every Month</h4>
-                    <ul className="space-y-2">
-                      {[
-                        'Website hosting & security (SSL)',
-                        'AVA AI assistant (chat + voice)',
-                        'Client dashboard & task platform',
-                        'Telegram group support',
-                        'Performance & uptime monitoring',
-                        'Backups & updates',
-                      ].map((item, i) => (
-                        <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
+                  <div className="space-y-6">
+                    <div className="p-5 rounded-xl bg-red-500/10 border border-red-500/30">
+                      <h4 className="font-orbitron font-bold text-base text-foreground mb-3">What's Included Every Month</h4>
+                      <ul className="space-y-2">
+                        {[
+                          '1 hour of monthly adjustments',
+                          'Website hosting & security (SSL)',
+                          'Emergency support via Telegram group',
+                          'Go High Level sub account (free)',
+                          'AVA AI assistant (chat + voice)',
+                          'Client dashboard & task platform',
+                          'Weekly coaching call recordings',
+                          'Performance monitoring & backups',
+                        ].map((item, i) => (
+                          <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                      <h4 className="font-orbitron font-bold text-sm text-foreground mb-2">Need More?</h4>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        Additional adjustments billed at <strong className="text-foreground">$100/hr</strong>. We only recommend what we think you actually need — no high retainers. You choose what gets built.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -988,11 +991,11 @@ const Index = () => {
                   },
                   {
                     q: 'Why custom code instead of WordPress?',
-                    a: 'Custom-coded websites load faster, rank better on Google, and give us complete control over every feature. No plugins to break, no security vulnerabilities from outdated themes, no bloat.',
+                    a: 'WordPress template sites lag, break with plugin updates, and look like 2015. Our custom-coded websites load faster, rank better on Google, and give us complete control over every feature. No bloat, no vulnerabilities.',
                   },
                   {
                     q: 'What happens if I need changes after launch?',
-                    a: 'Submit a request through your client dashboard or message us on Telegram. Small tweaks are included monthly. Larger projects get a flat quote before we start — no hourly surprises.',
+                    a: 'Your monthly plan includes 1 hour of adjustments. Anything beyond that is billed at $100/hr. We only suggest what we think you need — no upsells, no pressure. Submit requests through your dashboard or Telegram.',
                   },
                   {
                     q: 'Do you offer refunds?',
@@ -1003,8 +1006,12 @@ const Index = () => {
                     a: 'Absolutely. We offer a separate Google Map Dominance service that gets your business into the top 3 local results. Results in 7 days or you don\'t pay.',
                   },
                   {
-                    q: 'What\'s included in the monthly fee?',
-                    a: 'Hosting, security updates, SSL, performance monitoring, AVA AI support, Telegram group access, client dashboard with task platform, and uptime monitoring with backups.',
+                    q: 'What\'s included in the monthly $99?',
+                    a: '1 hour of monthly adjustments, hosting, SSL, emergency Telegram support, Go High Level sub account, AVA AI support, client dashboard, weekly coaching call recordings, performance monitoring, and backups.',
+                  },
+                  {
+                    q: 'What is Go High Level?',
+                    a: 'Go High Level is a powerful CRM platform for managing leads, automating follow-ups, posting to social media automatically, and much more. You get a free sub account included with your plan.',
                   },
                 ].map((faq, i) => (
                   <details key={i} className="group rounded-xl bg-white/5 border border-white/10 overflow-hidden">
