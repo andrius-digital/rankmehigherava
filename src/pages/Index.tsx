@@ -289,16 +289,6 @@ const Index = () => {
 
                 {/* VIDEO SECTION - Desktop */}
                 <div className="relative space-y-4">
-                  <button
-                    onClick={() => setIsAvaDialogOpen(true)}
-                    className="w-full px-5 py-4 rounded-xl bg-cyan-500/10 backdrop-blur-md border border-cyan-500/30 text-white font-bold text-base shadow-lg hover:shadow-2xl hover:shadow-cyan-500/20 hover:bg-cyan-500/20 hover:scale-[1.02] transition-all duration-300 font-orbitron flex items-center justify-center gap-3 group relative overflow-hidden"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-cyan-500/10 to-cyan-500/0 group-hover:from-cyan-500/10 group-hover:via-cyan-500/20 group-hover:to-cyan-500/10 transition-all duration-500" />
-                    <Brain className="w-6 h-6 text-cyan-400 relative z-10" />
-                    <span className="relative z-10">Join AVA SEO Waitlist</span>
-                    <ArrowRight className="w-5 h-5 text-cyan-400 relative z-10 group-hover:translate-x-1 transition-transform" />
-                  </button>
-
                   <div className="relative rounded-2xl overflow-hidden border-2 border-primary/30 shadow-2xl shadow-primary/20 group">
                     <div className="absolute -inset-2 bg-gradient-to-br from-primary/40 to-red-600/40 rounded-2xl blur-xl opacity-50 group-hover:opacity-70 transition-opacity" />
                     <div className="absolute -inset-1 bg-gradient-to-br from-primary/30 to-red-600/30 rounded-2xl blur-lg opacity-60" />
