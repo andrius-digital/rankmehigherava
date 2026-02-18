@@ -7,25 +7,6 @@ import LeadMagnet from "@/components/blog/LeadMagnet";
 import { blogPosts } from "@/data/blogPosts";
 import ReactMarkdown from "react-markdown";
 
-const proseClasses = `
-  prose prose-sm prose-invert max-w-none
-  prose-headings:font-orbitron prose-headings:font-bold prose-headings:text-foreground prose-headings:scroll-mt-24
-  prose-h2:text-base prose-h2:md:text-lg prose-h2:mt-8 prose-h2:mb-3 prose-h2:pb-2 prose-h2:border-b prose-h2:border-white/10
-  prose-h3:text-sm prose-h3:md:text-base prose-h3:mt-6 prose-h3:mb-2 prose-h3:text-red-400
-  prose-p:text-muted-foreground/80 prose-p:leading-relaxed prose-p:mb-4 prose-p:text-[13px] prose-p:md:text-sm
-  prose-strong:text-foreground/90 prose-strong:font-medium
-  prose-ul:my-3 prose-ul:text-muted-foreground/80 prose-ul:space-y-0.5
-  prose-li:my-0 prose-li:text-[13px] prose-li:md:text-sm prose-li:leading-relaxed
-  prose-ol:my-3 prose-ol:text-muted-foreground/80 prose-ol:space-y-0.5
-  prose-a:text-red-400 prose-a:underline prose-a:underline-offset-2 prose-a:decoration-red-400/30 hover:prose-a:decoration-red-400
-  prose-img:rounded-lg prose-img:border prose-img:border-white/10 prose-img:shadow-lg prose-img:my-5
-  prose-blockquote:border-l-2 prose-blockquote:border-red-500/50 prose-blockquote:bg-red-500/5 prose-blockquote:rounded-r-lg prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:my-5 prose-blockquote:not-italic prose-blockquote:text-[13px]
-  prose-table:border prose-table:border-white/10 prose-table:rounded-lg prose-table:overflow-hidden
-  prose-th:bg-white/10 prose-th:p-2.5 prose-th:text-left prose-th:font-orbitron prose-th:text-[10px] prose-th:uppercase prose-th:tracking-wider
-  prose-td:p-2.5 prose-td:border-t prose-td:border-white/10 prose-td:text-xs
-  prose-hr:border-white/10 prose-hr:my-6
-  prose-em:text-muted-foreground/70
-`;
 
 const BlogPost = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -155,13 +136,13 @@ const BlogPost = () => {
               </div>
             )}
 
-            <div className={proseClasses}>
+            <div className="blog-content">
               <ReactMarkdown>{firstHalf}</ReactMarkdown>
             </div>
 
             <LeadMagnet />
 
-            <div className={proseClasses}>
+            <div className="blog-content">
               <ReactMarkdown>{secondHalf}</ReactMarkdown>
             </div>
 
