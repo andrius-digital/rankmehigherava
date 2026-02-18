@@ -738,14 +738,14 @@ const Index = () => {
           <section className="py-4 lg:py-6 relative overflow-hidden">
             <div className="container mx-auto px-4 lg:px-8 max-w-6xl relative z-10">
               <div className="text-center mb-12">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/30 mb-4">
-                  <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
-                  <span className="text-xs font-orbitron text-amber-400 font-bold">Reality Check</span>
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/10 border border-red-500/30 mb-4">
+                  <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
+                  <span className="text-xs font-orbitron text-red-400 font-bold">Reality Check</span>
                 </div>
                 <h2 className="text-3xl lg:text-5xl font-black leading-tight font-orbitron mb-4">
                   <span className="text-foreground">Is Your Website</span>
                   <br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 via-red-500 to-primary">Costing You Customers?</span>
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-red-500 to-primary">Costing You Customers?</span>
                 </h2>
                 <p className="text-base lg:text-lg text-muted-foreground max-w-3xl mx-auto">
                   If your website was built on WordPress, Wix, or GoHighLevel templates — you're blending in with thousands of businesses using the exact same design. Your customers can tell. And they're choosing your competitor instead.
@@ -812,32 +812,32 @@ const Index = () => {
                 </div>
 
                 <div className="relative group">
-                  <div className="absolute -top-3 left-6 z-10 px-4 py-1.5 rounded-full bg-emerald-500/90 text-white text-xs font-orbitron font-bold">
+                  <div className="absolute -top-3 left-6 z-10 px-4 py-1.5 rounded-full bg-cyan-500/90 text-white text-xs font-orbitron font-bold">
                     Rank Me Higher Website
                   </div>
-                  <div className="p-6 rounded-2xl bg-emerald-500/5 border-2 border-emerald-500/30 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl" />
+                  <div className="p-6 rounded-2xl bg-cyan-500/5 border-2 border-cyan-500/30 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl" />
                     
-                    <div className="mt-4 mb-6 rounded-xl bg-gray-800/80 border border-emerald-500/20 p-4 relative">
+                    <div className="mt-4 mb-6 rounded-xl bg-gray-800/80 border border-cyan-500/20 p-4 relative">
                       <div className="flex items-center gap-2 mb-3">
                         <div className="w-3 h-3 rounded-full bg-red-500/60" />
                         <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
                         <div className="w-3 h-3 rounded-full bg-green-500/60" />
-                        <div className="ml-2 flex-1 h-5 rounded bg-emerald-500/10 border border-emerald-500/20 flex items-center px-2">
-                          <span className="text-emerald-400/60 text-[8px]">🔒 yourbusiness.com</span>
+                        <div className="ml-2 flex-1 h-5 rounded bg-cyan-500/10 border border-cyan-500/20 flex items-center px-2">
+                          <span className="text-cyan-400/60 text-[8px]">🔒 yourbusiness.com</span>
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <div className="h-20 rounded bg-gradient-to-br from-gray-800 via-gray-900 to-black flex items-center justify-center border border-emerald-500/10">
-                          <span className="text-emerald-400 text-xs font-orbitron font-bold">Custom Branded Hero</span>
+                        <div className="h-20 rounded bg-gradient-to-br from-gray-800 via-gray-900 to-black flex items-center justify-center border border-cyan-500/10">
+                          <span className="text-cyan-400 text-xs font-orbitron font-bold">Custom Branded Hero</span>
                         </div>
                         <div className="grid grid-cols-3 gap-2">
-                          <div className="h-8 rounded bg-emerald-500/10 border border-emerald-500/20" />
-                          <div className="h-8 rounded bg-emerald-500/10 border border-emerald-500/20" />
-                          <div className="h-8 rounded bg-emerald-500/10 border border-emerald-500/20" />
+                          <div className="h-8 rounded bg-cyan-500/10 border border-cyan-500/20" />
+                          <div className="h-8 rounded bg-cyan-500/10 border border-cyan-500/20" />
+                          <div className="h-8 rounded bg-cyan-500/10 border border-cyan-500/20" />
                         </div>
-                        <div className="h-4 w-3/4 rounded bg-emerald-500/10" />
-                        <div className="h-4 w-1/2 rounded bg-emerald-500/10" />
+                        <div className="h-4 w-3/4 rounded bg-cyan-500/10" />
+                        <div className="h-4 w-1/2 rounded bg-cyan-500/10" />
                       </div>
                     </div>
 
@@ -851,20 +851,20 @@ const Index = () => {
                         "We maintain it — you never worry about updates"
                       ].map((item, i) => (
                         <div key={i} className="flex items-start gap-3">
-                          <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                          <Check className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
                           <span className="text-sm text-muted-foreground">{item}</span>
                         </div>
                       ))}
                     </div>
 
-                    <div className="mt-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                    <div className="mt-6 p-4 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
                       <div className="flex items-center gap-2 mb-1">
-                        <Gauge className="w-4 h-4 text-emerald-400" />
-                        <span className="font-orbitron text-xs font-bold text-emerald-400">Average PageSpeed Score</span>
+                        <Gauge className="w-4 h-4 text-cyan-400" />
+                        <span className="font-orbitron text-xs font-bold text-cyan-400">Average PageSpeed Score</span>
                       </div>
                       <div className="flex items-end gap-2">
-                        <span className="text-3xl font-orbitron font-black text-emerald-400">95</span>
-                        <span className="text-xs text-emerald-400/70 mb-1">/ 100</span>
+                        <span className="text-3xl font-orbitron font-black text-cyan-400">95</span>
+                        <span className="text-xs text-cyan-400/70 mb-1">/ 100</span>
                       </div>
                     </div>
                   </div>
