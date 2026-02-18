@@ -345,8 +345,24 @@ const Index = () => {
 
             {/* Description */}
             <p className="text-sm text-muted-foreground leading-relaxed mb-5 text-center">
-              Custom websites with lead capture & automations. Dashboard & <span className="text-cyan-400 font-bold">24/7 AVA</span> support included. Based in Chicago, IL — proudly serving businesses nationwide.
+              Stop paying $5K+ for WordPress templates that lag and look like 2015. We <strong>custom code</strong> web apps with <strong>lead capture, SMS & email automations</strong>—managed by <span className="text-cyan-400 font-bold">AVA</span>. <strong>You own the code</strong>, no contracts. Dashboard, leads pipeline & <strong>24/7 support</strong> included.
             </p>
+
+            {/* Pricing & Trust */}
+            <div className="space-y-2 mb-5">
+              <div className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-white/5 backdrop-blur-md border border-white/10">
+                <CheckCircle2 className="w-4 h-4 text-green-400" />
+                <span className="text-white font-bold text-xs font-orbitron">
+                  Built fully active in 10 days. Dashboard, leads pipeline & 24/7 support included.
+                </span>
+              </div>
+              <div className="text-xs text-muted-foreground pl-2">
+                <div className="flex items-start gap-2">
+                  <span className="text-cyan-400 font-bold shrink-0">•</span>
+                  <span><strong className="text-foreground">$2,000 setup + $99/mo.</strong> Unlimited revisions until launch • Hosting • Emergency Telegram support • Go High Level included • Post-launch adjustments $100/hr</span>
+                </div>
+              </div>
+            </div>
 
             {/* Video Player */}
             <div className="relative rounded-xl overflow-hidden border-2 border-primary/30 shadow-xl shadow-primary/20 mb-5">
