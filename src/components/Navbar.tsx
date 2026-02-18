@@ -114,27 +114,24 @@ const Navbar = () => {
             </Link>
           </div>
 
-          {/* Desktop: Text Us CTA */}
-          <a
-            href="sms:773-572-4686"
+          {/* Desktop: Book a Call CTA */}
+          <button
+            onClick={openCalendly}
             className="group hidden lg:flex items-center gap-3 px-5 py-2.5 rounded-full bg-red-500/10 backdrop-blur-md border border-red-500/30 text-white font-medium hover:bg-red-500/20 hover:border-red-500/50 hover:shadow-lg hover:shadow-red-500/20 hover:scale-[1.02] transition-all duration-300 relative overflow-hidden"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/10 to-red-500/0 group-hover:from-red-500/10 group-hover:via-red-500/20 group-hover:to-red-500/10 transition-all duration-500" />
             <Phone className="w-4 h-4 text-red-400 relative z-10" />
-            <div className="flex flex-col items-start leading-tight relative z-10">
-              <span className="text-sm font-bold">(773) 572-4686</span>
-              <span className="text-[10px] text-red-300/80">Text for fastest response ⚡</span>
-            </div>
-          </a>
+            <span className="text-sm font-bold relative z-10">Book a Call</span>
+          </button>
 
-          {/* Mobile: Direct Call CTA */}
-          <a
-            href="tel:773-572-4686"
+          {/* Mobile: Book a Call CTA */}
+          <button
+            onClick={openCalendly}
             className="md:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-500/10 backdrop-blur-md border border-red-500/30 text-white text-xs font-bold hover:bg-red-500/20 transition-all"
           >
             <Phone className="w-3.5 h-3.5 text-red-400" />
-            <span>(773) 572-4686</span>
-          </a>
+            <span>Book a Call</span>
+          </button>
 
           {/* Mobile: Menu Button */}
           <button className="md:hidden text-foreground p-2" onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label="Toggle menu">
@@ -196,13 +193,10 @@ const Navbar = () => {
                 Contact
               </Link>
 
-              <a href="sms:773-572-4686" className="flex items-center gap-3 px-4 py-2 rounded-full bg-gradient-to-r from-primary to-red-600 text-white font-medium mt-2">
+              <button onClick={() => { setIsMenuOpen(false); openCalendly(); }} className="flex items-center justify-center gap-3 px-4 py-3 rounded-full bg-gradient-to-r from-primary to-red-600 text-white font-bold mt-2">
                 <Phone className="w-4 h-4" />
-                <div className="flex flex-col items-start leading-tight">
-                  <span className="text-sm font-bold">(773) 572-4686</span>
-                  <span className="text-[10px] text-white/80">Text for fastest response ⚡</span>
-                </div>
-              </a>
+                <span className="text-sm">Book a Call</span>
+              </button>
             </div>
           </div>
         )}
