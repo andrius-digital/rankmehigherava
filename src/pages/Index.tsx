@@ -262,7 +262,7 @@ const Index = () => {
                       <div className="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/10 to-red-500/0 group-hover:from-red-500/10 group-hover:via-red-500/20 group-hover:to-red-500/10 transition-all duration-500" />
                       <div className="relative flex items-center justify-center gap-2">
                         <Globe className="w-5 h-5 text-red-400" />
-                        <span>Free Website Qualification</span>
+                        <span>Get Your Custom Website</span>
                       </div>
                     </button>
                     <button
@@ -369,7 +369,7 @@ const Index = () => {
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/10 to-red-500/0" />
                 <Globe className="w-4 h-4 text-red-400 relative z-10" />
-                <span className="relative z-10">See If You Qualify</span>
+                <span className="relative z-10">Get Your Custom Website</span>
               </button>
               
               <button
@@ -1178,14 +1178,29 @@ const Index = () => {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3 text-2xl font-orbitron">
               <Globe className="w-7 h-7 text-red-400" />
-              <span>Free Website Qualification</span>
+              <span>Get Your Custom Website</span>
             </DialogTitle>
             <DialogDescription className="text-muted-foreground">
-              See if your business qualifies for a free custom-coded website. We'll review your application and get back to you within 24 hours.
+              Tell us about your business and we'll put together a custom game plan — what your website could look like, what features you need, and how we'd build it. No obligations, no pressure. We'll reach out within 24 hours.
             </DialogDescription>
           </DialogHeader>
+
+          <div className="grid grid-cols-3 gap-2 mt-3">
+            <div className="p-2 rounded-lg bg-red-500/5 border border-red-500/20 text-center">
+              <span className="block text-sm font-black font-orbitron text-foreground">$2K</span>
+              <span className="text-[9px] text-muted-foreground">Setup Fee</span>
+            </div>
+            <div className="p-2 rounded-lg bg-red-500/5 border border-red-500/20 text-center">
+              <span className="block text-sm font-black font-orbitron text-foreground">10 Days</span>
+              <span className="text-[9px] text-muted-foreground">To Launch</span>
+            </div>
+            <div className="p-2 rounded-lg bg-red-500/5 border border-red-500/20 text-center">
+              <span className="block text-sm font-black font-orbitron text-foreground">Unlimited</span>
+              <span className="text-[9px] text-muted-foreground">Revisions</span>
+            </div>
+          </div>
           
-          <form onSubmit={handleQualifySubmit} className="space-y-4 mt-4">
+          <form onSubmit={handleQualifySubmit} className="space-y-3 mt-3">
             <div className="space-y-2">
               <Label htmlFor="qualify-name" className="font-orbitron text-sm">Your Name *</Label>
               <Input
@@ -1199,40 +1214,42 @@ const Index = () => {
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="qualify-email" className="font-orbitron text-sm">Email *</Label>
-              <Input
-                id="qualify-email"
-                type="email"
-                value={qualifyForm.email}
-                onChange={(e) => setQualifyForm({ ...qualifyForm, email: e.target.value })}
-                placeholder="your@email.com"
-                required
-                className="bg-red-500/5 border-red-500/20 focus:border-red-500/40 focus-visible:ring-0 focus-visible:ring-offset-0"
-              />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="qualify-email" className="font-orbitron text-sm">Email *</Label>
+                <Input
+                  id="qualify-email"
+                  type="email"
+                  value={qualifyForm.email}
+                  onChange={(e) => setQualifyForm({ ...qualifyForm, email: e.target.value })}
+                  placeholder="your@email.com"
+                  required
+                  className="bg-red-500/5 border-red-500/20 focus:border-red-500/40 focus-visible:ring-0 focus-visible:ring-offset-0"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="qualify-phone" className="font-orbitron text-sm">Phone *</Label>
+                <Input
+                  id="qualify-phone"
+                  type="tel"
+                  value={qualifyForm.phone}
+                  onChange={(e) => setQualifyForm({ ...qualifyForm, phone: e.target.value })}
+                  placeholder="(555) 123-4567"
+                  required
+                  className="bg-red-500/5 border-red-500/20 focus:border-red-500/40 focus-visible:ring-0 focus-visible:ring-offset-0"
+                />
+              </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="qualify-phone" className="font-orbitron text-sm">Phone Number *</Label>
-              <Input
-                id="qualify-phone"
-                type="tel"
-                value={qualifyForm.phone}
-                onChange={(e) => setQualifyForm({ ...qualifyForm, phone: e.target.value })}
-                placeholder="(555) 123-4567"
-                required
-                className="bg-red-500/5 border-red-500/20 focus:border-red-500/40 focus-visible:ring-0 focus-visible:ring-offset-0"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="qualify-website" className="font-orbitron text-sm">Current Business Website</Label>
+              <Label htmlFor="qualify-website" className="font-orbitron text-sm">Current Website (if any)</Label>
               <Input
                 id="qualify-website"
                 type="url"
                 value={qualifyForm.businessWebsite}
                 onChange={(e) => setQualifyForm({ ...qualifyForm, businessWebsite: e.target.value })}
-                placeholder="https://yourbusiness.com (or leave blank if none)"
+                placeholder="https://yourbusiness.com"
                 className="bg-red-500/5 border-red-500/20 focus:border-red-500/40 focus-visible:ring-0 focus-visible:ring-offset-0"
               />
             </div>
@@ -1264,7 +1281,7 @@ const Index = () => {
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/10 to-red-500/0 group-hover:from-red-500/10 group-hover:via-red-500/20 group-hover:to-red-500/10 transition-all duration-500" />
                 <Globe className="w-5 h-5 text-red-400 relative z-10" />
-                <span className="relative z-10">{isSubmitting ? 'Submitting...' : 'Check Eligibility'}</span>
+                <span className="relative z-10">{isSubmitting ? 'Submitting...' : 'Get My Game Plan'}</span>
                 {!isSubmitting && <ArrowRight className="w-5 h-5 text-red-400 relative z-10 group-hover:translate-x-1 transition-transform" />}
               </button>
             </div>
