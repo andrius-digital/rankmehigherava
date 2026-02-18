@@ -1,7 +1,7 @@
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import { ArrowRight, Globe, Search, MapPin, Phone, Megaphone, Play, Instagram, Mail, Calendar, Star, CheckCircle2, Sparkles, Brain } from "lucide-react";
+import { ArrowRight, Globe, Search, MapPin, Phone, Megaphone, Play, Instagram, Mail, Calendar, Star, CheckCircle2, Sparkles, Brain, ChevronDown, MessageCircle, Shield, Zap } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FuturisticWrapper from "@/components/ui/FuturisticWrapper";
@@ -741,188 +741,330 @@ const Index = () => {
           </section>
           */}
 
-          {/* WHY CHOOSE US SECTION - SEO OPTIMIZED */}
-          <section className="pt-0 pb-8 lg:pb-12 relative overflow-hidden">
+          {/* WHAT YOU GET SECTION */}
+          <section className="py-16 lg:py-24 relative overflow-hidden">
             <div className="container mx-auto px-4 lg:px-8 max-w-6xl relative z-10">
-              
-              {/* Section Header */}
-              <div className="text-center mb-6 lg:mb-8">
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/10 border border-red-500/30 mb-3">
-                  <span className="w-1.5 h-1.5 bg-red-500 rounded-full" />
-                  <span className="text-xs font-orbitron text-red-400 font-bold">Chicago's Premier Web Development Agency</span>
+              <div className="text-center mb-12">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/10 border border-red-500/30 mb-4">
+                  <Zap className="w-3.5 h-3.5 text-red-400" />
+                  <span className="text-xs font-orbitron text-red-400 font-bold">Everything Included</span>
                 </div>
-                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black leading-tight font-orbitron mb-3">
-                  <span className="text-foreground">Custom Coded Websites </span>
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-red-500 to-primary">Built for Growth</span>
+                <h2 className="text-3xl lg:text-5xl font-black leading-tight font-orbitron mb-4">
+                  <span className="text-foreground">Not Just a Website.</span>
+                  <br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-red-500 to-primary">A Complete Growth System.</span>
                 </h2>
-                <p className="text-sm lg:text-base text-muted-foreground max-w-3xl mx-auto">
-                  No templates. No page builders. Every website is hand-coded from scratch, optimized for Google rankings, 
-                  and integrated with automation systems that capture leads while you focus on your business.
+                <p className="text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto">
+                  Every client gets a custom-coded website, automation systems, their own server, a client dashboard, and 24/7 AI support. All managed by us.
                 </p>
               </div>
 
-              {/* Main Content Grid */}
-              <div className="grid lg:grid-cols-2 gap-6 lg:gap-8 mb-6 lg:mb-8">
-                
-                {/* Left: Image */}
-                <div className="relative rounded-2xl overflow-hidden border border-red-500/20 shadow-xl">
-                  <img 
-                    src="/kleanaf.png" 
-                    alt="Custom Coded Website Example - Klean AF House Cleaning San Diego" 
-                    className="w-full h-auto"
-                    loading="lazy"
-                  />
-                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
-                    <p className="text-xs text-white/80 font-orbitron">Custom coded website with lead capture & SMS automations</p>
-                  </div>
-                </div>
-
-                {/* Right: Features */}
-                <div className="space-y-4">
-                  
-                  {/* Custom Coded Websites */}
-                  <div className="p-4 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 hover:border-red-500/30 transition-all">
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center flex-shrink-0">
-                        <Globe className="w-5 h-5 text-red-400" />
-                      </div>
-                      <div>
-                        <h3 className="font-orbitron font-bold text-sm lg:text-base text-foreground mb-1">Custom Coded Websites</h3>
-                        <p className="text-xs text-muted-foreground">Hand-coded React/TypeScript websites. Faster load times, better SEO rankings, and complete control over every feature. No WordPress, no Wix—just clean, professional code.</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Automations & SMS */}
-                  <div className="p-4 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 hover:border-red-500/30 transition-all">
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center flex-shrink-0">
-                        <Phone className="w-5 h-5 text-red-400" />
-                      </div>
-                      <div>
-                        <h3 className="font-orbitron font-bold text-sm lg:text-base text-foreground mb-1">Custom Automations & SMS Reminders</h3>
-                        <p className="text-xs text-muted-foreground">Automated SMS and email follow-ups built directly into your website. New lead? They get an instant text. Appointment booked? Automatic reminder. No manual work required.</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* AVA Integration */}
-                  <div className="p-4 rounded-xl bg-gradient-to-br from-cyan-500/10 to-blue-500/10 backdrop-blur-md border border-cyan-500/30 hover:border-cyan-400 transition-all">
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-cyan-500/20 flex items-center justify-center flex-shrink-0">
-                        <Brain className="w-5 h-5 text-cyan-400" />
-                      </div>
-                      <div>
-                        <h3 className="font-orbitron font-bold text-sm lg:text-base text-foreground mb-1">AVA Integration</h3>
-                        <p className="text-xs text-muted-foreground">Our proprietary system adds voice chat, voice calls, and automatic appointment booking to your website. AVA answers questions, qualifies leads, and books appointments 24/7—while you sleep.</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Telegram Support */}
-                  <div className="p-4 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 hover:border-red-500/30 transition-all">
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center flex-shrink-0">
-                        <Mail className="w-5 h-5 text-red-400" />
-                      </div>
-                      <div>
-                        <h3 className="font-orbitron font-bold text-sm lg:text-base text-foreground mb-1">Telegram Group for Direct Support</h3>
-                        <p className="text-xs text-muted-foreground">Every client gets added to a private Telegram group. Need a quick change? Have a question? Message us directly. Fast response times, real humans, no ticket systems.</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Pricing Model */}
-              <div className="relative p-4 lg:p-6 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border border-red-500/30 mb-6">
-                <div className="grid lg:grid-cols-2 gap-4 items-center">
-                  <div>
-                    <h3 className="font-orbitron font-bold text-lg lg:text-xl text-foreground mb-2">Simple, Transparent Pricing</h3>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      No hidden fees. No long-term contracts. No expensive monthly retainers.
-                    </p>
-                    <ul className="space-y-2 text-xs text-muted-foreground">
-                      <li className="flex items-center gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0" />
-                        <span><strong className="text-foreground">One-time build fee</strong> — Your website, fully custom coded</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0" />
-                        <span><strong className="text-foreground">Small monthly hosting & management fee</strong> — We handle servers, updates, security</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0" />
-                        <span><strong className="text-foreground">Adjustments charged per project</strong> — No hourly billing, no surprises</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0" />
-                        <span><strong className="text-foreground">Usage-based services</strong> — Pay for what you actually use</span>
-                      </li>
-                    </ul>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-center">
-                      <div className="text-2xl lg:text-3xl font-black text-red-400 font-orbitron">100+</div>
-                      <div className="text-[10px] text-muted-foreground">Websites Built</div>
-                    </div>
-                    <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-center">
-                      <div className="text-2xl lg:text-3xl font-black text-red-400 font-orbitron">7</div>
-                      <div className="text-[10px] text-muted-foreground">Days to Launch</div>
-                    </div>
-                    <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-center">
-                      <div className="text-2xl lg:text-3xl font-black text-red-400 font-orbitron">24/7</div>
-                      <div className="text-[10px] text-muted-foreground">AVA Support</div>
-                    </div>
-                    <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-center">
-                      <div className="text-2xl lg:text-3xl font-black text-red-400 font-orbitron">4.9★</div>
-                      <div className="text-[10px] text-muted-foreground">Client Rating</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Trust Badges */}
-              <div className="flex flex-wrap justify-center gap-2 mb-4">
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 mb-12">
                 {[
-                  { icon: '🔒', text: 'SSL Secured' },
-                  { icon: '⚡', text: 'Fast Loading' },
-                  { icon: '📱', text: 'Mobile Optimized' },
-                  { icon: '🇺🇸', text: 'Based in Chicago' },
-                  { icon: '💬', text: 'Direct Support' },
-                ].map((badge, i) => (
-                  <div key={i} className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-orbitron text-muted-foreground">
-                    <span>{badge.icon}</span>
-                    <span>{badge.text}</span>
+                  {
+                    icon: Globe,
+                    title: 'Custom Coded Website',
+                    description: 'Hand-coded React/TypeScript. No WordPress, no templates. Faster load times, better SEO, total control over every pixel.',
+                    color: 'red',
+                  },
+                  {
+                    icon: Phone,
+                    title: 'SMS & Email Automations',
+                    description: 'New lead? Instant text. Appointment booked? Auto reminder. Follow-ups run on autopilot while you focus on your business.',
+                    color: 'red',
+                  },
+                  {
+                    icon: Brain,
+                    title: 'AVA AI Assistant',
+                    description: 'Voice chat, voice calls, and automatic appointment booking built into your site. AVA qualifies leads and books appointments 24/7.',
+                    color: 'cyan',
+                  },
+                  {
+                    icon: Shield,
+                    title: 'Your Own Server',
+                    description: 'Your website lives on its own managed server. We handle updates, security, backups, and performance. You never touch a thing.',
+                    color: 'red',
+                  },
+                  {
+                    icon: MessageCircle,
+                    title: 'Direct Telegram Support',
+                    description: 'Every client gets a private Telegram group. Need a change? Have a question? Message us directly. Fast responses, real people.',
+                    color: 'red',
+                  },
+                  {
+                    icon: Search,
+                    title: 'SEO Built In',
+                    description: 'Every page is optimized for Google from day one. Proper meta tags, fast loading, structured data, and mobile-first design.',
+                    color: 'red',
+                  },
+                ].map((feature, i) => {
+                  const colorClasses = feature.color === 'cyan' 
+                    ? { bg: 'bg-cyan-500/15', border: 'border-cyan-500/30', hover: 'hover:border-cyan-400/50', icon: 'text-cyan-400', iconBg: 'bg-cyan-500/20' }
+                    : { bg: 'bg-white/5', border: 'border-white/10', hover: 'hover:border-red-500/30', icon: 'text-red-400', iconBg: 'bg-red-500/15' };
+                  return (
+                    <div key={i} className={`p-5 rounded-2xl backdrop-blur-md border transition-all duration-300 group ${colorClasses.bg} ${colorClasses.border} ${colorClasses.hover}`}>
+                      <div className={`w-12 h-12 rounded-xl ${colorClasses.iconBg} flex items-center justify-center mb-4`}>
+                        <feature.icon className={`w-6 h-6 ${colorClasses.icon}`} />
+                      </div>
+                      <h3 className="font-orbitron font-bold text-base text-foreground mb-2">{feature.title}</h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {[
+                  { value: '100+', label: 'Websites Built', color: 'text-red-400' },
+                  { value: '7', label: 'Days to Launch', color: 'text-green-400' },
+                  { value: '24/7', label: 'AVA Support', color: 'text-cyan-400' },
+                  { value: '4.9', label: 'Client Rating', color: 'text-yellow-400' },
+                ].map((stat, i) => (
+                  <div key={i} className="p-4 rounded-xl bg-white/5 border border-white/10 text-center">
+                    <div className={`text-3xl lg:text-4xl font-black font-orbitron ${stat.color}`}>{stat.value}</div>
+                    <div className="text-xs text-muted-foreground mt-1">{stat.label}</div>
                   </div>
                 ))}
               </div>
+            </div>
+          </section>
 
-              {/* CTA */}
-              <div className="text-center">
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <button
-                    onClick={() => setIsQualifyDialogOpen(true)}
-                    className="group relative px-6 py-3 rounded-xl bg-red-500/10 backdrop-blur-md border border-red-500/30 text-white font-bold text-sm shadow-lg hover:shadow-xl hover:shadow-red-500/20 hover:bg-red-500/20 hover:border-red-500/50 hover:scale-[1.02] transition-all duration-300 font-orbitron overflow-hidden"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/10 to-red-500/0 group-hover:from-red-500/10 group-hover:via-red-500/20 group-hover:to-red-500/10 transition-all duration-500" />
-                    <span className="relative flex items-center justify-center gap-2">
-                      <Globe className="w-4 h-4 text-red-400" />
-                      Get a Free Website Quote
-                    </span>
-                  </button>
-                  
-                  <button
-                    onClick={openCalendly}
-                    className="group px-6 py-3 rounded-xl bg-white/5 backdrop-blur-md border border-white/20 text-white font-bold text-sm hover:bg-white/10 hover:border-white/30 hover:shadow-lg hover:shadow-white/10 hover:scale-[1.02] transition-all duration-300 font-orbitron flex items-center justify-center gap-2"
-                  >
-                    Schedule a Strategy Call
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </button>
-                </div>
-                <p className="text-[10px] text-muted-foreground mt-3">
-                  Free consultation • No obligations • Results in 7 days
+          {/* HOW IT WORKS SECTION */}
+          <section className="py-16 lg:py-24 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-red-500/[0.03] to-transparent" />
+            <div className="container mx-auto px-4 lg:px-8 max-w-5xl relative z-10">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl lg:text-5xl font-black leading-tight font-orbitron mb-4">
+                  <span className="text-foreground">How It </span>
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-red-500">Works</span>
+                </h2>
+                <p className="text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto">
+                  From first call to live website in 7 days. Here's exactly what happens.
                 </p>
+              </div>
+
+              <div className="space-y-0">
+                {[
+                  {
+                    step: '01',
+                    title: 'Discovery Call',
+                    description: 'We learn about your business, your goals, and what you need. We review your current website (if any) and your Google presence. 15 minutes.',
+                    icon: Phone,
+                    color: 'red',
+                  },
+                  {
+                    step: '02',
+                    title: 'We Build Everything',
+                    description: 'Our team custom codes your website, sets up automations, configures your server, and installs AVA. You get updates in your Telegram group along the way.',
+                    icon: Globe,
+                    color: 'red',
+                  },
+                  {
+                    step: '03',
+                    title: 'Review & Launch',
+                    description: 'You review the finished product in your client dashboard. We make any final tweaks, then push it live. Domain, SSL, and everything configured.',
+                    icon: CheckCircle2,
+                    color: 'green',
+                  },
+                  {
+                    step: '04',
+                    title: 'We Manage It All',
+                    description: 'Server management, security updates, performance monitoring, and ongoing support. Need changes? Submit a request through your dashboard or message us on Telegram.',
+                    icon: Shield,
+                    color: 'cyan',
+                  },
+                ].map((item, i) => (
+                  <div key={i} className="relative flex gap-6 lg:gap-8">
+                    <div className="flex flex-col items-center">
+                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${
+                        item.color === 'cyan' ? 'bg-cyan-500/15 border border-cyan-500/30' :
+                        item.color === 'green' ? 'bg-green-500/15 border border-green-500/30' :
+                        'bg-red-500/15 border border-red-500/30'
+                      }`}>
+                        <item.icon className={`w-6 h-6 ${
+                          item.color === 'cyan' ? 'text-cyan-400' :
+                          item.color === 'green' ? 'text-green-400' :
+                          'text-red-400'
+                        }`} />
+                      </div>
+                      {i < 3 && (
+                        <div className="w-px h-full min-h-[40px] bg-gradient-to-b from-white/20 to-transparent my-2" />
+                      )}
+                    </div>
+                    <div className="pb-10">
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="text-xs font-orbitron text-muted-foreground font-bold">STEP {item.step}</span>
+                      </div>
+                      <h3 className="font-orbitron font-bold text-lg lg:text-xl text-foreground mb-2">{item.title}</h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed max-w-lg">{item.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* PRICING SECTION */}
+          <section className="py-16 lg:py-24 relative overflow-hidden">
+            <div className="container mx-auto px-4 lg:px-8 max-w-5xl relative z-10">
+              <div className="text-center mb-10">
+                <h2 className="text-3xl lg:text-5xl font-black leading-tight font-orbitron mb-4">
+                  <span className="text-foreground">Simple, </span>
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-red-500">Transparent Pricing</span>
+                </h2>
+                <p className="text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto">
+                  No hidden fees. No long-term contracts. Know exactly what you're paying for.
+                </p>
+              </div>
+
+              <div className="relative p-6 lg:p-8 rounded-2xl bg-gradient-to-br from-white/8 to-white/3 backdrop-blur-xl border border-white/15 mb-8">
+                <div className="grid lg:grid-cols-2 gap-8 items-start">
+                  <div>
+                    <h3 className="font-orbitron font-bold text-xl text-foreground mb-4">How Our Pricing Works</h3>
+                    <ul className="space-y-4">
+                      {[
+                        { title: 'One-time build fee', desc: 'Your website, fully custom coded and deployed on your own server' },
+                        { title: 'Small monthly fee', desc: 'Covers hosting, server management, security updates, and AVA support' },
+                        { title: 'Changes priced per project', desc: 'No hourly billing. You know the cost before we start any work' },
+                        { title: 'Usage-based add-ons', desc: 'SMS, automations, and extra features — only pay for what you use' },
+                      ].map((item, i) => (
+                        <li key={i} className="flex items-start gap-3">
+                          <CheckCircle2 className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                          <div>
+                            <span className="text-sm font-bold text-foreground">{item.title}</span>
+                            <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="p-5 rounded-xl bg-red-500/10 border border-red-500/30">
+                    <h4 className="font-orbitron font-bold text-base text-foreground mb-3">What's Included Every Month</h4>
+                    <ul className="space-y-2">
+                      {[
+                        'Server hosting & management',
+                        'SSL certificate & security',
+                        'Performance monitoring',
+                        'AVA AI assistant (chat + voice)',
+                        '1 content update per month',
+                        'Telegram group support',
+                        'Client dashboard access',
+                        'Uptime monitoring & backups',
+                      ].map((item, i) => (
+                        <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* FAQ SECTION */}
+          <section className="py-16 lg:py-24 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-500/[0.02] to-transparent" />
+            <div className="container mx-auto px-4 lg:px-8 max-w-3xl relative z-10">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl lg:text-5xl font-black leading-tight font-orbitron mb-4">
+                  <span className="text-foreground">Frequently Asked </span>
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-red-500">Questions</span>
+                </h2>
+              </div>
+
+              <div className="space-y-3">
+                {[
+                  {
+                    q: 'How long does it take to build my website?',
+                    a: 'Most websites are fully live within 7 days. More complex projects with custom features may take 10-14 days. You\'ll get daily updates in your Telegram group.',
+                  },
+                  {
+                    q: 'Do I own my website?',
+                    a: 'Yes. You own all the code and content. If you ever decide to leave, we\'ll hand over everything — no hostage situations, no hidden clauses.',
+                  },
+                  {
+                    q: 'What is AVA?',
+                    a: 'AVA is our proprietary AI assistant that gets installed on your website. She handles voice chat, answers questions, qualifies leads, and books appointments automatically — 24/7, even while you sleep.',
+                  },
+                  {
+                    q: 'Why custom code instead of WordPress?',
+                    a: 'Custom-coded websites load faster, rank better on Google, and give us complete control over every feature. No plugins to break, no security vulnerabilities from outdated themes, no bloat.',
+                  },
+                  {
+                    q: 'What happens if I need changes after launch?',
+                    a: 'Submit a request through your client dashboard or message us on Telegram. Small tweaks are included monthly. Larger projects get a flat quote before we start — no hourly surprises.',
+                  },
+                  {
+                    q: 'Do you offer refunds?',
+                    a: 'We offer a satisfaction guarantee. If you\'re not happy with the final product before launch, we\'ll revise it until you are. We don\'t charge until you approve.',
+                  },
+                  {
+                    q: 'Can you help with Google Maps / Local SEO?',
+                    a: 'Absolutely. We offer a separate Google Map Dominance service that gets your business into the top 3 local results. Results in 7 days or you don\'t pay.',
+                  },
+                  {
+                    q: 'What\'s included in the monthly fee?',
+                    a: 'Server hosting, security updates, SSL, performance monitoring, AVA AI support, 1 monthly content update, Telegram group access, client dashboard, and uptime monitoring with backups.',
+                  },
+                ].map((faq, i) => (
+                  <details key={i} className="group rounded-xl bg-white/5 border border-white/10 overflow-hidden">
+                    <summary className="flex items-center justify-between p-4 lg:p-5 cursor-pointer list-none select-none hover:bg-white/5 transition-colors">
+                      <span className="font-orbitron font-bold text-sm lg:text-base text-foreground pr-4">{faq.q}</span>
+                      <ChevronDown className="w-5 h-5 text-muted-foreground shrink-0 transition-transform group-open:rotate-180" />
+                    </summary>
+                    <div className="px-4 lg:px-5 pb-4 lg:pb-5">
+                      <p className="text-sm text-muted-foreground leading-relaxed">{faq.a}</p>
+                    </div>
+                  </details>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* FINAL CTA SECTION */}
+          <section className="py-16 lg:py-24 relative overflow-hidden">
+            <div className="container mx-auto px-4 lg:px-8 max-w-4xl relative z-10">
+              <div className="relative p-8 lg:p-12 rounded-3xl bg-gradient-to-br from-red-500/15 via-red-600/10 to-red-500/15 border border-red-500/30 text-center overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/5 to-red-500/0" />
+                <div className="relative z-10">
+                  <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black font-orbitron mb-4 text-foreground">
+                    Ready to Stop Losing Leads?
+                  </h2>
+                  <p className="text-base lg:text-lg text-muted-foreground max-w-xl mx-auto mb-8">
+                    Get a custom-coded website with built-in automations, AI support, and full management. Live in 7 days.
+                  </p>
+
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
+                    <button
+                      onClick={() => setIsQualifyDialogOpen(true)}
+                      className="group relative px-8 py-4 rounded-xl bg-red-500/20 backdrop-blur-md border-2 border-red-500/40 text-white font-bold text-base shadow-lg hover:shadow-2xl hover:shadow-red-500/30 hover:bg-red-500/30 hover:border-red-500/60 hover:scale-[1.02] transition-all duration-300 font-orbitron overflow-hidden"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/10 to-red-500/0 group-hover:from-red-500/10 group-hover:via-red-500/20 group-hover:to-red-500/10 transition-all duration-500" />
+                      <span className="relative flex items-center justify-center gap-2">
+                        <Globe className="w-5 h-5 text-red-400" />
+                        See If You Qualify — Free
+                      </span>
+                    </button>
+                    <button
+                      onClick={openCalendly}
+                      className="group px-8 py-4 rounded-xl bg-white/5 backdrop-blur-md border-2 border-white/20 text-white font-bold text-base hover:bg-white/10 hover:border-white/30 hover:shadow-lg hover:shadow-white/10 hover:scale-[1.02] transition-all duration-300 font-orbitron flex items-center justify-center gap-2"
+                    >
+                      Book a Strategy Call
+                      <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </button>
+                  </div>
+
+                  <div className="flex flex-wrap justify-center gap-3">
+                    {['Free consultation', 'No obligations', 'Live in 7 days', 'Cancel anytime'].map((item) => (
+                      <div key={item} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
+                        <span>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </section>
