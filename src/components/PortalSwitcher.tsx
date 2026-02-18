@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Building2, Users, Briefcase } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
 
 type PortalType = 'agency' | 'client' | 'reseller';
 
@@ -9,7 +10,7 @@ interface PortalSwitcherProps {
   className?: string;
 }
 
-const portals: { type: PortalType; label: string; path: string; icon: React.ElementType; color: string }[] = [
+const allPortals: { type: PortalType; label: string; path: string; icon: React.ElementType; color: string }[] = [
   {
     type: 'agency',
     label: 'Agency',
@@ -35,6 +36,7 @@ const portals: { type: PortalType; label: string; path: string; icon: React.Elem
 
 const PortalSwitcher: React.FC<PortalSwitcherProps> = ({ className }) => {
   const location = useLocation();
+  const { isAdmin, isReseller } = useAuth();
 
   const getCurrentPortal = (): PortalType => {
     if (location.pathname.includes('client-dashboard')) return 'client';
@@ -43,6 +45,14 @@ const PortalSwitcher: React.FC<PortalSwitcherProps> = ({ className }) => {
   };
 
   const currentPortal = getCurrentPortal();
+
+  // Reseller users see Agency + Client portals (not Reseller management)
+  const portals = isReseller && !isAdmin
+    ? allPortals.filter(p => p.type === 'agency' || p.type === 'client')
+    : allPortals;
+
+  // Don't render switcher if only one portal
+  if (portals.length <= 1) return null;
 
   return (
     <div className={cn("flex items-center gap-1 p-1 rounded-xl bg-card/30 border border-white/10", className)}>

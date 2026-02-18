@@ -2149,17 +2149,6 @@ const IndividualClientProfile: React.FC = () => {
                                 <ExternalLink className="w-3 h-3" />
                             </a>
                         )}
-                        {!isFeaturedClient && (
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="font-orbitron text-[10px] sm:text-xs bg-transparent border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-400/50 hover:text-cyan-300 px-3 sm:px-4"
-                                onClick={() => setIsEditing(!isEditing)}
-                            >
-                                <Settings className="w-3 h-3 mr-1.5 sm:mr-2" />
-                                {isEditing ? 'Cancel' : 'Edit Client'}
-                            </Button>
-                        )}
                     </div>
                 </div>
 
@@ -2183,6 +2172,23 @@ const IndividualClientProfile: React.FC = () => {
                         color="cyan"
                     >
                         <div className="space-y-3 sm:space-y-4">
+                                {!isFeaturedClient && (
+                                    <div className="flex justify-end">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className={`font-orbitron text-[10px] sm:text-xs px-3 sm:px-4 ${
+                                                isEditing
+                                                    ? "bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 hover:border-red-400/50 hover:text-red-300"
+                                                    : "bg-transparent border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-400/50 hover:text-cyan-300"
+                                            }`}
+                                            onClick={() => setIsEditing(!isEditing)}
+                                        >
+                                            <Settings className="w-3 h-3 mr-1.5 sm:mr-2" />
+                                            {isEditing ? 'Cancel Editing' : 'Edit Client'}
+                                        </Button>
+                                    </div>
+                                )}
                                 <div>
                                     <p className="text-[9px] sm:text-[10px] font-orbitron text-muted-foreground uppercase tracking-widest mb-1">Client Name</p>
                                     {isEditing && !isFeaturedClient ? (
@@ -4223,6 +4229,7 @@ const IndividualClientProfile: React.FC = () => {
                         icon={MessageSquare}
                         color="orange"
                         notificationCount={pendingRequestsCount || 0}
+                        maxWidth="max-w-6xl w-[95vw]"
                     >
                         <ClientRequestsTracker
                             clientId={id || ''}

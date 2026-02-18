@@ -30,6 +30,7 @@ import ClientRequestForm from '@/components/ClientRequestForm';
 import ClientRequestsTracker from '@/components/ClientRequestsTracker';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Interface for client service items
 interface ClientServiceItem {
@@ -74,16 +75,25 @@ const getClientLogo = (client: any): string | null => {
 const ClientDashboard: React.FC = () => {
     const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const { isAdmin, isReseller, resellerId: userResellerId } = useAuth();
+    const isResellerUser = isReseller && !isAdmin;
 
-    // Fetch all clients
+    // Fetch clients - scoped by reseller for reseller users
     const { data: allClients = [], isLoading: clientsLoading } = useQuery({
-        queryKey: ['all-clients-for-client-portal'],
+        queryKey: ['all-clients-for-client-portal', isResellerUser ? userResellerId : 'admin'],
         queryFn: async () => {
-            const { data, error } = await supabase
+            let query = supabase
                 .from('clients')
                 .select('*')
                 .neq('status', 'ARCHIVED')
                 .order('created_at', { ascending: false });
+
+            // Reseller users only see clients assigned to their reseller
+            if (isResellerUser && userResellerId) {
+                query = query.eq('reseller_id', userResellerId);
+            }
+
+            const { data, error } = await query;
             if (error) throw error;
             return data || [];
         }

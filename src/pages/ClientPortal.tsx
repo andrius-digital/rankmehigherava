@@ -39,9 +39,10 @@ import {
     ShoppingCart,
     Users,
     Eye,
-    EyeOff
+    EyeOff,
+    LogOut
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import PortalSwitcher from '@/components/PortalSwitcher';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -57,6 +58,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import FileUpload from '@/components/FileUpload';
 import LogoGenerator from '@/components/LogoGenerator';
+import ResellerUserManagement from '@/components/ResellerUserManagement';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Helper function to check if client is new (created within last 7 days)
 const isNewClient = (client: any): boolean => {
@@ -279,7 +282,15 @@ const ClientPortal: React.FC = () => {
     
     const { toast } = useToast();
     const queryClient = useQueryClient();
-    
+    const navigate = useNavigate();
+    const { isAdmin, isReseller, resellerId: userResellerId, signOut } = useAuth();
+    const isResellerUser = isReseller && !isAdmin;
+
+    const handleLogout = async () => {
+        await signOut();
+        navigate('/auth', { replace: true });
+    };
+
     // Funnel form modal state
     const [showFunnelForm, setShowFunnelForm] = useState(false);
     const [funnelStep, setFunnelStep] = useState(1);
@@ -386,23 +397,10 @@ const ClientPortal: React.FC = () => {
     const [isSubmittingExistingWebsite, setIsSubmittingExistingWebsite] = useState(false);
     const [isSubmittingExistingFunnel, setIsSubmittingExistingFunnel] = useState(false);
 
-    // Reseller modal and form state
-    const [showResellerForm, setShowResellerForm] = useState(false);
-    const [isSubmittingReseller, setIsSubmittingReseller] = useState(false);
+    // Reseller modal state
     const [showAllResellers, setShowAllResellers] = useState(false);
+    const [showResellerUsers, setShowResellerUsers] = useState(false);
     const resellerScrollRef = useRef<HTMLDivElement>(null);
-    const [resellerFormData, setResellerFormData] = useState({
-        companyName: '',
-        contactName: '',
-        contactEmail: '',
-        contactPhone: '',
-        resellerType: '', // 'hosting', 'domains', 'both'
-        resellerPlatform: '', // e.g., 'GoDaddy', 'Namecheap', 'Cloudflare', etc.
-        loginUrl: '',
-        username: '',
-        password: '',
-        notes: '',
-    });
 
     const DELETE_PASSWORD = 'mundelein';
 
@@ -679,6 +677,7 @@ const ClientPortal: React.FC = () => {
                     brand_voice: 'Website Client',
                     status: 'PENDING',
                     notes: JSON.stringify(notesData),
+                    ...(isResellerUser && userResellerId ? { reseller_id: userResellerId } : {}),
                 });
 
             if (clientError) throw new Error(clientError.message);
@@ -770,7 +769,8 @@ const ClientPortal: React.FC = () => {
                     target_audience: funnelFormData.targetAudience || 'Not specified',
                     status: 'PENDING',
                     primary_services: funnelServices,
-                    notes: JSON.stringify(notesWithLogo), // Logo stored in notes JSON
+                    notes: JSON.stringify(notesWithLogo),
+                    ...(isResellerUser && userResellerId ? { reseller_id: userResellerId } : {}),
                 });
 
             if (clientError) {
@@ -838,6 +838,7 @@ const ClientPortal: React.FC = () => {
                     brand_voice: 'Website Client',
                     status: 'PENDING',
                     notes: JSON.stringify(notesData),
+                    ...(isResellerUser && userResellerId ? { reseller_id: userResellerId } : {}),
                 });
 
             if (clientError) throw new Error(clientError.message);
@@ -909,6 +910,7 @@ const ClientPortal: React.FC = () => {
                     status: 'PENDING',
                     primary_services: funnelServices,
                     notes: JSON.stringify(notesData),
+                    ...(isResellerUser && userResellerId ? { reseller_id: userResellerId } : {}),
                 });
 
             if (clientError) throw new Error(clientError.message);
@@ -935,97 +937,28 @@ const ClientPortal: React.FC = () => {
         }
     };
 
-    // Reset reseller form
-    const resetResellerForm = () => {
-        setResellerFormData({
-            companyName: '',
-            contactName: '',
-            contactEmail: '',
-            contactPhone: '',
-            resellerType: '',
-            resellerPlatform: '',
-            loginUrl: '',
-            username: '',
-            password: '',
-            notes: '',
-        });
-    };
-
-    // Handle reseller account submission
-    const handleResellerSubmit = async () => {
-        if (!resellerFormData.companyName) {
-            toast({
-                title: "Missing required field",
-                description: "Please enter the company name.",
-                variant: "destructive",
-            });
-            return;
-        }
-
-        setIsSubmittingReseller(true);
-
-        try {
-            const notesData = {
-                submission_type: 'reseller-account',
-                is_reseller: true,
-                contact_name: resellerFormData.contactName,
-                additional_notes: resellerFormData.notes,
-                submitted_at: new Date().toISOString(),
-            };
-
-            const resellerServices = ['Reseller'];
-
-            const { error: clientError } = await supabase
-                .from('clients')
-                .insert({
-                    name: resellerFormData.companyName,
-                    company_name: resellerFormData.companyName,
-                    email: resellerFormData.contactEmail || null,
-                    phone: resellerFormData.contactPhone || null,
-                    brand_voice: 'Reseller Account',
-                    status: 'PENDING',
-                    primary_services: resellerServices,
-                    notes: JSON.stringify(notesData),
-                });
-
-            if (clientError) throw new Error(clientError.message);
-
-            queryClient.invalidateQueries({ queryKey: ['all-clients'] });
-
-            toast({
-                title: "Reseller account created!",
-                description: `${resellerFormData.companyName} has been added.`,
-            });
-
-            resetResellerForm();
-            setShowResellerForm(false);
-        } catch (error) {
-            console.error('Reseller submission error:', error);
-            toast({
-                title: "Submission failed",
-                description: error instanceof Error ? error.message : "Please try again.",
-                variant: "destructive",
-            });
-        } finally {
-            setIsSubmittingReseller(false);
-        }
-    };
-
-    // Fetch ALL clients from database - no limit
+    // Fetch clients from database - scoped by reseller for reseller users
     const { data: dbClients = [], isLoading, error: queryError, refetch } = useQuery({
-        queryKey: ['all-clients'],
+        queryKey: ['all-clients', isResellerUser ? userResellerId : 'admin'],
         queryFn: async () => {
-            const { data, error } = await supabase
+            let query = supabase
                 .from('clients')
-                .select('*') // Select all columns to include any that exist
+                .select('*')
                 .order('created_at', { ascending: false });
+
+            // Reseller users only see clients assigned to their reseller
+            if (isResellerUser && userResellerId) {
+                query = query.eq('reseller_id', userResellerId);
+            }
+
+            const { data, error } = await query;
             if (error) throw error;
             console.log('Fetched clients:', data?.length, data);
             return data as any[];
         },
-        staleTime: 1000 * 60 * 1, // Refresh more often (1 minute)
+        staleTime: 1000 * 60 * 1,
         gcTime: 1000 * 60 * 10,
-        refetchOnWindowFocus: true, // Refetch when window is focused
+        refetchOnWindowFocus: true,
     });
 
     // Fetch pending request counts for all clients (for notification badges)
@@ -1114,6 +1047,12 @@ const ClientPortal: React.FC = () => {
     const resellerClientsRaw = activeClients.filter(c => isResellerAccount(c));
     const resellerClients = sortAndFilterClients(resellerClientsRaw, globalSearch);
 
+    // Build reseller name lookup map (reseller_id -> reseller name) for admin GOD view
+    const resellerNameMap: Record<string, string> = {};
+    resellerClientsRaw.forEach(r => {
+        resellerNameMap[r.id] = r.company_name || r.name || 'Unknown Reseller';
+    });
+
     // ALL website clients (NOT funnel clients, NOT resellers)
     const websiteClientsRaw = activeClients.filter(c => !isFunnelClient(c) && !isResellerAccount(c));
     const websiteClients = sortAndFilterClients(websiteClientsRaw, globalSearch);
@@ -1184,15 +1123,17 @@ const ClientPortal: React.FC = () => {
                         </div>
 
                         <div className="flex gap-1.5 flex-wrap">
-                        <button 
+                        {!isResellerUser && (
+                        <button
                             onClick={() => setShowExistingClientTypeModal(true)}
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-cyan-500/30 bg-transparent hover:bg-cyan-500/10 transition-all font-orbitron text-[8px] uppercase tracking-widest text-cyan-400 font-bold"
                         >
                             <PlusCircle className="w-2.5 h-2.5" />
                             Add Existing Client
                         </button>
-                        <Link 
-                            to="/website-submissions" 
+                        )}
+                        <Link
+                            to="/website-submissions"
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 transition-all font-orbitron text-[8px] uppercase tracking-widest text-white font-bold"
                         >
                             <MonitorSmartphone className="w-2.5 h-2.5" />
@@ -1205,13 +1146,15 @@ const ClientPortal: React.FC = () => {
                             <Layers className="w-2.5 h-2.5" />
                             Onboard New Funnel
                         </button>
+                        {!isResellerUser && (
                         <button
-                            onClick={() => setShowResellerForm(true)}
+                            onClick={() => setShowResellerUsers(true)}
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 transition-all font-orbitron text-[8px] uppercase tracking-widest text-white font-bold"
                         >
                             <Users className="w-2.5 h-2.5" />
-                            Create Reseller
+                            Manage Resellers
                         </button>
+                        )}
                         <button
                             onClick={() => refetch()}
                             className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all font-orbitron text-[8px] uppercase tracking-widest text-muted-foreground"
@@ -1219,22 +1162,34 @@ const ClientPortal: React.FC = () => {
                         >
                             <RefreshCw className={`w-2.5 h-2.5 ${isLoading ? 'animate-spin' : ''}`} />
                         </button>
-                        <Link 
-                            to="/avaadminpanel" 
+                        {!isResellerUser && (
+                        <Link
+                            to="/avaadminpanel"
                             className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all font-orbitron text-[8px] uppercase tracking-widest text-muted-foreground"
                         >
                             AVA Admin <Layout className="w-2.5 h-2.5" />
                         </Link>
+                        )}
+                        {!isResellerUser && (
                         <button
                             onClick={() => setShowArchived(!showArchived)}
                             className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border transition-all font-orbitron text-[8px] uppercase tracking-widest ${
-                                showArchived 
-                                    ? 'bg-orange-500/20 border-orange-500/30 text-orange-400' 
+                                showArchived
+                                    ? 'bg-orange-500/20 border-orange-500/30 text-orange-400'
                                     : 'bg-white/5 border-white/10 hover:bg-white/10 text-muted-foreground'
                             }`}
                         >
                             <Archive className="w-2.5 h-2.5" />
                             Archived {archivedClients.length > 0 && `(${archivedClients.length})`}
+                        </button>
+                        )}
+                        <button
+                            onClick={handleLogout}
+                            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition-all font-orbitron text-[8px] uppercase tracking-widest text-red-400"
+                            title="Sign out"
+                        >
+                            <LogOut className="w-2.5 h-2.5" />
+                            Logout
                         </button>
                         </div>
                     </div>
@@ -1412,7 +1367,17 @@ const ClientPortal: React.FC = () => {
                                             </h3>
                                         </div>
                                     </div>
-                                    
+
+                                    {/* Reseller badge - only show in admin view when client has a reseller */}
+                                    {!isResellerUser && client.reseller_id && resellerNameMap[client.reseller_id] && (
+                                        <div className="flex items-center gap-1.5 mb-2 -mt-1">
+                                            <span className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-orange-500/10 border border-orange-500/20 text-[8px] font-orbitron text-orange-400">
+                                                <Users className="w-2.5 h-2.5" />
+                                                {resellerNameMap[client.reseller_id]}
+                                            </span>
+                                        </div>
+                                    )}
+
                                     {clientServices.length > 0 && (
                                         <div className="flex flex-wrap gap-1 mb-3">
                                             {clientServices.slice(0, 3).map((service: string, i: number) => (
@@ -1422,7 +1387,7 @@ const ClientPortal: React.FC = () => {
                                             ))}
                                         </div>
                                     )}
-                                    
+
                                     <div className="flex items-center justify-between text-[10px] text-muted-foreground">
                                         <span className="flex items-center gap-1 truncate">
                                             <Globe className="w-2.5 h-2.5 text-cyan-400" />
@@ -1602,7 +1567,17 @@ const ClientPortal: React.FC = () => {
                                             </div>
                                         </div>
                                     </Link>
-                                    
+
+                                    {/* Reseller badge - only show in admin view when client has a reseller */}
+                                    {!isResellerUser && client.reseller_id && resellerNameMap[client.reseller_id] && (
+                                        <div className="flex items-center gap-1.5 mb-2 -mt-1">
+                                            <span className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-orange-500/10 border border-orange-500/20 text-[8px] font-orbitron text-orange-400">
+                                                <Users className="w-2.5 h-2.5" />
+                                                {resellerNameMap[client.reseller_id]}
+                                            </span>
+                                        </div>
+                                    )}
+
                                     {clientServices.length > 0 && (
                                         <div className="flex flex-wrap gap-1 mb-3">
                                             {clientServices.slice(0, 3).map((service: string, i: number) => (
@@ -1612,7 +1587,7 @@ const ClientPortal: React.FC = () => {
                                             ))}
                                         </div>
                                     )}
-                                    
+
                                     {/* Domain Toggle Section */}
                                     {hasDomains ? (
                                         <div className="mt-2 pt-2 border-t border-cyan-500/10">
@@ -1685,8 +1660,8 @@ const ClientPortal: React.FC = () => {
                     )}
                 </div>
 
-                {/* RESELLERS SECTION */}
-                <div className="mt-8">
+                {/* RESELLERS SECTION - Hidden for reseller users */}
+                {!isResellerUser && <div className="mt-8">
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-2">
                             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500/20 to-pink-600/20 border border-purple-500/30 flex items-center justify-center">
@@ -1795,7 +1770,7 @@ const ClientPortal: React.FC = () => {
                             No reseller accounts yet. Create your first one!
                         </div>
                     )}
-                </div>
+                </div>}
 
                 {/* ARCHIVED SECTION */}
                 {showArchived && archivedClients.length > 0 && (
@@ -2834,111 +2809,12 @@ const ClientPortal: React.FC = () => {
                 </div>
             )}
 
-            {/* Add Reseller Modal */}
-            {showResellerForm && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div
-                        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
-                        onClick={() => { setShowResellerForm(false); resetResellerForm(); }}
-                    />
-                    <div className="relative z-10 w-full max-w-md bg-gradient-to-br from-card via-card/95 to-background border border-purple-500/30 rounded-2xl shadow-2xl shadow-purple-500/20">
-                        <div className="p-6 border-b border-purple-500/20">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center">
-                                        <Users className="w-5 h-5 text-white" />
-                                    </div>
-                                    <div>
-                                        <h2 className="font-orbitron text-lg font-bold text-foreground">Add Reseller</h2>
-                                        <p className="text-xs text-muted-foreground">Onboard a marketing agency</p>
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={() => { setShowResellerForm(false); resetResellerForm(); }}
-                                    className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                                >
-                                    <X className="w-5 h-5 text-muted-foreground" />
-                                </button>
-                            </div>
-                        </div>
-                        <div className="p-6 space-y-4">
-                            <div>
-                                <Label className="text-sm">Company Name *</Label>
-                                <Input
-                                    className="mt-1"
-                                    value={resellerFormData.companyName}
-                                    onChange={(e) => setResellerFormData({ ...resellerFormData, companyName: e.target.value })}
-                                    placeholder="Agency name"
-                                />
-                            </div>
-                            <div>
-                                <Label className="text-sm">Contact Name</Label>
-                                <Input
-                                    className="mt-1"
-                                    value={resellerFormData.contactName}
-                                    onChange={(e) => setResellerFormData({ ...resellerFormData, contactName: e.target.value })}
-                                    placeholder="Primary contact"
-                                />
-                            </div>
-                            <div>
-                                <Label className="text-sm">Email</Label>
-                                <Input
-                                    type="email"
-                                    className="mt-1"
-                                    value={resellerFormData.contactEmail}
-                                    onChange={(e) => setResellerFormData({ ...resellerFormData, contactEmail: e.target.value })}
-                                    placeholder="contact@agency.com"
-                                />
-                            </div>
-                            <div>
-                                <Label className="text-sm">Phone</Label>
-                                <Input
-                                    type="tel"
-                                    className="mt-1"
-                                    value={resellerFormData.contactPhone}
-                                    onChange={(e) => setResellerFormData({ ...resellerFormData, contactPhone: e.target.value })}
-                                    placeholder="(555) 123-4567"
-                                />
-                            </div>
-                            <div>
-                                <Label className="text-sm">Notes</Label>
-                                <Textarea
-                                    className="mt-1"
-                                    rows={2}
-                                    value={resellerFormData.notes}
-                                    onChange={(e) => setResellerFormData({ ...resellerFormData, notes: e.target.value })}
-                                    placeholder="Any additional details..."
-                                />
-                            </div>
-                        </div>
-                        <div className="flex justify-between p-4 border-t border-purple-500/20 bg-card/50">
-                            <Button
-                                variant="outline"
-                                onClick={() => { setShowResellerForm(false); resetResellerForm(); }}
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                onClick={handleResellerSubmit}
-                                disabled={isSubmittingReseller}
-                                className="gap-2 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700"
-                            >
-                                {isSubmittingReseller ? (
-                                    <>
-                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                        Adding...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Send className="w-4 h-4" />
-                                        Add Reseller
-                                    </>
-                                )}
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {/* Reseller Management Modal (Create Resellers + Assign Users) */}
+            <ResellerUserManagement
+                open={showResellerUsers}
+                onOpenChange={setShowResellerUsers}
+                resellers={resellerClients.map(c => ({ id: c.id, company_name: c.company_name, name: c.name, email: c.email }))}
+            />
         </div>
     );
 };

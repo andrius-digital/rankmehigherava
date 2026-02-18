@@ -24,6 +24,8 @@ interface AuthContextType {
   isLoading: boolean;
   isAdmin: boolean;
   isAdminOrModerator: boolean;
+  isReseller: boolean;
+  resellerId: string | null;
   profile: Profile | null;
   impersonatedUser: ImpersonatedUser | null;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
@@ -42,6 +44,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isAdminOrModerator, setIsAdminOrModerator] = useState(false);
+  const [isReseller, setIsReseller] = useState(false);
+  const [resellerId, setResellerId] = useState<string | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [impersonatedUser, setImpersonatedUser] = useState<ImpersonatedUser | null>(null);
 
@@ -62,6 +66,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err) {
       console.error('Error in checkAdminRole:', err);
       return false;
+    }
+  };
+
+  const checkResellerRole = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .eq('role', 'reseller')
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error checking reseller role:', error);
+        return false;
+      }
+      return !!data;
+    } catch (err) {
+      console.error('Error in checkResellerRole:', err);
+      return false;
+    }
+  };
+
+  const fetchResellerId = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('reseller_id')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching reseller_id:', error);
+        return null;
+      }
+      return (data as any)?.reseller_id || null;
+    } catch (err) {
+      console.error('Error in fetchResellerId:', err);
+      return null;
     }
   };
 
@@ -111,44 +154,55 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [user?.id, fetchProfile]);
 
+  const loadUserRoles = useCallback(async (userId: string) => {
+    const [adminResult, modResult, resellerResult, resellerIdResult, profileResult] = await Promise.all([
+      checkAdminRole(userId),
+      checkAdminOrModeratorRole(userId),
+      checkResellerRole(userId),
+      fetchResellerId(userId),
+      fetchProfile(userId),
+    ]);
+    setIsAdmin(adminResult);
+    setIsAdminOrModerator(modResult);
+    setIsReseller(resellerResult);
+    setResellerId(resellerIdResult);
+    setProfile(profileResult);
+  }, [fetchProfile]);
+
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        
+
         if (session?.user) {
-          setTimeout(() => {
-            checkAdminRole(session.user.id).then(setIsAdmin);
-            checkAdminOrModeratorRole(session.user.id).then(setIsAdminOrModerator);
-            fetchProfile(session.user.id).then(setProfile);
-          }, 0);
+          // Load all roles before setting isLoading to false
+          loadUserRoles(session.user.id).then(() => setIsLoading(false));
         } else {
           setIsAdmin(false);
           setIsAdminOrModerator(false);
+          setIsReseller(false);
+          setResellerId(null);
           setProfile(null);
           setImpersonatedUser(null);
+          setIsLoading(false);
         }
-        
-        setIsLoading(false);
       }
     );
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      
+
       if (session?.user) {
-        checkAdminRole(session.user.id).then(setIsAdmin);
-        checkAdminOrModeratorRole(session.user.id).then(setIsAdminOrModerator);
-        fetchProfile(session.user.id).then(setProfile);
+        loadUserRoles(session.user.id).then(() => setIsLoading(false));
+      } else {
+        setIsLoading(false);
       }
-      
-      setIsLoading(false);
     });
 
     return () => subscription.unsubscribe();
-  }, [fetchProfile]);
+  }, [fetchProfile, loadUserRoles]);
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({
@@ -176,6 +230,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await supabase.auth.signOut();
     setIsAdmin(false);
     setIsAdminOrModerator(false);
+    setIsReseller(false);
+    setResellerId(null);
     setProfile(null);
     setImpersonatedUser(null);
   };
@@ -191,16 +247,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      session, 
-      isLoading, 
-      isAdmin, 
+    <AuthContext.Provider value={{
+      user,
+      session,
+      isLoading,
+      isAdmin,
       isAdminOrModerator,
+      isReseller,
+      resellerId,
       profile,
       impersonatedUser,
-      signIn, 
-      signUp, 
+      signIn,
+      signUp,
       signOut,
       startImpersonation,
       stopImpersonation,

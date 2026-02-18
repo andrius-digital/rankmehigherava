@@ -144,6 +144,97 @@ serve(async (req) => {
         result = newRole;
         break;
 
+      case 'create_reseller_user': {
+        const { email: resellerEmail, password: resellerPassword, full_name: resellerName, reseller_id: resellerId } = data;
+
+        // Create the auth user with email confirmed
+        const { data: newUser, error: createUserError } = await supabaseAdmin.auth.admin.createUser({
+          email: resellerEmail,
+          password: resellerPassword,
+          email_confirm: true,
+          user_metadata: { full_name: resellerName || '' },
+        });
+        if (createUserError) throw createUserError;
+
+        const newUserId = newUser.user.id;
+
+        // Assign 'reseller' role via RPC (bypasses PostgREST enum cache issues)
+        const { error: roleError } = await supabaseAdmin.rpc('assign_reseller_role', {
+          _user_id: newUserId,
+        });
+        if (roleError) throw roleError;
+
+        // Wait a moment for the profile trigger, then set up reseller profile via RPC
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const { error: profileError } = await supabaseAdmin.rpc('setup_reseller_profile', {
+          _user_id: newUserId,
+          _email: resellerEmail,
+          _full_name: resellerName || null,
+          _reseller_id: resellerId,
+        });
+        if (profileError) throw profileError;
+
+        result = { user_id: newUserId, email: resellerEmail, reseller_id: resellerId };
+        break;
+      }
+
+      case 'list_reseller_users': {
+        // Get all users with reseller role, joined with profile data
+        const { data: resellerRoles, error: listRolesError } = await supabaseAdmin
+          .from('user_roles')
+          .select('user_id')
+          .eq('role', 'reseller');
+        if (listRolesError) throw listRolesError;
+
+        if (!resellerRoles || resellerRoles.length === 0) {
+          result = [];
+          break;
+        }
+
+        const userIds = resellerRoles.map((r: { user_id: string }) => r.user_id);
+        const { data: profiles, error: profilesError } = await supabaseAdmin
+          .from('profiles')
+          .select('*')
+          .in('user_id', userIds);
+        if (profilesError) throw profilesError;
+
+        result = profiles || [];
+        break;
+      }
+
+      case 'change_user_password': {
+        const { user_id: pwUserId, password: newPassword } = data;
+        if (!pwUserId || !newPassword) throw new Error('user_id and password are required');
+        if (newPassword.length < 6) throw new Error('Password must be at least 6 characters');
+
+        const { error: pwError } = await supabaseAdmin.auth.admin.updateUserById(pwUserId, {
+          password: newPassword,
+        });
+        if (pwError) throw pwError;
+
+        result = { success: true };
+        break;
+      }
+
+      case 'delete_reseller_user': {
+        const { user_id: deleteUserId } = data;
+
+        // Remove role
+        const { error: removeRoleError } = await supabaseAdmin
+          .from('user_roles')
+          .delete()
+          .eq('user_id', deleteUserId)
+          .eq('role', 'reseller');
+        if (removeRoleError) throw removeRoleError;
+
+        // Delete the auth user (this cascades to profile via FK)
+        const { error: deleteUserError } = await supabaseAdmin.auth.admin.deleteUser(deleteUserId);
+        if (deleteUserError) throw deleteUserError;
+
+        result = { success: true };
+        break;
+      }
+
       default:
         return new Response(
           JSON.stringify({ error: 'Invalid action' }),

@@ -107,7 +107,7 @@ const App = () => (
                 </ProtectedRoute>
               } />
               <Route path="/avaadminpanel" element={
-                <ProtectedRoute>
+                <ProtectedRoute requireAdmin>
                   <AgencyDashboard />
                 </ProtectedRoute>
               } />
@@ -151,21 +151,21 @@ const App = () => (
                   <WebsiteCommandCenter />
                 </ProtectedRoute>
               } />
-              {/* Agency Portal (previously Client Portal) */}
+              {/* Agency Portal (previously Client Portal) - accessible by admins and resellers */}
               <Route path="/client-portal" element={
-                <ProtectedRoute>
+                <ProtectedRoute allowReseller>
                   <ClientPortal />
                 </ProtectedRoute>
               } />
-              {/* Client Dashboard - what clients see */}
+              {/* Client Dashboard - accessible by admins and resellers */}
               <Route path="/client-dashboard" element={
-                <ProtectedRoute>
+                <ProtectedRoute allowReseller>
                   <ClientDashboard />
                 </ProtectedRoute>
               } />
-              {/* Reseller Portal */}
+              {/* Reseller Portal - accessible by admins and resellers */}
               <Route path="/reseller-portal" element={
-                <ProtectedRoute>
+                <ProtectedRoute allowReseller>
                   <ResellerPortal />
                 </ProtectedRoute>
               } />

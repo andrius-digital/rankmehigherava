@@ -27,18 +27,27 @@ const Auth: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
 
-  const { signIn, signUp, user } = useAuth();
+  const { signIn, signUp, user, isReseller, isAdmin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
 
-  const from = (location.state as { from?: Location })?.from?.pathname || '/avaadminpanel';
+  const from = (location.state as { from?: Location })?.from?.pathname;
 
   useEffect(() => {
     if (user) {
-      navigate(from, { replace: true });
+      // If there's a saved location, use it (unless it's just '/')
+      if (from && from !== '/') {
+        navigate(from, { replace: true });
+      } else if (isReseller && !isAdmin) {
+        // Reseller users go to the agency portal (their scoped view)
+        navigate('/client-portal', { replace: true });
+      } else {
+        // Admins and other users go to the admin panel
+        navigate('/avaadminpanel', { replace: true });
+      }
     }
-  }, [user, navigate, from]);
+  }, [user, isReseller, isAdmin, navigate, from]);
 
   const validateForm = (isSignUp: boolean = false) => {
     try {

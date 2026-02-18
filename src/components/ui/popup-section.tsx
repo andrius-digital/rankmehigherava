@@ -27,6 +27,7 @@ interface PopupSectionProps {
   notificationCount?: number;
   children: React.ReactNode;
   className?: string;
+  maxWidth?: string;
 }
 
 const colorConfig: Record<SectionColor, {
@@ -109,7 +110,8 @@ const PopupSection: React.FC<PopupSectionProps> = ({
   badge,
   notificationCount,
   children,
-  className
+  className,
+  maxWidth
 }) => {
   const colors = colorConfig[color];
 
@@ -170,7 +172,8 @@ const PopupSection: React.FC<PopupSectionProps> = ({
         </button>
       </DialogTrigger>
       <DialogContent className={cn(
-        "max-w-2xl max-h-[85vh] overflow-hidden border",
+        "max-h-[85vh] overflow-hidden border",
+        maxWidth || "max-w-2xl",
         colors.dialogBorder,
         colors.dialogBg
       )}>
