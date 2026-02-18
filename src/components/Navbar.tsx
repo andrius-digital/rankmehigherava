@@ -1,8 +1,8 @@
-import { Phone, Menu, X, ChevronDown, Calendar } from "lucide-react";
+import { Phone, Menu, X, Calendar } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
-// Declare Calendly global type
 declare global {
   interface Window {
     Calendly?: {
@@ -13,19 +13,11 @@ declare global {
 
 const CALENDLY_URL = "https://calendly.com/andrius-cdlagency/andrius-digital-asap-meeting";
 
-const services = [
-  { label: "Custom Websites", href: "/services/websites" },
-  { label: "Local Map Booster", href: "/localmapbooster" },
-  { label: "Ads & Content", href: "/services/ads-content" },
-  { label: "SEO Services", href: "/services/seo" },
-  { label: "Live Outbound Sales Agents", href: "/services/outbound" },
-];
-
 const Navbar = ({ onOpenLeadMagnet }: { onOpenLeadMagnet?: () => void }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isServicesOpen, setIsServicesOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { toast } = useToast();
 
   const openCalendly = () => {
     if (window.Calendly) {
@@ -76,33 +68,12 @@ const Navbar = ({ onOpenLeadMagnet }: { onOpenLeadMagnet?: () => void }) => {
               Home
             </Link>
 
-            {/* Services Dropdown */}
-            <div
-              className="relative"
-              onMouseEnter={() => setIsServicesOpen(true)}
-              onMouseLeave={() => setIsServicesOpen(false)}
+            <button
+              onClick={() => toast({ title: "Coming Soon", description: "Our services pages are launching soon. Contact us to learn more!" })}
+              className="text-foreground font-medium hover:text-primary transition-colors"
             >
-              <button className="flex items-center gap-1 text-foreground font-medium hover:text-primary transition-colors">
-                Services
-                <ChevronDown className={`w-4 h-4 transition-transform ${isServicesOpen ? 'rotate-180' : ''}`} />
-              </button>
-
-              {/* Dropdown */}
-              <div className={`absolute top-full left-0 mt-2 w-56 rounded-xl bg-background border border-border shadow-xl z-50 transition-all duration-200 ${isServicesOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'
-                }`}>
-                <div className="py-2">
-                  {services.map((service, i) => (
-                    <Link
-                      key={i}
-                      to={service.href}
-                      className="block px-4 py-2.5 text-sm text-foreground hover:text-primary hover:bg-primary/5 transition-colors"
-                    >
-                      {service.label}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </div>
+              Services
+            </button>
 
             <Link to="/blog" className="text-foreground font-medium hover:text-primary transition-colors">
               Blog
@@ -151,30 +122,12 @@ const Navbar = ({ onOpenLeadMagnet }: { onOpenLeadMagnet?: () => void }) => {
                 Home
               </Link>
 
-              {/* Services with dropdown */}
-              <div>
-                <button
-                  onClick={() => setIsServicesOpen(!isServicesOpen)}
-                  className="flex items-center justify-between w-full text-foreground font-medium hover:text-primary transition-colors py-2"
-                >
-                  <span>Services</span>
-                  <ChevronDown className={`w-4 h-4 transition-transform ${isServicesOpen ? 'rotate-180' : ''}`} />
-                </button>
-                {isServicesOpen && (
-                  <div className="pl-4 space-y-1 mt-1 bg-background">
-                    {services.map((service, i) => (
-                      <Link
-                        key={i}
-                        to={service.href}
-                        onClick={() => setIsMenuOpen(false)}
-                        className="block text-muted-foreground hover:text-primary transition-colors py-2 text-sm"
-                      >
-                        {service.label}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <button
+                onClick={() => { setIsMenuOpen(false); toast({ title: "Coming Soon", description: "Our services pages are launching soon. Contact us to learn more!" }); }}
+                className="text-foreground font-medium hover:text-primary transition-colors py-2 text-left"
+              >
+                Services
+              </button>
 
               <Link
                 to="/blog"
