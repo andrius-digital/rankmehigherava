@@ -562,7 +562,7 @@ const Index = () => {
                     <div className="p-3 rounded-xl bg-white/5 border border-white/10">
                       <h4 className="font-orbitron font-bold text-xs text-foreground mb-1">How It Works</h4>
                       <p className="text-xs text-muted-foreground leading-relaxed mb-2">
-                        We build your website with <strong className="text-foreground">unlimited revisions</strong> until you're 100% happy. You only approve — we don't bill hourly during the build. Once your site is live, any future changes are billed at <strong className="text-foreground">$100/hr</strong>.
+                        We build your website with <strong className="text-foreground">unlimited revisions</strong> until you're 100% happy. You only approve — we don't bill hourly during the build. Once your site is live, any future changes are billed at <strong className="text-foreground">$100/hr</strong>. Because these are custom-coded React apps (not WordPress), 1 hour of adjustments here equals weeks of work on a traditional site.
                       </p>
                     </div>
                     <div className="p-3 rounded-xl bg-cyan-500/5 border border-cyan-500/20">
