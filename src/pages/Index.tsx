@@ -229,13 +229,13 @@ const Index = () => {
                       <span className="text-foreground">We Custom Code</span>
                       <br />
                       <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-red-500 to-primary animate-gradient-x">
-                        SEO-Ready Websites
+                        SEO-Ready Website Applications
                       </span>
                       <br />
                       <span className="text-foreground text-4xl xl:text-5xl 2xl:text-6xl">That Actually Make Money.</span>
                     </h1>
                     <p className="text-lg xl:text-xl text-muted-foreground max-w-xl leading-relaxed">
-                      Stop paying $5K+ for WordPress template websites that lag and look like 2015. We <strong>custom code</strong> SEO-ready websites with <strong>lead capture, SMS & email automations</strong>—then manage everything with <span className="text-cyan-400 font-bold">AVA</span>. Dashboard, leads pipeline & <strong>24/7 support</strong> included.
+                      Stop paying $5K+ for WordPress template websites that lag and look like 2015. We <strong>custom code</strong> SEO-ready website applications with <strong>lead capture, SMS & email automations</strong>—then manage everything with <span className="text-cyan-400 font-bold">AVA</span>. Dashboard, leads pipeline & <strong>24/7 support</strong> included.
                     </p>
                   </div>
 
@@ -338,7 +338,7 @@ const Index = () => {
             {/* Headline */}
             <h1 className="text-2xl sm:text-3xl font-black leading-tight font-orbitron mb-[14px] text-center">
               <span className="text-foreground">We Custom Code </span>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-red-500">SEO-Ready Websites</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-red-500">SEO-Ready Website Applications</span>
               <br />
               <span className="text-foreground text-xl sm:text-2xl">That Actually Make Money.</span>
             </h1>
