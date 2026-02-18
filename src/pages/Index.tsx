@@ -427,10 +427,10 @@ const Index = () => {
                 </div>
                 
                 {/* Scrollable container with peek effect */}
-                <div className="overflow-x-auto pb-4 -mx-4 scrollbar-hide snap-x snap-mandatory">
-                  <div className="flex gap-4 px-[calc((100vw-320px)/2)]" style={{ width: 'max-content' }}>
+                <div className="overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
+                  <div className="flex gap-4 px-4" style={{ width: 'max-content' }}>
                     {[1, 2, 3, 4, 5].map((num) => (
-                      <div key={num} className="group flex-shrink-0 snap-center" style={{ width: 'calc(100vw - 80px)', maxWidth: '320px' }}>
+                      <div key={num} className="group flex-shrink-0 snap-center" style={{ width: 'calc(100vw - 32px)' }}>
                       <div className="relative rounded-2xl overflow-hidden bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/40 transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-primary/20">
                         {num === 1 ? (
                           <>
