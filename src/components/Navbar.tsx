@@ -123,7 +123,7 @@ const Navbar = () => {
             <Phone className="w-4 h-4 text-red-400 relative z-10" />
             <div className="flex flex-col items-start leading-tight relative z-10">
               <span className="text-sm font-bold">(773) 572-4686</span>
-              <span className="text-[10px] text-red-300/80">Text for fastest response ⚡</span>
+              <span className="text-[10px] text-red-300/80">Text to Telegram for fastest response ⚡</span>
             </div>
           </a>
 
@@ -200,7 +200,7 @@ const Navbar = () => {
                 <Phone className="w-4 h-4" />
                 <div className="flex flex-col items-start leading-tight">
                   <span className="text-sm font-bold">(773) 572-4686</span>
-                  <span className="text-[10px] text-white/80">Text for fastest response ⚡</span>
+                  <span className="text-[10px] text-white/80">Text to Telegram for fastest response ⚡</span>
                 </div>
               </a>
             </div>
