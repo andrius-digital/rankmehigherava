@@ -605,12 +605,12 @@ const Index = () => {
                 </p>
               </div>
 
-              <div className="grid lg:grid-cols-2 gap-6 mb-12">
-                <div className="relative group">
+              <div className="grid lg:grid-cols-2 gap-6 mb-12 items-stretch">
+                <div className="relative group flex flex-col">
                   <div className="absolute -top-3 left-6 z-10 px-4 py-1.5 rounded-full bg-red-500/10 backdrop-blur-xl border border-red-500/30 text-red-400 text-xs font-orbitron font-bold shadow-[0_0_15px_rgba(239,68,68,0.3)]">
                     Template Website
                   </div>
-                  <div className="p-6 rounded-2xl bg-red-500/5 border-2 border-red-500/30 relative overflow-hidden">
+                  <div className="p-6 rounded-2xl bg-red-500/5 border-2 border-red-500/30 relative overflow-hidden flex flex-col flex-1">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 rounded-full blur-2xl" />
                     
                     <div className="mt-4 mb-6 rounded-xl bg-gray-800/80 border border-gray-700 relative overflow-hidden">
@@ -630,7 +630,7 @@ const Index = () => {
                       </div>
                     </div>
 
-                    <div className="space-y-3">
+                    <div className="space-y-3 flex-1">
                       {[
                         "Same layout as 10,000+ other businesses",
                         "Slow loading — 4-8 second load times",
@@ -659,14 +659,14 @@ const Index = () => {
                   </div>
                 </div>
 
-                <div className="relative group">
+                <div className="relative group flex flex-col">
                   <div className="absolute -top-3 left-6 z-10 px-4 py-1.5 rounded-full bg-cyan-500/10 backdrop-blur-xl border border-cyan-500/30 text-cyan-400 text-xs font-orbitron font-bold shadow-[0_0_15px_rgba(6,182,212,0.3)]">
                     Rank Me Higher Website
                   </div>
-                  <div className="p-6 rounded-2xl bg-cyan-500/5 border-2 border-cyan-500/30 relative overflow-hidden">
+                  <div className="p-6 rounded-2xl bg-cyan-500/5 border-2 border-cyan-500/30 relative overflow-hidden flex flex-col flex-1">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl" />
                     
-                    <div className="mt-4 mb-6 rounded-xl bg-gray-800/80 border border-cyan-500/20 relative overflow-hidden">
+                    <div className="mt-4 mb-2 rounded-xl bg-gray-800/80 border border-cyan-500/20 relative overflow-hidden">
                       <div className="flex items-center gap-2 p-2 bg-gray-900/80">
                         <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
                         <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
@@ -684,8 +684,9 @@ const Index = () => {
                         <div className="absolute inset-0 bg-cyan-500/5" />
                       </div>
                     </div>
+                    <p className="text-[10px] text-cyan-400/50 text-center mb-4 italic">This is what a custom-coded website looks like</p>
 
-                    <div className="space-y-3">
+                    <div className="space-y-3 flex-1">
                       {[
                         "100% unique design built for your brand",
                         "Lightning fast — under 1 second load time",
