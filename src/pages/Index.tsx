@@ -636,7 +636,7 @@ const Index = () => {
                         <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
                         <div className="ml-2 flex-1 h-4 rounded bg-gray-700/50" />
                       </div>
-                      <div className="relative aspect-[16/10] overflow-hidden">
+                      <div className="relative aspect-[16/9] overflow-hidden">
                         <img 
                           src="/images/template-website-example.webp" 
                           alt="Example of a template-built website" 
@@ -654,7 +654,8 @@ const Index = () => {
                         "Bloated plugins killing your SEO",
                         "No lead capture or automation built in",
                         "Looks 'fine' but doesn't convert visitors",
-                        "Monthly plugin updates break your site"
+                        "Monthly plugin updates break your site",
+                        "No AI — you're answering every call yourself"
                       ].map((item, i) => (
                         <div key={i} className="flex items-start gap-2">
                           <X className="w-3 h-3 text-red-400 shrink-0 mt-0.5" />
@@ -692,7 +693,7 @@ const Index = () => {
                           <span className="text-cyan-400/60 text-[8px]">🔒 yourbusiness.com</span>
                         </div>
                       </div>
-                      <div className="relative aspect-[16/10] overflow-hidden">
+                      <div className="relative aspect-[16/9] overflow-hidden">
                         <img 
                           src="/images/custom-coded-website-example.png" 
                           alt="Example of a custom-coded website by Rank Me Higher" 
@@ -710,7 +711,8 @@ const Index = () => {
                         "Zero plugins. Clean, hand-written code",
                         "Built-in lead capture, SMS & email automations",
                         "Engineered to convert visitors into customers",
-                        "We maintain it — you never worry about updates"
+                        "We maintain it — you never worry about updates",
+                        "AI-powered assistant answers calls & chats 24/7"
                       ].map((item, i) => (
                         <div key={i} className="flex items-start gap-2">
                           <Check className="w-3 h-3 text-cyan-400 shrink-0 mt-0.5" />
