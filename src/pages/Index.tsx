@@ -732,6 +732,17 @@ const Index = () => {
               </div>
 
             </div>
+
+            <div className="text-center mt-6">
+              <button
+                onClick={openCalendly}
+                className="group inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 text-white font-bold text-sm hover:bg-primary/10 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 font-orbitron"
+              >
+                <Phone className="w-4 h-4 text-primary" />
+                Want Results Like These? Book a Free Call
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
           </section>
 
           {/* TEMPLATE VS CUSTOM - BEFORE/AFTER COMPARISON */}
@@ -1004,6 +1015,17 @@ const Index = () => {
                   </div>
                 ))}
               </div>
+
+              <div className="text-center mt-8">
+                <button
+                  onClick={openCalendly}
+                  className="group inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-primary to-red-600 text-white font-bold text-sm shadow-lg hover:shadow-xl hover:shadow-red-500/30 hover:scale-[1.02] transition-all duration-300 font-orbitron"
+                >
+                  Get All of This — Book a Free Call
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </button>
+                <p className="text-xs text-muted-foreground mt-3">No commitment. See if we're a good fit.</p>
+              </div>
             </div>
           </section>
 
@@ -1079,6 +1101,17 @@ const Index = () => {
                   </div>
                 ))}
               </div>
+
+              <div className="text-center mt-8">
+                <button
+                  onClick={openCalendly}
+                  className="group inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 text-white font-bold text-sm hover:bg-primary/10 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 font-orbitron"
+                >
+                  <Calendar className="w-4 h-4 text-primary" />
+                  Ready to Start? Book Your Free Strategy Call
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </button>
+              </div>
             </div>
           </section>
 
@@ -1136,6 +1169,15 @@ const Index = () => {
                         Additional adjustments billed at <strong className="text-foreground">$100/hr</strong>. We only recommend what we think you actually need — no high retainers. You choose what gets built.
                       </p>
                     </div>
+
+                    <button
+                      onClick={openCalendly}
+                      className="group w-full mt-4 px-8 py-4 rounded-xl bg-gradient-to-r from-primary to-red-600 text-white font-bold text-sm shadow-lg hover:shadow-xl hover:shadow-red-500/30 hover:scale-[1.01] transition-all duration-300 font-orbitron flex items-center justify-center gap-2"
+                    >
+                      Lock In This Price — Book a Call
+                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </button>
+                    <p className="text-xs text-muted-foreground mt-2 text-center">Free consultation. No credit card needed.</p>
                   </div>
                 </div>
               </div>
@@ -1202,6 +1244,17 @@ const Index = () => {
                     </div>
                   </details>
                 ))}
+              </div>
+              <div className="text-center mt-8">
+                <p className="text-muted-foreground text-sm mb-3">Still have questions?</p>
+                <button
+                  onClick={openCalendly}
+                  className="group inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 text-white font-bold text-sm hover:bg-primary/10 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 font-orbitron"
+                >
+                  <Phone className="w-4 h-4 text-primary" />
+                  Talk to Us — It's Free
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </button>
               </div>
             </div>
           </section>
