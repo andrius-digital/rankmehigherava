@@ -394,547 +394,89 @@ const Index = () => {
           {/* PORTFOLIO SHOWCASE SECTION */}
           <section className="pt-4 pb-2 lg:pt-6 lg:pb-4 relative overflow-hidden">
             <div className="container mx-auto px-4 lg:px-8 max-w-7xl relative z-10">
-              {/* Header */}
-              <div className="text-center mb-8">
+              <div className="text-center mb-6">
                 <h2 className="font-orbitron font-black text-3xl lg:text-4xl mb-3">
                   <span className="text-foreground">Our</span>{' '}
                   <span className="text-primary">Work</span>
                 </h2>
                 <p className="text-muted-foreground text-sm lg:text-base max-w-2xl mx-auto">
-                  Real results from real clients. Every website receives our signature attention to detail and custom coding expertise.
+                  Real results from real clients. Custom-coded websites that convert.
                 </p>
               </div>
+            </div>
 
-              {/* Mobile: Horizontal Scrollable Cards with swipe indicator */}
-              <div className="lg:hidden mb-6">
-                {/* Swipe hint */}
-                <div className="flex items-center justify-center gap-2 mb-4 text-muted-foreground">
-                  <div className="flex items-center gap-1 text-xs font-orbitron animate-pulse">
-                    <span>←</span>
-                    <span>Swipe to explore</span>
-                    <span>→</span>
-                  </div>
-                </div>
-                
-                {/* Scrollable container with peek effect */}
-                <div className="overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
-                  <div className="flex gap-4 px-4" style={{ width: 'max-content' }}>
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((num) => (
-                      <div key={num} className="group flex-shrink-0 snap-center" style={{ width: 'calc(100vw - 32px)' }}>
-                      <div className="relative rounded-2xl overflow-hidden bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/40 transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-primary/20">
-                        {num === 1 ? (
-                          <>
-                            <div className="relative overflow-hidden bg-black">
-                              <img 
-                                src="/kleanaf.png" 
-                                alt="Klean AF Website Screenshot" 
-                                className="w-full h-auto block"
-                                onError={(e) => {
-                                  e.currentTarget.style.display = 'none';
-                                  const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                                  if (fallback) fallback.style.display = 'flex';
-                                }}
-                              />
-                              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary/20 to-red-600/20" style={{ display: 'none' }}>
-                                <div className="text-center p-4">
-                                  <Globe className="w-16 h-16 text-primary/50 mx-auto mb-2" />
-                                  <p className="text-sm text-muted-foreground font-orbitron">Screenshot Coming Soon</p>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="p-4 bg-background/80 backdrop-blur-sm">
-                              <h4 className="font-orbitron font-bold text-base text-foreground mb-1">Klean AF</h4>
-                              <p className="text-xs text-muted-foreground">House Cleaning Company in San Diego</p>
-                            </div>
-                          </>
-                        ) : num === 2 ? (
-                          <>
-                            <div className="relative overflow-hidden bg-black">
-                              <img 
-                                src="/truckclinic.png" 
-                                alt="Truck Clinic Website Screenshot" 
-                                className="w-full h-auto block"
-                                onError={(e) => {
-                                  e.currentTarget.style.display = 'none';
-                                  const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                                  if (fallback) fallback.style.display = 'flex';
-                                }}
-                              />
-                              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-cyan-500/20 to-blue-600/20" style={{ display: 'none' }}>
-                                <div className="text-center p-4">
-                                  <Globe className="w-16 h-16 text-cyan-400/50 mx-auto mb-2" />
-                                  <p className="text-sm text-muted-foreground font-orbitron">Screenshot Coming Soon</p>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="p-4 bg-background/80 backdrop-blur-sm">
-                              <h4 className="font-orbitron font-bold text-base text-foreground mb-1">Truck Clinic</h4>
-                              <p className="text-xs text-muted-foreground">Truck Repair Shop in Romeoville, IL</p>
-                            </div>
-                          </>
-                        ) : num === 3 ? (
-                          <>
-                            <div className="relative overflow-hidden bg-black">
-                              <img 
-                                src="/off-tint-screenshot.png" 
-                                alt="Off-Tint Website Screenshot" 
-                                className="w-full h-auto block"
-                                onError={(e) => {
-                                  e.currentTarget.style.display = 'none';
-                                  const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                                  if (fallback) fallback.style.display = 'flex';
-                                }}
-                              />
-                              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-green-500/20 to-emerald-600/20" style={{ display: 'none' }}>
-                                <div className="text-center p-4">
-                                  <Globe className="w-16 h-16 text-green-400/50 mx-auto mb-2" />
-                                  <p className="text-sm text-muted-foreground font-orbitron">Screenshot Coming Soon</p>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="p-4 bg-background/80 backdrop-blur-sm">
-                              <h4 className="font-orbitron font-bold text-base text-foreground mb-1">Off-Tint</h4>
-                              <p className="text-xs text-muted-foreground">PPF, Ceramic Coating, Window Tinting Studio in Lisle, IL</p>
-                            </div>
-                          </>
-                        ) : num === 4 ? (
-                          <>
-                            <div className="relative overflow-hidden bg-black">
-                              <img 
-                                src="/goxxii.png" 
-                                alt="XXII Century Website Screenshot" 
-                                className="w-full h-auto block"
-                                onError={(e) => {
-                                  e.currentTarget.style.display = 'none';
-                                  const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                                  if (fallback) fallback.style.display = 'flex';
-                                }}
-                              />
-                              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-purple-500/20 to-violet-600/20" style={{ display: 'none' }}>
-                                <div className="text-center p-4">
-                                  <Globe className="w-16 h-16 text-purple-400/50 mx-auto mb-2" />
-                                  <p className="text-sm text-muted-foreground font-orbitron">Screenshot Coming Soon</p>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="p-4 bg-background/80 backdrop-blur-sm">
-                              <h4 className="font-orbitron font-bold text-base text-foreground mb-1">XXII Century</h4>
-                              <p className="text-xs text-muted-foreground">Trucking Company from Chicago, IL</p>
-                            </div>
-                          </>
-                        ) : num === 5 ? (
-                          <>
-                            <div className="relative overflow-hidden bg-black">
-                              <img 
-                                src="/images/portfolio-pro-repair.png" 
-                                alt="Pro Repair Service Website Screenshot" 
-                                className="w-full h-auto block"
-                                onError={(e) => {
-                                  e.currentTarget.style.display = 'none';
-                                  const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                                  if (fallback) fallback.style.display = 'flex';
-                                }}
-                              />
-                              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-orange-500/20 to-amber-600/20" style={{ display: 'none' }}>
-                                <div className="text-center p-4">
-                                  <Globe className="w-16 h-16 text-orange-400/50 mx-auto mb-2" />
-                                  <p className="text-sm text-muted-foreground font-orbitron">Screenshot Coming Soon</p>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="p-4 bg-background/80 backdrop-blur-sm">
-                              <h4 className="font-orbitron font-bold text-base text-foreground mb-1">Pro Repair Service</h4>
-                              <p className="text-xs text-muted-foreground">Truck Repair Shop in Lockport, IL</p>
-                            </div>
-                          </>
-                        ) : num === 6 ? (
-                          <>
-                            <div className="relative overflow-hidden bg-black">
-                              <img 
-                                src="/images/portfolio-property-refresh-maids.png" 
-                                alt="Property Refresh Maids Website Screenshot" 
-                                className="w-full h-auto block"
-                                onError={(e) => {
-                                  e.currentTarget.style.display = 'none';
-                                  const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                                  if (fallback) fallback.style.display = 'flex';
-                                }}
-                              />
-                              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-blue-500/20 to-indigo-600/20" style={{ display: 'none' }}>
-                                <div className="text-center p-4">
-                                  <Globe className="w-16 h-16 text-blue-400/50 mx-auto mb-2" />
-                                  <p className="text-sm text-muted-foreground font-orbitron">Screenshot Coming Soon</p>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="p-4 bg-background/80 backdrop-blur-sm">
-                              <h4 className="font-orbitron font-bold text-base text-foreground mb-1">Property Refresh Maids</h4>
-                              <p className="text-xs text-muted-foreground">Maid Service in Chicago, IL</p>
-                            </div>
-                          </>
-                        ) : num === 7 ? (
-                          <>
-                            <div className="relative overflow-hidden bg-black">
-                              <img 
-                                src="/images/portfolio-chicago-valley.png" 
-                                alt="Chicago Valley Website Screenshot" 
-                                className="w-full h-auto block"
-                                onError={(e) => {
-                                  e.currentTarget.style.display = 'none';
-                                  const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                                  if (fallback) fallback.style.display = 'flex';
-                                }}
-                              />
-                              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-red-500/20 to-red-600/20" style={{ display: 'none' }}>
-                                <div className="text-center p-4">
-                                  <Globe className="w-16 h-16 text-red-400/50 mx-auto mb-2" />
-                                  <p className="text-sm text-muted-foreground font-orbitron">Screenshot Coming Soon</p>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="p-4 bg-background/80 backdrop-blur-sm">
-                              <h4 className="font-orbitron font-bold text-base text-foreground mb-1">Chicago Valley</h4>
-                              <p className="text-xs text-muted-foreground">Video Production Company in Chicago, IL</p>
-                            </div>
-                          </>
-                        ) : num === 8 ? (
-                          <>
-                            <div className="relative overflow-hidden bg-black">
-                              <img 
-                                src="/images/portfolio-lts-mechanical.png" 
-                                alt="LTS Mechanical Website Screenshot" 
-                                className="w-full h-auto block"
-                              />
-                            </div>
-                            <div className="p-4 bg-background/80 backdrop-blur-sm">
-                              <h4 className="font-orbitron font-bold text-base text-foreground mb-1">LTS Mechanical</h4>
-                              <p className="text-xs text-muted-foreground">Truck Repair Shop in Romeoville, IL</p>
-                            </div>
-                          </>
-                        ) : num === 9 ? (
-                          <>
-                            <div className="relative overflow-hidden bg-black">
-                              <img 
-                                src="/images/portfolio-paddock-parking.png" 
-                                alt="Paddock Parking Website Screenshot" 
-                                className="w-full h-auto block"
-                              />
-                            </div>
-                            <div className="p-4 bg-background/80 backdrop-blur-sm">
-                              <h4 className="font-orbitron font-bold text-base text-foreground mb-1">Paddock Parking</h4>
-                              <p className="text-xs text-muted-foreground">Outdoor Storage Yard in Phoenix, AZ</p>
-                            </div>
-                          </>
-                        ) : num === 10 ? (
-                          <>
-                            <div className="relative overflow-hidden bg-black">
-                              <img 
-                                src="/images/portfolio-qtatax.png" 
-                                alt="QTA Tax Website Screenshot" 
-                                className="w-full h-auto block"
-                              />
-                            </div>
-                            <div className="p-4 bg-background/80 backdrop-blur-sm">
-                              <h4 className="font-orbitron font-bold text-base text-foreground mb-1">QTA Tax</h4>
-                              <p className="text-xs text-muted-foreground">Tax & Accounting Firm in Oak Brook, IL</p>
-                            </div>
-                          </>
-                        ) : num === 11 ? (
-                          <>
-                            <div className="relative overflow-hidden bg-black">
-                              <img 
-                                src="/images/portfolio-midwest-express.png" 
-                                alt="Midwest Express Website Screenshot" 
-                                className="w-full h-auto block"
-                              />
-                            </div>
-                            <div className="p-4 bg-background/80 backdrop-blur-sm">
-                              <h4 className="font-orbitron font-bold text-base text-foreground mb-1">Midwest Express</h4>
-                              <p className="text-xs text-muted-foreground">Trucking Company in Chicago, IL</p>
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            <div className="aspect-[2/1] bg-gradient-to-br from-primary/20 to-red-600/20 flex items-center justify-center">
-                              <div className="text-center p-4">
-                                <Globe className="w-16 h-16 text-primary/50 mx-auto mb-2" />
-                                <p className="text-sm text-muted-foreground font-orbitron">Screenshot Coming Soon</p>
-                              </div>
-                            </div>
-                            <div className="p-4 bg-background/80 backdrop-blur-sm">
-                              <h4 className="font-orbitron font-bold text-base text-foreground mb-1">Client Website #{num}</h4>
-                              <p className="text-xs text-muted-foreground">Custom SEO Website</p>
-                            </div>
-                          </>
-                        )}
+            {/* Auto-scrolling portfolio ticker — Row 1 (scrolls left) */}
+            <div className="relative mb-4">
+              <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
+              <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
+              <div className="overflow-hidden">
+                <div className="flex gap-4 animate-scroll-left hover:[animation-play-state:paused]">
+                  {[
+                    { name: "Klean AF", desc: "Cleaning · San Diego", img: "/kleanaf.png" },
+                    { name: "Truck Clinic", desc: "Truck Repair · Romeoville, IL", img: "/truckclinic.png" },
+                    { name: "Off-Tint", desc: "PPF & Tinting · Lisle, IL", img: "/off-tint-screenshot.png" },
+                    { name: "XXII Century", desc: "Trucking · Chicago, IL", img: "/goxxii.png" },
+                    { name: "Pro Repair", desc: "Truck Repair · Lockport, IL", img: "/images/portfolio-pro-repair.png" },
+                    { name: "Property Refresh", desc: "Maid Service · Chicago, IL", img: "/images/portfolio-property-refresh-maids.png" },
+                    { name: "Klean AF", desc: "Cleaning · San Diego", img: "/kleanaf.png" },
+                    { name: "Truck Clinic", desc: "Truck Repair · Romeoville, IL", img: "/truckclinic.png" },
+                    { name: "Off-Tint", desc: "PPF & Tinting · Lisle, IL", img: "/off-tint-screenshot.png" },
+                    { name: "XXII Century", desc: "Trucking · Chicago, IL", img: "/goxxii.png" },
+                    { name: "Pro Repair", desc: "Truck Repair · Lockport, IL", img: "/images/portfolio-pro-repair.png" },
+                    { name: "Property Refresh", desc: "Maid Service · Chicago, IL", img: "/images/portfolio-property-refresh-maids.png" },
+                  ].map((item, i) => (
+                    <div key={i} className="flex-shrink-0 w-[280px] md:w-[340px] group">
+                      <div className="rounded-xl overflow-hidden bg-white/5 border border-white/10 hover:border-primary/40 transition-all duration-300 shadow-lg hover:shadow-primary/20">
+                        <div className="relative overflow-hidden">
+                          <img src={item.img} alt={item.name} className="w-full h-auto block" />
+                        </div>
+                        <div className="px-3 py-2.5 flex items-center justify-between">
+                          <div>
+                            <h4 className="font-orbitron font-bold text-xs text-foreground">{item.name}</h4>
+                            <p className="text-[10px] text-muted-foreground">{item.desc}</p>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   ))}
-                  </div>
                 </div>
-                
-                {/* Scroll indicator dots */}
-                <div className="flex justify-center gap-2 mt-4">
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((num) => (
-                    <div 
-                      key={num} 
-                      className="w-2 h-2 rounded-full bg-primary/30 transition-colors"
-                    />
+              </div>
+            </div>
+
+            {/* Auto-scrolling portfolio ticker — Row 2 (scrolls right) */}
+            <div className="relative">
+              <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
+              <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
+              <div className="overflow-hidden">
+                <div className="flex gap-4 animate-scroll-right hover:[animation-play-state:paused]">
+                  {[
+                    { name: "Chicago Valley", desc: "Video Production · Chicago, IL", img: "/images/portfolio-chicago-valley.png" },
+                    { name: "LTS Mechanical", desc: "Truck Repair · Romeoville, IL", img: "/images/portfolio-lts-mechanical.png" },
+                    { name: "Paddock Parking", desc: "Storage Yard · Phoenix, AZ", img: "/images/portfolio-paddock-parking.png" },
+                    { name: "QTA Tax", desc: "Tax & Accounting · Oak Brook, IL", img: "/images/portfolio-qtatax.png" },
+                    { name: "Midwest Express", desc: "Trucking · Chicago, IL", img: "/images/portfolio-midwest-express.png" },
+                    { name: "Chicago Valley", desc: "Video Production · Chicago, IL", img: "/images/portfolio-chicago-valley.png" },
+                    { name: "LTS Mechanical", desc: "Truck Repair · Romeoville, IL", img: "/images/portfolio-lts-mechanical.png" },
+                    { name: "Paddock Parking", desc: "Storage Yard · Phoenix, AZ", img: "/images/portfolio-paddock-parking.png" },
+                    { name: "QTA Tax", desc: "Tax & Accounting · Oak Brook, IL", img: "/images/portfolio-qtatax.png" },
+                    { name: "Midwest Express", desc: "Trucking · Chicago, IL", img: "/images/portfolio-midwest-express.png" },
+                  ].map((item, i) => (
+                    <div key={i} className="flex-shrink-0 w-[280px] md:w-[340px] group">
+                      <div className="rounded-xl overflow-hidden bg-white/5 border border-white/10 hover:border-primary/40 transition-all duration-300 shadow-lg hover:shadow-primary/20">
+                        <div className="relative overflow-hidden">
+                          <img src={item.img} alt={item.name} className="w-full h-auto block" />
+                        </div>
+                        <div className="px-3 py-2.5 flex items-center justify-between">
+                          <div>
+                            <h4 className="font-orbitron font-bold text-xs text-foreground">{item.name}</h4>
+                            <p className="text-[10px] text-muted-foreground">{item.desc}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
-
-              {/* Desktop: Overlapping Portfolio Grid */}
-              <div className="hidden lg:block relative min-h-[700px]">
-                {/* Portfolio Item 1 - Left */}
-                <div className="group absolute top-0 left-[3%] w-[40%] z-10 hover:z-50 transition-all duration-500 hover:scale-105">
-                  <div className="relative rounded-2xl overflow-hidden bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/40 transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-primary/20">
-                    <div className="relative overflow-hidden bg-black">
-                      <img 
-                        src="/kleanaf.png" 
-                        alt="Klean AF Website Screenshot" 
-                        className="w-full h-auto block"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                          if (fallback) fallback.style.display = 'flex';
-                        }}
-                      />
-                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary/20 to-red-600/20" style={{ display: 'none' }}>
-                        <div className="text-center p-4">
-                          <Globe className="w-16 h-16 text-primary/50 mx-auto mb-2" />
-                          <p className="text-sm text-muted-foreground font-orbitron">Screenshot Coming Soon</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="p-4 bg-background/80 backdrop-blur-sm">
-                      <h4 className="font-orbitron font-bold text-base text-foreground mb-1">Klean AF</h4>
-                      <p className="text-xs text-muted-foreground">House Cleaning Company in San Diego</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Portfolio Item 2 - Center Left */}
-                <div className="group absolute top-[8%] left-[20%] w-[40%] z-20 hover:z-50 transition-all duration-500 hover:scale-105">
-                  <div className="relative rounded-2xl overflow-hidden bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/40 transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-primary/20">
-                    <div className="relative overflow-hidden bg-black">
-                      <img 
-                        src="/truckclinic.png" 
-                        alt="Truck Clinic Website Screenshot" 
-                        className="w-full h-auto block"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                          if (fallback) fallback.style.display = 'flex';
-                        }}
-                      />
-                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-cyan-500/20 to-blue-600/20" style={{ display: 'none' }}>
-                        <div className="text-center p-4">
-                          <Globe className="w-16 h-16 text-cyan-400/50 mx-auto mb-2" />
-                          <p className="text-sm text-muted-foreground font-orbitron">Screenshot Coming Soon</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="p-4 bg-background/80 backdrop-blur-sm">
-                      <h4 className="font-orbitron font-bold text-base text-foreground mb-1">Truck Clinic</h4>
-                      <p className="text-xs text-muted-foreground">Truck Repair Shop in Romeoville, IL</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Portfolio Item 3 - Center */}
-                <div className="group absolute top-[16%] left-[30%] w-[40%] z-30 hover:z-50 transition-all duration-500 hover:scale-105">
-                  <div className="relative rounded-2xl overflow-hidden bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/40 transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-primary/20">
-                    <div className="relative overflow-hidden bg-black">
-                      <img 
-                        src="/off-tint-screenshot.png" 
-                        alt="Off-Tint Website Screenshot" 
-                        className="w-full h-auto block"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                          if (fallback) fallback.style.display = 'flex';
-                        }}
-                      />
-                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-green-500/20 to-emerald-600/20" style={{ display: 'none' }}>
-                        <div className="text-center p-4">
-                          <Globe className="w-16 h-16 text-green-400/50 mx-auto mb-2" />
-                          <p className="text-sm text-muted-foreground font-orbitron">Screenshot Coming Soon</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="p-4 bg-background/80 backdrop-blur-sm">
-                      <h4 className="font-orbitron font-bold text-base text-foreground mb-1">Off-Tint</h4>
-                      <p className="text-xs text-muted-foreground">PPF, Ceramic Coating, Window Tinting Studio in Lisle, IL</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Portfolio Item 4 - Center Right */}
-                <div className="group absolute top-[8%] right-[20%] w-[40%] z-20 hover:z-50 transition-all duration-500 hover:scale-105">
-                  <div className="relative rounded-2xl overflow-hidden bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/40 transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-primary/20">
-                    <div className="relative overflow-hidden bg-black">
-                      <img 
-                        src="/goxxii.png" 
-                        alt="XXII Century Website Screenshot" 
-                        className="w-full h-auto block"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                          if (fallback) fallback.style.display = 'flex';
-                        }}
-                      />
-                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-purple-500/20 to-violet-600/20" style={{ display: 'none' }}>
-                        <div className="text-center p-4">
-                          <Globe className="w-16 h-16 text-purple-400/50 mx-auto mb-2" />
-                          <p className="text-sm text-muted-foreground font-orbitron">Screenshot Coming Soon</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="p-4 bg-background/80 backdrop-blur-sm">
-                      <h4 className="font-orbitron font-bold text-base text-foreground mb-1">XXII Century</h4>
-                      <p className="text-xs text-muted-foreground">Trucking Company from Chicago, IL</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Portfolio Item 5 - Right */}
-                <div className="group absolute top-0 right-[3%] w-[40%] z-10 hover:z-50 transition-all duration-500 hover:scale-105">
-                  <div className="relative rounded-2xl overflow-hidden bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/40 transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-primary/20">
-                    <div className="relative overflow-hidden bg-black">
-                      <img 
-                        src="/images/portfolio-pro-repair.png" 
-                        alt="Pro Repair Service Website Screenshot" 
-                        className="w-full h-auto block"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                          if (fallback) fallback.style.display = 'flex';
-                        }}
-                      />
-                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-orange-500/20 to-amber-600/20" style={{ display: 'none' }}>
-                        <div className="text-center p-4">
-                          <Globe className="w-16 h-16 text-orange-400/50 mx-auto mb-2" />
-                          <p className="text-sm text-muted-foreground font-orbitron">Screenshot Coming Soon</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="p-4 bg-background/80 backdrop-blur-sm">
-                      <h4 className="font-orbitron font-bold text-base text-foreground mb-1">Pro Repair Service</h4>
-                      <p className="text-xs text-muted-foreground">Truck Repair Shop in Lockport, IL</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Portfolio Item 6 - Property Refresh Maids */}
-                <div className="group absolute top-[24%] left-[10%] w-[40%] z-[5] hover:z-50 transition-all duration-500 hover:scale-105">
-                  <div className="relative rounded-2xl overflow-hidden bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/40 transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-primary/20">
-                    <div className="relative overflow-hidden bg-black">
-                      <img 
-                        src="/images/portfolio-property-refresh-maids.png" 
-                        alt="Property Refresh Maids Website Screenshot" 
-                        className="w-full h-auto block"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                          if (fallback) fallback.style.display = 'flex';
-                        }}
-                      />
-                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-blue-500/20 to-indigo-600/20" style={{ display: 'none' }}>
-                        <div className="text-center p-4">
-                          <Globe className="w-16 h-16 text-blue-400/50 mx-auto mb-2" />
-                          <p className="text-sm text-muted-foreground font-orbitron">Screenshot Coming Soon</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="p-4 bg-background/80 backdrop-blur-sm">
-                      <h4 className="font-orbitron font-bold text-base text-foreground mb-1">Property Refresh Maids</h4>
-                      <p className="text-xs text-muted-foreground">Maid Service in Chicago, IL</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Portfolio Item 7 - Chicago Valley */}
-                <div className="group absolute top-[24%] right-[10%] w-[40%] z-[5] hover:z-50 transition-all duration-500 hover:scale-105">
-                  <div className="relative rounded-2xl overflow-hidden bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/40 transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-primary/20">
-                    <div className="relative overflow-hidden bg-black">
-                      <img 
-                        src="/images/portfolio-chicago-valley.png" 
-                        alt="Chicago Valley Website Screenshot" 
-                        className="w-full h-auto block"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                          if (fallback) fallback.style.display = 'flex';
-                        }}
-                      />
-                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-red-500/20 to-red-600/20" style={{ display: 'none' }}>
-                        <div className="text-center p-4">
-                          <Globe className="w-16 h-16 text-red-400/50 mx-auto mb-2" />
-                          <p className="text-sm text-muted-foreground font-orbitron">Screenshot Coming Soon</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="p-4 bg-background/80 backdrop-blur-sm">
-                      <h4 className="font-orbitron font-bold text-base text-foreground mb-1">Chicago Valley</h4>
-                      <p className="text-xs text-muted-foreground">Video Production Company in Chicago, IL</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Portfolio Item 8 - LTS Mechanical */}
-                <div className="group absolute top-[32%] left-[3%] w-[40%] z-[4] hover:z-50 transition-all duration-500 hover:scale-105">
-                  <div className="relative rounded-2xl overflow-hidden bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/40 transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-primary/20">
-                    <div className="relative overflow-hidden bg-black">
-                      <img src="/images/portfolio-lts-mechanical.png" alt="LTS Mechanical Website Screenshot" className="w-full h-auto block" />
-                    </div>
-                    <div className="p-4 bg-background/80 backdrop-blur-sm">
-                      <h4 className="font-orbitron font-bold text-base text-foreground mb-1">LTS Mechanical</h4>
-                      <p className="text-xs text-muted-foreground">Truck Repair Shop in Romeoville, IL</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Portfolio Item 9 - Paddock Parking */}
-                <div className="group absolute top-[32%] left-[30%] w-[40%] z-[3] hover:z-50 transition-all duration-500 hover:scale-105">
-                  <div className="relative rounded-2xl overflow-hidden bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/40 transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-primary/20">
-                    <div className="relative overflow-hidden bg-black">
-                      <img src="/images/portfolio-paddock-parking.png" alt="Paddock Parking Website Screenshot" className="w-full h-auto block" />
-                    </div>
-                    <div className="p-4 bg-background/80 backdrop-blur-sm">
-                      <h4 className="font-orbitron font-bold text-base text-foreground mb-1">Paddock Parking</h4>
-                      <p className="text-xs text-muted-foreground">Outdoor Storage Yard in Phoenix, AZ</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Portfolio Item 10 - QTA Tax */}
-                <div className="group absolute top-[32%] right-[3%] w-[40%] z-[4] hover:z-50 transition-all duration-500 hover:scale-105">
-                  <div className="relative rounded-2xl overflow-hidden bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/40 transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-primary/20">
-                    <div className="relative overflow-hidden bg-black">
-                      <img src="/images/portfolio-qtatax.png" alt="QTA Tax Website Screenshot" className="w-full h-auto block" />
-                    </div>
-                    <div className="p-4 bg-background/80 backdrop-blur-sm">
-                      <h4 className="font-orbitron font-bold text-base text-foreground mb-1">QTA Tax</h4>
-                      <p className="text-xs text-muted-foreground">Tax & Accounting Firm in Oak Brook, IL</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Portfolio Item 11 - Midwest Express */}
-                <div className="group absolute top-[40%] left-[20%] w-[40%] z-[2] hover:z-50 transition-all duration-500 hover:scale-105">
-                  <div className="relative rounded-2xl overflow-hidden bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/40 transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-primary/20">
-                    <div className="relative overflow-hidden bg-black">
-                      <img src="/images/portfolio-midwest-express.png" alt="Midwest Express Website Screenshot" className="w-full h-auto block" />
-                    </div>
-                    <div className="p-4 bg-background/80 backdrop-blur-sm">
-                      <h4 className="font-orbitron font-bold text-base text-foreground mb-1">Midwest Express</h4>
-                      <p className="text-xs text-muted-foreground">Trucking Company in Chicago, IL</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
             </div>
 
           </section>
