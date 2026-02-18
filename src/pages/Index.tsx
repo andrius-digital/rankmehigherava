@@ -762,8 +762,8 @@ const Index = () => {
                           'Mobile-first responsive design',
                           'SEO-optimized structure & meta tags',
                           'Lead capture forms & automations',
-                          'Google Business Profile optimization',
                           'Speed optimization (90+ PageSpeed)',
+                          'Built to rank from day 1',
                         ].map((item, i) => (
                           <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
                             <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
