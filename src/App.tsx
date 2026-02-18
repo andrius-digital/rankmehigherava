@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import ScrollToTop from "@/components/ScrollToTop";
 import Index from "./pages/Index";
 import LocalMapBooster from "./pages/LocalMapBooster";
 import Websites from "./pages/services/Websites";
@@ -71,6 +72,7 @@ const App = () => (
           <Sonner />
           <ParticlesOverlay />
           <BrowserRouter>
+            <ScrollToTop />
             <Routes>
               {/* Public routes */}
               <Route path="/" element={<Index />} />
