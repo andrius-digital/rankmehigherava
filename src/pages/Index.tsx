@@ -908,8 +908,8 @@ const Index = () => {
                     a: 'We offer a satisfaction guarantee. If you\'re not happy with the final product before launch, we\'ll revise it until you are with unlimited revisions.',
                   },
                   {
-                    q: 'What is the AI Infrastructure Fee?',
-                    a: 'Every website we build includes AVA — our AI assistant that handles voice chat, lead qualification, and 24/7 support. Running AI costs real money (OpenAI, voice processing, embeddings). The AI usage fee is $2–$20/mo depending on how much your visitors interact with AVA. Most small businesses land around $2–$5/mo. It\'s billed separately based on actual usage — you only pay for what you use. Think of it like a phone bill for your AI receptionist.',
+                    q: 'What is the AI usage fee?',
+                    a: 'We use AI to build and maintain your website, which means 1 hour of our work can accomplish what would take 50+ hours of traditional WordPress development. But AI tools cost real money to run. The AI usage fee ($2–$20/mo) covers the actual cost of the AI infrastructure we use on your behalf — we simply pass through what it costs us, nothing more. Most small businesses land around $2–$5/mo. You only pay for what\'s actually used.',
                   },
                   {
                     q: 'Can you help with Google Maps / Local SEO?',
