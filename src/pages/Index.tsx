@@ -857,26 +857,21 @@ const Index = () => {
                   <div className="p-6 rounded-2xl bg-red-500/5 border-2 border-red-500/30 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 rounded-full blur-2xl" />
                     
-                    <div className="mt-4 mb-6 rounded-xl bg-gray-800/80 border border-gray-700 p-4 relative">
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="w-3 h-3 rounded-full bg-red-500/60" />
-                        <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
-                        <div className="w-3 h-3 rounded-full bg-green-500/60" />
-                        <div className="ml-2 flex-1 h-5 rounded bg-gray-700/50" />
+                    <div className="mt-4 mb-6 rounded-xl bg-gray-800/80 border border-gray-700 relative overflow-hidden">
+                      <div className="flex items-center gap-2 p-2 bg-gray-900/80">
+                        <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
+                        <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
+                        <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
+                        <div className="ml-2 flex-1 h-4 rounded bg-gray-700/50" />
                       </div>
-                      <div className="space-y-2">
-                        <div className="h-20 rounded bg-gray-700/40 flex items-center justify-center">
-                          <span className="text-gray-500 text-xs font-orbitron">Generic Stock Hero Image</span>
-                        </div>
-                        <div className="grid grid-cols-3 gap-2">
-                          <div className="h-8 rounded bg-gray-700/40" />
-                          <div className="h-8 rounded bg-gray-700/40" />
-                          <div className="h-8 rounded bg-gray-700/40" />
-                        </div>
-                        <div className="h-4 w-3/4 rounded bg-gray-700/30" />
-                        <div className="h-4 w-1/2 rounded bg-gray-700/30" />
+                      <div className="relative">
+                        <img 
+                          src="/images/template-website-example.webp" 
+                          alt="Example of a template-built website" 
+                          className="w-full h-auto opacity-80"
+                        />
+                        <div className="absolute inset-0 bg-red-500/10" />
                       </div>
-                      <div className="absolute inset-0 bg-red-500/5 rounded-xl" />
                     </div>
 
                     <div className="space-y-3">
