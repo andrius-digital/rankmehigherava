@@ -1174,7 +1174,7 @@ const Index = () => {
 
       {/* Free Website Qualification Dialog */}
       <Dialog open={isQualifyDialogOpen} onOpenChange={setIsQualifyDialogOpen}>
-        <DialogContent className="bg-background/95 backdrop-blur-xl border-2 border-red-500/30 rounded-3xl max-w-lg shadow-2xl shadow-red-500/20 mx-4 sm:mx-auto">
+        <DialogContent className="bg-background/95 backdrop-blur-xl border-2 border-red-500/30 rounded-3xl max-w-lg shadow-2xl shadow-red-500/20" onOpenAutoFocus={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-xl font-orbitron">
               <Globe className="w-5 h-5 text-red-400" />
