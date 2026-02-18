@@ -2,34 +2,19 @@ import React, { useState, useEffect } from 'react';
 import {
     Clock,
     CheckCircle2,
-    AlertCircle,
     Loader2,
     Play,
     MessageSquare,
-    ChevronDown,
-    ChevronRight,
-    FileText,
-    Palette,
-    Code,
-    Bug,
-    Sparkles,
-    HelpCircle,
-    Check,
     Circle,
-    Timer,
-    Calendar,
     MoreVertical,
     Trash2,
     Search,
     Eye,
     AlertTriangle,
     Truck,
-    LayoutGrid,
-    List,
     RotateCcw
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import {
     DropdownMenu,
@@ -83,22 +68,7 @@ const getSimpleStatus = (status: string): 'waiting' | 'working' | 'done' => {
     return 'done';
 };
 
-const getProgressPercent = (status: string): number => {
-    const map: Record<string, number> = {
-        pending: 0,
-        in_progress: 25,
-        ready_for_qa: 50,
-        in_qa: 65,
-        qa_failed: 40,
-        qa_passed: 85,
-        delivered: 95,
-        completed: 100,
-        cancelled: 100,
-    };
-    return map[status] ?? 0;
-};
-
-const getProgressLabel = (status: string): string => {
+const getStatusLabel = (status: string): string => {
     const map: Record<string, string> = {
         pending: 'In queue',
         in_progress: 'Being worked on',
@@ -113,12 +83,56 @@ const getProgressLabel = (status: string): string => {
     return map[status] ?? status;
 };
 
-const priorityDisplay: Record<string, { label: string; dot: string }> = {
-    low: { label: 'Low', dot: 'bg-slate-400' },
-    normal: { label: 'Normal', dot: 'bg-blue-400' },
-    high: { label: 'High', dot: 'bg-orange-400' },
-    urgent: { label: 'Urgent', dot: 'bg-red-400' },
+const getTypeEmoji = (type: string): string => {
+    const map: Record<string, string> = {
+        bug_fix: '🐛', new_feature: '✨', design_change: '🎨',
+        content_update: '📝', adjustment: '🔧', other: '💬',
+    };
+    return map[type] ?? '📋';
 };
+
+const priorityConfig: Record<string, { label: string; color: string; bg: string; border: string }> = {
+    low: { label: 'Low', color: 'text-slate-400', bg: 'bg-slate-500/15', border: 'border-slate-500/25' },
+    normal: { label: 'Normal', color: 'text-blue-400', bg: 'bg-blue-500/15', border: 'border-blue-500/25' },
+    high: { label: 'High', color: 'text-orange-400', bg: 'bg-orange-500/15', border: 'border-orange-500/25' },
+    urgent: { label: 'Urgent', color: 'text-red-400', bg: 'bg-red-500/15', border: 'border-red-500/25' },
+};
+
+const kanbanColumns = [
+    {
+        key: 'waiting' as const,
+        title: 'Waiting',
+        icon: Clock,
+        headerBg: 'bg-amber-500/10',
+        headerBorder: 'border-amber-500/25',
+        headerColor: 'text-amber-400',
+        dotColor: 'bg-amber-400',
+        columnBg: 'bg-amber-500/[0.03]',
+        cardAccent: 'border-l-amber-400',
+    },
+    {
+        key: 'working' as const,
+        title: 'Working on it',
+        icon: Play,
+        headerBg: 'bg-blue-500/10',
+        headerBorder: 'border-blue-500/25',
+        headerColor: 'text-blue-400',
+        dotColor: 'bg-blue-400',
+        columnBg: 'bg-blue-500/[0.03]',
+        cardAccent: 'border-l-blue-400',
+    },
+    {
+        key: 'done' as const,
+        title: 'Done',
+        icon: CheckCircle2,
+        headerBg: 'bg-emerald-500/10',
+        headerBorder: 'border-emerald-500/25',
+        headerColor: 'text-emerald-400',
+        dotColor: 'bg-emerald-400',
+        columnBg: 'bg-emerald-500/[0.03]',
+        cardAccent: 'border-l-emerald-400',
+    },
+];
 
 const ClientRequestsTracker: React.FC<ClientRequestsTrackerProps> = ({
     clientId,
@@ -178,11 +192,7 @@ const ClientRequestsTracker: React.FC<ClientRequestsTrackerProps> = ({
 
             if (error) throw error;
 
-            toast({
-                title: 'Updated',
-                description: `Task moved to ${getProgressLabel(newStatus)}`,
-            });
-
+            toast({ title: 'Updated', description: `Task moved to ${getStatusLabel(newStatus)}` });
             invalidateAllQueries();
             fetchRequests();
         } catch (error) {
@@ -268,218 +278,207 @@ const ClientRequestsTracker: React.FC<ClientRequestsTrackerProps> = ({
         );
     }
 
-    const waitingRequests = requests.filter(r => getSimpleStatus(r.status) === 'waiting');
-    const workingRequests = requests.filter(r => getSimpleStatus(r.status) === 'working');
-    const doneRequests = requests.filter(r => getSimpleStatus(r.status) === 'done');
+    const tasksByColumn = {
+        waiting: requests.filter(r => getSimpleStatus(r.status) === 'waiting'),
+        working: requests.filter(r => getSimpleStatus(r.status) === 'working'),
+        done: requests.filter(r => getSimpleStatus(r.status) === 'done'),
+    };
 
-    const statusGroups = [
-        { key: 'waiting', label: 'Waiting', count: waitingRequests.length, items: waitingRequests, color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20', dot: 'bg-amber-400', icon: Clock },
-        { key: 'working', label: 'Working on it', count: workingRequests.length, items: workingRequests, color: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/20', dot: 'bg-blue-400', icon: Play },
-        { key: 'done', label: 'Done', count: doneRequests.length, items: doneRequests, color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', dot: 'bg-emerald-400', icon: CheckCircle2 },
-    ];
+    const renderCard = (request: ClientRequest, col: typeof kanbanColumns[0]) => {
+        const priority = priorityConfig[request.priority] || priorityConfig.normal;
+        const statusLabel = getStatusLabel(request.status);
+        const simpleStatus = getSimpleStatus(request.status);
+        const isExpanded = expandedId === request.id;
 
-    return (
-        <div className="space-y-4">
-            <div className="flex items-center gap-3">
-                {statusGroups.map(g => (
-                    <div key={g.key} className={cn("flex items-center gap-2 px-3 py-2 rounded-xl", g.bg, "border", g.border)}>
-                        <div className={cn("w-2 h-2 rounded-full", g.dot)} />
-                        <span className={cn("text-sm font-semibold", g.color)}>{g.count}</span>
-                        <span className="text-xs text-muted-foreground">{g.label}</span>
-                    </div>
-                ))}
-            </div>
-
-            <div className="space-y-4 max-h-[450px] overflow-y-auto pr-1">
-                {requests.length === 0 ? (
-                    <div className="text-center py-10">
-                        <CheckCircle2 className="w-10 h-10 mx-auto mb-3 text-emerald-400/30" />
-                        <p className="text-muted-foreground text-sm">No requests yet</p>
-                    </div>
-                ) : (
-                    statusGroups.filter(g => g.items.length > 0).map((group) => (
-                        <div key={group.key} className="space-y-2">
-                            <div className="flex items-center gap-2 px-1">
-                                <div className={cn("w-2 h-2 rounded-full", group.dot)} />
-                                <span className={cn("text-xs font-semibold uppercase tracking-wide", group.color)}>{group.label}</span>
-                                <span className="text-[10px] text-muted-foreground">({group.count})</span>
-                            </div>
-                            {group.items.map((request) => {
-                        const simpleStatus = getSimpleStatus(request.status);
-                        const progress = getProgressPercent(request.status);
-                        const progressLabel = getProgressLabel(request.status);
-                        const priority = priorityDisplay[request.priority] || priorityDisplay.normal;
-                        const isExpanded = expandedId === request.id;
-
-                        const progressBarColor =
-                            simpleStatus === 'done' ? 'bg-emerald-400'
-                            : simpleStatus === 'working' ? 'bg-blue-400'
-                            : 'bg-amber-400';
-
-                        return (
-                            <div
-                                key={request.id}
-                                className={cn(
-                                    "rounded-xl border bg-card/40 transition-all overflow-hidden",
-                                    isExpanded ? "border-white/20 ring-1 ring-white/5" : "border-white/8 hover:border-white/15"
-                                )}
-                            >
-                                <button
-                                    onClick={() => setExpandedId(isExpanded ? null : request.id)}
-                                    className="w-full p-4 text-left"
-                                >
-                                    <div className="flex items-start justify-between gap-3 mb-3">
-                                        <div className="flex-1 min-w-0">
-                                            <h4 className="font-semibold text-sm text-foreground leading-snug mb-1 truncate">
-                                                {request.title}
-                                            </h4>
-                                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                                <span>{formatDate(request.created_at)}</span>
-                                                <span className="text-white/20">|</span>
-                                                <div className="flex items-center gap-1">
-                                                    <div className={cn("w-1.5 h-1.5 rounded-full", priority.dot)} />
-                                                    <span>{priority.label}</span>
-                                                </div>
-                                                {request.task_id && (
-                                                    <>
-                                                        <span className="text-white/20">|</span>
-                                                        <span className="font-mono text-[10px]">{request.task_id}</span>
-                                                    </>
-                                                )}
-                                            </div>
-                                        </div>
-                                        <ChevronRight className={cn(
-                                            "w-4 h-4 text-muted-foreground transition-transform shrink-0 mt-1",
-                                            isExpanded && "rotate-90"
-                                        )} />
-                                    </div>
-
-                                    <div className="space-y-1.5">
-                                        <div className="flex items-center justify-between">
-                                            <span className={cn(
-                                                "text-xs font-medium",
-                                                simpleStatus === 'done' ? 'text-emerald-400'
-                                                : simpleStatus === 'working' ? 'text-blue-400'
-                                                : 'text-amber-400'
-                                            )}>
-                                                {progressLabel}
-                                            </span>
-                                            <span className="text-[10px] text-muted-foreground">{progress}%</span>
-                                        </div>
-                                        <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
-                                            <div
-                                                className={cn("h-full rounded-full transition-all duration-500", progressBarColor)}
-                                                style={{ width: `${progress}%` }}
-                                            />
-                                        </div>
-                                    </div>
-                                </button>
-
-                                {isExpanded && (
-                                    <div className="px-4 pb-4 space-y-3 border-t border-white/5 pt-3">
-                                        {request.description && (
-                                            <p className="text-xs text-muted-foreground leading-relaxed">
-                                                {request.description}
-                                            </p>
-                                        )}
-
-                                        {isAgencyView && simpleStatus !== 'done' && (
-                                            <div className="space-y-2">
-                                                <Textarea
-                                                    placeholder="Add a note..."
-                                                    value={agencyNote}
-                                                    onChange={(e) => setAgencyNote(e.target.value)}
-                                                    className="text-xs min-h-[50px] bg-white/5 border-white/10 resize-none"
-                                                />
-
-                                                <div className="flex items-center gap-2 flex-wrap">
-                                                    {agencyNote.trim() && (
-                                                        <Button
-                                                            size="sm"
-                                                            variant="outline"
-                                                            onClick={() => addNote(request.id)}
-                                                            className="text-xs h-7"
-                                                        >
-                                                            <MessageSquare className="w-3 h-3 mr-1" />
-                                                            Add Note
-                                                        </Button>
-                                                    )}
-
-                                                    {request.status === 'pending' && (
-                                                        <Button size="sm" onClick={() => updateStatus(request.id, 'in_progress')} className="text-xs h-7 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 border border-blue-500/30">
-                                                            <Play className="w-3 h-3 mr-1" /> Start
-                                                        </Button>
-                                                    )}
-                                                    {request.status === 'in_progress' && (
-                                                        <Button size="sm" onClick={() => updateStatus(request.id, 'ready_for_qa')} className="text-xs h-7 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 border border-purple-500/30">
-                                                            <Search className="w-3 h-3 mr-1" /> Send to Review
-                                                        </Button>
-                                                    )}
-                                                    {request.status === 'ready_for_qa' && (
-                                                        <Button size="sm" onClick={() => updateStatus(request.id, 'in_qa')} className="text-xs h-7 bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/30">
-                                                            <Eye className="w-3 h-3 mr-1" /> Start Review
-                                                        </Button>
-                                                    )}
-                                                    {request.status === 'in_qa' && (
-                                                        <>
-                                                            <Button size="sm" onClick={() => updateStatus(request.id, 'qa_passed')} className="text-xs h-7 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30">
-                                                                <CheckCircle2 className="w-3 h-3 mr-1" /> Approve
-                                                            </Button>
-                                                            <Button size="sm" onClick={() => updateStatus(request.id, 'qa_failed')} className="text-xs h-7 bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30">
-                                                                <AlertTriangle className="w-3 h-3 mr-1" /> Needs Fix
-                                                            </Button>
-                                                        </>
-                                                    )}
-                                                    {request.status === 'qa_failed' && (
-                                                        <Button size="sm" onClick={() => updateStatus(request.id, 'in_progress')} className="text-xs h-7 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 border border-blue-500/30">
-                                                            <RotateCcw className="w-3 h-3 mr-1" /> Restart
-                                                        </Button>
-                                                    )}
-                                                    {request.status === 'qa_passed' && (
-                                                        <Button size="sm" onClick={() => updateStatus(request.id, 'delivered')} className="text-xs h-7 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 border border-cyan-500/30">
-                                                            <Truck className="w-3 h-3 mr-1" /> Deliver
-                                                        </Button>
-                                                    )}
-
-                                                    <DropdownMenu>
-                                                        <DropdownMenuTrigger asChild>
-                                                            <Button size="sm" variant="ghost" className="h-7 w-7 p-0">
-                                                                <MoreVertical className="w-3.5 h-3.5" />
-                                                            </Button>
-                                                        </DropdownMenuTrigger>
-                                                        <DropdownMenuContent align="end">
-                                                            <DropdownMenuItem onClick={() => updateStatus(request.id, 'pending')}>
-                                                                <Circle className="w-4 h-4 mr-2" /> Move to Waiting
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuSeparator />
-                                                            <DropdownMenuItem onClick={() => deleteRequest(request.id)} className="text-red-400">
-                                                                <Trash2 className="w-4 h-4 mr-2" /> Delete
-                                                            </DropdownMenuItem>
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {isAgencyView && simpleStatus === 'done' && (
-                                            <div className="flex items-center gap-2">
-                                                <Button size="sm" variant="outline" onClick={() => updateStatus(request.id, 'pending')} className="text-xs h-7">
-                                                    <RotateCcw className="w-3 h-3 mr-1" /> Reopen
-                                                </Button>
-                                                <Button size="sm" variant="ghost" onClick={() => deleteRequest(request.id)} className="text-xs h-7 text-red-400 hover:text-red-300">
-                                                    <Trash2 className="w-3 h-3 mr-1" /> Delete
-                                                </Button>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        );
-                    })}
+        return (
+            <div
+                key={request.id}
+                className={cn(
+                    "rounded-lg bg-slate-900/60 border border-white/8 transition-all overflow-hidden",
+                    "border-l-2",
+                    col.cardAccent,
+                    isExpanded ? "ring-1 ring-white/10 border-white/15" : "hover:border-white/15 hover:bg-slate-800/60",
+                    "shadow-sm"
+                )}
+            >
+                <button
+                    onClick={() => setExpandedId(isExpanded ? null : request.id)}
+                    className="w-full text-left p-3"
+                >
+                    <div className="flex items-start justify-between gap-1 mb-1.5">
+                        <div className="flex items-center gap-1.5">
+                            <span className="text-sm">{getTypeEmoji(request.request_type)}</span>
+                            {request.task_id && (
+                                <span className="text-[9px] font-mono text-slate-500">{request.task_id}</span>
+                            )}
                         </div>
-                    ))
+                        <span className={cn(
+                            "text-[9px] font-semibold px-1.5 py-0.5 rounded-full border",
+                            priority.bg, priority.color, priority.border
+                        )}>
+                            {priority.label}
+                        </span>
+                    </div>
+
+                    <h4 className="font-medium text-[13px] text-white leading-snug mb-1 line-clamp-2">
+                        {request.title}
+                    </h4>
+
+                    {request.description && (
+                        <p className="text-[11px] text-slate-400 line-clamp-2 mb-2 leading-relaxed">
+                            {request.description}
+                        </p>
+                    )}
+
+                    <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-slate-500">
+                            {formatDate(request.created_at)}
+                        </span>
+                        {simpleStatus === 'working' && (
+                            <span className={cn("text-[10px] font-medium", col.headerColor)}>
+                                {statusLabel}
+                            </span>
+                        )}
+                        {request.revision_count > 0 && (
+                            <span className="text-[10px] text-amber-400 font-medium">
+                                Rev {request.revision_count}
+                            </span>
+                        )}
+                    </div>
+                </button>
+
+                {isExpanded && (
+                    <div className="px-3 pb-3 space-y-2 border-t border-white/5 pt-2">
+                        {isAgencyView && simpleStatus !== 'done' && (
+                            <div className="space-y-2">
+                                <Textarea
+                                    placeholder="Add a note..."
+                                    value={agencyNote}
+                                    onChange={(e) => setAgencyNote(e.target.value)}
+                                    className="text-xs min-h-[40px] bg-white/5 border-white/10 resize-none"
+                                />
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                    {agencyNote.trim() && (
+                                        <Button size="sm" variant="outline" onClick={() => addNote(request.id)} className="text-[10px] h-6 px-2">
+                                            <MessageSquare className="w-3 h-3 mr-1" /> Note
+                                        </Button>
+                                    )}
+                                    {request.status === 'pending' && (
+                                        <Button size="sm" onClick={() => updateStatus(request.id, 'in_progress')} className="text-[10px] h-6 px-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 border border-blue-500/30">
+                                            <Play className="w-3 h-3 mr-1" /> Start
+                                        </Button>
+                                    )}
+                                    {request.status === 'in_progress' && (
+                                        <Button size="sm" onClick={() => updateStatus(request.id, 'ready_for_qa')} className="text-[10px] h-6 px-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 border border-purple-500/30">
+                                            <Search className="w-3 h-3 mr-1" /> Review
+                                        </Button>
+                                    )}
+                                    {request.status === 'ready_for_qa' && (
+                                        <Button size="sm" onClick={() => updateStatus(request.id, 'in_qa')} className="text-[10px] h-6 px-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/30">
+                                            <Eye className="w-3 h-3 mr-1" /> QA
+                                        </Button>
+                                    )}
+                                    {request.status === 'in_qa' && (
+                                        <>
+                                            <Button size="sm" onClick={() => updateStatus(request.id, 'qa_passed')} className="text-[10px] h-6 px-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30">
+                                                <CheckCircle2 className="w-3 h-3 mr-1" /> Pass
+                                            </Button>
+                                            <Button size="sm" onClick={() => updateStatus(request.id, 'qa_failed')} className="text-[10px] h-6 px-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30">
+                                                <AlertTriangle className="w-3 h-3 mr-1" /> Fail
+                                            </Button>
+                                        </>
+                                    )}
+                                    {request.status === 'qa_failed' && (
+                                        <Button size="sm" onClick={() => updateStatus(request.id, 'in_progress')} className="text-[10px] h-6 px-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 border border-blue-500/30">
+                                            <RotateCcw className="w-3 h-3 mr-1" /> Redo
+                                        </Button>
+                                    )}
+                                    {request.status === 'qa_passed' && (
+                                        <Button size="sm" onClick={() => updateStatus(request.id, 'delivered')} className="text-[10px] h-6 px-2 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 border border-cyan-500/30">
+                                            <Truck className="w-3 h-3 mr-1" /> Ship
+                                        </Button>
+                                    )}
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
+                                                <MoreVertical className="w-3 h-3" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem onClick={() => updateStatus(request.id, 'pending')}>
+                                                <Circle className="w-4 h-4 mr-2" /> Move to Waiting
+                                            </DropdownMenuItem>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuItem onClick={() => deleteRequest(request.id)} className="text-red-400">
+                                                <Trash2 className="w-4 h-4 mr-2" /> Delete
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+                            </div>
+                        )}
+
+                        {isAgencyView && simpleStatus === 'done' && (
+                            <div className="flex items-center gap-1.5">
+                                <Button size="sm" variant="outline" onClick={() => updateStatus(request.id, 'pending')} className="text-[10px] h-6 px-2">
+                                    <RotateCcw className="w-3 h-3 mr-1" /> Reopen
+                                </Button>
+                                <Button size="sm" variant="ghost" onClick={() => deleteRequest(request.id)} className="text-[10px] h-6 px-2 text-red-400 hover:text-red-300">
+                                    <Trash2 className="w-3 h-3 mr-1" /> Delete
+                                </Button>
+                            </div>
+                        )}
+                    </div>
                 )}
             </div>
+        );
+    };
+
+    return (
+        <div className="grid grid-cols-3 gap-3 min-h-[250px]">
+            {kanbanColumns.map((col) => {
+                const ColIcon = col.icon;
+                const colTasks = tasksByColumn[col.key];
+
+                return (
+                    <div
+                        key={col.key}
+                        className={cn(
+                            "rounded-xl border border-white/8 overflow-hidden flex flex-col",
+                            col.columnBg
+                        )}
+                    >
+                        <div className={cn(
+                            "flex items-center justify-between px-3 py-2.5 border-b",
+                            col.headerBg,
+                            col.headerBorder
+                        )}>
+                            <div className="flex items-center gap-2">
+                                <ColIcon className={cn("w-4 h-4", col.headerColor)} />
+                                <span className={cn("text-xs font-bold uppercase tracking-wide", col.headerColor)}>
+                                    {col.title}
+                                </span>
+                            </div>
+                            <span className={cn(
+                                "text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center",
+                                col.headerBg, col.headerColor
+                            )}>
+                                {colTasks.length}
+                            </span>
+                        </div>
+
+                        <div className="flex-1 p-2 space-y-2 overflow-y-auto max-h-[380px]">
+                            {colTasks.length === 0 ? (
+                                <div className="flex items-center justify-center h-20 text-xs text-muted-foreground/50">
+                                    No tasks
+                                </div>
+                            ) : (
+                                colTasks.map((request) => renderCard(request, col))
+                            )}
+                        </div>
+                    </div>
+                );
+            })}
         </div>
     );
 };
