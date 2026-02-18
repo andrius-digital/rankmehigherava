@@ -204,7 +204,7 @@ const Index = () => {
         </div>
 
         <div className="relative z-10">
-          <Navbar />
+          <Navbar onOpenLeadMagnet={() => setIsQualifyDialogOpen(true)} />
 
           {/* HERO SECTION */}
           {/* Desktop Layout */}

@@ -21,7 +21,7 @@ const services = [
   { label: "Live Outbound Sales Agents", href: "/services/outbound" },
 ];
 
-const Navbar = () => {
+const Navbar = ({ onOpenLeadMagnet }: { onOpenLeadMagnet?: () => void }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isServicesOpen, setIsServicesOpen] = useState(false);
   const navigate = useNavigate();
@@ -114,23 +114,23 @@ const Navbar = () => {
             </Link>
           </div>
 
-          {/* Desktop: Book a Call CTA */}
+          {/* Desktop: Get Your Website CTA */}
           <button
-            onClick={openCalendly}
+            onClick={onOpenLeadMagnet || openCalendly}
             className="group hidden lg:flex items-center gap-3 px-5 py-2.5 rounded-full bg-red-500/10 backdrop-blur-md border border-red-500/30 text-white font-medium hover:bg-red-500/20 hover:border-red-500/50 hover:shadow-lg hover:shadow-red-500/20 hover:scale-[1.02] transition-all duration-300 relative overflow-hidden"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/10 to-red-500/0 group-hover:from-red-500/10 group-hover:via-red-500/20 group-hover:to-red-500/10 transition-all duration-500" />
             <Phone className="w-4 h-4 text-red-400 relative z-10" />
-            <span className="text-sm font-bold relative z-10">Book a Call</span>
+            <span className="text-sm font-bold relative z-10">Get Your Website</span>
           </button>
 
-          {/* Mobile: Book a Call CTA */}
+          {/* Mobile: Get Your Website CTA */}
           <button
-            onClick={openCalendly}
+            onClick={onOpenLeadMagnet || openCalendly}
             className="md:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-500/10 backdrop-blur-md border border-red-500/30 text-white text-xs font-bold hover:bg-red-500/20 transition-all"
           >
             <Phone className="w-3.5 h-3.5 text-red-400" />
-            <span>Book a Call</span>
+            <span>Get Your Website</span>
           </button>
 
           {/* Mobile: Menu Button */}
@@ -193,9 +193,9 @@ const Navbar = () => {
                 Contact
               </Link>
 
-              <button onClick={() => { setIsMenuOpen(false); openCalendly(); }} className="flex items-center justify-center gap-3 px-4 py-3 rounded-full bg-gradient-to-r from-primary to-red-600 text-white font-bold mt-2">
+              <button onClick={() => { setIsMenuOpen(false); if (onOpenLeadMagnet) onOpenLeadMagnet(); else openCalendly(); }} className="flex items-center justify-center gap-3 px-4 py-3 rounded-full bg-gradient-to-r from-primary to-red-600 text-white font-bold mt-2">
                 <Phone className="w-4 h-4" />
-                <span className="text-sm">Book a Call</span>
+                <span className="text-sm">Get Your Website</span>
               </button>
             </div>
           </div>
