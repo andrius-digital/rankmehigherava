@@ -86,10 +86,10 @@ const Footer = () => {
             <img src={logo} alt="Rank Me Higher" className="h-10 w-auto" />
 
             <p className="text-muted-foreground leading-relaxed max-w-md">
-              <strong className="text-foreground">Rank Me Higher</strong> is a Software & Website Development Marketing Company from Chicago, founded and operated by <strong className="text-foreground">Andrius Digital</strong>. We take a technology-driven approach to building faster, better-ranking websites that actually generate leads and revenue for local businesses.
+              <strong className="text-foreground">Rank Me Higher</strong> is a Software & Website Development Marketing Company from Chicago. We take a technology-driven approach to building faster, better-ranking websites that actually generate leads and revenue for local businesses.
             </p>
             <p className="text-muted-foreground leading-relaxed max-w-md text-sm mt-3">
-              In 2026, we introduced <strong className="text-cyan-400">AVA</strong>—our proprietary website and SEO platform. AVA is currently managing <strong className="text-foreground">over 100 websites</strong> and growing, bootstrapped without any VC funding.
+              <strong className="text-cyan-400">AVA</strong> is our proprietary website and SEO platform, currently managing <strong className="text-foreground">54 websites</strong> and growing.
             </p>
 
             <div className="space-y-2">

@@ -490,15 +490,15 @@ const Contact = () => {
               
               <div className="text-muted-foreground space-y-4 text-left">
                 <p>
-                  <strong className="text-foreground">Rank Me Higher</strong> is a Software & Website Development Marketing Company from Chicago, founded and operated by <strong className="text-foreground">Andrius Digital</strong>. We take a technology-driven approach to building faster, better-ranking websites that actually generate leads and revenue for local businesses.
+                  <strong className="text-foreground">Rank Me Higher</strong> is a Software & Website Development Marketing Company from Chicago. We take a technology-driven approach to building faster, better-ranking websites that actually generate leads and revenue for local businesses.
                 </p>
                 
                 <p>
-                  In 2026, Rank Me Higher introduced <strong className="text-cyan-400">AVA</strong>—our proprietary website and SEO platform. AVA was bootstrapped from the ground up without any VC funding, built entirely on our vision of making enterprise-level marketing technology accessible to small and medium businesses.
+                  <strong className="text-cyan-400">AVA</strong> is our proprietary website and SEO platform, built to make enterprise-level marketing technology accessible to small and medium businesses.
                 </p>
 
                 <p>
-                  <strong className="text-cyan-400">AVA</strong> is currently managing <strong className="text-foreground">over 100 websites</strong> and growing. The platform handles everything from custom website development and hosting to SEO optimization, lead capture, SMS & email automation, and 24/7 support. Every website we build is custom-coded (no templates), SEO-optimized from day one, and includes a full dashboard for leads and analytics.
+                  <strong className="text-cyan-400">AVA</strong> is currently managing <strong className="text-foreground">54 websites</strong> and growing. The platform handles everything from custom website development and hosting to SEO optimization, lead capture, SMS & email automation, and 24/7 support. Every website we build is custom-coded (no templates), SEO-optimized from day one, and includes a full dashboard for leads and analytics.
                 </p>
 
                 <p>
@@ -508,10 +508,10 @@ const Contact = () => {
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
                 {[
-                  { label: "Websites on AVA", value: "100+" },
-                  { label: "Founded", value: "2026" },
-                  { label: "VC Funding", value: "$0" },
-                  { label: "Bootstrapped", value: "100%" }
+                  { label: "Websites on AVA", value: "54" },
+                  { label: "Custom Coded", value: "100%" },
+                  { label: "Avg Launch Time", value: "10 Days" },
+                  { label: "Client Support", value: "24/7" }
                 ].map((stat, index) => (
                   <div key={index} className="p-4 rounded-xl bg-white/5 border border-white/10">
                     <div className="text-2xl font-orbitron font-bold text-primary">{stat.value}</div>
