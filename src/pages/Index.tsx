@@ -733,7 +733,7 @@ const Index = () => {
 
             </div>
 
-            <div className="text-center mt-6">
+            <div className="text-center mt-4">
               <button
                 onClick={openCalendly}
                 className="group inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 text-white font-bold text-sm hover:bg-primary/10 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 font-orbitron"
@@ -746,7 +746,7 @@ const Index = () => {
           </section>
 
           {/* TEMPLATE VS CUSTOM - BEFORE/AFTER COMPARISON */}
-          <section className="py-4 lg:py-6 relative overflow-hidden">
+          <section className="py-2 lg:py-3 relative overflow-hidden">
             <div className="container mx-auto px-4 lg:px-8 max-w-6xl relative z-10">
               <div className="text-center mb-12">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/10 border border-red-500/30 mb-4">
