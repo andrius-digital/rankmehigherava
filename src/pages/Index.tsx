@@ -225,14 +225,14 @@ const Index = () => {
                   </div>
 
                   <div className="space-y-4">
-                    <h1 className="text-5xl xl:text-6xl 2xl:text-7xl font-black leading-[1.1] font-orbitron tracking-tight">
+                    <h1 className="text-4xl xl:text-5xl 2xl:text-6xl font-black leading-[1.1] font-orbitron tracking-tight">
                       <span className="text-foreground">We Custom Code</span>
                       <br />
                       <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-red-500 to-primary animate-gradient-x">
                         SEO-Ready Web Apps
                       </span>
                       <br />
-                      <span className="text-foreground text-4xl xl:text-5xl 2xl:text-6xl">That Actually Make Money.</span>
+                      <span className="text-foreground text-3xl xl:text-4xl 2xl:text-5xl">That Actually Make Money.</span>
                     </h1>
                     <p className="text-base xl:text-lg text-muted-foreground max-w-xl leading-relaxed">
                       Stop paying $5K+ for WordPress templates that lag and look like 2015. We <strong>custom code</strong> web apps with <strong>lead capture, SMS & email automations</strong>—managed by <span className="text-cyan-400 font-bold">AVA</span>. <strong>You own the code</strong>, no contracts — if you leave, we hand you the GitHub files. Dashboard, leads pipeline & <strong>24/7 support</strong> included.
