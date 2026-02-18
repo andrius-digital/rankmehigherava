@@ -726,7 +726,7 @@ const Index = () => {
           </section>
 
           {/* PRICING SECTION */}
-          <section className="py-8 lg:py-12 relative overflow-hidden">
+          <section className="py-4 lg:py-6 relative overflow-hidden">
             <div className="container mx-auto px-4 lg:px-8 max-w-5xl relative z-10">
               <div className="text-center mb-6">
                 <h2 className="text-3xl lg:text-5xl font-black leading-tight font-orbitron mb-3">
@@ -1020,7 +1020,7 @@ const Index = () => {
           </section>
 
           {/* HOW IT WORKS SECTION */}
-          <section className="py-8 lg:py-12 relative overflow-hidden">
+          <section className="py-4 lg:py-6 relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-red-500/[0.03] to-transparent" />
             <div className="container mx-auto px-4 lg:px-8 max-w-5xl relative z-10">
               <div className="text-center mb-12">
@@ -1103,7 +1103,7 @@ const Index = () => {
           </section>
 
           {/* WHAT YOU GET SECTION */}
-          <section className="py-8 lg:py-12 relative overflow-hidden">
+          <section className="py-4 lg:py-6 relative overflow-hidden">
             <div className="container mx-auto px-4 lg:px-8 max-w-6xl relative z-10">
               <div className="text-center mb-12">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/10 border border-red-500/30 mb-4">
@@ -1202,7 +1202,7 @@ const Index = () => {
           </section>
 
           {/* FAQ SECTION */}
-          <section className="py-8 lg:py-12 relative overflow-hidden">
+          <section className="py-4 lg:py-6 relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-500/[0.02] to-transparent" />
             <div className="container mx-auto px-4 lg:px-8 max-w-3xl relative z-10">
               <div className="text-center mb-12">
@@ -1277,7 +1277,7 @@ const Index = () => {
           </section>
 
           {/* FINAL CTA SECTION */}
-          <section className="py-8 lg:py-12 relative overflow-hidden">
+          <section className="py-4 lg:py-6 relative overflow-hidden">
             <div className="container mx-auto px-4 lg:px-8 max-w-4xl relative z-10">
               <div className="relative p-8 lg:p-12 rounded-3xl bg-gradient-to-br from-red-500/15 via-red-600/10 to-red-500/15 border border-red-500/30 text-center overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/5 to-red-500/0" />
