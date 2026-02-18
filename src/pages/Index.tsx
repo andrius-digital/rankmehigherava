@@ -529,7 +529,7 @@ const Index = () => {
                           'Go High Level sub account (free)',
                           'AVA AI assistant (chat + voice)',
                           'Client dashboard & task platform',
-                          'Weekly coaching call recordings',
+                          'Weekly client coaching calls',
                           'Performance monitoring & backups',
                         ].map((item, i) => (
                           <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
