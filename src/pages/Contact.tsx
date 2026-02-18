@@ -249,10 +249,11 @@ const Contact = () => {
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="group w-full px-6 py-3.5 rounded-xl bg-gradient-to-r from-primary to-red-600 text-white font-bold text-sm shadow-lg hover:shadow-xl hover:shadow-red-500/30 hover:scale-[1.01] transition-all duration-300 font-orbitron disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="group w-full px-6 py-3.5 rounded-xl bg-red-500/15 backdrop-blur-md border border-red-500/30 text-white font-bold text-sm shadow-lg hover:bg-red-500/25 hover:border-red-500/50 hover:shadow-xl hover:shadow-red-500/20 hover:scale-[1.01] transition-all duration-300 font-orbitron disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden"
                     >
-                      <div className="flex items-center justify-center gap-2">
-                        <Send className="w-4 h-4" />
+                      <div className="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/10 to-red-500/0 group-hover:from-red-500/10 group-hover:via-red-500/20 group-hover:to-red-500/10 transition-all duration-500" />
+                      <div className="relative flex items-center justify-center gap-2">
+                        <Send className="w-4 h-4 text-red-400" />
                         <span>{isSubmitting ? 'Sending...' : 'Send Message'}</span>
                         {!isSubmitting && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
                       </div>
@@ -301,7 +302,7 @@ const Contact = () => {
                       "Chicago-based, meet us in person",
                       "Direct line to Andrius, always",
                       "Live in 10 days, not months",
-                      "$1,500 setup + $99/mo, no hidden fees"
+                      "$2,000 setup + $99/mo, no hidden fees"
                     ].map((item, index) => (
                       <div key={index} className="flex items-center gap-2">
                         <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
@@ -321,7 +322,7 @@ const Contact = () => {
               {offices.map((office, index) => (
                 <div
                   key={index}
-                  className="rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 overflow-hidden hover:border-primary/40 transition-all"
+                  className="rounded-2xl bg-white/5 backdrop-blur-md border border-red-500/30 overflow-hidden hover:border-red-500/50 transition-all shadow-[0_0_20px_rgba(239,68,68,0.15),0_0_40px_rgba(239,68,68,0.05)] hover:shadow-[0_0_25px_rgba(239,68,68,0.25),0_0_50px_rgba(239,68,68,0.1)]"
                 >
                   <div className="aspect-[16/9] w-full">
                     <iframe
