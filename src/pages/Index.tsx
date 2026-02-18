@@ -913,7 +913,7 @@ const Index = () => {
                   },
                   {
                     q: 'Can you help with Google Maps / Local SEO?',
-                    a: 'Absolutely. We offer a separate Google Map Dominance service that gets your business into the top 3 local results. Results in 7 days or you don\'t pay.',
+                    a: 'Absolutely. We offer our Local Map Booster service that gets your business into the top 3 local results. Results in 7 days or you don\'t pay.',
                   },
                   {
                     q: 'What\'s included in the monthly $99?',
