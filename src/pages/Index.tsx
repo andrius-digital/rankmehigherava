@@ -754,7 +754,7 @@ const Index = () => {
 
               <div className="grid lg:grid-cols-2 gap-6 mb-12">
                 <div className="relative group">
-                  <div className="absolute -top-3 left-6 z-10 px-4 py-1.5 rounded-full bg-red-500/90 text-white text-xs font-orbitron font-bold">
+                  <div className="absolute -top-3 left-6 z-10 px-4 py-1.5 rounded-full bg-red-500/10 backdrop-blur-md border border-red-500/40 text-red-400 text-xs font-orbitron font-bold shadow-lg shadow-red-500/20 animate-pulse">
                     Template Website
                   </div>
                   <div className="p-6 rounded-2xl bg-red-500/5 border-2 border-red-500/30 relative overflow-hidden">
@@ -812,7 +812,7 @@ const Index = () => {
                 </div>
 
                 <div className="relative group">
-                  <div className="absolute -top-3 left-6 z-10 px-4 py-1.5 rounded-full bg-cyan-500/90 text-white text-xs font-orbitron font-bold">
+                  <div className="absolute -top-3 left-6 z-10 px-4 py-1.5 rounded-full bg-cyan-500/10 backdrop-blur-md border border-cyan-500/40 text-cyan-400 text-xs font-orbitron font-bold shadow-lg shadow-cyan-500/20 animate-pulse">
                     Rank Me Higher Website
                   </div>
                   <div className="p-6 rounded-2xl bg-cyan-500/5 border-2 border-cyan-500/30 relative overflow-hidden">
