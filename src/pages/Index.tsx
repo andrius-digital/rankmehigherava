@@ -910,26 +910,22 @@ const Index = () => {
                   <div className="p-6 rounded-2xl bg-cyan-500/5 border-2 border-cyan-500/30 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl" />
                     
-                    <div className="mt-4 mb-6 rounded-xl bg-gray-800/80 border border-cyan-500/20 p-4 relative">
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="w-3 h-3 rounded-full bg-red-500/60" />
-                        <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
-                        <div className="w-3 h-3 rounded-full bg-green-500/60" />
-                        <div className="ml-2 flex-1 h-5 rounded bg-cyan-500/10 border border-cyan-500/20 flex items-center px-2">
+                    <div className="mt-4 mb-6 rounded-xl bg-gray-800/80 border border-cyan-500/20 relative overflow-hidden">
+                      <div className="flex items-center gap-2 p-2 bg-gray-900/80">
+                        <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
+                        <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
+                        <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
+                        <div className="ml-2 flex-1 h-4 rounded bg-cyan-500/10 border border-cyan-500/20 flex items-center px-2">
                           <span className="text-cyan-400/60 text-[8px]">🔒 yourbusiness.com</span>
                         </div>
                       </div>
-                      <div className="space-y-2">
-                        <div className="h-20 rounded bg-gradient-to-br from-gray-800 via-gray-900 to-black flex items-center justify-center border border-cyan-500/10">
-                          <span className="text-cyan-400 text-xs font-orbitron font-bold">Custom Branded Hero</span>
-                        </div>
-                        <div className="grid grid-cols-3 gap-2">
-                          <div className="h-8 rounded bg-cyan-500/10 border border-cyan-500/20" />
-                          <div className="h-8 rounded bg-cyan-500/10 border border-cyan-500/20" />
-                          <div className="h-8 rounded bg-cyan-500/10 border border-cyan-500/20" />
-                        </div>
-                        <div className="h-4 w-3/4 rounded bg-cyan-500/10" />
-                        <div className="h-4 w-1/2 rounded bg-cyan-500/10" />
+                      <div className="relative">
+                        <img 
+                          src="/images/custom-coded-website-example.png" 
+                          alt="Example of a custom-coded website by Rank Me Higher" 
+                          className="w-full h-auto"
+                        />
+                        <div className="absolute inset-0 bg-cyan-500/5" />
                       </div>
                     </div>
 
