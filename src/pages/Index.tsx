@@ -249,7 +249,7 @@ const Index = () => {
                     <div className="text-sm text-muted-foreground pl-2">
                       <div className="flex items-start gap-2">
                         <span className="text-cyan-400 font-bold shrink-0">•</span>
-                        <span><strong className="text-foreground">$1,500 setup + $99/mo.</strong> 1hr monthly adjustments • Hosting • Emergency Telegram support • Go High Level included • Extra adjustments $100/hr</span>
+                        <span><strong className="text-foreground">$2,000 setup + $99/mo.</strong> Unlimited revisions until launch • Hosting • Emergency Telegram support • Go High Level included • Post-launch adjustments $100/hr</span>
                       </div>
                     </div>
                   </div>
@@ -473,7 +473,7 @@ const Index = () => {
                   <div className="text-center lg:text-left space-y-5">
                     <div>
                       <div className="mb-1">
-                        <span className="text-5xl lg:text-6xl font-black font-orbitron text-foreground">$1,500</span>
+                        <span className="text-5xl lg:text-6xl font-black font-orbitron text-foreground">$2,000</span>
                       </div>
                       <p className="text-base text-muted-foreground mb-1">One-time setup fee</p>
                       <div className="flex items-baseline gap-2 justify-center lg:justify-start">
@@ -489,6 +489,7 @@ const Index = () => {
                       <ul className="space-y-1.5">
                         {[
                           'Custom-coded website (not a template)',
+                          'Unlimited design changes until you approve',
                           'Mobile-first responsive design',
                           'SEO-optimized structure & meta tags',
                           'Lead capture forms & automations',
@@ -523,7 +524,6 @@ const Index = () => {
                       <h4 className="font-orbitron font-bold text-sm text-foreground mb-2">What's Included Every Month</h4>
                       <ul className="space-y-1.5">
                         {[
-                          '1 hour of monthly adjustments',
                           'Website hosting & security (SSL)',
                           'Emergency support via Telegram group',
                           'Go High Level sub account (free)',
@@ -540,9 +540,15 @@ const Index = () => {
                       </ul>
                     </div>
                     <div className="p-3 rounded-xl bg-white/5 border border-white/10">
-                      <h4 className="font-orbitron font-bold text-xs text-foreground mb-1">Need More?</h4>
+                      <h4 className="font-orbitron font-bold text-xs text-foreground mb-1">How It Works</h4>
+                      <p className="text-xs text-muted-foreground leading-relaxed mb-2">
+                        We build your website with <strong className="text-foreground">unlimited revisions</strong> until you're 100% happy. You only approve — we don't bill hourly during the build. Once your site is live, any future changes are billed at <strong className="text-foreground">$100/hr</strong>.
+                      </p>
+                    </div>
+                    <div className="p-3 rounded-xl bg-cyan-500/5 border border-cyan-500/20">
+                      <h4 className="font-orbitron font-bold text-xs text-cyan-400 mb-1">AI-Powered Development</h4>
                       <p className="text-xs text-muted-foreground leading-relaxed">
-                        Additional adjustments billed at <strong className="text-foreground">$100/hr</strong>. We only recommend what you actually need — no high retainers. You choose what gets built.
+                        Your website is built using next-gen AI coding tools — the same technology powering Silicon Valley startups. A small <strong className="text-foreground">$2–$20/mo</strong> AI infrastructure fee covers the compute used to build and maintain your site, billed at cost on the 1st of each month. No markup, fully transparent.
                       </p>
                     </div>
 
