@@ -1,7 +1,7 @@
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import { ArrowRight, Globe, Search, MapPin, Phone, Megaphone, Play, Instagram, Mail, Calendar, Star, CheckCircle2, Sparkles, Brain, ChevronDown, MessageCircle, Shield, Zap } from "lucide-react";
+import { ArrowRight, Globe, Search, MapPin, Phone, Megaphone, Play, Instagram, Mail, Calendar, Star, CheckCircle2, Sparkles, Brain, ChevronDown, MessageCircle, Shield, Zap, AlertTriangle, X, Check, Gauge, Code2, TrendingUp } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FuturisticWrapper from "@/components/ui/FuturisticWrapper";
@@ -734,12 +734,190 @@ const Index = () => {
             </div>
           </section>
 
-          {/* SERVICES SECTION - HIDDEN FOR NOW */}
-          {/* 
-          <section className="py-12 lg:py-20">
-            ...services section hidden...
+          {/* TEMPLATE VS CUSTOM - BEFORE/AFTER COMPARISON */}
+          <section className="py-16 lg:py-24 relative overflow-hidden">
+            <div className="container mx-auto px-4 lg:px-8 max-w-6xl relative z-10">
+              <div className="text-center mb-12">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/30 mb-4">
+                  <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+                  <span className="text-xs font-orbitron text-amber-400 font-bold">Reality Check</span>
+                </div>
+                <h2 className="text-3xl lg:text-5xl font-black leading-tight font-orbitron mb-4">
+                  <span className="text-foreground">Is Your Website</span>
+                  <br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 via-red-500 to-primary">Costing You Customers?</span>
+                </h2>
+                <p className="text-base lg:text-lg text-muted-foreground max-w-3xl mx-auto">
+                  If your website was built on WordPress, Wix, or GoHighLevel templates — you're blending in with thousands of businesses using the exact same design. Your customers can tell. And they're choosing your competitor instead.
+                </p>
+              </div>
+
+              <div className="grid lg:grid-cols-2 gap-6 mb-12">
+                <div className="relative group">
+                  <div className="absolute -top-3 left-6 z-10 px-4 py-1.5 rounded-full bg-red-500/90 text-white text-xs font-orbitron font-bold">
+                    Template Website
+                  </div>
+                  <div className="p-6 rounded-2xl bg-red-500/5 border-2 border-red-500/30 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 rounded-full blur-2xl" />
+                    
+                    <div className="mt-4 mb-6 rounded-xl bg-gray-800/80 border border-gray-700 p-4 relative">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-3 h-3 rounded-full bg-red-500/60" />
+                        <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
+                        <div className="w-3 h-3 rounded-full bg-green-500/60" />
+                        <div className="ml-2 flex-1 h-5 rounded bg-gray-700/50" />
+                      </div>
+                      <div className="space-y-2">
+                        <div className="h-20 rounded bg-gray-700/40 flex items-center justify-center">
+                          <span className="text-gray-500 text-xs font-orbitron">Generic Stock Hero Image</span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2">
+                          <div className="h-8 rounded bg-gray-700/40" />
+                          <div className="h-8 rounded bg-gray-700/40" />
+                          <div className="h-8 rounded bg-gray-700/40" />
+                        </div>
+                        <div className="h-4 w-3/4 rounded bg-gray-700/30" />
+                        <div className="h-4 w-1/2 rounded bg-gray-700/30" />
+                      </div>
+                      <div className="absolute inset-0 bg-red-500/5 rounded-xl" />
+                    </div>
+
+                    <div className="space-y-3">
+                      {[
+                        "Same layout as 10,000+ other businesses",
+                        "Slow loading — 4-8 second load times",
+                        "Bloated plugins killing your SEO",
+                        "No lead capture or automation built in",
+                        "Looks 'fine' but doesn't convert visitors",
+                        "Monthly plugin updates break your site"
+                      ].map((item, i) => (
+                        <div key={i} className="flex items-start gap-3">
+                          <X className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                          <span className="text-sm text-muted-foreground">{item}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mt-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Gauge className="w-4 h-4 text-red-400" />
+                        <span className="font-orbitron text-xs font-bold text-red-400">Typical PageSpeed Score</span>
+                      </div>
+                      <div className="flex items-end gap-2">
+                        <span className="text-3xl font-orbitron font-black text-red-400">28</span>
+                        <span className="text-xs text-red-400/70 mb-1">/ 100</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="relative group">
+                  <div className="absolute -top-3 left-6 z-10 px-4 py-1.5 rounded-full bg-emerald-500/90 text-white text-xs font-orbitron font-bold">
+                    Rank Me Higher Website
+                  </div>
+                  <div className="p-6 rounded-2xl bg-emerald-500/5 border-2 border-emerald-500/30 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl" />
+                    
+                    <div className="mt-4 mb-6 rounded-xl bg-gray-800/80 border border-emerald-500/20 p-4 relative">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-3 h-3 rounded-full bg-red-500/60" />
+                        <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
+                        <div className="w-3 h-3 rounded-full bg-green-500/60" />
+                        <div className="ml-2 flex-1 h-5 rounded bg-emerald-500/10 border border-emerald-500/20 flex items-center px-2">
+                          <span className="text-emerald-400/60 text-[8px]">🔒 yourbusiness.com</span>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="h-20 rounded bg-gradient-to-br from-gray-800 via-gray-900 to-black flex items-center justify-center border border-emerald-500/10">
+                          <span className="text-emerald-400 text-xs font-orbitron font-bold">Custom Branded Hero</span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2">
+                          <div className="h-8 rounded bg-emerald-500/10 border border-emerald-500/20" />
+                          <div className="h-8 rounded bg-emerald-500/10 border border-emerald-500/20" />
+                          <div className="h-8 rounded bg-emerald-500/10 border border-emerald-500/20" />
+                        </div>
+                        <div className="h-4 w-3/4 rounded bg-emerald-500/10" />
+                        <div className="h-4 w-1/2 rounded bg-emerald-500/10" />
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      {[
+                        "100% unique design built for your brand",
+                        "Lightning fast — under 1 second load time",
+                        "Zero plugins. Clean, hand-written code",
+                        "Built-in lead capture, SMS & email automations",
+                        "Engineered to convert visitors into customers",
+                        "We maintain it — you never worry about updates"
+                      ].map((item, i) => (
+                        <div key={i} className="flex items-start gap-3">
+                          <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                          <span className="text-sm text-muted-foreground">{item}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mt-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Gauge className="w-4 h-4 text-emerald-400" />
+                        <span className="font-orbitron text-xs font-bold text-emerald-400">Average PageSpeed Score</span>
+                      </div>
+                      <div className="flex items-end gap-2">
+                        <span className="text-3xl font-orbitron font-black text-emerald-400">95</span>
+                        <span className="text-xs text-emerald-400/70 mb-1">/ 100</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-4 mb-12">
+                {[
+                  {
+                    icon: Code2,
+                    stat: "0",
+                    label: "Plugins Required",
+                    desc: "Pure custom code means no bloat, no vulnerabilities, no broken updates"
+                  },
+                  {
+                    icon: Gauge,
+                    stat: "3x",
+                    label: "Faster Load Speed",
+                    desc: "Custom code loads 3x faster than WordPress — Google rewards speed with rankings"
+                  },
+                  {
+                    icon: TrendingUp,
+                    stat: "2-5x",
+                    label: "More Conversions",
+                    desc: "Strategic design + built-in lead capture = more calls, more bookings, more revenue"
+                  }
+                ].map((item, i) => (
+                  <div key={i} className="p-5 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 text-center">
+                    <item.icon className="w-6 h-6 text-primary mx-auto mb-2" />
+                    <div className="text-2xl font-orbitron font-black text-primary mb-1">{item.stat}</div>
+                    <div className="font-orbitron font-bold text-sm text-foreground mb-1">{item.label}</div>
+                    <p className="text-xs text-muted-foreground">{item.desc}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="text-center p-8 rounded-2xl bg-gradient-to-br from-primary/10 via-red-500/5 to-transparent border border-primary/20">
+                <h3 className="font-orbitron font-bold text-xl md:text-2xl text-foreground mb-3">
+                  Stop Losing Business to a Bad Website
+                </h3>
+                <p className="text-muted-foreground max-w-2xl mx-auto mb-6 text-sm">
+                  Your website is your #1 salesperson — it works 24/7. If it looks like every other template out there, customers assume your business is like every other business out there. Stand out or get scrolled past.
+                </p>
+                <Link
+                  to="/contact"
+                  className="group inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-primary to-red-600 text-white font-bold text-sm shadow-lg hover:shadow-xl hover:shadow-red-500/30 hover:scale-[1.02] transition-all duration-300 font-orbitron"
+                >
+                  Get Your Custom Website
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+            </div>
           </section>
-          */}
 
           {/* WHAT YOU GET SECTION */}
           <section className="py-16 lg:py-24 relative overflow-hidden">
