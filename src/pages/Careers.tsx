@@ -308,14 +308,15 @@ const Careers = () => {
       const delta = timestamp - lastTime;
       lastTime = timestamp;
 
-      if (!isPausedRef.current) {
-        const targetSpeed = isHoveredRef.current ? slowSpeed : normalSpeed;
-        currentSpeed += (targetSpeed - currentSpeed) * 0.05;
+      if (!isPausedRef.current && !isHoveredRef.current) {
+        currentSpeed += (normalSpeed - currentSpeed) * 0.05;
         el.scrollLeft += currentSpeed * (delta / 16);
 
         if (el.scrollLeft >= el.scrollWidth - el.clientWidth - 1) {
           el.scrollLeft = 0;
         }
+      } else {
+        currentSpeed = 0;
       }
 
       animationRef.current = requestAnimationFrame(step);
@@ -463,6 +464,8 @@ const Careers = () => {
           <div
             ref={scrollRef}
             onClick={togglePause}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
             className={`flex gap-3 overflow-x-auto pb-4 px-4 lg:px-8 cursor-pointer select-none ${isPaused ? "ring-1 ring-red-500/20 ring-inset" : ""}`}
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
@@ -473,8 +476,6 @@ const Careers = () => {
                 <div
                   key={`${position.id}-${idx}`}
                   onClick={(e) => { e.stopPropagation(); setSelectedPosition(position); }}
-                  onMouseEnter={() => setIsHovered(true)}
-                  onMouseLeave={() => setIsHovered(false)}
                   className={`group shrink-0 w-[280px] text-left p-4 rounded-xl backdrop-blur-md border transition-all duration-300 cursor-pointer ${c.bg} ${c.border} ${c.hover} hover:bg-white/[0.06] hover:shadow-[0_0_20px_rgba(255,255,255,0.04)]`}
                 >
                   <div className="flex items-center gap-3 mb-3">
