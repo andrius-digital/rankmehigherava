@@ -428,7 +428,7 @@ const ResellerUserManagement: React.FC<ResellerUserManagementProps> = ({
               {!showUserForm && (
                 <Button
                   onClick={() => setShowUserForm(true)}
-                  className="w-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 hover:border-purple-400/60 text-purple-400 hover:text-purple-300 font-orbitron text-xs"
+                  className="w-full border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.07] hover:border-white/[0.15] text-slate-400 hover:text-white font-orbitron text-xs"
                   variant="outline"
                 >
                   <Plus className="w-4 h-4 mr-2" />

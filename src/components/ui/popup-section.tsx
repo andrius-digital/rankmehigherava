@@ -178,7 +178,7 @@ const PopupSection: React.FC<PopupSectionProps> = ({
         colors.dialogBg
       )}>
         <DialogHeader className="pb-4 border-b border-white/10">
-          <DialogTitle className="flex items-center gap-3">
+          <DialogTitle className="flex items-center gap-3 pr-8">
             <div className={cn(
               "w-8 h-8 rounded-lg flex items-center justify-center border",
               colors.iconBg,

@@ -129,6 +129,62 @@ const ResellerPortal: React.FC = () => {
     const [showAllWebsites, setShowAllWebsites] = useState(false);
     const [showAllFunnels, setShowAllFunnels] = useState(false);
 
+    // Reseller onboarding state
+    const [showOnboardResellerForm, setShowOnboardResellerForm] = useState(false);
+    const [isSubmittingReseller, setIsSubmittingReseller] = useState(false);
+    const [resellerFormData, setResellerFormData] = useState({
+        companyName: '',
+        contactName: '',
+        contactEmail: '',
+        contactPhone: '',
+        notes: '',
+    });
+
+    const resetResellerForm = () => {
+        setResellerFormData({ companyName: '', contactName: '', contactEmail: '', contactPhone: '', notes: '' });
+        setShowOnboardResellerForm(false);
+    };
+
+    const handleOnboardReseller = async () => {
+        if (!resellerFormData.companyName) {
+            toast({ title: 'Missing required field', description: 'Please enter the company name.', variant: 'destructive' });
+            return;
+        }
+
+        setIsSubmittingReseller(true);
+        try {
+            const notesData = {
+                submission_type: 'reseller-account',
+                is_reseller: true,
+                contact_name: resellerFormData.contactName,
+                additional_notes: resellerFormData.notes,
+                submitted_at: new Date().toISOString(),
+            };
+
+            const { error } = await supabase.from('clients').insert({
+                name: resellerFormData.companyName,
+                company_name: resellerFormData.companyName,
+                email: resellerFormData.contactEmail || null,
+                phone: resellerFormData.contactPhone || null,
+                brand_voice: 'Reseller Account',
+                status: 'PENDING',
+                primary_services: ['Reseller'],
+                notes: JSON.stringify(notesData),
+            });
+
+            if (error) throw new Error(error.message);
+
+            queryClient.invalidateQueries({ queryKey: ['all-clients'] });
+            toast({ title: 'Reseller created!', description: `${resellerFormData.companyName} has been added.` });
+            resetResellerForm();
+        } catch (error: any) {
+            console.error('Create reseller error:', error);
+            toast({ title: 'Failed to create reseller', description: error.message || 'Something went wrong.', variant: 'destructive' });
+        } finally {
+            setIsSubmittingReseller(false);
+        }
+    };
+
     const [websiteFormData, setWebsiteFormData] = useState({
         companyName: '',
         websiteUrl: '',
@@ -164,6 +220,36 @@ const ResellerPortal: React.FC = () => {
         refetchOnWindowFocus: true,
     });
 
+    // Fetch all request data for badges + sorting (same as Agency Portal)
+    const { data: allRequestsData = [] } = useQuery({
+        queryKey: ['all-pending-requests'],
+        queryFn: async () => {
+            const { data, error } = await supabase
+                .from('client_requests')
+                .select('client_id, status, created_at');
+            if (error) throw error;
+            return data || [];
+        },
+        staleTime: 1000 * 30,
+        refetchInterval: 30000,
+    });
+
+    // Create maps: pending count + total count + latest submission date
+    const pendingRequestsMap: Record<string, number> = {};
+    const totalRequestsMap: Record<string, number> = {};
+    const latestRequestMap: Record<string, string> = {};
+    allRequestsData.forEach((req: any) => {
+        if (req.client_id) {
+            if (['pending', 'in_progress'].includes(req.status)) {
+                pendingRequestsMap[req.client_id] = (pendingRequestsMap[req.client_id] || 0) + 1;
+            }
+            totalRequestsMap[req.client_id] = (totalRequestsMap[req.client_id] || 0) + 1;
+            if (!latestRequestMap[req.client_id] || req.created_at > latestRequestMap[req.client_id]) {
+                latestRequestMap[req.client_id] = req.created_at;
+            }
+        }
+    });
+
     // Get all reseller accounts
     const resellerAccounts = allClients.filter(c => isResellerAccount(c) && c.status !== 'ARCHIVED');
 
@@ -191,14 +277,37 @@ const ResellerPortal: React.FC = () => {
         );
     };
 
-    // Split into websites and funnels
-    const websiteClients = resellerChildren
-        .filter(c => !isFunnelClient(c))
-        .filter(c => !globalSearch || clientMatchesSearch(c, globalSearch));
+    // Sort clients: latest submission first, then pending count, then alphabetically
+    const sortClients = (clients: any[]) => {
+        return [...clients].sort((a, b) => {
+            // Latest request submission first (newest → front)
+            const latestA = latestRequestMap[a.id] || '';
+            const latestB = latestRequestMap[b.id] || '';
+            if (latestA !== latestB) return latestB.localeCompare(latestA);
 
-    const funnelClients = resellerChildren
-        .filter(c => isFunnelClient(c))
-        .filter(c => !globalSearch || clientMatchesSearch(c, globalSearch));
+            // Then by pending count
+            const pendingA = pendingRequestsMap[a.id] || 0;
+            const pendingB = pendingRequestsMap[b.id] || 0;
+            if (pendingA !== pendingB) return pendingB - pendingA;
+
+            const nameA = (a.company_name || a.name || '').toLowerCase();
+            const nameB = (b.company_name || b.name || '').toLowerCase();
+            return nameA.localeCompare(nameB);
+        });
+    };
+
+    // Split into websites and funnels (sorted with badges)
+    const websiteClients = sortClients(
+        resellerChildren
+            .filter(c => !isFunnelClient(c))
+            .filter(c => !globalSearch || clientMatchesSearch(c, globalSearch))
+    );
+
+    const funnelClients = sortClients(
+        resellerChildren
+            .filter(c => isFunnelClient(c))
+            .filter(c => !globalSearch || clientMatchesSearch(c, globalSearch))
+    );
 
     // Onboard website under current reseller
     const handleOnboardWebsite = async () => {
@@ -299,11 +408,11 @@ const ResellerPortal: React.FC = () => {
 
                         <div className="flex gap-1.5 flex-wrap">
                             <button
-                                onClick={() => setShowOnboardWebsiteForm(true)}
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 transition-all font-orbitron text-[8px] uppercase tracking-widest text-white font-bold"
+                                onClick={() => setShowOnboardResellerForm(true)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-cyan-500/20 bg-cyan-500/[0.06] hover:bg-cyan-500/[0.12] hover:border-cyan-500/30 transition-all font-orbitron text-[8px] uppercase tracking-widest text-cyan-400"
                             >
-                                <MonitorSmartphone className="w-2.5 h-2.5" />
-                                Onboard New Website
+                                <Briefcase className="w-2.5 h-2.5" />
+                                Onboard Reseller
                             </button>
                             {/* Reseller Selector - only for admins */}
                             {!isResellerUser && (
@@ -423,13 +532,20 @@ const ResellerPortal: React.FC = () => {
                                         </DialogHeader>
                                         <ScrollArea className="max-h-[60vh] pr-4">
                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                {websiteClients.map((client) => (
+                                                {websiteClients.map((client) => {
+                                                    const clientPending = pendingRequestsMap[client.id] || 0;
+                                                    return (
                                                     <Link
                                                         key={client.id}
                                                         to={`/agency/client/${client.id}`}
-                                                        className="block bg-gradient-to-br from-card/60 via-card/40 to-transparent border border-cyan-500/30 rounded-xl p-4 hover:border-cyan-400/60 transition-all"
+                                                        className="relative block bg-gradient-to-br from-card/60 via-card/40 to-transparent border border-cyan-500/30 rounded-xl p-4 hover:border-cyan-400/60 transition-all"
                                                         onClick={() => setShowAllWebsites(false)}
                                                     >
+                                                        {clientPending > 0 && (
+                                                            <div className="absolute -top-2 -left-2 z-20 min-w-[22px] h-[22px] px-1.5 rounded-full bg-orange-500 text-white text-[10px] font-bold flex items-center justify-center animate-pulse shadow-lg shadow-orange-500/50 border-2 border-slate-900">
+                                                                {clientPending}
+                                                            </div>
+                                                        )}
                                                         <div className="flex items-center gap-3 mb-2">
                                                             {getClientLogo(client) ? (
                                                                 <img src={getClientLogo(client)!} alt="Logo" className="w-10 h-10 rounded-lg object-contain bg-zinc-900 p-0.5 border border-cyan-500/30" />
@@ -454,7 +570,8 @@ const ResellerPortal: React.FC = () => {
                                                             </div>
                                                         </div>
                                                     </Link>
-                                                ))}
+                                                    );
+                                                })}
                                             </div>
                                         </ScrollArea>
                                     </DialogContent>
@@ -474,8 +591,15 @@ const ResellerPortal: React.FC = () => {
                             const clientServices = client.primary_services || [];
                             const clientIsNew = isNewClient(client);
                             const isHighlighted = globalSearch && clientMatchesSearch(client, globalSearch);
+                            const clientPendingRequests = pendingRequestsMap[client.id] || 0;
                             return (
                                 <div key={client.id} className={`relative group flex-shrink-0 w-[300px] snap-start ${isHighlighted ? 'ring-2 ring-cyan-400/60 ring-offset-2 ring-offset-background rounded-xl' : ''}`}>
+                                    {/* Pending requests badge */}
+                                    {clientPendingRequests > 0 && (
+                                        <div className="absolute -top-2 -left-2 z-20 min-w-[24px] h-6 px-2 rounded-full bg-orange-500 text-white text-xs font-bold flex items-center justify-center animate-pulse shadow-lg shadow-orange-500/50 border-2 border-slate-900">
+                                            {clientPendingRequests}
+                                        </div>
+                                    )}
                                     <Link
                                         to={`/agency/client/${client.id}`}
                                         className={`block h-full bg-gradient-to-br from-card/40 via-card/20 to-transparent backdrop-blur-xl border rounded-xl p-4 hover:border-cyan-400/60 transition-all duration-200 hover:shadow-lg hover:shadow-cyan-500/20 ${isHighlighted ? 'border-cyan-400/60 shadow-lg shadow-cyan-500/20' : 'border-cyan-500/30'}`}
@@ -634,8 +758,15 @@ const ResellerPortal: React.FC = () => {
                             const { dummyDomain, liveDomain } = getFunnelDomains(client);
                             const domain = liveDomain || dummyDomain;
                             const isHighlighted = globalSearch && clientMatchesSearch(client, globalSearch);
+                            const clientPendingRequests = pendingRequestsMap[client.id] || 0;
                             return (
                                 <div key={client.id} className={`relative group flex-shrink-0 w-[300px] snap-start ${isHighlighted ? 'ring-2 ring-cyan-400/60 ring-offset-2 ring-offset-background rounded-xl' : ''}`}>
+                                    {/* Pending requests badge */}
+                                    {clientPendingRequests > 0 && (
+                                        <div className="absolute -top-2 -left-2 z-20 min-w-[24px] h-6 px-2 rounded-full bg-orange-500 text-white text-xs font-bold flex items-center justify-center animate-pulse shadow-lg shadow-orange-500/50 border-2 border-slate-900">
+                                            {clientPendingRequests}
+                                        </div>
+                                    )}
                                     <Link
                                         to={`/agency/client/${client.id}`}
                                         className={`block h-full bg-gradient-to-br from-card/40 via-card/20 to-transparent backdrop-blur-xl border rounded-xl p-4 hover:border-cyan-400/60 transition-all duration-200 hover:shadow-lg hover:shadow-cyan-500/20 ${isHighlighted ? 'border-cyan-400/60 shadow-lg shadow-cyan-500/20' : 'border-cyan-500/30'}`}
@@ -797,6 +928,80 @@ const ResellerPortal: React.FC = () => {
                                 <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Onboarding...</>
                             ) : (
                                 <><Plus className="w-4 h-4 mr-2" /> Onboard Website</>
+                            )}
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Onboard Reseller Modal */}
+            <Dialog open={showOnboardResellerForm} onOpenChange={setShowOnboardResellerForm}>
+                <DialogContent className="max-w-lg bg-background/95 backdrop-blur-xl border-cyan-500/30">
+                    <DialogHeader>
+                        <DialogTitle className="font-orbitron text-cyan-400 flex items-center gap-2">
+                            <Briefcase className="w-5 h-5" />
+                            Onboard Reseller
+                        </DialogTitle>
+                    </DialogHeader>
+
+                    <div className="space-y-4 mt-4">
+                        <div>
+                            <Label className="text-xs font-orbitron text-muted-foreground">Company Name *</Label>
+                            <Input
+                                value={resellerFormData.companyName}
+                                onChange={(e) => setResellerFormData(prev => ({ ...prev, companyName: e.target.value }))}
+                                placeholder="e.g. Digital Marketing Co"
+                                className="mt-1 bg-card/40 border-cyan-500/30 focus:border-cyan-400/60"
+                            />
+                        </div>
+                        <div>
+                            <Label className="text-xs font-orbitron text-muted-foreground">Contact Name</Label>
+                            <Input
+                                value={resellerFormData.contactName}
+                                onChange={(e) => setResellerFormData(prev => ({ ...prev, contactName: e.target.value }))}
+                                placeholder="e.g. John Smith"
+                                className="mt-1 bg-card/40 border-cyan-500/30 focus:border-cyan-400/60"
+                            />
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <Label className="text-xs font-orbitron text-muted-foreground">Email</Label>
+                                <Input
+                                    value={resellerFormData.contactEmail}
+                                    onChange={(e) => setResellerFormData(prev => ({ ...prev, contactEmail: e.target.value }))}
+                                    placeholder="email@company.com"
+                                    className="mt-1 bg-card/40 border-cyan-500/30 focus:border-cyan-400/60"
+                                />
+                            </div>
+                            <div>
+                                <Label className="text-xs font-orbitron text-muted-foreground">Phone</Label>
+                                <Input
+                                    value={resellerFormData.contactPhone}
+                                    onChange={(e) => setResellerFormData(prev => ({ ...prev, contactPhone: e.target.value }))}
+                                    placeholder="(555) 123-4567"
+                                    className="mt-1 bg-card/40 border-cyan-500/30 focus:border-cyan-400/60"
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            <Label className="text-xs font-orbitron text-muted-foreground">Notes</Label>
+                            <Textarea
+                                value={resellerFormData.notes}
+                                onChange={(e) => setResellerFormData(prev => ({ ...prev, notes: e.target.value }))}
+                                placeholder="Any additional details about this reseller..."
+                                className="mt-1 bg-card/40 border-cyan-500/30 focus:border-cyan-400/60 min-h-[60px]"
+                            />
+                        </div>
+
+                        <Button
+                            onClick={handleOnboardReseller}
+                            disabled={isSubmittingReseller || !resellerFormData.companyName}
+                            className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 font-orbitron text-xs uppercase tracking-widest"
+                        >
+                            {isSubmittingReseller ? (
+                                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Creating Reseller...</>
+                            ) : (
+                                <><Plus className="w-4 h-4 mr-2" /> Create Reseller</>
                             )}
                         </Button>
                     </div>

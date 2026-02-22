@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import {
     Globe,
-    BarChart3,
     MessageSquare,
     CreditCard,
     Bell,
@@ -18,14 +17,16 @@ import {
     Layers,
     ArrowLeft,
     Mail,
-    ChevronRight
+    ChevronRight,
+    ChevronDown,
+    Shield,
+    Zap,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import HUDOverlay from '@/components/ui/HUDOverlay';
 import PortalSwitcher from '@/components/PortalSwitcher';
-import { PopupSection } from '@/components/ui/popup-section';
 import ClientRequestForm from '@/components/ClientRequestForm';
 import ClientRequestsTracker from '@/components/ClientRequestsTracker';
 import { supabase } from '@/integrations/supabase/client';
@@ -77,6 +78,18 @@ const ClientDashboard: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const { isAdmin, isReseller, resellerId: userResellerId } = useAuth();
     const isResellerUser = isReseller && !isAdmin;
+
+    // Collapsible section state
+    const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+        services: true,
+        requests: true,
+        billing: false,
+        support: false,
+    });
+
+    const toggleSection = (key: string) => {
+        setExpandedSections(prev => ({ ...prev, [key]: !prev[key] }));
+    };
 
     // Fetch clients - scoped by reseller for reseller users
     const { data: allClients = [], isLoading: clientsLoading } = useQuery({
@@ -211,6 +224,10 @@ const ClientDashboard: React.FC = () => {
     // Free hours (would come from database in production)
     const freeHoursRemaining = 1;
 
+    // Month label formatter for AI usage
+    const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const fmtMonth = (m: string) => { const [y, mo] = m.split('-'); return `${monthLabels[parseInt(mo, 10) - 1]} ${y}`; };
+
     // Client card component
     const ClientCard: React.FC<{ client: any; type: 'website' | 'funnel' }> = ({ client, type }) => {
         const logo = getClientLogo(client);
@@ -219,7 +236,7 @@ const ClientDashboard: React.FC = () => {
         return (
             <button
                 onClick={() => setSelectedClientId(client.id)}
-                className="relative w-full text-left bg-card/30 border border-emerald-500/20 rounded-xl p-4 hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-all group"
+                className="relative w-full text-left bg-card/30 border border-cyan-500/20 rounded-xl p-4 hover:border-cyan-500/50 hover:bg-cyan-500/5 transition-all group"
             >
                 {/* Notification Badge */}
                 {pendingCount > 0 && (
@@ -230,25 +247,21 @@ const ClientDashboard: React.FC = () => {
 
                 <div className="flex items-center gap-3">
                     {logo ? (
-                        <div className="w-12 h-12 rounded-lg overflow-hidden border border-emerald-500/30 bg-zinc-900 p-0.5 flex-shrink-0">
+                        <div className="w-12 h-12 rounded-lg overflow-hidden border border-cyan-500/30 bg-zinc-900 p-0.5 flex-shrink-0">
                             <img src={logo} alt="Logo" className="w-full h-full object-contain" />
                         </div>
                     ) : (
-                        <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
+                        <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-cyan-500/20 to-cyan-600/20 border border-cyan-500/30 flex items-center justify-center flex-shrink-0">
                             {type === 'funnel' ? (
-                                <Layers className="w-6 h-6 text-emerald-400" />
+                                <Layers className="w-6 h-6 text-cyan-400" />
                             ) : (
-                                <Building2 className="w-6 h-6 text-emerald-400" />
+                                <Building2 className="w-6 h-6 text-cyan-400" />
                             )}
                         </div>
                     )}
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                            <Badge className={`font-orbitron text-[7px] px-1.5 py-0 ${
-                                type === 'funnel'
-                                    ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30'
-                                    : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-                            }`}>
+                            <Badge className="font-orbitron text-[7px] px-1.5 py-0 bg-cyan-500/20 text-cyan-400 border-cyan-500/30">
                                 {type === 'funnel' ? 'FUNNEL' : 'WEBSITE'}
                             </Badge>
                         </div>
@@ -259,13 +272,56 @@ const ClientDashboard: React.FC = () => {
                             {client.website_url?.replace('https://', '').replace('http://', '')}
                         </p>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <ChevronRight className="w-5 h-5 text-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
             </button>
         );
     };
 
-    // If a client is selected, show their dashboard
+    // Collapsible section header
+    const SectionHeader: React.FC<{
+        sectionKey: string;
+        icon: React.ElementType;
+        title: string;
+        metric?: string;
+        badge?: { label: string; variant: 'warning' | 'success' | 'default' };
+        notificationCount?: number;
+    }> = ({ sectionKey, icon: Icon, title, metric, badge, notificationCount }) => {
+        const isOpen = expandedSections[sectionKey];
+        return (
+            <button
+                onClick={() => toggleSection(sectionKey)}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-card/30 border border-cyan-500/15 hover:border-cyan-500/30 transition-all group"
+            >
+                <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center flex-shrink-0">
+                    <Icon className="w-4 h-4 text-cyan-400" />
+                </div>
+                <span className="font-orbitron text-xs font-bold text-foreground uppercase tracking-wider flex-1 text-left">
+                    {title}
+                </span>
+                {notificationCount && notificationCount > 0 ? (
+                    <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-orange-500 text-white text-[10px] font-bold flex items-center justify-center animate-pulse">
+                        {notificationCount}
+                    </span>
+                ) : null}
+                {badge && (
+                    <Badge className={`font-orbitron text-[7px] ${
+                        badge.variant === 'warning' ? 'bg-orange-500/20 text-orange-400 border-orange-500/30' :
+                        badge.variant === 'success' ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30' :
+                        'bg-white/5 text-muted-foreground border-white/10'
+                    }`}>
+                        {badge.label}
+                    </Badge>
+                )}
+                {metric && (
+                    <span className="font-orbitron text-xs text-cyan-400 font-bold">{metric}</span>
+                )}
+                <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+            </button>
+        );
+    };
+
+    // ─── CLIENT DASHBOARD (selected) ───────────────────────────
     if (selectedClientId && selectedClient) {
         return (
             <div className="min-h-screen bg-background relative overflow-hidden">
@@ -275,285 +331,271 @@ const ClientDashboard: React.FC = () => {
 
                 <HUDOverlay />
 
-                <div className="relative z-10 container mx-auto px-4 py-6 max-w-6xl">
-                    {/* Header with Back Button */}
-                    <div className="flex flex-col gap-4 mb-8">
-                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                            <div>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => setSelectedClientId(null)}
-                                    className="mb-3 text-muted-foreground hover:text-foreground -ml-2"
-                                >
-                                    <ArrowLeft className="w-4 h-4 mr-1" />
-                                    Back to All Clients
-                                </Button>
-                                <div className="flex items-center gap-2 mb-2">
-                                    <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                                    <span className="font-orbitron text-[10px] tracking-[0.2em] text-emerald-400 uppercase">
-                                        Viewing as Client
-                                    </span>
-                                </div>
-                                <h1 className="font-orbitron text-3xl font-bold bg-gradient-to-r from-white via-emerald-400 to-cyan-500 bg-clip-text text-transparent mb-3">
-                                    CLIENT PORTAL
-                                </h1>
-                                <PortalSwitcher />
-                            </div>
+                <div className="relative z-10 w-full max-w-5xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
 
-                            <div className="flex gap-1.5 flex-wrap">
-                                <ClientRequestForm
-                                    clientId={selectedClientId}
-                                    freeHoursRemaining={freeHoursRemaining}
-                                    trigger={
-                                        <Button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 transition-all font-orbitron text-[8px] uppercase tracking-widest text-white font-bold">
-                                            <Send className="w-3 h-3" />
-                                            Request Adjustment
-                                        </Button>
-                                    }
-                                />
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="flex items-center gap-1.5 font-orbitron text-[8px] uppercase tracking-widest text-muted-foreground"
-                                >
-                                    <Bell className="w-3 h-3" />
-                                    Notifications
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="flex items-center gap-1.5 font-orbitron text-[8px] uppercase tracking-widest text-muted-foreground"
-                                >
-                                    <HelpCircle className="w-3 h-3" />
-                                    Support
-                                </Button>
+                    {/* ── Top Bar: Back + Client Identity ── */}
+                    <div className="flex items-center gap-3 mb-4">
+                        <button
+                            onClick={() => setSelectedClientId(null)}
+                            className="w-9 h-9 rounded-xl bg-card/40 border border-white/10 hover:border-cyan-500/40 flex items-center justify-center transition-all flex-shrink-0"
+                        >
+                            <ArrowLeft className="w-4 h-4 text-muted-foreground" />
+                        </button>
+
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                            {getClientLogo(selectedClient) ? (
+                                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl overflow-hidden border border-cyan-500/30 bg-zinc-900 p-0.5 flex-shrink-0">
+                                    <img src={getClientLogo(selectedClient)!} alt="Logo" className="w-full h-full object-contain" />
+                                </div>
+                            ) : (
+                                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-cyan-500/20 to-cyan-600/20 border border-cyan-500/30 flex items-center justify-center flex-shrink-0">
+                                    <Globe className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-400" />
+                                </div>
+                            )}
+                            <div className="min-w-0">
+                                <h1 className="font-orbitron text-base sm:text-lg font-bold text-foreground truncate">
+                                    {selectedClient.company_name || selectedClient.name}
+                                </h1>
+                                {selectedClient.website_url && (
+                                    <a
+                                        href={selectedClient.website_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-1 text-xs text-cyan-400 hover:text-cyan-300 transition-colors truncate"
+                                    >
+                                        {selectedClient.website_url.replace('https://', '').replace('http://', '')}
+                                        <ExternalLink className="w-3 h-3 flex-shrink-0" />
+                                    </a>
+                                )}
                             </div>
                         </div>
+
+                        <Badge className="bg-cyan-500/15 text-cyan-400 border-cyan-500/25 font-orbitron text-[8px] hidden sm:flex flex-shrink-0">
+                            <CheckCircle2 className="w-3 h-3 mr-1" />
+                            Active
+                        </Badge>
                     </div>
 
-                    {/* Client Info Header Card */}
-                    <div className="bg-card/20 backdrop-blur-xl border border-emerald-500/20 rounded-2xl p-6 mb-6">
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <div className="flex items-center gap-4">
-                                {getClientLogo(selectedClient) ? (
-                                    <div className="w-16 h-16 rounded-xl overflow-hidden border border-emerald-500/30 bg-zinc-900 p-1">
-                                        <img src={getClientLogo(selectedClient)!} alt="Logo" className="w-full h-full object-contain" />
-                                    </div>
-                                ) : (
-                                    <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 border border-emerald-500/30 flex items-center justify-center">
-                                        <Globe className="w-8 h-8 text-emerald-400" />
-                                    </div>
-                                )}
-                                <div>
-                                    <h2 className="font-orbitron text-xl font-bold text-foreground">
-                                        {selectedClient.company_name || selectedClient.name}
-                                    </h2>
-                                    {selectedClient.website_url && (
-                                        <a
-                                            href={selectedClient.website_url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="flex items-center gap-1 text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
-                                        >
-                                            {selectedClient.website_url}
-                                            <ExternalLink className="w-3 h-3" />
-                                        </a>
+                    {/* ── Quick Actions Row ── */}
+                    <div className="flex items-center gap-2 mb-5 overflow-x-auto pb-1 scrollbar-hide">
+                        <ClientRequestForm
+                            clientId={selectedClientId}
+                            freeHoursRemaining={freeHoursRemaining}
+                            trigger={
+                                <Button className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-400 border border-cyan-500/30 font-orbitron text-[9px] uppercase tracking-widest whitespace-nowrap transition-all">
+                                    <Send className="w-3 h-3" />
+                                    Submit Request
+                                </Button>
+                            }
+                        />
+                        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-card/30 border border-white/10 text-xs text-muted-foreground whitespace-nowrap">
+                            <Clock className="w-3.5 h-3.5 text-cyan-400" />
+                            <span><span className="text-cyan-400 font-bold">{freeHoursRemaining}h</span> free this month</span>
+                        </div>
+                        <PortalSwitcher />
+                    </div>
+
+                    {/* ── Inline Dashboard Sections ── */}
+                    <div className="space-y-3">
+
+                        {/* ── Active Services ── */}
+                        <div>
+                            <SectionHeader
+                                sectionKey="services"
+                                icon={CheckCircle2}
+                                title="Active Services"
+                                metric={`${servicesCompletionPercent}%`}
+                            />
+                            {expandedSections.services && (
+                                <div className="mt-2 space-y-2 pl-2 pr-1">
+                                    {servicesLoading ? (
+                                        <div className="flex items-center justify-center py-6">
+                                            <Loader2 className="w-5 h-5 animate-spin text-cyan-400" />
+                                        </div>
+                                    ) : (
+                                        clientServices.map((service) => {
+                                            // Parse AI usage data
+                                            const isAiUsage = service.id === 'dddddddd-dddd-dddd-dddd-dddddddddddd';
+                                            let aiEntries: { month: string; monthly_increment: number; cc_fee: number; amount_to_charge: number }[] = [];
+                                            if (isAiUsage && service.notes) {
+                                                try {
+                                                    const parsed = JSON.parse(service.notes);
+                                                    aiEntries = (parsed.entries || [])
+                                                        .filter((e: any) => e.paid)
+                                                        .sort((a: any, b: any) => b.month.localeCompare(a.month));
+                                                } catch { /* ignore */ }
+                                            }
+
+                                            return (
+                                                <div key={service.id}>
+                                                    <div
+                                                        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg border transition-all ${
+                                                            service.checked
+                                                                ? 'bg-cyan-500/[0.06] border-cyan-500/20'
+                                                                : 'bg-card/20 border-white/5'
+                                                        }`}
+                                                    >
+                                                        <div className={`w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 ${
+                                                            service.checked ? 'text-cyan-400' : 'text-white/20'
+                                                        }`}>
+                                                            {service.checked ? (
+                                                                <CheckCircle2 className="w-4 h-4" />
+                                                            ) : (
+                                                                <AlertCircle className="w-4 h-4" />
+                                                            )}
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className={`text-sm font-medium truncate ${service.checked ? 'text-foreground' : 'text-muted-foreground'}`}>
+                                                                {service.label}
+                                                            </p>
+                                                            <p className="text-[10px] text-muted-foreground truncate hidden sm:block">{service.description}</p>
+                                                        </div>
+                                                        <Badge className={`text-[7px] flex-shrink-0 ${
+                                                            service.checked
+                                                                ? 'bg-cyan-500/15 text-cyan-400 border-cyan-500/25'
+                                                                : 'bg-white/5 text-muted-foreground/60 border-white/5'
+                                                        }`}>
+                                                            {service.checked ? 'Active' : 'Off'}
+                                                        </Badge>
+                                                    </div>
+
+                                                    {/* AI Usage billing history */}
+                                                    {isAiUsage && aiEntries.length > 0 && (
+                                                        <div className="mt-1.5 ml-9 rounded-lg border border-cyan-500/10 overflow-hidden text-xs">
+                                                            <div className="grid grid-cols-4 gap-1 px-3 py-1.5 bg-cyan-500/[0.04] text-[8px] font-orbitron text-muted-foreground uppercase tracking-wider">
+                                                                <span>Month</span>
+                                                                <span className="text-right">Usage</span>
+                                                                <span className="text-right">CC Fee</span>
+                                                                <span className="text-right">Total</span>
+                                                            </div>
+                                                            {aiEntries.map((entry: any) => (
+                                                                <div key={entry.month} className="grid grid-cols-4 gap-1 px-3 py-1.5 border-t border-white/5">
+                                                                    <span className="text-foreground">{fmtMonth(entry.month)}</span>
+                                                                    <span className="text-right text-muted-foreground">${entry.monthly_increment.toFixed(2)}</span>
+                                                                    <span className="text-right text-muted-foreground">${entry.cc_fee.toFixed(2)}</span>
+                                                                    <span className="text-right text-cyan-400 font-medium">${entry.amount_to_charge.toFixed(2)}</span>
+                                                                </div>
+                                                            ))}
+                                                            <div className="grid grid-cols-4 gap-1 px-3 py-1.5 border-t border-cyan-500/15 bg-cyan-500/[0.03] font-medium">
+                                                                <span className="text-foreground">Total</span>
+                                                                <span className="text-right text-muted-foreground">${aiEntries.reduce((s: number, e: any) => s + e.monthly_increment, 0).toFixed(2)}</span>
+                                                                <span className="text-right text-muted-foreground">${aiEntries.reduce((s: number, e: any) => s + e.cc_fee, 0).toFixed(2)}</span>
+                                                                <span className="text-right text-cyan-400 font-bold">${aiEntries.reduce((s: number, e: any) => s + e.amount_to_charge, 0).toFixed(2)}</span>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })
                                     )}
                                 </div>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 font-orbitron text-[10px]">
-                                    <CheckCircle2 className="w-3 h-3 mr-1" />
-                                    Active
-                                </Badge>
-                            </div>
+                            )}
                         </div>
-                    </div>
 
-                    {/* Free Hours Banner */}
-                    <div className="bg-gradient-to-r from-orange-500/10 to-amber-500/10 border border-orange-500/30 rounded-xl p-4 mb-6">
-                        <div className="flex items-center justify-between flex-wrap gap-3">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-lg bg-orange-500/20 border border-orange-500/30 flex items-center justify-center">
-                                    <Clock className="w-5 h-5 text-orange-400" />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-medium text-foreground">
-                                        <span className="text-orange-400 font-bold">{freeHoursRemaining} hour</span> of free adjustments this month
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">Additional work billed at $100/hour</p>
-                                </div>
-                            </div>
-                            <ClientRequestForm
-                                clientId={selectedClientId}
-                                freeHoursRemaining={freeHoursRemaining}
-                                trigger={
-                                    <Button size="sm" className="bg-orange-500/20 hover:bg-orange-500/30 text-orange-400 border border-orange-500/30">
-                                        <Send className="w-3 h-3 mr-1.5" />
-                                        Submit Request
-                                    </Button>
-                                }
+                        {/* ── My Requests ── */}
+                        <div>
+                            <SectionHeader
+                                sectionKey="requests"
+                                icon={MessageSquare}
+                                title="My Requests"
+                                notificationCount={requestsData?.pending || 0}
+                                metric={!requestsData?.pending ? `${requestsData?.total || 0} total` : undefined}
+                                badge={requestsData?.pending ? { label: `${requestsData.pending} PENDING`, variant: 'warning' } : undefined}
                             />
-                        </div>
-                    </div>
-
-                    {/* Main Dashboard Card */}
-                    <div className="bg-card/20 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
-                        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-white/5 bg-white/5">
-                            <div className="flex items-center gap-2">
-                                <BarChart3 className="w-4 h-4 text-emerald-400" />
-                                <h2 className="font-orbitron text-xs sm:text-sm font-bold text-foreground uppercase tracking-wider">
-                                    {selectedClient.company_name || selectedClient.name}'s Dashboard
-                                </h2>
-                            </div>
-                        </div>
-
-                        <div className="p-3 sm:p-4">
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
-                                {/* Active Services */}
-                                <PopupSection
-                                    title="Active Services"
-                                    icon={CheckCircle2}
-                                    color="emerald"
-                                    metric={{ value: `${servicesCompletionPercent}%` }}
-                                >
-                                    <div className="space-y-3">
-                                        {servicesLoading ? (
-                                            <div className="flex items-center justify-center py-4">
-                                                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-                                            </div>
-                                        ) : (
-                                            clientServices.map((service) => (
-                                                <div
-                                                    key={service.id}
-                                                    className={`flex items-center gap-3 p-3 rounded-lg border ${
-                                                        service.checked
-                                                            ? 'bg-emerald-500/10 border-emerald-500/30'
-                                                            : 'bg-card/30 border-white/10'
-                                                    }`}
-                                                >
-                                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center border ${
-                                                        service.checked
-                                                            ? 'bg-emerald-500/20 border-emerald-500/30'
-                                                            : 'bg-white/5 border-white/10'
-                                                    }`}>
-                                                        {service.checked ? (
-                                                            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                                                        ) : (
-                                                            <AlertCircle className="w-4 h-4 text-muted-foreground" />
-                                                        )}
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className={`text-sm font-medium ${service.checked ? 'text-foreground' : 'text-muted-foreground'}`}>
-                                                            {service.label}
-                                                        </p>
-                                                        <p className="text-xs text-muted-foreground truncate">{service.description}</p>
-                                                    </div>
-                                                    <Badge className={`text-[8px] ${
-                                                        service.checked
-                                                            ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-                                                            : 'bg-white/5 text-muted-foreground border-white/10'
-                                                    }`}>
-                                                        {service.checked ? 'Active' : 'Inactive'}
-                                                    </Badge>
-                                                </div>
-                                            ))
-                                        )}
-                                        <p className="text-xs text-muted-foreground text-center pt-2">
-                                            Contact us to add or modify services
-                                        </p>
-                                    </div>
-                                </PopupSection>
-
-                                {/* My Requests */}
-                                <PopupSection
-                                    title="My Requests"
-                                    icon={MessageSquare}
-                                    color="orange"
-                                    notificationCount={requestsData?.pending || 0}
-                                    badge={requestsData?.pending ? { label: `${requestsData.pending} PENDING`, variant: 'warning' as const } : undefined}
-                                    metric={!requestsData?.pending ? { value: requestsData?.total || 0, suffix: ' total' } : undefined}
-                                >
-                                    <div className="space-y-4">
-                                        <ClientRequestsTracker
-                                            clientId={selectedClientId}
-                                            clientName={selectedClient.name || 'Client'}
-                                            isAgencyView={true}
-                                        />
+                            {expandedSections.requests && (
+                                <div className="mt-2">
+                                    <ClientRequestsTracker
+                                        clientId={selectedClientId}
+                                        clientName={selectedClient.name || 'Client'}
+                                        isAgencyView={true}
+                                    />
+                                    <div className="mt-3 px-2">
                                         <ClientRequestForm
                                             clientId={selectedClientId}
                                             freeHoursRemaining={freeHoursRemaining}
                                             trigger={
-                                                <Button className="w-full bg-orange-500/20 hover:bg-orange-500/30 text-orange-400 border border-orange-500/30">
+                                                <Button className="w-full bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/25 rounded-xl">
                                                     <Send className="w-4 h-4 mr-2" />
                                                     New Request
                                                 </Button>
                                             }
                                         />
                                     </div>
-                                </PopupSection>
+                                </div>
+                            )}
+                        </div>
 
-                                {/* Billing */}
-                                <PopupSection
-                                    title="Billing"
-                                    icon={CreditCard}
-                                    color="cyan"
-                                >
-                                    <div className="space-y-4">
-                                        <div className="p-4 bg-card/30 rounded-lg border border-cyan-500/20">
-                                            <p className="text-[10px] font-orbitron text-muted-foreground uppercase tracking-widest mb-1">Current Plan</p>
-                                            <p className="text-lg font-orbitron font-bold text-cyan-400">Professional</p>
+                        {/* ── Billing ── */}
+                        <div>
+                            <SectionHeader
+                                sectionKey="billing"
+                                icon={CreditCard}
+                                title="Billing"
+                                badge={{ label: 'ACTIVE', variant: 'success' }}
+                            />
+                            {expandedSections.billing && (
+                                <div className="mt-2 space-y-2 pl-2 pr-1">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                        <div className="px-4 py-3 bg-card/20 rounded-lg border border-cyan-500/10">
+                                            <p className="text-[9px] font-orbitron text-muted-foreground uppercase tracking-widest mb-1">Current Plan</p>
+                                            <p className="text-base font-orbitron font-bold text-cyan-400">Professional</p>
                                         </div>
-                                        <div className="p-4 bg-card/30 rounded-lg border border-cyan-500/20">
-                                            <p className="text-[10px] font-orbitron text-muted-foreground uppercase tracking-widest mb-1">Billing Status</p>
-                                            <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+                                        <div className="px-4 py-3 bg-card/20 rounded-lg border border-cyan-500/10">
+                                            <p className="text-[9px] font-orbitron text-muted-foreground uppercase tracking-widest mb-1">Billing Status</p>
+                                            <Badge className="bg-cyan-500/15 text-cyan-400 border-cyan-500/25">
                                                 <CheckCircle2 className="w-3 h-3 mr-1" />
                                                 Active
                                             </Badge>
                                         </div>
-                                        <Button className="w-full bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 border border-cyan-500/30">
-                                            <CreditCard className="w-4 h-4 mr-2" />
-                                            Manage Billing
+                                    </div>
+                                    <Button className="w-full bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/25 rounded-xl">
+                                        <CreditCard className="w-4 h-4 mr-2" />
+                                        Manage Billing
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* ── Support ── */}
+                        <div>
+                            <SectionHeader
+                                sectionKey="support"
+                                icon={HelpCircle}
+                                title="Support"
+                            />
+                            {expandedSections.support && (
+                                <div className="mt-2 space-y-2 pl-2 pr-1">
+                                    <p className="text-sm text-muted-foreground px-1">
+                                        Need help? Our team is here to assist you.
+                                    </p>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                        <Button className="bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/25 rounded-xl">
+                                            <MessageSquare className="w-4 h-4 mr-2" />
+                                            Contact Support
+                                        </Button>
+                                        <Button variant="ghost" className="text-muted-foreground hover:text-foreground rounded-xl border border-white/5">
+                                            <Mail className="w-4 h-4 mr-2" />
+                                            Email Us
                                         </Button>
                                     </div>
-                                </PopupSection>
-
-                                {/* Support */}
-                                <PopupSection
-                                    title="Support"
-                                    icon={HelpCircle}
-                                    color="purple"
-                                >
-                                    <div className="space-y-4">
-                                        <p className="text-sm text-muted-foreground">
-                                            Need help? Our team is here to assist you with any questions or issues.
-                                        </p>
-                                        <div className="space-y-2">
-                                            <Button className="w-full bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 border border-purple-500/30">
-                                                <MessageSquare className="w-4 h-4 mr-2" />
-                                                Contact Support
-                                            </Button>
-                                            <Button variant="ghost" className="w-full text-muted-foreground hover:text-foreground">
-                                                <Mail className="w-4 h-4 mr-2" />
-                                                Email Us
-                                            </Button>
-                                        </div>
-                                        <div className="p-3 bg-card/30 rounded-lg border border-purple-500/20">
-                                            <p className="text-[10px] font-orbitron text-muted-foreground uppercase tracking-widest mb-1">Emergency Support</p>
-                                            <p className="text-sm text-foreground">Available 24/7 for critical issues</p>
-                                        </div>
+                                    <div className="px-4 py-3 bg-card/20 rounded-lg border border-cyan-500/10">
+                                        <p className="text-[9px] font-orbitron text-muted-foreground uppercase tracking-widest mb-1">Emergency Support</p>
+                                        <p className="text-sm text-foreground">Available 24/7 for critical issues</p>
                                     </div>
-                                </PopupSection>
-                            </div>
+                                </div>
+                            )}
                         </div>
+
                     </div>
+
+                    {/* Bottom spacer for mobile */}
+                    <div className="h-6" />
                 </div>
             </div>
         );
     }
 
-    // Show client selection view
+    // ─── CLIENT SELECTION VIEW ─────────────────────────────────
     return (
         <div className="min-h-screen bg-background relative overflow-hidden">
             <Helmet>
@@ -563,53 +605,51 @@ const ClientDashboard: React.FC = () => {
 
             <HUDOverlay />
 
-            <div className="relative z-10 container mx-auto px-4 py-6 max-w-6xl">
+            <div className="relative z-10 container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-5xl">
                 {/* Header */}
-                <div className="flex flex-col gap-4 mb-8">
-                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                        <div>
-                            <div className="flex items-center gap-2 mb-2">
-                                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                                <span className="font-orbitron text-[10px] tracking-[0.2em] text-emerald-400 uppercase">Select Client</span>
-                            </div>
-                            <h1 className="font-orbitron text-3xl font-bold bg-gradient-to-r from-white via-emerald-400 to-cyan-500 bg-clip-text text-transparent mb-3">
-                                CLIENT PORTAL
-                            </h1>
-                            <PortalSwitcher />
+                <div className="flex flex-col gap-3 mb-6">
+                    <div>
+                        <div className="flex items-center gap-2 mb-2">
+                            <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                            <span className="font-orbitron text-[10px] tracking-[0.2em] text-cyan-400 uppercase">Select Client</span>
                         </div>
+                        <h1 className="font-orbitron text-2xl sm:text-3xl font-bold bg-gradient-to-r from-white via-cyan-400 to-cyan-500 bg-clip-text text-transparent mb-3">
+                            CLIENT PORTAL
+                        </h1>
+                        <PortalSwitcher />
                     </div>
                 </div>
 
                 {/* Search Bar */}
-                <div className="relative mb-6">
+                <div className="relative mb-5">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                     <Input
                         placeholder="Search clients by name or website..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-12 h-12 bg-card/30 border-emerald-500/20 focus:border-emerald-500/50 font-orbitron"
+                        className="pl-12 h-11 bg-card/30 border-cyan-500/20 focus:border-cyan-500/50 font-orbitron text-sm"
                     />
                 </div>
 
                 {clientsLoading ? (
                     <div className="flex items-center justify-center py-20">
-                        <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
+                        <Loader2 className="w-8 h-8 animate-spin text-cyan-400" />
                     </div>
                 ) : (
-                    <div className="space-y-8">
+                    <div className="space-y-6">
                         {/* Website Clients */}
                         {filteredWebsites.length > 0 && (
                             <div>
-                                <div className="flex items-center gap-2 mb-4">
-                                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 border border-emerald-500/30 flex items-center justify-center">
-                                        <Building2 className="w-4 h-4 text-emerald-400" />
+                                <div className="flex items-center gap-2 mb-3">
+                                    <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-500/20 to-cyan-600/20 border border-cyan-500/30 flex items-center justify-center">
+                                        <Building2 className="w-3.5 h-3.5 text-cyan-400" />
                                     </div>
-                                    <h2 className="font-orbitron text-lg font-bold text-foreground">Websites</h2>
-                                    <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 font-orbitron text-[8px]">
+                                    <h2 className="font-orbitron text-sm sm:text-base font-bold text-foreground">Websites</h2>
+                                    <Badge className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30 font-orbitron text-[8px]">
                                         {filteredWebsites.length}
                                     </Badge>
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                                     {filteredWebsites.map((client) => (
                                         <ClientCard key={client.id} client={client} type="website" />
                                     ))}
@@ -620,16 +660,16 @@ const ClientDashboard: React.FC = () => {
                         {/* Funnel Clients */}
                         {filteredFunnels.length > 0 && (
                             <div>
-                                <div className="flex items-center gap-2 mb-4">
-                                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-cyan-500/30 flex items-center justify-center">
-                                        <Layers className="w-4 h-4 text-cyan-400" />
+                                <div className="flex items-center gap-2 mb-3">
+                                    <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-500/20 to-cyan-600/20 border border-cyan-500/30 flex items-center justify-center">
+                                        <Layers className="w-3.5 h-3.5 text-cyan-400" />
                                     </div>
-                                    <h2 className="font-orbitron text-lg font-bold text-foreground">Funnels</h2>
+                                    <h2 className="font-orbitron text-sm sm:text-base font-bold text-foreground">Funnels</h2>
                                     <Badge className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30 font-orbitron text-[8px]">
                                         {filteredFunnels.length}
                                     </Badge>
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                                     {filteredFunnels.map((client) => (
                                         <ClientCard key={client.id} client={client} type="funnel" />
                                     ))}

@@ -40,7 +40,19 @@ import {
     Users,
     Eye,
     EyeOff,
-    LogOut
+    LogOut,
+    BarChart3,
+    TrendingUp,
+    Clock,
+    Zap,
+    Shield,
+    Package,
+    Activity,
+    CheckCircle2,
+    Play,
+    Timer,
+    CalendarDays,
+    Flame,
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import PortalSwitcher from '@/components/PortalSwitcher';
@@ -58,7 +70,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import FileUpload from '@/components/FileUpload';
 import LogoGenerator from '@/components/LogoGenerator';
-import ResellerUserManagement from '@/components/ResellerUserManagement';
 import { useAuth } from '@/contexts/AuthContext';
 
 // Helper function to check if client is new (created within last 7 days)
@@ -399,7 +410,6 @@ const ClientPortal: React.FC = () => {
 
     // Reseller modal state
     const [showAllResellers, setShowAllResellers] = useState(false);
-    const [showResellerUsers, setShowResellerUsers] = useState(false);
     const resellerScrollRef = useRef<HTMLDivElement>(null);
 
     const DELETE_PASSWORD = 'mundelein';
@@ -961,28 +971,169 @@ const ClientPortal: React.FC = () => {
         refetchOnWindowFocus: true,
     });
 
-    // Fetch pending request counts for all clients (for notification badges)
-    const { data: pendingRequestsData = [] } = useQuery({
+    // Fetch all request data for badges, counts, analytics, and sorting
+    const { data: allRequestsData = [] } = useQuery({
         queryKey: ['all-pending-requests'],
         queryFn: async () => {
             const { data, error } = await supabase
                 .from('client_requests')
-                .select('client_id, status')
-                .in('status', ['pending', 'in_progress']);
+                .select('id, client_id, title, task_id, status, priority, request_type, revision_count, created_at, started_at, completed_at, delivered_at');
             if (error) throw error;
             return data || [];
         },
-        staleTime: 1000 * 30, // Refresh every 30 seconds
+        staleTime: 1000 * 30,
         refetchInterval: 30000,
     });
 
-    // Create a map of client_id -> pending request count
+    // Create maps: pending count + total count + latest submission date
     const pendingRequestsMap: Record<string, number> = {};
-    pendingRequestsData.forEach((req: any) => {
+    const totalRequestsMap: Record<string, number> = {};
+    const latestRequestMap: Record<string, string> = {};
+    allRequestsData.forEach((req: any) => {
         if (req.client_id) {
-            pendingRequestsMap[req.client_id] = (pendingRequestsMap[req.client_id] || 0) + 1;
+            if (['pending', 'in_progress'].includes(req.status)) {
+                pendingRequestsMap[req.client_id] = (pendingRequestsMap[req.client_id] || 0) + 1;
+            }
+            totalRequestsMap[req.client_id] = (totalRequestsMap[req.client_id] || 0) + 1;
+            if (!latestRequestMap[req.client_id] || req.created_at > latestRequestMap[req.client_id]) {
+                latestRequestMap[req.client_id] = req.created_at;
+            }
         }
     });
+
+    // ═══════════════════════════════════════════════════════
+    // ANALYTICS — computed from allRequestsData
+    // ═══════════════════════════════════════════════════════
+    const [analyticsTimeframe, setAnalyticsTimeframe] = useState<'today' | 'week' | 'month'>('week');
+
+    interface DayTask { id: string; title: string; task_id: string; client_id: string; status: string; priority: string; type: 'created' | 'completed' }
+
+    const analytics = React.useMemo(() => {
+        const now = new Date();
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+        let waiting = 0, inProgress = 0, inQa = 0, delivered = 0, completed = 0, cancelled = 0;
+        let urgent = 0, high = 0;
+        let totalRevisions = 0, tasksWithRevisions = 0;
+        let createdToday = 0, completedToday = 0;
+        let createdThisWeek = 0, completedThisWeek = 0;
+        let createdThisMonth = 0, completedThisMonth = 0;
+        let totalTurnaroundMs = 0, turnaroundCount = 0;
+        const typeCount: Record<string, number> = {};
+        const clientActiveCount: Record<string, number> = {};
+
+        // Day-by-day task log: actual tasks grouped by date (last 30 days)
+        const dayTasksMap: Record<string, DayTask[]> = {};
+        for (let i = 29; i >= 0; i--) {
+            const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+            dayTasksMap[d.toISOString().split('T')[0]] = [];
+        }
+
+        // Stale tasks
+        const staleTasks: { id: string; title: string; task_id: string; client_id: string; status: string; priority: string; created_at: string; daysSinceCreated: number; daysSinceUpdate: number }[] = [];
+
+        allRequestsData.forEach((req: any) => {
+            if (req.status === 'pending') waiting++;
+            else if (req.status === 'in_progress' || req.status === 'qa_failed') inProgress++;
+            else if (['in_qa', 'ready_for_qa'].includes(req.status)) inQa++;
+            else if (req.status === 'qa_passed' || req.status === 'delivered') delivered++;
+            else if (req.status === 'completed') completed++;
+            else if (req.status === 'cancelled') cancelled++;
+
+            if (req.priority === 'urgent') urgent++;
+            if (req.priority === 'high') high++;
+
+            if (req.revision_count > 0) { totalRevisions += req.revision_count; tasksWithRevisions++; }
+
+            const createdAt = new Date(req.created_at);
+            if (createdAt >= todayStart) createdToday++;
+            if (createdAt >= weekAgo) createdThisWeek++;
+            if (createdAt >= monthAgo) createdThisMonth++;
+
+            // Add to day log — created
+            const createdDay = createdAt.toISOString().split('T')[0];
+            if (dayTasksMap[createdDay]) {
+                dayTasksMap[createdDay].push({
+                    id: req.id, title: req.title || 'Untitled', task_id: req.task_id || '',
+                    client_id: req.client_id, status: req.status, priority: req.priority, type: 'created',
+                });
+            }
+
+            if (req.completed_at) {
+                const completedAt = new Date(req.completed_at);
+                if (completedAt >= todayStart) completedToday++;
+                if (completedAt >= weekAgo) completedThisWeek++;
+                if (completedAt >= monthAgo) completedThisMonth++;
+                const turnaround = completedAt.getTime() - createdAt.getTime();
+                if (turnaround > 0) { totalTurnaroundMs += turnaround; turnaroundCount++; }
+                // Add to day log — completed
+                const completedDay = completedAt.toISOString().split('T')[0];
+                if (dayTasksMap[completedDay]) {
+                    dayTasksMap[completedDay].push({
+                        id: req.id + '-done', title: req.title || 'Untitled', task_id: req.task_id || '',
+                        client_id: req.client_id, status: 'completed', priority: req.priority, type: 'completed',
+                    });
+                }
+            }
+
+            const type = req.request_type || 'other';
+            typeCount[type] = (typeCount[type] || 0) + 1;
+
+            if (['pending', 'in_progress', 'in_qa', 'ready_for_qa', 'qa_failed', 'qa_passed', 'delivered'].includes(req.status)) {
+                clientActiveCount[req.client_id] = (clientActiveCount[req.client_id] || 0) + 1;
+            }
+
+            if (!['completed', 'cancelled'].includes(req.status)) {
+                const daysSinceCreated = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
+                const lastUpdate = req.delivered_at || req.started_at || req.created_at;
+                const daysSinceUpdate = Math.floor((now.getTime() - new Date(lastUpdate).getTime()) / (1000 * 60 * 60 * 24));
+                if (daysSinceUpdate >= 5) {
+                    staleTasks.push({
+                        id: req.id, title: req.title || 'Untitled', task_id: req.task_id || '',
+                        client_id: req.client_id, status: req.status, priority: req.priority,
+                        created_at: req.created_at, daysSinceCreated, daysSinceUpdate,
+                    });
+                }
+            }
+        });
+
+        // Build sorted array of days with tasks (newest first), filter out empty days
+        const daysList = Object.entries(dayTasksMap)
+            .map(([date, tasks]) => ({ date, tasks }))
+            .reverse();
+
+        staleTasks.sort((a, b) => b.daysSinceUpdate - a.daysSinceUpdate);
+
+        const avgTurnaroundDays = turnaroundCount > 0
+            ? Math.round(totalTurnaroundMs / turnaroundCount / (1000 * 60 * 60 * 24) * 10) / 10
+            : 0;
+
+        let busiestClientId = '';
+        let busiestClientCount = 0;
+        Object.entries(clientActiveCount).forEach(([id, count]) => {
+            if (count > busiestClientCount) { busiestClientId = id; busiestClientCount = count; }
+        });
+
+        const totalActive = waiting + inProgress + inQa + delivered;
+        const total = allRequestsData.length;
+        const nonCancelled = total - cancelled;
+        const completionRate = nonCancelled > 0 ? Math.round((completed / nonCancelled) * 100) : 0;
+
+        return {
+            waiting, inProgress, inQa, delivered, completed, cancelled,
+            urgent, high,
+            totalRevisions, tasksWithRevisions,
+            createdToday, completedToday,
+            createdThisWeek, completedThisWeek,
+            createdThisMonth, completedThisMonth,
+            avgTurnaroundDays, typeCount,
+            daysList, staleTasks,
+            totalActive, total, completionRate,
+            busiestClientId, busiestClientCount,
+        };
+    }, [allRequestsData]);
 
     // Log any query errors
     if (queryError) {
@@ -1004,15 +1155,22 @@ const ClientPortal: React.FC = () => {
     };
     
     // Helper function to sort and filter clients
+    // Sorting priority: 1) Latest submission (newest first) 2) Pending request count (desc) 3) Alphabetical
     const sortAndFilterClients = (clients: any[], searchTerm: string) => {
         const search = searchTerm.toLowerCase().trim();
 
-        // Sort: clients with pending requests first, then alphabetically
         const sorted = [...clients].sort((a, b) => {
+            // First sort by latest request submission date (newest first)
+            // Clients with ANY requests go before clients with none
+            const latestA = latestRequestMap[a.id] || '';
+            const latestB = latestRequestMap[b.id] || '';
+            if (latestA !== latestB) {
+                return latestB.localeCompare(latestA); // Descending (newest first)
+            }
+
+            // Then sort by pending requests (descending)
             const pendingA = pendingRequestsMap[a.id] || 0;
             const pendingB = pendingRequestsMap[b.id] || 0;
-
-            // First sort by pending requests (descending - more pending = higher priority)
             if (pendingA !== pendingB) {
                 return pendingB - pendingA;
             }
@@ -1122,75 +1280,74 @@ const ClientPortal: React.FC = () => {
                             <PortalSwitcher />
                         </div>
 
-                        <div className="flex gap-1.5 flex-wrap">
-                        {!isResellerUser && (
-                        <button
-                            onClick={() => setShowExistingClientTypeModal(true)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-cyan-500/30 bg-transparent hover:bg-cyan-500/10 transition-all font-orbitron text-[8px] uppercase tracking-widest text-cyan-400 font-bold"
-                        >
-                            <PlusCircle className="w-2.5 h-2.5" />
-                            Add Existing Client
-                        </button>
-                        )}
-                        <Link
-                            to="/website-submissions"
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 transition-all font-orbitron text-[8px] uppercase tracking-widest text-white font-bold"
-                        >
-                            <MonitorSmartphone className="w-2.5 h-2.5" />
-                            Onboard New Website
-                        </Link>
-                        <button
-                            onClick={() => setShowFunnelForm(true)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 transition-all font-orbitron text-[8px] uppercase tracking-widest text-white font-bold"
-                        >
-                            <Layers className="w-2.5 h-2.5" />
-                            Onboard New Funnel
-                        </button>
-                        {!isResellerUser && (
-                        <button
-                            onClick={() => setShowResellerUsers(true)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 transition-all font-orbitron text-[8px] uppercase tracking-widest text-white font-bold"
-                        >
-                            <Users className="w-2.5 h-2.5" />
-                            Manage Resellers
-                        </button>
-                        )}
-                        <button
-                            onClick={() => refetch()}
-                            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all font-orbitron text-[8px] uppercase tracking-widest text-muted-foreground"
-                            title="Refresh client list"
-                        >
-                            <RefreshCw className={`w-2.5 h-2.5 ${isLoading ? 'animate-spin' : ''}`} />
-                        </button>
-                        {!isResellerUser && (
-                        <Link
-                            to="/avaadminpanel"
-                            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all font-orbitron text-[8px] uppercase tracking-widest text-muted-foreground"
-                        >
-                            AVA Admin <Layout className="w-2.5 h-2.5" />
-                        </Link>
-                        )}
-                        {!isResellerUser && (
-                        <button
-                            onClick={() => setShowArchived(!showArchived)}
-                            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border transition-all font-orbitron text-[8px] uppercase tracking-widest ${
-                                showArchived
-                                    ? 'bg-orange-500/20 border-orange-500/30 text-orange-400'
-                                    : 'bg-white/5 border-white/10 hover:bg-white/10 text-muted-foreground'
-                            }`}
-                        >
-                            <Archive className="w-2.5 h-2.5" />
-                            Archived {archivedClients.length > 0 && `(${archivedClients.length})`}
-                        </button>
-                        )}
-                        <button
-                            onClick={handleLogout}
-                            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition-all font-orbitron text-[8px] uppercase tracking-widest text-red-400"
-                            title="Sign out"
-                        >
-                            <LogOut className="w-2.5 h-2.5" />
-                            Logout
-                        </button>
+                        {/* Action buttons — grouped by function */}
+                        <div className="flex flex-col items-end gap-2">
+                            {/* Primary actions: onboarding */}
+                            <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                                {!isResellerUser && (
+                                <button
+                                    onClick={() => setShowExistingClientTypeModal(true)}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.07] hover:border-white/[0.15] transition-all font-orbitron text-[8px] uppercase tracking-widest text-slate-400 hover:text-white"
+                                >
+                                    <PlusCircle className="w-2.5 h-2.5" />
+                                    Existing Client
+                                </button>
+                                )}
+                                <Link
+                                    to="/website-submissions"
+                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-cyan-500/20 bg-cyan-500/[0.06] hover:bg-cyan-500/[0.12] hover:border-cyan-500/30 transition-all font-orbitron text-[8px] uppercase tracking-widest text-cyan-400"
+                                >
+                                    <MonitorSmartphone className="w-2.5 h-2.5" />
+                                    New Website
+                                </Link>
+                                <button
+                                    onClick={() => setShowFunnelForm(true)}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-cyan-500/20 bg-cyan-500/[0.06] hover:bg-cyan-500/[0.12] hover:border-cyan-500/30 transition-all font-orbitron text-[8px] uppercase tracking-widest text-cyan-400"
+                                >
+                                    <Layers className="w-2.5 h-2.5" />
+                                    New Funnel
+                                </button>
+                            </div>
+                            {/* Utility actions */}
+                            <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                                <button
+                                    onClick={() => refetch()}
+                                    className="flex items-center justify-center w-7 h-7 rounded-lg border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.07] hover:border-white/[0.15] transition-all text-slate-500 hover:text-white"
+                                    title="Refresh client list"
+                                >
+                                    <RefreshCw className={`w-3 h-3 ${isLoading ? 'animate-spin' : ''}`} />
+                                </button>
+                                {!isResellerUser && (
+                                <Link
+                                    to="/avaadminpanel"
+                                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.07] hover:border-white/[0.15] transition-all font-orbitron text-[8px] uppercase tracking-widest text-slate-400 hover:text-white"
+                                >
+                                    <Layout className="w-2.5 h-2.5" />
+                                    Ava Admin
+                                </Link>
+                                )}
+                                {!isResellerUser && (
+                                <button
+                                    onClick={() => setShowArchived(!showArchived)}
+                                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border transition-all font-orbitron text-[8px] uppercase tracking-widest ${
+                                        showArchived
+                                            ? 'bg-orange-500/10 border-orange-500/25 text-orange-400'
+                                            : 'border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.07] hover:border-white/[0.15] text-slate-400 hover:text-white'
+                                    }`}
+                                >
+                                    <Archive className="w-2.5 h-2.5" />
+                                    Archived {archivedClients.length > 0 && `(${archivedClients.length})`}
+                                </button>
+                                )}
+                                <button
+                                    onClick={handleLogout}
+                                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-red-500/15 bg-red-500/[0.05] hover:bg-red-500/[0.12] hover:border-red-500/25 transition-all font-orbitron text-[8px] uppercase tracking-widest text-red-400/80 hover:text-red-400"
+                                    title="Sign out"
+                                >
+                                    <LogOut className="w-2.5 h-2.5" />
+                                    Logout
+                                </button>
+                            </div>
                         </div>
                     </div>
                     
@@ -1214,6 +1371,268 @@ const ClientPortal: React.FC = () => {
                         )}
                     </div>
                 </div>
+
+                {/* ═══════════════════════════════════════════════════════ */}
+                {/* ANALYTICS DASHBOARD */}
+                {/* ═══════════════════════════════════════════════════════ */}
+                {allRequestsData.length > 0 && (
+                <div className="mb-8 space-y-3">
+
+                    {/* ── Row 1: Status counters + key stats ── */}
+                    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-2">
+                        {[
+                            { label: 'Waiting', value: analytics.waiting, icon: Clock, color: 'amber' },
+                            { label: 'In Progress', value: analytics.inProgress, icon: Play, color: 'blue' },
+                            { label: 'In QA', value: analytics.inQa, icon: Shield, color: 'purple' },
+                            { label: 'Delivered', value: analytics.delivered, icon: Package, color: 'cyan' },
+                            { label: 'Completed', value: analytics.completed, icon: CheckCircle2, color: 'emerald' },
+                            { label: 'Urgent', value: analytics.urgent + analytics.high, icon: AlertTriangle, color: 'red' },
+                        ].map(({ label, value, icon: Icon, color }) => (
+                            <div key={label} className={`rounded-xl border border-${color}-500/15 bg-${color}-500/[0.03] p-2.5 hover:border-${color}-500/30 transition-all`}>
+                                <div className="flex items-center justify-between mb-1">
+                                    <Icon className={`w-3 h-3 text-${color}-400/60`} />
+                                    <span className={`font-orbitron text-base font-bold text-${color}-400`}>{value}</span>
+                                </div>
+                                <p className="text-[7px] font-orbitron text-slate-500 uppercase tracking-widest">{label}</p>
+                            </div>
+                        ))}
+                        {/* Avg turnaround */}
+                        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-2.5 hover:border-white/[0.12] transition-all">
+                            <div className="flex items-center justify-between mb-1">
+                                <Timer className="w-3 h-3 text-slate-500" />
+                                <span className="font-orbitron text-base font-bold text-white">
+                                    {analytics.avgTurnaroundDays > 0 ? `${analytics.avgTurnaroundDays}d` : '—'}
+                                </span>
+                            </div>
+                            <p className="text-[7px] font-orbitron text-slate-500 uppercase tracking-widest">Avg Speed</p>
+                        </div>
+                        {/* Completion rate */}
+                        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-2.5 hover:border-white/[0.12] transition-all">
+                            <div className="flex items-center justify-between mb-1">
+                                <TrendingUp className="w-3 h-3 text-slate-500" />
+                                <span className={`font-orbitron text-base font-bold ${analytics.completionRate >= 70 ? 'text-emerald-400' : analytics.completionRate >= 40 ? 'text-amber-400' : 'text-red-400'}`}>
+                                    {analytics.completionRate}%
+                                </span>
+                            </div>
+                            <p className="text-[7px] font-orbitron text-slate-500 uppercase tracking-widest">Done Rate</p>
+                        </div>
+                    </div>
+
+                    {/* ── Row 2: Task Timeline + Needs Attention ── */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+
+                        {/* ── Task Timeline — actual tasks grouped by day ── */}
+                        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-5 h-5 rounded-md bg-cyan-500/10 border border-cyan-500/15 flex items-center justify-center">
+                                        <CalendarDays className="w-2.5 h-2.5 text-cyan-400" />
+                                    </div>
+                                    <span className="text-[9px] font-orbitron text-slate-500 uppercase tracking-widest">Task Timeline</span>
+                                </div>
+                                <div className="flex gap-0.5 rounded-lg bg-white/[0.03] border border-white/[0.06] p-0.5">
+                                    {(['today', 'week', 'month'] as const).map((tf) => (
+                                        <button
+                                            key={tf}
+                                            onClick={() => setAnalyticsTimeframe(tf)}
+                                            className={`px-2 py-0.5 rounded-md text-[8px] font-orbitron uppercase tracking-wider transition-all ${
+                                                analyticsTimeframe === tf
+                                                    ? 'bg-cyan-500/15 text-cyan-400 border border-cyan-500/20'
+                                                    : 'text-slate-500 hover:text-white border border-transparent'
+                                            }`}
+                                        >
+                                            {tf}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Summary line */}
+                            <div className="flex items-center gap-3 mb-3 px-1">
+                                <div className="flex items-center gap-1.5">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                                    <span className="font-orbitron text-sm font-bold text-white">
+                                        {analyticsTimeframe === 'today' ? analytics.createdToday : analyticsTimeframe === 'week' ? analytics.createdThisWeek : analytics.createdThisMonth}
+                                    </span>
+                                    <span className="text-[9px] text-slate-500">created</span>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                                    <span className="font-orbitron text-sm font-bold text-emerald-400">
+                                        {analyticsTimeframe === 'today' ? analytics.completedToday : analyticsTimeframe === 'week' ? analytics.completedThisWeek : analytics.completedThisMonth}
+                                    </span>
+                                    <span className="text-[9px] text-slate-500">completed</span>
+                                </div>
+                            </div>
+
+                            {/* Day-by-day task list */}
+                            <div className="space-y-0.5 max-h-[240px] overflow-y-auto scrollbar-thin pr-1">
+                                {(() => {
+                                    const todayStr = new Date().toISOString().split('T')[0];
+                                    const cutoff = analyticsTimeframe === 'today' ? 1 : analyticsTimeframe === 'week' ? 7 : 30;
+                                    const visibleDays = analytics.daysList.slice(0, cutoff);
+                                    const daysWithTasks = visibleDays.filter(d => d.tasks.length > 0);
+
+                                    if (daysWithTasks.length === 0) {
+                                        return (
+                                            <div className="flex flex-col items-center justify-center py-8 gap-1.5">
+                                                <CalendarDays className="w-5 h-5 text-slate-600" />
+                                                <p className="text-[10px] text-slate-500 font-orbitron">No tasks {analyticsTimeframe === 'today' ? 'today' : `this ${analyticsTimeframe}`}</p>
+                                            </div>
+                                        );
+                                    }
+
+                                    return daysWithTasks.map(({ date, tasks }) => {
+                                        const d = new Date(date + 'T12:00:00');
+                                        const isToday = date === todayStr;
+                                        const yesterday = new Date(new Date().getTime() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                                        const isYesterday = date === yesterday;
+                                        const dayLabel = isToday ? 'Today' : isYesterday ? 'Yesterday' : d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+
+                                        return (
+                                            <div key={date} className="mb-1.5">
+                                                {/* Day header */}
+                                                <div className="flex items-center gap-2 mb-1 px-1">
+                                                    <span className={`text-[9px] font-orbitron font-bold tracking-wider ${isToday ? 'text-cyan-400' : 'text-slate-400'}`}>
+                                                        {dayLabel}
+                                                    </span>
+                                                    <div className="flex-1 h-px bg-white/[0.04]" />
+                                                    <span className="text-[8px] text-slate-600 font-orbitron">{tasks.length}</span>
+                                                </div>
+                                                {/* Task entries */}
+                                                {tasks.map((task) => {
+                                                    const client = dbClients.find(c => c.id === task.client_id);
+                                                    const clientName = client?.company_name || client?.name || '';
+                                                    return (
+                                                        <Link
+                                                            key={task.id}
+                                                            to={`/agency/client/${task.client_id}`}
+                                                            className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-white/[0.03] transition-colors group"
+                                                        >
+                                                            {/* Created / Completed dot */}
+                                                            <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${task.type === 'completed' ? 'bg-emerald-400' : 'bg-cyan-400'}`} />
+                                                            {/* Task name */}
+                                                            <span className="text-[10px] text-white/70 group-hover:text-white truncate flex-1 transition-colors">
+                                                                {task.title}
+                                                            </span>
+                                                            {/* Client */}
+                                                            {clientName && (
+                                                                <span className="text-[8px] text-slate-600 truncate max-w-[70px] flex-shrink-0">{clientName}</span>
+                                                            )}
+                                                            {/* Status label */}
+                                                            <span className={`text-[7px] font-orbitron px-1.5 py-0 rounded-full flex-shrink-0 ${
+                                                                task.type === 'completed'
+                                                                    ? 'text-emerald-400/80 bg-emerald-500/10'
+                                                                    : 'text-cyan-400/80 bg-cyan-500/10'
+                                                            }`}>
+                                                                {task.type === 'completed' ? 'DONE' : 'NEW'}
+                                                            </span>
+                                                        </Link>
+                                                    );
+                                                })}
+                                            </div>
+                                        );
+                                    });
+                                })()}
+                            </div>
+                        </div>
+
+                        {/* ── Needs Attention — stale tasks ── */}
+                        <div className="rounded-xl border border-orange-500/10 bg-orange-500/[0.02] p-3">
+                            <div className="flex items-center justify-between mb-2.5">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-5 h-5 rounded-md bg-orange-500/10 border border-orange-500/15 flex items-center justify-center">
+                                        <Flame className="w-2.5 h-2.5 text-orange-400" />
+                                    </div>
+                                    <span className="text-[9px] font-orbitron text-slate-500 uppercase tracking-widest">Needs Attention</span>
+                                    <span className="text-[8px] text-slate-600">Tasks stuck for 5+ days</span>
+                                </div>
+                                {analytics.staleTasks.length > 0 && (
+                                    <span className="text-[8px] font-orbitron px-2 py-0.5 rounded-full bg-orange-500/15 text-orange-400 border border-orange-500/20">
+                                        {analytics.staleTasks.length}
+                                    </span>
+                                )}
+                            </div>
+
+                            {analytics.staleTasks.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center py-10 gap-1.5">
+                                    <CheckCircle2 className="w-6 h-6 text-emerald-400/30" />
+                                    <p className="text-[10px] text-emerald-400/60 font-orbitron">All tasks on track</p>
+                                    <p className="text-[8px] text-slate-600">No tasks are stuck or dragging</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-1.5 max-h-[240px] overflow-y-auto scrollbar-thin pr-1">
+                                    {analytics.staleTasks.slice(0, 10).map((task) => {
+                                        const client = dbClients.find(c => c.id === task.client_id);
+                                        const clientName = client?.company_name || client?.name || '—';
+                                        const statusColors: Record<string, string> = {
+                                            pending: 'text-amber-400 bg-amber-500/10 border-amber-500/15',
+                                            in_progress: 'text-blue-400 bg-blue-500/10 border-blue-500/15',
+                                            in_qa: 'text-purple-400 bg-purple-500/10 border-purple-500/15',
+                                            qa_failed: 'text-red-400 bg-red-500/10 border-red-500/15',
+                                            ready_for_qa: 'text-purple-400 bg-purple-500/10 border-purple-500/15',
+                                            qa_passed: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/15',
+                                            delivered: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/15',
+                                        };
+                                        const statusLabel: Record<string, string> = {
+                                            pending: 'WAITING', in_progress: 'DEV', in_qa: 'QA', qa_failed: 'QA FAIL',
+                                            ready_for_qa: 'QA', qa_passed: 'APPROVED', delivered: 'SHIPPED',
+                                        };
+                                        const isUrgent = task.priority === 'urgent' || task.priority === 'high';
+                                        const severity = task.daysSinceUpdate >= 14 ? 'critical' : task.daysSinceUpdate >= 7 ? 'warning' : 'mild';
+
+                                        return (
+                                            <Link
+                                                key={task.id}
+                                                to={`/agency/client/${task.client_id}`}
+                                                className={`flex items-center gap-2.5 p-2 rounded-lg border transition-all hover:bg-white/[0.03] ${
+                                                    severity === 'critical'
+                                                        ? 'border-red-500/15 bg-red-500/[0.02]'
+                                                        : 'border-white/[0.05] bg-white/[0.01]'
+                                                }`}
+                                            >
+                                                {/* Days stuck badge */}
+                                                <div className={`flex-shrink-0 w-9 h-9 rounded-lg flex flex-col items-center justify-center border ${
+                                                    severity === 'critical'
+                                                        ? 'bg-red-500/10 border-red-500/20'
+                                                        : severity === 'warning'
+                                                            ? 'bg-orange-500/10 border-orange-500/20'
+                                                            : 'bg-amber-500/10 border-amber-500/20'
+                                                }`}>
+                                                    <span className={`font-orbitron text-sm font-bold leading-none ${
+                                                        severity === 'critical' ? 'text-red-400' : severity === 'warning' ? 'text-orange-400' : 'text-amber-400'
+                                                    }`}>{task.daysSinceUpdate}</span>
+                                                    <span className="text-[5px] font-orbitron text-slate-500 uppercase">days</span>
+                                                </div>
+
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center gap-1.5 mb-0.5">
+                                                        <span className="text-[10px] font-medium text-white/80 truncate">{task.title}</span>
+                                                        {isUrgent && <AlertTriangle className="w-2.5 h-2.5 text-red-400 flex-shrink-0" />}
+                                                    </div>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className="text-[8px] text-slate-500 truncate max-w-[80px]">{clientName}</span>
+                                                        <span className={`text-[7px] font-orbitron px-1.5 py-0 rounded-full border ${statusColors[task.status] || 'text-slate-400 bg-white/5 border-white/10'}`}>
+                                                            {statusLabel[task.status] || task.status}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                <ChevronRight className="w-3 h-3 text-slate-600 flex-shrink-0" />
+                                            </Link>
+                                        );
+                                    })}
+                                    {analytics.staleTasks.length > 10 && (
+                                        <p className="text-[8px] text-slate-500 text-center pt-1.5 font-orbitron">
+                                            +{analytics.staleTasks.length - 10} more
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+                )}
 
                 {/* WEBSITES SECTION */}
                 <div className="mb-8">
@@ -1659,118 +2078,6 @@ const ClientPortal: React.FC = () => {
                         </div>
                     )}
                 </div>
-
-                {/* RESELLERS SECTION - Hidden for reseller users */}
-                {!isResellerUser && <div className="mt-8">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500/20 to-pink-600/20 border border-purple-500/30 flex items-center justify-center">
-                                <Users className="w-4 h-4 text-purple-400" />
-                            </div>
-                            <h2 className="font-orbitron text-lg font-bold text-foreground">Resellers</h2>
-                            <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30 font-orbitron text-[8px]">
-                                {resellerClients.length}
-                            </Badge>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            {/* Scroll Navigation */}
-                            <button
-                                onClick={() => scrollLeft(resellerScrollRef)}
-                                className="p-1.5 rounded-lg bg-card/40 border border-purple-500/20 hover:border-purple-500/50 transition-colors"
-                            >
-                                <ChevronLeft className="w-4 h-4 text-purple-400" />
-                            </button>
-                            <button
-                                onClick={() => scrollRight(resellerScrollRef)}
-                                className="p-1.5 rounded-lg bg-card/40 border border-purple-500/20 hover:border-purple-500/50 transition-colors"
-                            >
-                                <ChevronRight className="w-4 h-4 text-purple-400" />
-                            </button>
-                            {/* See All Dialog */}
-                            {resellerClients.length > MAX_VISIBLE_CARDS && (
-                                <Dialog open={showAllResellers} onOpenChange={setShowAllResellers}>
-                                    <DialogTrigger asChild>
-                                        <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-500/10 border border-purple-500/30 text-purple-400 hover:bg-purple-500/20 transition-all font-orbitron text-[10px]">
-                                            <MoreHorizontal className="w-3 h-3" />
-                                            See All
-                                        </button>
-                                    </DialogTrigger>
-                                    <DialogContent className="max-w-4xl max-h-[80vh] bg-background/95 backdrop-blur-xl border-purple-500/30">
-                                        <DialogHeader>
-                                            <DialogTitle className="font-orbitron text-purple-400 flex items-center gap-2">
-                                                <Users className="w-5 h-5" />
-                                                All Reseller Accounts ({resellerClients.length})
-                                            </DialogTitle>
-                                        </DialogHeader>
-                                        <ScrollArea className="max-h-[60vh] pr-4">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                {resellerClients.map((client) => {
-                                                    const resellerDetails = getResellerDetails(client);
-                                                    return (
-                                                    <div
-                                                        key={client.id}
-                                                        className="block bg-gradient-to-br from-card/60 via-card/40 to-transparent border border-purple-500/30 rounded-xl p-4 hover:border-purple-400/60 transition-all"
-                                                    >
-                                                        <div className="flex items-center gap-3 mb-2">
-                                                            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500/20 to-pink-600/20 border border-purple-500/30 flex items-center justify-center">
-                                                                <Users className="w-5 h-5 text-purple-400" />
-                                                            </div>
-                                                            <div>
-                                                                <div className="flex items-center gap-1 mb-0.5">
-                                                                    <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30 font-orbitron text-[7px] px-1 py-0">
-                                                                        RESELLER
-                                                                    </Badge>
-                                                                    {resellerDetails?.resellerType && (
-                                                                        <Badge className="bg-pink-500/20 text-pink-400 border-pink-500/30 font-orbitron text-[7px] px-1 py-0">
-                                                                            {resellerDetails.resellerType.toUpperCase()}
-                                                                        </Badge>
-                                                                    )}
-                                                                </div>
-                                                                <h3 className="font-orbitron font-bold text-sm">{client.company_name || client.name}</h3>
-                                                                {resellerDetails?.resellerPlatform && (
-                                                                    <p className="text-[10px] text-muted-foreground">{resellerDetails.resellerPlatform}</p>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        </ScrollArea>
-                                    </DialogContent>
-                                </Dialog>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Horizontal Scrollable Cards */}
-                    <div
-                        ref={resellerScrollRef}
-                        className="flex gap-4 overflow-x-auto pt-4 pl-4 pb-2 -ml-4 -mt-2 scrollbar-hide snap-x snap-mandatory"
-                        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                    >
-                        {/* Reseller Clients - Show max 6 */}
-                        {resellerClients.slice(0, MAX_VISIBLE_CARDS).map((client) => {
-                            const isHighlighted = globalSearch && clientMatchesSearch(client, globalSearch);
-                            const clientPendingRequests = pendingRequestsMap[client.id] || 0;
-                            return (
-                                <ResellerCard
-                                    key={client.id}
-                                    client={client}
-                                    isHighlighted={isHighlighted}
-                                    onDeleteClick={handleDeleteClick}
-                                    pendingRequests={clientPendingRequests}
-                                />
-                            );
-                        })}
-                    </div>
-
-                    {resellerClients.length === 0 && (
-                        <div className="text-center py-8 text-muted-foreground font-orbitron text-xs">
-                            No reseller accounts yet. Create your first one!
-                        </div>
-                    )}
-                </div>}
 
                 {/* ARCHIVED SECTION */}
                 {showArchived && archivedClients.length > 0 && (
@@ -2809,12 +3116,6 @@ const ClientPortal: React.FC = () => {
                 </div>
             )}
 
-            {/* Reseller Management Modal (Create Resellers + Assign Users) */}
-            <ResellerUserManagement
-                open={showResellerUsers}
-                onOpenChange={setShowResellerUsers}
-                resellers={resellerClients.map(c => ({ id: c.id, company_name: c.company_name, name: c.name, email: c.email }))}
-            />
         </div>
     );
 };

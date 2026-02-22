@@ -157,6 +157,11 @@ import { useQueryClient } from '@tanstack/react-query';
 import { compressImage } from '@/utils/imageCompression';
 import { PopupSection } from '@/components/ui/popup-section';
 import ClientRequestsTracker from '@/components/ClientRequestsTracker';
+import {
+    DnsAccessPanel, TelegramLeadsPanel, N8NAutomationsPanel, TechnicalSeoPanel, AiUsagePanel, UpgradesRatePanel,
+    parseChecklistNotes, serializeChecklistNotes,
+    type DnsAccessData, type TelegramLeadsData, type N8NAutomationsData, type TechnicalSeoData, type AiUsageData, type UpgradesRateData
+} from '@/components/ChecklistPanels';
 
 // Checklist item interface
 interface ChecklistItem {
@@ -285,7 +290,8 @@ const ToggleItem = ({
     placeholder = 'Add notes for the team...',
     onEdit,
     onDelete,
-    canDelete = false
+    canDelete = false,
+    renderExpanded,
 }: {
     label: string;
     description?: string;
@@ -299,6 +305,7 @@ const ToggleItem = ({
     onEdit?: (newLabel: string, newDescription: string) => void;
     onDelete?: () => void;
     canDelete?: boolean;
+    renderExpanded?: () => React.ReactNode;
 }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [isEditingNotes, setIsEditingNotes] = useState(false);
@@ -315,6 +322,20 @@ const ToggleItem = ({
         emerald: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30',
         purple: 'text-purple-400 bg-purple-500/10 border-purple-500/30',
         orange: 'text-orange-400 bg-orange-500/10 border-orange-500/30',
+    };
+
+    const editBorderClass = {
+        cyan: 'border-cyan-500/30 focus:border-cyan-400',
+        emerald: 'border-emerald-500/30 focus:border-emerald-400',
+        purple: 'border-purple-500/30 focus:border-purple-400',
+        orange: 'border-orange-500/30 focus:border-orange-400',
+    };
+
+    const editBtnClass = {
+        cyan: 'bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30',
+        emerald: 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30',
+        purple: 'bg-purple-500/20 text-purple-400 hover:bg-purple-500/30',
+        orange: 'bg-orange-500/20 text-orange-400 hover:bg-orange-500/30',
     };
 
     const handleSaveNotes = () => {
@@ -351,7 +372,7 @@ const ToggleItem = ({
                                 type="text"
                                 value={editLabel}
                                 onChange={(e) => setEditLabel(e.target.value)}
-                                className="w-full px-2 py-1 text-sm bg-zinc-900/50 border border-purple-500/30 rounded text-foreground focus:outline-none focus:border-purple-400"
+                                className={`w-full px-2 py-1 text-sm bg-zinc-900/50 border rounded text-foreground focus:outline-none ${editBorderClass[color]}`}
                                 placeholder="Item name"
                                 autoFocus
                             />
@@ -359,13 +380,13 @@ const ToggleItem = ({
                                 type="text"
                                 value={editDescription}
                                 onChange={(e) => setEditDescription(e.target.value)}
-                                className="w-full px-2 py-1 text-[10px] bg-zinc-900/50 border border-purple-500/30 rounded text-muted-foreground focus:outline-none focus:border-purple-400"
+                                className={`w-full px-2 py-1 text-[10px] bg-zinc-900/50 border rounded text-muted-foreground focus:outline-none ${editBorderClass[color]}`}
                                 placeholder="Description (optional)"
                             />
                             <div className="flex gap-2">
                                 <button
                                     onClick={handleSaveItemEdit}
-                                    className="px-2 py-1 text-[10px] bg-purple-500/20 text-purple-400 rounded hover:bg-purple-500/30 transition-colors"
+                                    className={`px-2 py-1 text-[10px] rounded transition-colors ${editBtnClass[color]}`}
                                 >
                                     Save
                                 </button>
@@ -431,51 +452,57 @@ const ToggleItem = ({
 
             {isExpanded && !isEditingItem && (
                 <div className="px-4 pb-4 pt-1 border-t border-white/5">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] font-orbitron text-muted-foreground uppercase tracking-wider">Team Notes</span>
-                        {!isEditingNotes && (
-                            <button
-                                onClick={() => setIsEditingNotes(true)}
-                                className="text-[10px] text-cyan-400 hover:text-cyan-300 flex items-center gap-1"
-                            >
-                                <Edit2 className="w-3 h-3" />
-                                Edit
-                            </button>
-                        )}
-                    </div>
-
-                    {isEditingNotes ? (
-                        <div className="space-y-2">
-                            <textarea
-                                value={localNotes}
-                                onChange={(e) => setLocalNotes(e.target.value)}
-                                placeholder={placeholder}
-                                className="w-full px-3 py-2 text-sm bg-zinc-900/50 border border-white/10 rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-cyan-500/50 resize-none"
-                                rows={3}
-                                autoFocus
-                            />
-                            <div className="flex gap-2 justify-end">
-                                <button
-                                    onClick={() => {
-                                        setLocalNotes(notes);
-                                        setIsEditingNotes(false);
-                                    }}
-                                    className="px-3 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleSaveNotes}
-                                    className="px-3 py-1 text-xs bg-cyan-500/20 text-cyan-400 rounded-md hover:bg-cyan-500/30 transition-colors"
-                                >
-                                    Save
-                                </button>
-                            </div>
-                        </div>
+                    {renderExpanded ? (
+                        renderExpanded()
                     ) : (
-                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                            {notes || <span className="italic text-muted-foreground/50">No notes yet. Click Edit to add.</span>}
-                        </p>
+                        <>
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="text-[10px] font-orbitron text-muted-foreground uppercase tracking-wider">Team Notes</span>
+                                {!isEditingNotes && (
+                                    <button
+                                        onClick={() => setIsEditingNotes(true)}
+                                        className="text-[10px] text-cyan-400 hover:text-cyan-300 flex items-center gap-1"
+                                    >
+                                        <Edit2 className="w-3 h-3" />
+                                        Edit
+                                    </button>
+                                )}
+                            </div>
+
+                            {isEditingNotes ? (
+                                <div className="space-y-2">
+                                    <textarea
+                                        value={localNotes}
+                                        onChange={(e) => setLocalNotes(e.target.value)}
+                                        placeholder={placeholder}
+                                        className="w-full px-3 py-2 text-sm bg-zinc-900/50 border border-white/10 rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-cyan-500/50 resize-none"
+                                        rows={3}
+                                        autoFocus
+                                    />
+                                    <div className="flex gap-2 justify-end">
+                                        <button
+                                            onClick={() => {
+                                                setLocalNotes(notes);
+                                                setIsEditingNotes(false);
+                                            }}
+                                            className="px-3 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            onClick={handleSaveNotes}
+                                            className="px-3 py-1 text-xs bg-cyan-500/20 text-cyan-400 rounded-md hover:bg-cyan-500/30 transition-colors"
+                                        >
+                                            Save
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                                    {notes || <span className="italic text-muted-foreground/50">No notes yet. Click Edit to add.</span>}
+                                </p>
+                            )}
+                        </>
                     )}
                 </div>
             )}
@@ -1270,7 +1297,7 @@ const IndividualClientProfile: React.FC = () => {
     });
 
     // Update tech stack choice (Framework or Hosting)
-    const updateTechStackChoice = async (field: 'framework' | 'hosting', value: 'react' | 'html' | 'vercel' | 'namecheap') => {
+    const updateTechStackChoice = async (field: 'framework' | 'hosting', value: string) => {
         if (!id) return;
 
         if (techStackChoices) {
@@ -1394,24 +1421,13 @@ const IndividualClientProfile: React.FC = () => {
         refetchTechStackChoices();
     };
 
-    // Domain registrar expanded state and local input values
-    const [domainExpanded, setDomainExpanded] = useState(false);
-    const [localDomainRegistrar, setLocalDomainRegistrar] = useState('');
-    const [localDomainLoginUrl, setLocalDomainLoginUrl] = useState('');
-    const [localDomainUsername, setLocalDomainUsername] = useState('');
-    const [localDomainPassword, setLocalDomainPassword] = useState('');
-    const [showDomainPassword, setShowDomainPassword] = useState(false);
-    const [showPasswordDialog, setShowPasswordDialog] = useState(false);
-    const [passwordInput, setPasswordInput] = useState('');
-    const [passwordError, setPasswordError] = useState(false);
+    // Local hosting input state
+    const [localHostingValue, setLocalHostingValue] = useState('');
 
-    // Sync local domain state when techStackChoices loads
+    // Sync local hosting state when techStackChoices loads
     useEffect(() => {
         if (techStackChoices) {
-            setLocalDomainRegistrar(techStackChoices.domain_registrar || '');
-            setLocalDomainLoginUrl(techStackChoices.domain_login_url || '');
-            setLocalDomainUsername(techStackChoices.domain_username || '');
-            setLocalDomainPassword(techStackChoices.domain_password || '');
+            setLocalHostingValue(techStackChoices.hosting || '');
         }
     }, [techStackChoices]);
 
@@ -1613,6 +1629,18 @@ const IndividualClientProfile: React.FC = () => {
     // Image popup state
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
+    // Collapsible inline sections state
+    const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+        info: false,
+        services: false,
+        checklist: false,
+        billing: false,
+        onboarding: false,
+        techstack: false,
+        requests: true,
+    });
+    const toggleSec = (key: string) => setOpenSections(prev => ({ ...prev, [key]: !prev[key] }));
+
     // Edit mode and editable fields state
     const [isEditing, setIsEditing] = useState(false);
     const [editFields, setEditFields] = useState({
@@ -1651,7 +1679,9 @@ const IndividualClientProfile: React.FC = () => {
     const [chargeServiceManual, setChargeServiceManual] = useState('');
     const [useManualService, setUseManualService] = useState(false);
     const [isCreatingCharge, setIsCreatingCharge] = useState(false);
-    
+    const [expandedBillingTaskId, setExpandedBillingTaskId] = useState<string | null>(null);
+    const [chargeFromTaskId, setChargeFromTaskId] = useState<string | null>(null);
+
     // Service templates state
     const [serviceTemplates, setServiceTemplates] = useState([
         { id: 'website', name: 'Website Hosting & Maintenance', defaultAmount: '199' },
@@ -1698,6 +1728,23 @@ const IndividualClientProfile: React.FC = () => {
             return data;
         },
         enabled: !!id && !isFeaturedClient,
+    });
+
+    // Fetch reseller name for dynamic Github description
+    const { data: resellerName } = useQuery({
+        queryKey: ['reseller-name', (dbClient as any)?.reseller_id],
+        queryFn: async () => {
+            const resellerId = (dbClient as any)?.reseller_id;
+            if (!resellerId) return null;
+            const { data, error } = await supabase
+                .from('clients')
+                .select('company_name')
+                .eq('id', resellerId)
+                .single();
+            if (error) return null;
+            return data?.company_name || null;
+        },
+        enabled: !!(dbClient as any)?.reseller_id,
     });
 
     // Use featured client data or database client
@@ -1783,6 +1830,23 @@ const IndividualClientProfile: React.FC = () => {
         },
         enabled: !!id,
         refetchInterval: 30000, // Refetch every 30 seconds
+    });
+
+    // Fetch completed tasks for billing summary (all completed, not just ones with hours)
+    const { data: billingTasks = [], refetch: refetchBillingTasks } = useQuery({
+        queryKey: ['billing-tasks', id],
+        queryFn: async () => {
+            if (!id) return [];
+            const { data, error } = await (supabase as any)
+                .from('client_requests')
+                .select('id, title, description, actual_hours, hourly_rate, completed_by, completed_at, billable')
+                .eq('client_id', id)
+                .eq('status', 'completed')
+                .order('completed_at', { ascending: false });
+            if (error) throw error;
+            return data || [];
+        },
+        enabled: !!id,
     });
 
     // Initialize edit fields when entering edit mode
@@ -2152,25 +2216,20 @@ const IndividualClientProfile: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Main Dashboard Card */}
-                <div className="bg-card/20 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
-                    {/* Card Header */}
-                    <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-white/5 bg-white/5">
-                        <div className="flex items-center gap-2">
-                            <LayoutDashboard className="w-4 h-4 text-cyan-400" />
-                            <h2 className="font-orbitron text-xs sm:text-sm font-bold text-foreground uppercase tracking-wider">Client Dashboard</h2>
-                        </div>
-                    </div>
+                {/* Inline Dashboard Sections */}
+                <div className="space-y-2">
 
-                    {/* Sections Grid */}
-                    <div className="p-3 sm:p-4">
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3">
-                    {/* Client Information Section */}
-                    <PopupSection
-                        title="Client Information"
-                        icon={Building2}
-                        color="cyan"
-                    >
+                    {/* Client Information */}
+                    <div className="rounded-xl border border-cyan-500/15 bg-card/20 backdrop-blur-xl overflow-hidden">
+                        <button onClick={() => toggleSec('info')} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/[0.02] transition-all">
+                            <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center flex-shrink-0">
+                                <Building2 className="w-4 h-4 text-cyan-400" />
+                            </div>
+                            <span className="font-orbitron text-xs font-bold text-foreground uppercase tracking-wider flex-1 text-left">Client Information</span>
+                            <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${openSections.info ? 'rotate-180' : ''}`} />
+                        </button>
+                        {openSections.info && (
+                        <div className="px-4 pb-4 border-t border-white/5">
                         <div className="space-y-3 sm:space-y-4">
                                 {!isFeaturedClient && (
                                     <div className="flex justify-end">
@@ -2358,15 +2417,22 @@ const IndividualClientProfile: React.FC = () => {
                                     )}
                                 </div>
                         </div>
-                    </PopupSection>
+                        </div>
+                        )}
+                    </div>
 
-                    {/* Client Services Section */}
-                    <PopupSection
-                        title="Client Services"
-                        icon={CreditCard}
-                        color="emerald"
-                        metric={{ value: servicesCompletionPercent, suffix: '%' }}
-                    >
+                    {/* Client Services */}
+                    <div className="rounded-xl border border-cyan-500/15 bg-card/20 backdrop-blur-xl overflow-hidden">
+                        <button onClick={() => toggleSec('services')} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/[0.02] transition-all">
+                            <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center flex-shrink-0">
+                                <CreditCard className="w-4 h-4 text-cyan-400" />
+                            </div>
+                            <span className="font-orbitron text-xs font-bold text-foreground uppercase tracking-wider flex-1 text-left">Client Services</span>
+                            <span className="font-orbitron text-xs text-cyan-400 font-bold">{servicesCompletionPercent}%</span>
+                            <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${openSections.services ? 'rotate-180' : ''}`} />
+                        </button>
+                        {openSections.services && (
+                        <div className="px-4 pb-4 border-t border-white/5">
                         <div className="space-y-3">
                                 {/* Loading state */}
                                 {servicesLoading && (
@@ -2408,6 +2474,24 @@ const IndividualClientProfile: React.FC = () => {
                                         return CheckCircle2;
                                     };
 
+                                    // Structured panels for specific service items
+                                    const serviceRenderExpanded =
+                                        item.id === 'dddddddd-dddd-dddd-dddd-dddddddddddd'
+                                            ? () => (
+                                                <AiUsagePanel
+                                                    data={parseChecklistNotes<AiUsageData>(item.notes, { entries: [], notes: '' })}
+                                                    onSave={(d) => updateServiceItem(item.id, { notes: serializeChecklistNotes(d) })}
+                                                />
+                                            )
+                                            : item.id === 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'
+                                                ? () => (
+                                                    <UpgradesRatePanel
+                                                        data={parseChecklistNotes<UpgradesRateData>(item.notes, { hourly_rate: 100, notes: '' })}
+                                                        onSave={(d) => updateServiceItem(item.id, { notes: serializeChecklistNotes(d) })}
+                                                    />
+                                                )
+                                                : undefined;
+
                                     return (
                                         <ToggleItem
                                             key={item.id}
@@ -2416,13 +2500,14 @@ const IndividualClientProfile: React.FC = () => {
                                             icon={getServiceIcon()}
                                             checked={item.checked}
                                             onChange={(checked) => updateServiceItem(item.id, { checked })}
-                                            color="emerald"
+                                            color="cyan"
                                             notes={item.notes}
                                             onNotesChange={(notes) => updateServiceItem(item.id, { notes })}
                                             placeholder="Add notes..."
                                             onEdit={(newLabel, newDescription) => editServiceItem(item.id, newLabel, newDescription)}
                                             onDelete={() => deleteServiceItem(item.id)}
                                             canDelete={true}
+                                            renderExpanded={serviceRenderExpanded}
                                         />
                                     );
                                 })}
@@ -2430,14 +2515,14 @@ const IndividualClientProfile: React.FC = () => {
                                 {/* Add New Service Button */}
                                 <Dialog open={showAddServiceDialog} onOpenChange={setShowAddServiceDialog}>
                                     <DialogTrigger asChild>
-                                        <button className="w-full py-3 px-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 border-dashed hover:bg-emerald-500/20 hover:border-emerald-500/40 transition-all flex items-center justify-center gap-2 text-emerald-400">
+                                        <button className="w-full py-3 px-4 rounded-xl border border-cyan-500/20 border-dashed bg-cyan-500/[0.04] hover:bg-cyan-500/[0.1] hover:border-cyan-500/40 transition-all flex items-center justify-center gap-2 text-cyan-400">
                                             <Plus className="w-4 h-4" />
                                             <span className="text-sm font-medium">Add Service</span>
                                         </button>
                                     </DialogTrigger>
-                                    <DialogContent className="bg-zinc-900 border-emerald-500/30">
+                                    <DialogContent className="bg-zinc-900 border-cyan-500/30">
                                         <DialogHeader>
-                                            <DialogTitle className="font-orbitron text-emerald-400">Add New Service</DialogTitle>
+                                            <DialogTitle className="font-orbitron text-cyan-400">Add New Service</DialogTitle>
                                             <DialogDescription className="text-muted-foreground">
                                                 This service will be added to all client profiles. Toggle states remain per-client.
                                             </DialogDescription>
@@ -2449,7 +2534,7 @@ const IndividualClientProfile: React.FC = () => {
                                                     value={newServiceLabel}
                                                     onChange={(e) => setNewServiceLabel(e.target.value)}
                                                     placeholder="e.g., SEO Optimization"
-                                                    className="bg-background border-emerald-500/30 focus:border-emerald-400"
+                                                    className="bg-background border-cyan-500/30 focus:border-cyan-400"
                                                 />
                                             </div>
                                             <div className="space-y-2">
@@ -2458,7 +2543,7 @@ const IndividualClientProfile: React.FC = () => {
                                                     value={newServiceDescription}
                                                     onChange={(e) => setNewServiceDescription(e.target.value)}
                                                     placeholder="e.g., Monthly SEO reports & optimization"
-                                                    className="bg-background border-emerald-500/30 focus:border-emerald-400"
+                                                    className="bg-background border-cyan-500/30 focus:border-cyan-400"
                                                 />
                                             </div>
                                             <div className="flex gap-2 pt-2">
@@ -2476,7 +2561,7 @@ const IndividualClientProfile: React.FC = () => {
                                                 <Button
                                                     onClick={addServiceItem}
                                                     disabled={!newServiceLabel.trim()}
-                                                    className="flex-1 bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 border border-emerald-500/30"
+                                                    className="flex-1 bg-cyan-500/[0.06] text-cyan-400 hover:bg-cyan-500/[0.12] border border-cyan-500/20 hover:border-cyan-500/30"
                                                 >
                                                     <Plus className="w-4 h-4 mr-2" />
                                                     Add Service
@@ -2486,15 +2571,22 @@ const IndividualClientProfile: React.FC = () => {
                                     </DialogContent>
                                 </Dialog>
                         </div>
-                    </PopupSection>
+                        </div>
+                        )}
+                    </div>
 
-                    {/* Management Checklist Section */}
-                    <PopupSection
-                        title="Management Checklist"
-                        icon={Wrench}
-                        color="purple"
-                        metric={{ value: checklistCompletionPercent, suffix: '%' }}
-                    >
+                    {/* Management Checklist */}
+                    <div className="rounded-xl border border-cyan-500/15 bg-card/20 backdrop-blur-xl overflow-hidden">
+                        <button onClick={() => toggleSec('checklist')} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/[0.02] transition-all">
+                            <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center flex-shrink-0">
+                                <Wrench className="w-4 h-4 text-cyan-400" />
+                            </div>
+                            <span className="font-orbitron text-xs font-bold text-foreground uppercase tracking-wider flex-1 text-left">Management Checklist</span>
+                            <span className="font-orbitron text-xs text-cyan-400 font-bold">{checklistCompletionPercent}%</span>
+                            <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${openSections.checklist ? 'rotate-180' : ''}`} />
+                        </button>
+                        {openSections.checklist && (
+                        <div className="px-4 pb-4 border-t border-white/5">
                         <div className="space-y-3">
                                 {/* Loading state */}
                                 {checklistLoading && (
@@ -2617,21 +2709,90 @@ const IndividualClientProfile: React.FC = () => {
                                         return CheckCircle2;
                                     };
 
+                                    // Determine renderExpanded based on item UUID
+                                    const getRenderExpanded = () => {
+                                        const itemId = item.id;
+                                        // Telegram Group Chat — simple group name input
+                                        if (itemId === '11111111-1111-1111-1111-111111111111') {
+                                            return () => {
+                                                const groupName = item.notes || '';
+                                                return (
+                                                    <div className="space-y-2">
+                                                        <span className="text-[10px] font-orbitron text-muted-foreground uppercase tracking-wider">Group Chat Name</span>
+                                                        <input
+                                                            type="text"
+                                                            defaultValue={groupName}
+                                                            onBlur={(e) => updateChecklistItem(item.id, { notes: e.target.value })}
+                                                            placeholder="e.g. ClientName — Rank Me Higher"
+                                                            className="w-full px-3 py-2 text-sm bg-zinc-900/50 border border-white/10 rounded-lg text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-cyan-500/50"
+                                                        />
+                                                    </div>
+                                                );
+                                            };
+                                        }
+                                        // DNS Access
+                                        if (itemId === '33333333-3333-3333-3333-333333333333') {
+                                            return () => (
+                                                <DnsAccessPanel
+                                                    data={parseChecklistNotes<DnsAccessData>(item.notes, { nameservers_pointing_to_agency: false, has_domain_access: false, access_email: '', access_type: '', registrar: '', notes: '' })}
+                                                    onSave={(d) => updateChecklistItem(item.id, { notes: serializeChecklistNotes(d) })}
+                                                />
+                                            );
+                                        }
+                                        // Telegram Leads
+                                        if (itemId === '55555555-5555-5555-5555-555555555555') {
+                                            return () => (
+                                                <TelegramLeadsPanel
+                                                    data={parseChecklistNotes<TelegramLeadsData>(item.notes, { channels: [], notes: '' })}
+                                                    onSave={(d) => updateChecklistItem(item.id, { notes: serializeChecklistNotes(d) })}
+                                                />
+                                            );
+                                        }
+                                        // N8N Automations
+                                        if (itemId === '66666666-6666-6666-6666-666666666666') {
+                                            return () => (
+                                                <N8NAutomationsPanel
+                                                    data={parseChecklistNotes<N8NAutomationsData>(item.notes, { automations: [], notes: '' })}
+                                                    onSave={(d) => updateChecklistItem(item.id, { notes: serializeChecklistNotes(d) })}
+                                                />
+                                            );
+                                        }
+                                        // Technical SEO
+                                        if (itemId === '81bf9f6d-448b-4f2f-a1cb-2fa359edff41') {
+                                            return () => (
+                                                <TechnicalSeoPanel
+                                                    data={parseChecklistNotes<TechnicalSeoData>(item.notes, { global: { schema_markup: false, robots_txt: false, xml_sitemap: false, core_web_vitals: false, mobile_responsive: false, https_ssl: false, no_broken_links: false, custom_404: false, hreflang_tags: false, search_console: false, google_analytics: false, favicon: false }, pages: [], notes: '' })}
+                                                    onSave={(d) => updateChecklistItem(item.id, { notes: serializeChecklistNotes(d) })}
+                                                />
+                                            );
+                                        }
+                                        return undefined;
+                                    };
+
+                                    // Dynamic description for Github item
+                                    const getDescription = () => {
+                                        if (item.id === '22222222-2222-2222-2222-222222222222') {
+                                            return `In ${resellerName || 'Your'} Organization`;
+                                        }
+                                        return item.description;
+                                    };
+
                                     return (
                                         <ToggleItem
                                             key={item.id}
                                             label={item.label}
-                                            description={item.description}
+                                            description={getDescription()}
                                             icon={getIcon()}
                                             checked={item.checked}
                                             onChange={(checked) => updateChecklistItem(item.id, { checked })}
-                                            color="purple"
+                                            color="cyan"
                                             notes={item.notes}
                                             onNotesChange={(notes) => updateChecklistItem(item.id, { notes })}
                                             placeholder="Add notes..."
                                             onEdit={(newLabel, newDescription) => editChecklistItem(item.id, newLabel, newDescription)}
                                             onDelete={() => deleteChecklistItem(item.id)}
                                             canDelete={true}
+                                            renderExpanded={getRenderExpanded()}
                                         />
                                     );
                                 })}
@@ -2639,14 +2800,14 @@ const IndividualClientProfile: React.FC = () => {
                                 {/* Add New Item Button */}
                                 <Dialog open={showAddChecklistDialog} onOpenChange={setShowAddChecklistDialog}>
                                     <DialogTrigger asChild>
-                                        <button className="w-full py-3 px-4 rounded-xl bg-purple-500/10 border border-purple-500/20 border-dashed hover:bg-purple-500/20 hover:border-purple-500/40 transition-all flex items-center justify-center gap-2 text-purple-400">
+                                        <button className="w-full py-3 px-4 rounded-xl bg-cyan-500/[0.06] border border-cyan-500/20 border-dashed hover:bg-cyan-500/[0.12] hover:border-cyan-500/40 transition-all flex items-center justify-center gap-2 text-cyan-400">
                                             <Plus className="w-4 h-4" />
                                             <span className="text-sm font-medium">Add Checklist Item</span>
                                         </button>
                                     </DialogTrigger>
-                                    <DialogContent className="bg-zinc-900 border-purple-500/30">
+                                    <DialogContent className="bg-zinc-900 border-cyan-500/30">
                                         <DialogHeader>
-                                            <DialogTitle className="font-orbitron text-purple-400">Add New Checklist Item</DialogTitle>
+                                            <DialogTitle className="font-orbitron text-cyan-400">Add New Checklist Item</DialogTitle>
                                             <DialogDescription className="text-muted-foreground">
                                                 This item will be added to all client profiles. Toggle states remain per-client.
                                             </DialogDescription>
@@ -2658,7 +2819,7 @@ const IndividualClientProfile: React.FC = () => {
                                                     value={newChecklistLabel}
                                                     onChange={(e) => setNewChecklistLabel(e.target.value)}
                                                     placeholder="e.g., SSL Certificate Installed"
-                                                    className="bg-background border-purple-500/30 focus:border-purple-400"
+                                                    className="bg-background border-cyan-500/30 focus:border-cyan-400"
                                                 />
                                             </div>
                                             <div className="space-y-2">
@@ -2667,7 +2828,7 @@ const IndividualClientProfile: React.FC = () => {
                                                     value={newChecklistDescription}
                                                     onChange={(e) => setNewChecklistDescription(e.target.value)}
                                                     placeholder="e.g., HTTPS enabled for the domain"
-                                                    className="bg-background border-purple-500/30 focus:border-purple-400"
+                                                    className="bg-background border-cyan-500/30 focus:border-cyan-400"
                                                 />
                                             </div>
                                             <div className="flex gap-2 pt-2">
@@ -2685,7 +2846,7 @@ const IndividualClientProfile: React.FC = () => {
                                                 <Button
                                                     onClick={addChecklistItem}
                                                     disabled={!newChecklistLabel.trim()}
-                                                    className="flex-1 bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 border border-purple-500/30"
+                                                    className="flex-1 bg-cyan-500/[0.06] text-cyan-400 hover:bg-cyan-500/[0.12] border border-cyan-500/20 hover:border-cyan-500/30"
                                                 >
                                                     <Plus className="w-4 h-4 mr-2" />
                                                     Add Item
@@ -2695,38 +2856,51 @@ const IndividualClientProfile: React.FC = () => {
                                     </DialogContent>
                                 </Dialog>
                         </div>
-                    </PopupSection>
+                        </div>
+                        )}
+                    </div>
 
-                    {/* Payment & Subscription Section */}
-                    <PopupSection
-                        title="Payment & Subscription"
-                        icon={Wallet}
-                        color="emerald"
-                        badge={stripeData?.currentSubscription ?
-                            { label: 'ACTIVE', variant: 'success' as const } :
-                            { label: 'NO PLAN', variant: 'warning' as const }
-                        }
-                    >
-                        <div className="space-y-4">
+                    {/* Billing */}
+                    <div className="rounded-xl border border-cyan-500/15 bg-card/20 backdrop-blur-xl overflow-hidden">
+                        <button onClick={() => toggleSec('billing')} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/[0.02] transition-all">
+                            <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center flex-shrink-0">
+                                <Wallet className="w-4 h-4 text-cyan-400" />
+                            </div>
+                            <span className="font-orbitron text-xs font-bold text-foreground uppercase tracking-wider flex-1 text-left">Billing</span>
+                            <Badge className={`font-orbitron text-[7px] ${stripeData?.currentSubscription ? 'bg-cyan-500/15 text-cyan-400 border-cyan-500/25' : 'bg-orange-500/15 text-orange-400 border-orange-500/25'}`}>
+                                {stripeData?.currentSubscription ? 'ACTIVE' : 'NO PLAN'}
+                            </Badge>
+                            <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${openSections.billing ? 'rotate-180' : ''}`} />
+                        </button>
+                        {openSections.billing && (
+                        <div className="px-4 pb-4 border-t border-white/5">
+                        <div className="space-y-6">
+                            {/* ── Subscription & Payments ── */}
+                            <div>
+                                <div className="flex items-center gap-2 mb-3">
+                                    <CreditCard className="w-3.5 h-3.5 text-cyan-400" />
+                                    <p className="text-[10px] font-orbitron text-cyan-400 uppercase tracking-widest">Subscription & Payments</p>
+                                </div>
+
                                 {/* Current Subscription Info */}
                                 <div className="space-y-2">
                                     {stripeData?.currentSubscription ? (
-                                        <div className="flex items-center justify-between p-3 bg-card/30 rounded-lg border border-emerald-500/20">
+                                        <div className="flex items-center justify-between p-3 bg-card/30 rounded-lg border border-cyan-500/20">
                                             <div>
                                                 <p className="text-[10px] font-orbitron text-muted-foreground uppercase tracking-widest mb-1">Current Subscription</p>
                                                 <p className="text-sm font-medium text-foreground">{stripeData.currentSubscription.planName}</p>
                                             </div>
                                             <div className="text-right">
                                                 <p className="text-[10px] font-orbitron text-muted-foreground uppercase tracking-widest mb-1">
-                                                    {stripeData.currentSubscription.interval === 'month' ? 'Monthly' : 
-                                                     stripeData.currentSubscription.interval === 'year' ? 'Yearly' : 
+                                                    {stripeData.currentSubscription.interval === 'month' ? 'Monthly' :
+                                                     stripeData.currentSubscription.interval === 'year' ? 'Yearly' :
                                                      stripeData.currentSubscription.interval}
                                                 </p>
-                                                <p className="text-sm font-bold text-emerald-400">${stripeData.currentSubscription.amount}/{stripeData.currentSubscription.interval === 'month' ? 'mo' : 'yr'}</p>
+                                                <p className="text-sm font-bold text-cyan-400">${stripeData.currentSubscription.amount}/{stripeData.currentSubscription.interval === 'month' ? 'mo' : 'yr'}</p>
                                             </div>
                                         </div>
                                     ) : (
-                                        <div className="flex items-center justify-between p-3 bg-card/30 rounded-lg border border-emerald-500/20">
+                                        <div className="flex items-center justify-between p-3 bg-card/30 rounded-lg border border-cyan-500/20">
                                             <div>
                                                 <p className="text-[10px] font-orbitron text-muted-foreground uppercase tracking-widest mb-1">Current Subscription</p>
                                                 <p className="text-sm font-medium text-muted-foreground">{isLoadingStripe ? 'Loading...' : 'No active subscription'}</p>
@@ -2734,7 +2908,7 @@ const IndividualClientProfile: React.FC = () => {
                                         </div>
                                     )}
                                     
-                                    <div className="flex items-center justify-between p-3 bg-card/30 rounded-lg border border-emerald-500/20">
+                                    <div className="flex items-center justify-between p-3 bg-card/30 rounded-lg border border-cyan-500/20">
                                         <div>
                                             <p className="text-[10px] font-orbitron text-muted-foreground uppercase tracking-widest mb-1">Total Paid</p>
                                             <p className="text-sm font-medium text-foreground">All Time</p>
@@ -2750,8 +2924,8 @@ const IndividualClientProfile: React.FC = () => {
                                 {/* Payment History */}
                                 <div className="space-y-2">
                                     <div className="flex items-center gap-2 mb-2">
-                                        <History className="w-3 h-3 text-emerald-400" />
-                                        <p className="text-[10px] font-orbitron text-emerald-400 uppercase tracking-widest">Recent Payments</p>
+                                        <History className="w-3 h-3 text-cyan-400" />
+                                        <p className="text-[10px] font-orbitron text-cyan-400 uppercase tracking-widest">Recent Payments</p>
                                     </div>
                                     <ScrollArea className="h-32">
                                         <div className="space-y-2 pr-2">
@@ -2759,16 +2933,16 @@ const IndividualClientProfile: React.FC = () => {
                                                 <div className="text-center py-4 text-xs text-muted-foreground">Loading payment history...</div>
                                             ) : stripeData?.recentInvoices && stripeData.recentInvoices.length > 0 ? (
                                                 stripeData.recentInvoices.map((payment: any, idx: number) => (
-                                                    <div key={idx} className="flex items-center justify-between p-2 bg-card/20 rounded-lg border border-emerald-500/10">
+                                                    <div key={idx} className="flex items-center justify-between p-2 bg-card/20 rounded-lg border border-cyan-500/10">
                                                         <div className="flex-1 min-w-0">
                                                             <p className="text-xs font-medium text-foreground truncate">{payment.description}</p>
                                                             <p className="text-[9px] text-muted-foreground">{payment.date}</p>
                                                         </div>
                                                         <div className="flex items-center gap-2 ml-2">
-                                                            <Badge className={`text-[8px] ${payment.status === 'paid' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'}`}>
+                                                            <Badge className={`text-[8px] ${payment.status === 'paid' ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30' : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'}`}>
                                                                 {payment.status}
                                                             </Badge>
-                                                            <p className="text-xs font-bold text-emerald-400">${payment.amount}</p>
+                                                            <p className="text-xs font-bold text-cyan-400">${payment.amount}</p>
                                                         </div>
                                                     </div>
                                                 ))
@@ -2785,15 +2959,15 @@ const IndividualClientProfile: React.FC = () => {
                                         <Button 
                                             variant="outline" 
                                             size="sm"
-                                            className="w-full border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 hover:border-emerald-400/50 font-orbitron text-[10px]"
+                                            className="w-full border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-400/50 font-orbitron text-[10px]"
                                         >
                                             <Plus className="w-3 h-3 mr-2" />
                                             Create Charge
                                         </Button>
                                     </DialogTrigger>
-                                    <DialogContent className="bg-card border-emerald-500/30">
+                                    <DialogContent className="bg-card border-cyan-500/30">
                                         <DialogHeader>
-                                            <DialogTitle className="font-orbitron text-emerald-400">Create New Charge</DialogTitle>
+                                            <DialogTitle className="font-orbitron text-cyan-400">Create New Charge</DialogTitle>
                                         </DialogHeader>
                                         <div className="space-y-4 pt-4">
                                             <div>
@@ -2804,7 +2978,7 @@ const IndividualClientProfile: React.FC = () => {
                                                             variant="ghost"
                                                             size="sm"
                                                             onClick={() => setShowEditTemplates(!showEditTemplates)}
-                                                            className="h-6 px-2 text-[9px] text-emerald-400 hover:bg-emerald-500/10"
+                                                            className="h-6 px-2 text-[9px] text-cyan-400 hover:bg-cyan-500/10"
                                                         >
                                                             <Edit2 className="w-3 h-3 mr-1" />
                                                             Edit Templates
@@ -2823,7 +2997,7 @@ const IndividualClientProfile: React.FC = () => {
                                                             }
                                                         }}
                                                     >
-                                                        <SelectTrigger className="bg-background border-emerald-500/30">
+                                                        <SelectTrigger className="bg-background border-cyan-500/30">
                                                             <SelectValue />
                                                         </SelectTrigger>
                                                         <SelectContent>
@@ -2839,15 +3013,15 @@ const IndividualClientProfile: React.FC = () => {
                                                         value={chargeServiceManual}
                                                         onChange={(e) => setChargeServiceManual(e.target.value)}
                                                         placeholder="Enter service name manually..."
-                                                        className="bg-background border-emerald-500/30"
+                                                        className="bg-background border-cyan-500/30"
                                                     />
                                                 )}
-                                                
+
                                                 <div className="flex items-center gap-2 mt-2">
                                                     <Switch
                                                         checked={useManualService}
                                                         onCheckedChange={setUseManualService}
-                                                        className="data-[state=checked]:bg-emerald-500"
+                                                        className="data-[state=checked]:bg-cyan-500"
                                                     />
                                                     <Label className="text-[10px] text-muted-foreground cursor-pointer">
                                                         Enter service manually
@@ -2856,9 +3030,9 @@ const IndividualClientProfile: React.FC = () => {
                                                 
                                                 {/* Edit Templates Section */}
                                                 {showEditTemplates && (
-                                                    <div className="mt-4 p-3 bg-card/50 rounded-lg border border-emerald-500/20 space-y-2 max-h-48 overflow-y-auto">
+                                                    <div className="mt-4 p-3 bg-card/50 rounded-lg border border-cyan-500/20 space-y-2 max-h-48 overflow-y-auto">
                                                         <div className="flex items-center justify-between mb-2">
-                                                            <p className="text-[10px] font-orbitron text-emerald-400 uppercase">Service Templates</p>
+                                                            <p className="text-[10px] font-orbitron text-cyan-400 uppercase">Service Templates</p>
                                                             <Button
                                                                 variant="ghost"
                                                                 size="sm"
@@ -2866,14 +3040,14 @@ const IndividualClientProfile: React.FC = () => {
                                                                     setServiceTemplates([...serviceTemplates, { id: `new-${Date.now()}`, name: 'New Service', defaultAmount: '0' }]);
                                                                     setEditingTemplate(`new-${Date.now()}`);
                                                                 }}
-                                                                className="h-6 px-2 text-[9px] text-emerald-400"
+                                                                className="h-6 px-2 text-[9px] text-cyan-400"
                                                             >
                                                                 <Plus className="w-3 h-3 mr-1" />
                                                                 Add
                                                             </Button>
                                                         </div>
                                                         {serviceTemplates.map((template, idx) => (
-                                                            <div key={template.id} className="flex items-center gap-2 p-2 bg-background/50 rounded border border-emerald-500/10">
+                                                            <div key={template.id} className="flex items-center gap-2 p-2 bg-background/50 rounded border border-cyan-500/10">
                                                                 {editingTemplate === template.id ? (
                                                                     <div className="flex-1 space-y-2">
                                                                         <Input
@@ -2883,7 +3057,7 @@ const IndividualClientProfile: React.FC = () => {
                                                                                 updated[idx] = { ...updated[idx], name: e.target.value };
                                                                                 setServiceTemplates(updated);
                                                                             }}
-                                                                            className="h-7 text-xs bg-background border-emerald-500/30"
+                                                                            className="h-7 text-xs bg-background border-cyan-500/30"
                                                                             placeholder="Service name"
                                                                         />
                                                                         <Input
@@ -2894,7 +3068,7 @@ const IndividualClientProfile: React.FC = () => {
                                                                                 updated[idx] = { ...updated[idx], defaultAmount: e.target.value };
                                                                                 setServiceTemplates(updated);
                                                                             }}
-                                                                            className="h-7 text-xs bg-background border-emerald-500/30"
+                                                                            className="h-7 text-xs bg-background border-cyan-500/30"
                                                                             placeholder="Default amount"
                                                                         />
                                                                         <div className="flex gap-1">
@@ -2947,7 +3121,7 @@ const IndividualClientProfile: React.FC = () => {
                                                     value={chargeAmount}
                                                     onChange={(e) => setChargeAmount(e.target.value)}
                                                     placeholder="199.00"
-                                                    className="bg-background border-emerald-500/30"
+                                                    className="bg-background border-cyan-500/30"
                                                 />
                                             </div>
                                             <div>
@@ -2957,7 +3131,7 @@ const IndividualClientProfile: React.FC = () => {
                                                     onChange={(e) => setChargeDescription(e.target.value)}
                                                     placeholder="Describe the charge..."
                                                     rows={3}
-                                                    className="bg-background border-emerald-500/30"
+                                                    className="bg-background border-cyan-500/30"
                                                 />
                                             </div>
                                             <div className="flex gap-2 pt-2">
@@ -3060,7 +3234,17 @@ const IndividualClientProfile: React.FC = () => {
                                                                 title: "Invoice created successfully",
                                                                 description: `$${chargeAmount} invoice has been created and sent to ${customerEmail || 'client'}.`,
                                                             });
-                                                        
+
+                                                            // If charge was created from a task, mark it as billed
+                                                            if (chargeFromTaskId) {
+                                                                await (supabase as any)
+                                                                    .from('client_requests')
+                                                                    .update({ billable: true })
+                                                                    .eq('id', chargeFromTaskId);
+                                                                refetchBillingTasks();
+                                                                setChargeFromTaskId(null);
+                                                            }
+
                                                             setShowChargeDialog(false);
                                                             setChargeAmount('');
                                                             setChargeDescription('');
@@ -3104,7 +3288,7 @@ const IndividualClientProfile: React.FC = () => {
                                                         }
                                                     }}
                                                     disabled={isCreatingCharge}
-                                                    className="flex-1 bg-emerald-500/20 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/30"
+                                                    className="flex-1 bg-cyan-500/20 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/30"
                                                 >
                                                     {isCreatingCharge ? 'Processing...' : 'Create Charge'}
                                                 </Button>
@@ -3119,9 +3303,10 @@ const IndividualClientProfile: React.FC = () => {
                                                         setUseManualService(false);
                                                         setShowEditTemplates(false);
                                                         setEditingTemplate(null);
+                                                        setChargeFromTaskId(null);
                                                     }}
                                                     disabled={isCreatingCharge}
-                                                    className="border-emerald-500/30 text-emerald-400"
+                                                    className="border-cyan-500/30 text-cyan-400"
                                                 >
                                                     Cancel
                                                 </Button>
@@ -3129,16 +3314,229 @@ const IndividualClientProfile: React.FC = () => {
                                         </div>
                                     </DialogContent>
                                 </Dialog>
-                        </div>
-                    </PopupSection>
+                            </div>
 
-                    {/* Website Onboarding Form / Funnel Submission Section */}
-                    <PopupSection
-                        title={isFunnelClient ? 'Funnel Submission' : 'Website Onboarding Form'}
-                        icon={isFunnelClient ? Layers : FileText}
-                        color={isFunnelClient ? 'cyan' : 'orange'}
-                        badge={{ label: 'SUBMITTED', variant: 'success' as const }}
-                    >
+                            {/* ── AI Usage (synced from Client Services) ── */}
+                            <div>
+                                <div className="flex items-center gap-2 mb-3 pt-4 border-t border-white/5">
+                                    <TrendingUp className="w-3.5 h-3.5 text-cyan-400" />
+                                    <p className="text-[10px] font-orbitron text-cyan-400 uppercase tracking-widest">AI Usage</p>
+                                </div>
+                                {(() => {
+                                    const aiSvc = clientServices.find(s => s.id === 'dddddddd-dddd-dddd-dddd-dddddddddddd');
+                                    let aiEntries: any[] = [];
+                                    if (aiSvc?.notes) {
+                                        try { aiEntries = JSON.parse(aiSvc.notes)?.entries || []; } catch {}
+                                    }
+                                    const paidEntries = aiEntries.filter((e: any) => e.paid).sort((a: any, b: any) => a.month.localeCompare(b.month));
+                                    const totalAiCharged = paidEntries.reduce((sum: number, e: any) => sum + (e.amount_to_charge || 0), 0);
+
+                                    if (paidEntries.length === 0) {
+                                        return <p className="text-xs text-muted-foreground/50 italic text-center py-2">No AI usage charges yet</p>;
+                                    }
+
+                                    const monthLabels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                                    const fmtMonth = (m: string) => {
+                                        const [y, mo] = m.split('-');
+                                        return `${monthLabels[parseInt(mo, 10) - 1]} ${y}`;
+                                    };
+
+                                    return (
+                                        <div className="space-y-2">
+                                            <div className="rounded-lg border border-white/5 overflow-hidden">
+                                                <div className="grid grid-cols-4 gap-1 px-3 py-2 bg-white/[0.03] text-[9px] font-orbitron text-muted-foreground uppercase tracking-wider">
+                                                    <span>Month</span>
+                                                    <span className="text-right">Usage</span>
+                                                    <span className="text-right">CC Fee</span>
+                                                    <span className="text-right">Total</span>
+                                                </div>
+                                                {paidEntries.map((entry: any) => (
+                                                    <div key={entry.id} className="grid grid-cols-4 gap-1 px-3 py-2 border-t border-white/5 items-center">
+                                                        <span className="text-xs text-foreground font-medium">{fmtMonth(entry.month)}</span>
+                                                        <span className="text-xs text-cyan-400 text-right">${(entry.monthly_increment || 0).toFixed(2)}</span>
+                                                        <span className="text-xs text-muted-foreground text-right">${(entry.cc_fee || 0).toFixed(2)}</span>
+                                                        <span className="text-xs text-foreground text-right font-bold">${(entry.amount_to_charge || 0).toFixed(2)}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            <div className="flex items-center justify-between p-2 rounded-lg bg-cyan-500/5 border border-cyan-500/10">
+                                                <span className="text-[10px] font-orbitron text-muted-foreground uppercase">Total AI Charged</span>
+                                                <span className="text-sm font-bold text-cyan-400">${totalAiCharged.toFixed(2)}</span>
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
+                            </div>
+
+                            {/* ── Client Requests Billing ── */}
+                            <div>
+                                <div className="flex items-center gap-2 mb-3 pt-4 border-t border-white/5">
+                                    <Receipt className="w-3.5 h-3.5 text-cyan-400" />
+                                    <p className="text-[10px] font-orbitron text-cyan-400 uppercase tracking-widest">Client Requests</p>
+                                    {billingTasks.filter((t: any) => !t.billable).length > 0 && (
+                                        <span className="text-[8px] font-orbitron bg-cyan-500/15 text-cyan-300 border border-cyan-500/25 px-2 py-0.5 rounded-full">
+                                            {billingTasks.filter((t: any) => !t.billable).length} pending
+                                        </span>
+                                    )}
+                                </div>
+                                {billingTasks.length === 0 ? (
+                                    <p className="text-xs text-muted-foreground/50 italic text-center py-2">No billable completed tasks yet</p>
+                                ) : (
+                                    <div className="space-y-2">
+                                        {/* Pending charges first, then charged */}
+                                        {[
+                                            ...billingTasks.filter((t: any) => !t.billable),
+                                            ...billingTasks.filter((t: any) => t.billable),
+                                        ].map((task: any) => {
+                                            const isExpanded = expandedBillingTaskId === task.id;
+                                            const isPending = !task.billable;
+                                            const taskTotal = (task.actual_hours * task.hourly_rate).toFixed(2);
+
+                                            return (
+                                                <div key={task.id} className={`rounded-lg border overflow-hidden transition-colors ${isPending ? 'border-cyan-500/20 bg-cyan-500/[0.03]' : 'border-white/5 bg-white/[0.01]'}`}>
+                                                    <div
+                                                        className="flex items-center gap-2 px-3 py-2.5 cursor-pointer hover:bg-white/[0.02] transition-colors"
+                                                        onClick={() => setExpandedBillingTaskId(isExpanded ? null : task.id)}
+                                                    >
+                                                        {isPending ? (
+                                                            <div className="w-2 h-2 rounded-full bg-cyan-400 shrink-0" />
+                                                        ) : (
+                                                            <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                                                        )}
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-xs text-foreground font-medium truncate">{task.title}</p>
+                                                            <p className="text-[9px] text-muted-foreground">
+                                                                {task.actual_hours > 0
+                                                                    ? <>{task.actual_hours}h &times; ${task.hourly_rate}/hr</>
+                                                                    : 'No hours logged'
+                                                                }
+                                                                {task.completed_by && <> &bull; {task.completed_by}</>}
+                                                            </p>
+                                                        </div>
+                                                        {task.actual_hours > 0 ? (
+                                                            <span className="text-xs font-bold text-cyan-400">
+                                                                ${taskTotal}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-[9px] text-muted-foreground/50 italic">—</span>
+                                                        )}
+                                                        <span className={`text-[8px] font-orbitron px-1.5 py-0.5 rounded-full border ${isPending ? 'bg-cyan-500/10 text-cyan-300 border-cyan-500/20' : 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30'}`}>
+                                                            {isPending ? 'PENDING' : 'CHARGED'}
+                                                        </span>
+                                                        <ChevronDown className={`w-3 h-3 text-muted-foreground transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                                                    </div>
+
+                                                    {isExpanded && (
+                                                        <div className="px-3 pb-3 border-t border-white/5 pt-2 space-y-2">
+                                                            {task.description && (
+                                                                <p className="text-[10px] text-muted-foreground leading-relaxed">{task.description}</p>
+                                                            )}
+                                                            {task.actual_hours > 0 ? (
+                                                                <div className="grid grid-cols-3 gap-2">
+                                                                    <div className="p-2 rounded bg-white/[0.03] border border-white/5 text-center">
+                                                                        <p className="text-[9px] text-muted-foreground uppercase">Hours</p>
+                                                                        <p className="text-sm font-bold text-cyan-400">{task.actual_hours}h</p>
+                                                                    </div>
+                                                                    <div className="p-2 rounded bg-white/[0.03] border border-white/5 text-center">
+                                                                        <p className="text-[9px] text-muted-foreground uppercase">Rate</p>
+                                                                        <p className="text-sm font-bold text-foreground">${task.hourly_rate}/hr</p>
+                                                                    </div>
+                                                                    <div className="p-2 rounded bg-white/[0.03] border border-white/5 text-center">
+                                                                        <p className="text-[9px] text-muted-foreground uppercase">Total</p>
+                                                                        <p className="text-sm font-bold text-cyan-400">${taskTotal}</p>
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                <p className="text-[10px] text-muted-foreground/50 italic py-1">No hours logged for this task</p>
+                                                            )}
+                                                            {(task.completed_by || task.completed_at) && (
+                                                                <p className="text-[10px] text-muted-foreground">
+                                                                    {task.completed_by && <>Completed by <span className="text-foreground font-medium">{task.completed_by}</span></>}
+                                                                    {task.completed_at && `${task.completed_by ? ' on ' : ''}${new Date(task.completed_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`}
+                                                                </p>
+                                                            )}
+                                                            {isPending && (
+                                                                <div className="flex gap-2 pt-1">
+                                                                    <Button
+                                                                        size="sm"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            setChargeFromTaskId(task.id);
+                                                                            setChargeAmount(task.actual_hours > 0 ? taskTotal : '');
+                                                                            setChargeDescription(
+                                                                                task.actual_hours > 0
+                                                                                    ? `${task.title} - ${task.actual_hours}h at $${task.hourly_rate}/hr`
+                                                                                    : task.title
+                                                                            );
+                                                                            setUseManualService(true);
+                                                                            setChargeServiceManual('Website Upgrades');
+                                                                            setShowChargeDialog(true);
+                                                                        }}
+                                                                        className="flex-1 text-[10px] h-8 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/20 font-orbitron"
+                                                                    >
+                                                                        <DollarSign className="w-3 h-3 mr-1" /> Create Charge
+                                                                    </Button>
+                                                                    <Button
+                                                                        size="sm"
+                                                                        variant="ghost"
+                                                                        onClick={async (e) => {
+                                                                            e.stopPropagation();
+                                                                            await (supabase as any)
+                                                                                .from('client_requests')
+                                                                                .update({ billable: true })
+                                                                                .eq('id', task.id);
+                                                                            refetchBillingTasks();
+                                                                            toast({ title: 'Marked as charged' });
+                                                                        }}
+                                                                        className="text-[10px] h-8 text-cyan-400 hover:bg-cyan-500/10 font-orbitron"
+                                                                    >
+                                                                        <CheckCircle2 className="w-3 h-3 mr-1" /> Mark Charged
+                                                                    </Button>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+
+                                        {/* Summary */}
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {billingTasks.filter((t: any) => !t.billable).length > 0 && (
+                                                <div className="flex items-center justify-between p-2 rounded-lg bg-cyan-500/5 border border-cyan-500/10">
+                                                    <span className="text-[9px] font-orbitron text-muted-foreground uppercase">Pending</span>
+                                                    <span className="text-sm font-bold text-cyan-400">
+                                                        ${billingTasks.filter((t: any) => !t.billable).reduce((sum: number, t: any) => sum + ((t.actual_hours || 0) * (t.hourly_rate || 0)), 0).toFixed(2)}
+                                                    </span>
+                                                </div>
+                                            )}
+                                            <div className={`flex items-center justify-between p-2 rounded-lg bg-cyan-500/5 border border-cyan-500/10 ${billingTasks.filter((t: any) => !t.billable).length === 0 ? 'col-span-2' : ''}`}>
+                                                <span className="text-[9px] font-orbitron text-muted-foreground uppercase">Charged</span>
+                                                <span className="text-sm font-bold text-cyan-400">
+                                                    ${billingTasks.filter((t: any) => t.billable).reduce((sum: number, t: any) => sum + ((t.actual_hours || 0) * (t.hourly_rate || 0)), 0).toFixed(2)}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        </div>
+                        )}
+                    </div>
+
+                    {/* Website Onboarding Form */}
+                    <div className="rounded-xl border border-cyan-500/15 bg-card/20 backdrop-blur-xl overflow-hidden">
+                        <button onClick={() => toggleSec('onboarding')} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/[0.02] transition-all">
+                            <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center flex-shrink-0">
+                                {isFunnelClient ? <Layers className="w-4 h-4 text-cyan-400" /> : <FileText className="w-4 h-4 text-cyan-400" />}
+                            </div>
+                            <span className="font-orbitron text-xs font-bold text-foreground uppercase tracking-wider flex-1 text-left">{isFunnelClient ? 'Funnel Submission' : 'Website Onboarding'}</span>
+                            <Badge className="font-orbitron text-[7px] bg-cyan-500/15 text-cyan-400 border-cyan-500/25">SUBMITTED</Badge>
+                            <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${openSections.onboarding ? 'rotate-180' : ''}`} />
+                        </button>
+                        {openSections.onboarding && (
+                        <div className="px-4 pb-4 border-t border-white/5">
                         <Dialog>
                             <div className="space-y-3 sm:space-y-4">
                                 <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm">
@@ -3719,22 +4117,29 @@ const IndividualClientProfile: React.FC = () => {
                                 </ScrollArea>
                             </DialogContent>
                         </Dialog>
-                    </PopupSection>
+                        </div>
+                        )}
+                    </div>
 
-                    {/* Tech Stack Section */}
-                    <PopupSection
-                        title="Tech Stack"
-                        icon={Layers}
-                        color="blue"
-                        metric={{ value: techStackCompletionPercent, suffix: '%' }}
-                    >
+                    {/* Tech Stack */}
+                    <div className="rounded-xl border border-cyan-500/15 bg-card/20 backdrop-blur-xl overflow-hidden">
+                        <button onClick={() => toggleSec('techstack')} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/[0.02] transition-all">
+                            <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center flex-shrink-0">
+                                <Layers className="w-4 h-4 text-cyan-400" />
+                            </div>
+                            <span className="font-orbitron text-xs font-bold text-foreground uppercase tracking-wider flex-1 text-left">Tech Stack</span>
+                            <span className="font-orbitron text-xs text-cyan-400 font-bold">{techStackCompletionPercent}%</span>
+                            <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${openSections.techstack ? 'rotate-180' : ''}`} />
+                        </button>
+                        {openSections.techstack && (
+                        <div className="px-4 pb-4 border-t border-white/5">
                         <div className="space-y-3">
                                 {/* Fixed Tech Stack Choices - Framework */}
-                                <div className="rounded-xl bg-card/30 border border-blue-500/20 p-3">
+                                <div className="rounded-xl bg-card/30 border border-cyan-500/20 p-3">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/30 flex items-center justify-center">
-                                                <Code className="w-4 h-4 text-blue-400" />
+                                            <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center">
+                                                <Code className="w-4 h-4 text-cyan-400" />
                                             </div>
                                             <div>
                                                 <p className="text-sm font-medium text-foreground">Framework</p>
@@ -3756,8 +4161,8 @@ const IndividualClientProfile: React.FC = () => {
                                                 onClick={() => updateTechStackChoice('framework', 'html')}
                                                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                                                     techStackChoices?.framework === 'html'
-                                                        ? 'bg-orange-500/30 text-orange-300 border border-orange-500/50'
-                                                        : 'bg-card/50 text-muted-foreground border border-white/10 hover:border-orange-500/30 hover:text-orange-400'
+                                                        ? 'bg-cyan-500/30 text-cyan-300 border border-cyan-500/50'
+                                                        : 'bg-card/50 text-muted-foreground border border-white/10 hover:border-cyan-500/30 hover:text-cyan-400'
                                                 }`}
                                             >
                                                 HTML
@@ -3767,478 +4172,65 @@ const IndividualClientProfile: React.FC = () => {
                                 </div>
 
                                 {/* Fixed Tech Stack Choices - Hosting */}
-                                <div className="rounded-xl bg-card/30 border border-blue-500/20 p-3">
+                                <div className="rounded-xl bg-card/30 border border-cyan-500/20 p-3">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/30 flex items-center justify-center">
-                                                <Server className="w-4 h-4 text-blue-400" />
+                                            <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center">
+                                                <Server className="w-4 h-4 text-cyan-400" />
                                             </div>
                                             <div>
                                                 <p className="text-sm font-medium text-foreground">Hosting</p>
                                                 <p className="text-[10px] text-muted-foreground">Server platform</p>
                                             </div>
                                         </div>
-                                        <div className="flex gap-1">
-                                            <button
-                                                onClick={() => updateTechStackChoice('hosting', 'vercel')}
-                                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                                                    techStackChoices?.hosting === 'vercel'
-                                                        ? 'bg-purple-500/30 text-purple-300 border border-purple-500/50'
-                                                        : 'bg-card/50 text-muted-foreground border border-white/10 hover:border-purple-500/30 hover:text-purple-400'
-                                                }`}
-                                            >
-                                                Vercel
-                                            </button>
-                                            <button
-                                                onClick={() => updateTechStackChoice('hosting', 'namecheap')}
-                                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                                                    techStackChoices?.hosting === 'namecheap'
-                                                        ? 'bg-emerald-500/30 text-emerald-300 border border-emerald-500/50'
-                                                        : 'bg-card/50 text-muted-foreground border border-white/10 hover:border-emerald-500/30 hover:text-emerald-400'
-                                                }`}
-                                            >
-                                                Namecheap
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* GitHub Branches - Single Toggle */}
-                                <div className="rounded-xl bg-card/30 border border-blue-500/20 p-3">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-lg bg-gray-500/20 flex items-center justify-center">
-                                                <Github className="w-4 h-4 text-gray-400" />
-                                            </div>
-                                            <div>
-                                                <p className="text-sm font-medium text-white">GitHub Branches</p>
-                                                <p className="text-[10px] text-muted-foreground">Deployment workflow</p>
-                                            </div>
-                                        </div>
-                                        <Switch
-                                            checked={techStackChoices?.branch_dev || false}
-                                            onCheckedChange={(checked) => updateBranchSetup('branch_dev', checked)}
-                                            className="data-[state=checked]:bg-green-500"
+                                        <input
+                                            type="text"
+                                            value={localHostingValue}
+                                            onChange={(e) => setLocalHostingValue(e.target.value)}
+                                            onBlur={() => updateTechStackChoice('hosting', localHostingValue)}
+                                            placeholder="e.g., Vercel, Namecheap, AWS"
+                                            className="w-40 px-3 py-1.5 text-xs bg-card/50 border border-white/10 rounded-lg focus:border-cyan-500/50 focus:outline-none text-white placeholder:text-muted-foreground"
                                         />
                                     </div>
-                                    <div className="space-y-2 pl-11 mt-3">
-                                        <div className="flex items-center gap-2 py-1.5 px-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
-                                            <div className="w-2 h-2 rounded-full bg-yellow-400"></div>
-                                            <span className="text-xs font-medium text-yellow-300">dev</span>
-                                            <span className="text-[10px] text-yellow-200/60 ml-auto">Development & testing</span>
-                                        </div>
-                                        <div className="flex items-center gap-2 py-1.5 px-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
-                                            <div className="w-2 h-2 rounded-full bg-blue-400"></div>
-                                            <span className="text-xs font-medium text-blue-300">staging</span>
-                                            <span className="text-[10px] text-blue-200/60 ml-auto">Pre-production review</span>
-                                        </div>
-                                        <div className="flex items-center gap-2 py-1.5 px-3 rounded-lg bg-green-500/10 border border-green-500/20">
-                                            <div className="w-2 h-2 rounded-full bg-green-400"></div>
-                                            <span className="text-xs font-medium text-green-300">main</span>
-                                            <span className="text-[10px] text-green-200/60 ml-auto">Live production</span>
-                                        </div>
-                                    </div>
                                 </div>
 
-                                {/* Domain Registrar - Expandable with login details */}
-                                <div className="rounded-xl bg-card/30 border border-blue-500/20 p-3">
-                                    <div
-                                        className="flex items-center justify-between cursor-pointer"
-                                        onClick={() => setDomainExpanded(!domainExpanded)}
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
-                                                <Globe className="w-4 h-4 text-amber-400" />
-                                            </div>
-                                            <div>
-                                                <p className="text-sm font-medium text-white">Domain Registrar</p>
-                                                <p className="text-[10px] text-muted-foreground">
-                                                    {localDomainRegistrar || 'Click to add domain info'}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${domainExpanded ? 'rotate-180' : ''}`} />
-                                    </div>
-
-                                    {domainExpanded && (
-                                        <div className="mt-3 pl-11 space-y-3">
-                                            <div className="space-y-1.5">
-                                                <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Registrar Name</label>
-                                                <input
-                                                    type="text"
-                                                    value={localDomainRegistrar}
-                                                    onChange={(e) => setLocalDomainRegistrar(e.target.value)}
-                                                    onBlur={() => updateDomainRegistrar('domain_registrar', localDomainRegistrar)}
-                                                    placeholder="e.g., GoDaddy, Namecheap, Cloudflare"
-                                                    className="w-full px-3 py-2 text-sm bg-card/50 border border-white/10 rounded-lg focus:border-amber-500/50 focus:outline-none text-white placeholder:text-muted-foreground"
-                                                />
-                                            </div>
-                                            <div className="space-y-1.5">
-                                                <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Login URL</label>
-                                                <input
-                                                    type="text"
-                                                    value={localDomainLoginUrl}
-                                                    onChange={(e) => setLocalDomainLoginUrl(e.target.value)}
-                                                    onBlur={() => updateDomainRegistrar('domain_login_url', localDomainLoginUrl)}
-                                                    placeholder="https://..."
-                                                    className="w-full px-3 py-2 text-sm bg-card/50 border border-white/10 rounded-lg focus:border-amber-500/50 focus:outline-none text-white placeholder:text-muted-foreground"
-                                                />
-                                            </div>
-                                            <div className="space-y-1.5">
-                                                <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Username / Email</label>
-                                                <input
-                                                    type="text"
-                                                    value={localDomainUsername}
-                                                    onChange={(e) => setLocalDomainUsername(e.target.value)}
-                                                    onBlur={() => updateDomainRegistrar('domain_username', localDomainUsername)}
-                                                    placeholder="username@email.com"
-                                                    className="w-full px-3 py-2 text-sm bg-card/50 border border-white/10 rounded-lg focus:border-amber-500/50 focus:outline-none text-white placeholder:text-muted-foreground"
-                                                />
-                                            </div>
-                                            <div className="space-y-1.5">
-                                                <div className="flex items-center justify-between">
-                                                    <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Password</label>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            if (showDomainPassword) {
-                                                                setShowDomainPassword(false);
-                                                            } else {
-                                                                setShowPasswordDialog(true);
-                                                            }
-                                                        }}
-                                                        className="text-[10px] text-amber-400 hover:text-amber-300 flex items-center gap-1"
-                                                    >
-                                                        {showDomainPassword ? (
-                                                            <>
-                                                                <EyeOff className="w-3 h-3" />
-                                                                Hide
-                                                            </>
-                                                        ) : (
-                                                            <>
-                                                                <Eye className="w-3 h-3" />
-                                                                Show
-                                                            </>
-                                                        )}
-                                                    </button>
-                                                </div>
-                                                <input
-                                                    type={showDomainPassword ? "text" : "password"}
-                                                    value={localDomainPassword}
-                                                    onChange={(e) => setLocalDomainPassword(e.target.value)}
-                                                    onBlur={() => updateDomainRegistrar('domain_password', localDomainPassword)}
-                                                    placeholder="••••••••"
-                                                    className="w-full px-3 py-2 text-sm bg-card/50 border border-white/10 rounded-lg focus:border-amber-500/50 focus:outline-none text-white placeholder:text-muted-foreground"
-                                                />
-                                            </div>
-                                            {localDomainLoginUrl && (
-                                                <a
-                                                    href={localDomainLoginUrl.startsWith('http') ? localDomainLoginUrl : `https://${localDomainLoginUrl}`}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-lg hover:bg-amber-500/20 transition-colors"
-                                                >
-                                                    <ExternalLink className="w-3 h-3" />
-                                                    Open Login Page
-                                                </a>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Password Dialog for viewing domain password */}
-                                <AlertDialog open={showPasswordDialog} onOpenChange={(open) => {
-                                    setShowPasswordDialog(open);
-                                    if (!open) {
-                                        setPasswordInput('');
-                                        setPasswordError(false);
-                                    }
-                                }}>
-                                    <AlertDialogContent className="bg-zinc-900 border-amber-500/30">
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle className="text-amber-400">View Password</AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                Enter admin password to view the stored password.
-                                            </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <div className="py-2">
-                                            <input
-                                                type="password"
-                                                value={passwordInput}
-                                                onChange={(e) => {
-                                                    setPasswordInput(e.target.value);
-                                                    setPasswordError(false);
-                                                }}
-                                                placeholder="Enter password"
-                                                className={`w-full px-3 py-2 text-sm bg-zinc-800 border rounded-lg focus:outline-none ${
-                                                    passwordError
-                                                        ? 'border-red-500 focus:border-red-500'
-                                                        : 'border-white/10 focus:border-amber-500/50'
-                                                }`}
-                                            />
-                                            {passwordError && (
-                                                <p className="text-xs text-red-400 mt-1">Incorrect password</p>
-                                            )}
-                                        </div>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel className="border-white/10">Cancel</AlertDialogCancel>
-                                            <button
-                                                onClick={() => {
-                                                    if (passwordInput === 'domain') {
-                                                        setShowDomainPassword(true);
-                                                        setShowPasswordDialog(false);
-                                                        setPasswordInput('');
-                                                        setPasswordError(false);
-                                                    } else {
-                                                        setPasswordError(true);
-                                                    }
-                                                }}
-                                                className="inline-flex items-center justify-center rounded-md text-sm font-medium px-4 py-2 bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 border border-amber-500/30 transition-colors"
-                                            >
-                                                View Password
-                                            </button>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
-
-                                {/* Divider */}
-                                <div className="border-t border-white/5 my-2"></div>
-
-                                {/* Loading state */}
-                                {techStackLoading && (
-                                    <div className="text-center py-4 text-sm text-muted-foreground">
-                                        Loading tech stack...
-                                    </div>
-                                )}
-                                {/* Dynamic tech stack items */}
-                                {!techStackLoading && techStack.map((item) => {
-                                    // Smart icon selection based on keywords in label
-                                    const getIcon = () => {
-                                        const label = item.label.toLowerCase();
-
-                                        // Hosting & Infrastructure
-                                        if (label.includes('vercel')) return Rocket;
-                                        if (label.includes('netlify')) return Cloud;
-                                        if (label.includes('aws') || label.includes('amazon')) return Cloud;
-                                        if (label.includes('gcp') || label.includes('google cloud')) return Cloud;
-                                        if (label.includes('azure')) return Cloud;
-                                        if (label.includes('digitalocean') || label.includes('droplet')) return Server;
-                                        if (label.includes('heroku')) return Server;
-                                        if (label.includes('cloudflare')) return Shield;
-                                        if (label.includes('vps') || label.includes('server') || label.includes('host')) return Server;
-
-                                        // Databases
-                                        if (label.includes('supabase')) return Database;
-                                        if (label.includes('firebase')) return Flame;
-                                        if (label.includes('postgres') || label.includes('postgresql')) return Database;
-                                        if (label.includes('mysql')) return Database;
-                                        if (label.includes('mongodb') || label.includes('mongo')) return Database;
-                                        if (label.includes('redis')) return Database;
-                                        if (label.includes('database') || label.includes('db')) return Database;
-
-                                        // Frontend Frameworks
-                                        if (label.includes('react')) return Code;
-                                        if (label.includes('next') || label.includes('nextjs')) return Code;
-                                        if (label.includes('vue')) return Code;
-                                        if (label.includes('angular')) return Code;
-                                        if (label.includes('svelte')) return Code;
-                                        if (label.includes('astro')) return Sparkles;
-
-                                        // Languages & Runtimes
-                                        if (label.includes('typescript') || label.includes('ts')) return FileCode;
-                                        if (label.includes('javascript') || label.includes('js')) return FileCode;
-                                        if (label.includes('python')) return Terminal;
-                                        if (label.includes('node') || label.includes('nodejs')) return Terminal;
-                                        if (label.includes('deno')) return Terminal;
-                                        if (label.includes('bun')) return Zap;
-
-                                        // CMS & Content
-                                        if (label.includes('wordpress') || label.includes('wp')) return Globe;
-                                        if (label.includes('webflow')) return Paintbrush;
-                                        if (label.includes('shopify')) return ShoppingCart;
-                                        if (label.includes('strapi') || label.includes('cms')) return Folder;
-                                        if (label.includes('sanity')) return Folder;
-                                        if (label.includes('contentful')) return FileText;
-
-                                        // Version Control & CI/CD
-                                        if (label.includes('github')) return Github;
-                                        if (label.includes('gitlab')) return Github;
-                                        if (label.includes('bitbucket')) return Github;
-                                        if (label.includes('ci') || label.includes('cd') || label.includes('pipeline')) return RefreshCw;
-
-                                        // Auth & Security
-                                        if (label.includes('auth') || label.includes('clerk') || label.includes('auth0')) return Shield;
-                                        if (label.includes('oauth')) return Key;
-                                        if (label.includes('ssl') || label.includes('https')) return Lock;
-
-                                        // APIs & Services
-                                        if (label.includes('stripe')) return CreditCard;
-                                        if (label.includes('twilio') || label.includes('sms')) return Smartphone;
-                                        if (label.includes('sendgrid') || label.includes('mailgun') || label.includes('email')) return Mail;
-                                        if (label.includes('api')) return Zap;
-                                        if (label.includes('webhook')) return LinkIcon;
-
-                                        // Analytics & Monitoring
-                                        if (label.includes('analytics') || label.includes('ga4')) return BarChart3;
-                                        if (label.includes('sentry') || label.includes('monitoring')) return AlertCircle;
-                                        if (label.includes('hotjar') || label.includes('heatmap')) return Target;
-
-                                        // AI & ML
-                                        if (label.includes('openai') || label.includes('gpt') || label.includes('ai')) return Brain;
-                                        if (label.includes('claude') || label.includes('anthropic')) return Bot;
-
-                                        // Styling
-                                        if (label.includes('tailwind') || label.includes('css')) return Palette;
-                                        if (label.includes('sass') || label.includes('scss')) return Paintbrush;
-
-                                        // Default
-                                        return Cpu;
-                                    };
-
-                                    return (
-                                        <div
-                                            key={item.id}
-                                            className="rounded-xl bg-card/20 border border-white/5 hover:border-white/10 transition-all overflow-hidden"
-                                        >
-                                            <div className="flex items-center justify-between py-3 px-4">
-                                                <div className="flex items-center gap-3 flex-1 min-w-0">
-                                                    <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/30 flex items-center justify-center flex-shrink-0">
-                                                        {React.createElement(getIcon(), { className: "w-4 h-4 text-blue-400" })}
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="text-sm font-medium text-foreground truncate">{item.label}</p>
-                                                        {item.description && (
-                                                            <p className="text-[10px] text-muted-foreground truncate">{item.description}</p>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <DropdownMenu>
-                                                        <DropdownMenuTrigger asChild>
-                                                            <button
-                                                                className="p-1 rounded hover:bg-white/5 transition-colors"
-                                                                onClick={(e) => e.stopPropagation()}
-                                                            >
-                                                                <MoreVertical className="w-4 h-4 text-muted-foreground" />
-                                                            </button>
-                                                        </DropdownMenuTrigger>
-                                                        <DropdownMenuContent align="end" className="bg-zinc-900 border-white/10">
-                                                            <DropdownMenuItem
-                                                                onClick={() => {
-                                                                    const newLabel = prompt('Edit label:', item.label);
-                                                                    if (newLabel && newLabel.trim()) {
-                                                                        const newDesc = prompt('Edit description:', item.description);
-                                                                        editTechStackItem(item.id, newLabel.trim(), newDesc || '');
-                                                                    }
-                                                                }}
-                                                                className="text-xs cursor-pointer"
-                                                            >
-                                                                <Edit2 className="w-3 h-3 mr-2" />
-                                                                Edit
-                                                            </DropdownMenuItem>
-                                                            {!item.isDefault && (
-                                                                <DropdownMenuItem
-                                                                    onClick={() => {
-                                                                        if (confirm('Delete this tech stack item from all clients?')) {
-                                                                            deleteTechStackItem(item.id);
-                                                                        }
-                                                                    }}
-                                                                    className="text-xs cursor-pointer text-red-400"
-                                                                >
-                                                                    <Trash2 className="w-3 h-3 mr-2" />
-                                                                    Delete
-                                                                </DropdownMenuItem>
-                                                            )}
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
-                                                    <Switch
-                                                        checked={item.enabled}
-                                                        onCheckedChange={(checked) => updateTechStackItem(item.id, checked)}
-                                                        className="data-[state=checked]:bg-blue-500"
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-
-                                {/* Add New Tech Stack Item Button */}
-                                <Dialog open={showAddTechStackDialog} onOpenChange={setShowAddTechStackDialog}>
-                                    <DialogTrigger asChild>
-                                        <button className="w-full py-3 px-4 rounded-xl bg-blue-500/10 border border-blue-500/20 border-dashed hover:bg-blue-500/20 hover:border-blue-500/40 transition-all flex items-center justify-center gap-2 text-blue-400">
-                                            <Plus className="w-4 h-4" />
-                                            <span className="text-sm font-medium">Add Tech Stack Item</span>
-                                        </button>
-                                    </DialogTrigger>
-                                    <DialogContent className="bg-zinc-900 border-blue-500/30">
-                                        <DialogHeader>
-                                            <DialogTitle className="font-orbitron text-blue-400">Add New Tech Stack Item</DialogTitle>
-                                            <DialogDescription className="text-muted-foreground">
-                                                This item will be added to all client profiles. Toggle states are per-client.
-                                            </DialogDescription>
-                                        </DialogHeader>
-                                        <div className="space-y-4 pt-4">
-                                            <div className="space-y-2">
-                                                <Label className="text-xs font-orbitron text-muted-foreground uppercase tracking-widest">Technology Name</Label>
-                                                <Input
-                                                    value={newTechStackLabel}
-                                                    onChange={(e) => setNewTechStackLabel(e.target.value)}
-                                                    placeholder="e.g., Vercel, Supabase, React"
-                                                    className="bg-background border-blue-500/30 focus:border-blue-400"
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label className="text-xs font-orbitron text-muted-foreground uppercase tracking-widest">Description (Optional)</Label>
-                                                <Input
-                                                    value={newTechStackDescription}
-                                                    onChange={(e) => setNewTechStackDescription(e.target.value)}
-                                                    placeholder="e.g., Hosting platform, Database, Frontend framework"
-                                                    className="bg-background border-blue-500/30 focus:border-blue-400"
-                                                />
-                                            </div>
-                                            <div className="flex gap-2 pt-2">
-                                                <Button
-                                                    variant="outline"
-                                                    onClick={() => {
-                                                        setShowAddTechStackDialog(false);
-                                                        setNewTechStackLabel('');
-                                                        setNewTechStackDescription('');
-                                                    }}
-                                                    className="flex-1 border-white/10"
-                                                >
-                                                    Cancel
-                                                </Button>
-                                                <Button
-                                                    onClick={addTechStackItem}
-                                                    disabled={!newTechStackLabel.trim()}
-                                                    className="flex-1 bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 border border-blue-500/30"
-                                                >
-                                                    <Plus className="w-4 h-4 mr-2" />
-                                                    Add Item
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    </DialogContent>
-                                </Dialog>
                         </div>
-                    </PopupSection>
-
-                    {/* Client Requests Section */}
-                    <PopupSection
-                        title="Client Requests"
-                        icon={MessageSquare}
-                        color="orange"
-                        notificationCount={pendingRequestsCount || 0}
-                        maxWidth="max-w-6xl w-[95vw]"
-                    >
-                        <ClientRequestsTracker
-                            clientId={id || ''}
-                            clientName={client?.name || 'Client'}
-                            isAgencyView={true}
-                        />
-                    </PopupSection>
                         </div>
+                        )}
                     </div>
+
+                    {/* Client Requests */}
+                    <div className="rounded-xl border border-cyan-500/15 bg-card/20 backdrop-blur-xl overflow-hidden">
+                        <button onClick={() => toggleSec('requests')} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/[0.02] transition-all">
+                            <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center flex-shrink-0">
+                                <MessageSquare className="w-4 h-4 text-cyan-400" />
+                            </div>
+                            <span className="font-orbitron text-xs font-bold text-foreground uppercase tracking-wider flex-1 text-left">Client Requests</span>
+                            {(pendingRequestsCount || 0) > 0 && (
+                                <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-orange-500 text-white text-[10px] font-bold flex items-center justify-center animate-pulse">
+                                    {pendingRequestsCount}
+                                </span>
+                            )}
+                            <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${openSections.requests ? 'rotate-180' : ''}`} />
+                        </button>
+                        {openSections.requests && (
+                        <div className="px-2 sm:px-4 pb-4 border-t border-white/5">
+                            <ClientRequestsTracker
+                                clientId={id || ''}
+                                clientName={client?.name || 'Client'}
+                                isAgencyView={true}
+                                clientHourlyRate={(() => {
+                                    const upgSvc = clientServices.find(s => s.id === 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb');
+                                    if (upgSvc?.notes) {
+                                        try { return JSON.parse(upgSvc.notes)?.hourly_rate || 100; } catch { return 100; }
+                                    }
+                                    return 100;
+                                })()}
+                            />
+                        </div>
+                        )}
+                    </div>
+
                 </div>
             </div>
 
