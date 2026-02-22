@@ -93,7 +93,7 @@ const positions: Position[] = [
   {
     id: "automation-specialist",
     title: "Automation Specialist",
-    department: "Engineering",
+    department: "Software",
     type: "Contract / Full-time",
     location: "Remote",
     icon: Code2,
