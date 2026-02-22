@@ -245,31 +245,40 @@ ${evaluation.concerns?.length ? `⚠️ <b>Concerns:</b> ${evaluation.concerns.m
 📝 <b>Q&A:</b>
 ${answersText}`;
 
-    const supabaseUrl = process.env.SUPABASE_URL || 'https://vyviopkpwcsdrfpdwzpa.supabase.co';
-    const supabaseKey = process.env.SUPABASE_ANON_KEY || '';
+    const TELEGRAM_CHANNELS = {
+      'Creative': '-1003863683808',
+      'Marketing': '-1003516103565',
+      'Software Engineers': '-1003711003707',
+    };
 
-    if (!supabaseKey) {
-      console.error('SUPABASE_ANON_KEY not set');
-      return res.json({ success: true, evaluation, warning: 'Notification not sent (missing config)' });
+    const botToken = process.env.TELEGRAM_BOT_TOKEN;
+    const chatId = TELEGRAM_CHANNELS[department] || TELEGRAM_CHANNELS['Software Engineers'];
+
+    if (!botToken) {
+      console.error('TELEGRAM_BOT_TOKEN not set');
+      return res.json({ success: true, evaluation, warning: 'Notification not sent (missing bot token)' });
     }
 
-    const notifyResponse = await fetch(
-      `${supabaseUrl}/functions/v1/ava-notify`,
-      {
+    try {
+      const tgResponse = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabaseKey}`,
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: telegramMessage,
-          type: 'ai_screened_application',
+          chat_id: chatId,
+          text: telegramMessage,
+          parse_mode: 'HTML',
+          disable_web_page_preview: true,
         }),
-      }
-    );
+      });
 
-    if (!notifyResponse.ok) {
-      console.error('Telegram notification failed:', await notifyResponse.text());
+      if (!tgResponse.ok) {
+        const errText = await tgResponse.text();
+        console.error('Telegram notification failed:', errText);
+      } else {
+        console.log(`Telegram notification sent to channel ${chatId} for ${position}`);
+      }
+    } catch (tgErr) {
+      console.error('Telegram send error:', tgErr);
     }
 
     res.json({ success: true, evaluation });
