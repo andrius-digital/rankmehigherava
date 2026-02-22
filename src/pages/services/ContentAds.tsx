@@ -1,5 +1,5 @@
 import { Helmet } from "react-helmet-async";
-import { ArrowRight, Star, CheckCircle2, ChevronDown, Megaphone, Target, Video, TrendingUp, Flame, Calendar, DollarSign, Shield, Play, Phone, AlertTriangle, X, Check } from "lucide-react";
+import { ArrowRight, Star, CheckCircle2, ChevronDown, Megaphone, Target, Video, TrendingUp, Users, Flame, Calendar, DollarSign, BarChart3, Zap, Shield, Eye, Play, Phone, AlertTriangle, X, Check, Sparkles } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
