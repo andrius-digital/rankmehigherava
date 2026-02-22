@@ -287,18 +287,27 @@ const Index = () => {
                   </div>
                 </div>
 
-                {/* VIDEO SECTION - Desktop */}
+                {/* WEBSITE SHOWCASE - Desktop */}
                 <div className="relative space-y-4">
                   <div className="relative rounded-2xl overflow-hidden border-2 border-primary/30 shadow-2xl shadow-primary/20 group">
                     <div className="absolute -inset-2 bg-gradient-to-br from-primary/40 to-red-600/40 rounded-2xl blur-xl opacity-50 group-hover:opacity-70 transition-opacity" />
                     <div className="absolute -inset-1 bg-gradient-to-br from-primary/30 to-red-600/30 rounded-2xl blur-lg opacity-60" />
-                    <div className="relative aspect-video z-10">
-                      <div 
-                        dangerouslySetInnerHTML={{ 
-                          __html: `<style>wistia-player[media-id='k4xdzi49er']:not(:defined) { background: center / contain no-repeat url('https://fast.wistia.com/embed/medias/k4xdzi49er/swatch'); display: block; filter: blur(5px); padding-top:56.25%; }</style><wistia-player media-id="k4xdzi49er" aspect="1.7777777777777777"></wistia-player>` 
-                        }} 
-                        className="w-full h-full"
+                    <div className="relative z-10">
+                      <img 
+                        src="/off-tint-screenshot.png" 
+                        alt="Off-Tint - Custom coded website by Rank Me Higher" 
+                        className="w-full h-auto rounded-2xl"
                       />
+                      <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent rounded-b-2xl">
+                        <div className="flex items-center gap-3">
+                          <img src="/off-tint-logo.webp" alt="Off-Tint logo" className="w-8 h-8 rounded-lg" />
+                          <div>
+                            <p className="text-sm font-bold text-white font-orbitron">Off-Tint</p>
+                            <p className="text-[11px] text-white/60">PPF & Window Tinting · Lisle, IL</p>
+                          </div>
+                          <span className="ml-auto px-2.5 py-1 rounded-full bg-green-500/20 border border-green-500/30 text-[10px] font-bold text-green-400">LIVE</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
@@ -364,16 +373,25 @@ const Index = () => {
               </div>
             </div>
 
-            {/* Video Player */}
+            {/* Website Showcase */}
             <div className="relative rounded-xl overflow-hidden border-2 border-primary/30 shadow-xl shadow-primary/20 mb-5">
               <div className="absolute -inset-1 bg-gradient-to-br from-primary/30 to-red-600/30 rounded-xl blur-md opacity-50" />
-              <div className="relative aspect-video z-10">
-                <div 
-                  dangerouslySetInnerHTML={{ 
-                    __html: `<style>wistia-player[media-id='k4xdzi49er']:not(:defined) { background: center / contain no-repeat url('https://fast.wistia.com/embed/medias/k4xdzi49er/swatch'); display: block; filter: blur(5px); padding-top:56.25%; }</style><wistia-player media-id="k4xdzi49er" aspect="1.7777777777777777"></wistia-player>` 
-                  }} 
-                  className="w-full h-full"
+              <div className="relative z-10">
+                <img 
+                  src="/off-tint-screenshot.png" 
+                  alt="Off-Tint - Custom coded website by Rank Me Higher" 
+                  className="w-full h-auto rounded-xl"
                 />
+                <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/80 via-black/40 to-transparent rounded-b-xl">
+                  <div className="flex items-center gap-2.5">
+                    <img src="/off-tint-logo.webp" alt="Off-Tint logo" className="w-7 h-7 rounded-lg" />
+                    <div>
+                      <p className="text-xs font-bold text-white font-orbitron">Off-Tint</p>
+                      <p className="text-[10px] text-white/60">PPF & Window Tinting · Lisle, IL</p>
+                    </div>
+                    <span className="ml-auto px-2 py-0.5 rounded-full bg-green-500/20 border border-green-500/30 text-[9px] font-bold text-green-400">LIVE</span>
+                  </div>
+                </div>
               </div>
             </div>
 
