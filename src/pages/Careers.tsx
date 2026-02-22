@@ -1,5 +1,5 @@
 import { Helmet } from "react-helmet-async";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { 
   Briefcase, Code2, Headphones, TrendingUp, Video, Users, 
   ArrowRight, X, Send, CheckCircle2, MapPin, Clock,
@@ -318,6 +318,8 @@ const Careers = () => {
   const [submitted, setSubmitted] = useState(false);
   const [activeDept, setActiveDept] = useState("All");
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [isPaused, setIsPaused] = useState(false);
+  const animationRef = useRef<number | null>(null);
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -336,6 +338,38 @@ const Careers = () => {
       scrollRef.current.scrollBy({ left: dir === "left" ? -320 : 320, behavior: "smooth" });
     }
   };
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || isPaused) return;
+
+    let lastTime = 0;
+    const speed = 0.5;
+
+    const step = (timestamp: number) => {
+      if (!lastTime) lastTime = timestamp;
+      const delta = timestamp - lastTime;
+      lastTime = timestamp;
+
+      el.scrollLeft += speed * (delta / 16);
+
+      if (el.scrollLeft >= el.scrollWidth - el.clientWidth - 1) {
+        el.scrollLeft = 0;
+      }
+
+      animationRef.current = requestAnimationFrame(step);
+    };
+
+    animationRef.current = requestAnimationFrame(step);
+
+    return () => {
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
+    };
+  }, [isPaused]);
+
+  const togglePause = useCallback(() => {
+    setIsPaused(prev => !prev);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -435,11 +469,24 @@ const Careers = () => {
           </div>
         </section>
 
-        {/* Featured Positions — Horizontal Scroll */}
+        {/* Featured Positions — Auto-Scrolling Carousel */}
         <section className="pb-4 relative">
           <div className="container mx-auto px-4 lg:px-8 max-w-6xl">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-xs font-orbitron font-bold tracking-widest text-muted-foreground uppercase">Featured Roles</h2>
+              <div className="flex items-center gap-3">
+                <h2 className="text-xs font-orbitron font-bold tracking-widest text-muted-foreground uppercase">Featured Roles</h2>
+                <button
+                  onClick={togglePause}
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-bold border transition-all ${
+                    isPaused
+                      ? "bg-red-500/10 border-red-500/30 text-red-400"
+                      : "bg-cyan-500/10 border-cyan-500/30 text-cyan-400"
+                  }`}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full ${isPaused ? "bg-red-400" : "bg-cyan-400 animate-pulse"}`} />
+                  {isPaused ? "PAUSED" : "LIVE"}
+                </button>
+              </div>
               <div className="flex gap-1.5">
                 <button onClick={() => scroll("left")} className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors">
                   <ChevronLeft className="w-4 h-4 text-muted-foreground" />
@@ -453,17 +500,18 @@ const Careers = () => {
 
           <div
             ref={scrollRef}
-            className="flex gap-3 overflow-x-auto pb-4 px-4 lg:px-8 snap-x snap-mandatory scrollbar-hide"
+            onClick={togglePause}
+            className={`flex gap-3 overflow-x-auto pb-4 px-4 lg:px-8 cursor-pointer select-none ${isPaused ? "ring-1 ring-red-500/20 ring-inset" : ""}`}
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
             <div className="shrink-0 w-[max(0px,calc((100vw-72rem)/2+0.5rem))]" />
-            {positions.slice(0, 5).map((position) => {
+            {[...positions, ...positions].map((position, idx) => {
               const c = colorMap(position.color);
               return (
-                <button
-                  key={position.id}
-                  onClick={() => setSelectedPosition(position)}
-                  className={`group shrink-0 w-[280px] snap-start text-left p-4 rounded-xl backdrop-blur-md border transition-all duration-300 hover:shadow-lg ${c.bg} ${c.border} ${c.hover} hover:shadow-${position.color === 'cyan' ? 'cyan' : 'red'}-500/5 hover:-translate-y-0.5`}
+                <div
+                  key={`${position.id}-${idx}`}
+                  onClick={(e) => { e.stopPropagation(); setSelectedPosition(position); }}
+                  className={`group shrink-0 w-[280px] text-left p-4 rounded-xl backdrop-blur-md border transition-all duration-300 hover:shadow-lg cursor-pointer ${c.bg} ${c.border} ${c.hover} hover:-translate-y-0.5`}
                 >
                   <div className="flex items-center gap-3 mb-3">
                     <div className={`w-9 h-9 rounded-lg ${c.iconBg} flex items-center justify-center`}>
@@ -486,7 +534,7 @@ const Careers = () => {
                     </div>
                     <ArrowRight className={`w-3.5 h-3.5 ${c.icon} opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all`} />
                   </div>
-                </button>
+                </div>
               );
             })}
             <div className="shrink-0 w-4" />
