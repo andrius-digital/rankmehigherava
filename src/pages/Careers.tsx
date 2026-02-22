@@ -38,6 +38,7 @@ const positions: Position[] = [
     icon: TrendingUp,
     color: "cyan",
     shortDescription: "Run Meta ad campaigns that generate real leads for local businesses.",
+    salary: "$90–$280/month (~25,000–78,000 PKR | ~₹7,500–23,500 INR) · 30–40 hrs/month",
     description: "Run paid ad campaigns on Meta that drive real results for local businesses. You'll manage budgets, build audiences, create winning ad strategies, and scale campaigns that generate leads and revenue.",
     responsibilities: [
       "Plan, launch, and optimize Meta (Facebook & Instagram) ad campaigns",
@@ -69,7 +70,7 @@ const positions: Position[] = [
     icon: Video,
     color: "red",
     shortDescription: "Edit short-form reels, VSLs, and long-form content that converts.",
-    salary: "$3–$7/hr (~835–1,950 PKR/hr | ~₹250–585 INR/hr)",
+    salary: "$90–$280/month (~25,000–78,000 PKR | ~₹7,500–23,500 INR) · 30–40 hrs/month",
     description: "Create scroll-stopping video content across all formats. From short-form social reels to high-converting VSLs and polished long-form videos — you'll bring ideas to life through editing that drives results.",
     responsibilities: [
       "Edit short-form video content for social media (Reels, TikTok, Shorts)",
@@ -197,6 +198,7 @@ const positions: Position[] = [
     icon: Users,
     color: "red",
     shortDescription: "Manage video shoots, turnaround times, and content delivery pipeline.",
+    salary: "$90–$280/month (~25,000–78,000 PKR | ~₹7,500–23,500 INR) · 30–40 hrs/month",
     description: "Own the video content pipeline from start to finish. You'll manage and schedule video shoots, coordinate with editors and clients, ensure turnaround times are met, and make sure every piece of content is delivered on time and on brand.",
     responsibilities: [
       "Plan and schedule video shoots with clients and crew",
@@ -228,6 +230,7 @@ const positions: Position[] = [
     icon: BarChart3,
     color: "cyan",
     shortDescription: "Dominate the Map Pack — GBP optimization, citations, and local rankings.",
+    salary: "$90–$280/month (~25,000–78,000 PKR | ~₹7,500–23,500 INR) · 30–40 hrs/month",
     description: "Help local businesses dominate their market. You'll optimize Google Business Profiles, build local citations, manage reviews, and get our clients into the Map Pack — where the real leads come from.",
     responsibilities: [
       "Optimize and manage Google Business Profiles for maximum visibility",
