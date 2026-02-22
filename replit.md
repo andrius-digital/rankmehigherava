@@ -10,9 +10,11 @@ The app is built as a React SPA using Vite, TypeScript, Tailwind CSS, and shadcn
 
 - **API Server**: `api-server.js` runs on port 3001, proxied via Vite (`/api` routes)
 - **OpenAI Integration**: Uses Replit AI Integrations (no API key needed, billed to credits)
-- **Flow**: Basic info → AI-generated role-specific quiz (5 questions) → Optional Loom video → AI evaluation with scores → Submit to Telegram
-- **Component**: `src/components/AIScreeningQuiz.tsx` - multi-step quiz UI
-- **Endpoints**: `/api/screening/questions`, `/api/screening/evaluate`, `/api/screening/submit`
+- **Flow**: Basic info → Chat-style AI conversation with AVA (5 questions, text or voice notes) → Required Loom video → AI evaluation with scores → Submit to Telegram
+- **Component**: `src/components/AIScreeningQuiz.tsx` - chat-style conversation UI with voice recording
+- **Endpoints**: `/api/screening/questions`, `/api/screening/evaluate`, `/api/screening/submit`, `/api/screening/transcribe` (Whisper voice-to-text)
+- **Voice Notes**: Browser MediaRecorder captures audio → sent to `/api/screening/transcribe` → OpenAI Whisper transcription → pre-filled as text answer
+- **Dependencies**: `multer` for file upload handling on transcription endpoint
 - **Dev script**: `npm run dev` starts both API server (port 3001) and Vite (port 5000)
 
 ## User Preferences

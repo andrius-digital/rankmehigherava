@@ -2,6 +2,7 @@ import express from 'express';
 import OpenAI from 'openai';
 import fs from 'fs';
 import path from 'path';
+import multer from 'multer';
 
 const app = express();
 app.use(express.json({ limit: '1mb' }));
@@ -76,7 +77,11 @@ Return as JSON array: [{"id": 1, "question": "...", "type": "technical|scenario|
 
     const content = response.choices[0]?.message?.content || '{"questions":[]}';
     const parsed = JSON.parse(content);
-    const questions = parsed.questions || parsed;
+    let questions = parsed.questions || parsed;
+    if (questions && !Array.isArray(questions)) {
+      questions = questions.array || questions.items || questions.list || Object.values(questions).find(v => Array.isArray(v)) || [];
+    }
+    if (!Array.isArray(questions)) questions = [];
     res.json({ questions });
   } catch (error) {
     console.error('Error generating questions:', error);
@@ -282,6 +287,30 @@ app.delete('/api/applicants/:id', verifySupabaseAuth, (req, res) => {
   ensureDataDir();
   fs.writeFileSync(APPLICANTS_FILE, JSON.stringify(applicants, null, 2));
   res.json({ success: true });
+});
+
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
+
+app.post('/api/screening/transcribe', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No audio file' });
+
+    const tmpPath = path.join('/tmp', `audio_${Date.now()}.webm`);
+    fs.writeFileSync(tmpPath, req.file.buffer);
+
+    try {
+      const transcription = await openai.audio.transcriptions.create({
+        file: fs.createReadStream(tmpPath),
+        model: 'whisper-1',
+      });
+      res.json({ text: transcription.text });
+    } finally {
+      try { fs.unlinkSync(tmpPath); } catch {}
+    }
+  } catch (error) {
+    console.error('Transcription error:', error);
+    res.status(500).json({ error: 'Transcription failed' });
+  }
 });
 
 const PORT = 3001;
