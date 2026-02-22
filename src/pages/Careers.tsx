@@ -40,7 +40,7 @@ const positions: Position[] = [
     icon: TrendingUp,
     color: "cyan",
     shortDescription: "Run Meta ad campaigns that generate real leads for local businesses.",
-    salary: "$90–$280/month (~25,000–78,000 PKR | ~₹7,500–23,500 INR) · 30–40 hrs/month",
+    salary: "$3–$7/hr · 30–40 hrs/week",
     hourlyMin: 3,
     hourlyMax: 7,
     description: "Run paid ad campaigns on Meta that drive real results for local businesses. You'll manage budgets, build audiences, create winning ad strategies, and scale campaigns that generate leads and revenue.",
@@ -74,7 +74,7 @@ const positions: Position[] = [
     icon: Video,
     color: "red",
     shortDescription: "Edit short-form reels, VSLs, and long-form content that converts.",
-    salary: "$90–$280/month (~25,000–78,000 PKR | ~₹7,500–23,500 INR) · 30–40 hrs/month",
+    salary: "$3–$7/hr · 30–40 hrs/week",
     hourlyMin: 3,
     hourlyMax: 7,
     description: "Create scroll-stopping video content across all formats. From short-form social reels to high-converting VSLs and polished long-form videos — you'll bring ideas to life through editing that drives results.",
@@ -108,7 +108,7 @@ const positions: Position[] = [
     icon: Code2,
     color: "cyan",
     shortDescription: "Build powerful automations with N8N and GoHighLevel that scale operations.",
-    salary: "80,000 PKR/month (~$285 USD | ~₹24,000 INR)",
+    salary: "$1.75–$2/hr · 30–40 hrs/week",
     hourlyMin: 1.75,
     hourlyMax: 2,
     description: "Design and maintain automation workflows using N8N and GoHighLevel. You'll connect APIs, automate client onboarding, build smart follow-up sequences, and create systems that save the team hundreds of hours.",
@@ -141,7 +141,7 @@ const positions: Position[] = [
     icon: Zap,
     color: "cyan",
     shortDescription: "Lead complex automation architecture across client operations at scale.",
-    salary: "200,000 PKR/month (~$715 USD | ~₹60,000 INR)",
+    salary: "$4–$5/hr · 30–40 hrs/week",
     hourlyMin: 4,
     hourlyMax: 5,
     description: "Take the lead on our most complex automation projects. You'll architect end-to-end systems using N8N and GoHighLevel, mentor junior specialists, and own the reliability of our client-facing automations. This role is for someone who's been in the trenches and can build systems that don't break.",
@@ -175,7 +175,7 @@ const positions: Position[] = [
     icon: Code2,
     color: "cyan",
     shortDescription: "Lead SaaS development, manage engineers, and own our internal products.",
-    salary: "200,000 PKR/month (~$715 USD | ~₹60,000 INR)",
+    salary: "$4–$5/hr · 30–40 hrs/week",
     hourlyMin: 4,
     hourlyMax: 5,
     description: "Own and lead the development of our internal SaaS products. You'll manage other engineers, make architectural decisions, and build production-grade software using vibe coding tools. This role focuses on our own platforms — not client automations — covering everything from security and databases to CRM integrations, domains, and hosting.",
@@ -210,7 +210,7 @@ const positions: Position[] = [
     icon: Users,
     color: "red",
     shortDescription: "Manage video shoots, turnaround times, and content delivery pipeline.",
-    salary: "$90–$280/month (~25,000–78,000 PKR | ~₹7,500–23,500 INR) · 30–40 hrs/month",
+    salary: "$3–$7/hr · 30–40 hrs/week",
     hourlyMin: 3,
     hourlyMax: 7,
     description: "Own the video content pipeline from start to finish. You'll manage and schedule video shoots, coordinate with editors and clients, ensure turnaround times are met, and make sure every piece of content is delivered on time and on brand.",
@@ -244,7 +244,7 @@ const positions: Position[] = [
     icon: BarChart3,
     color: "cyan",
     shortDescription: "Dominate the Map Pack — GBP optimization, citations, and local rankings.",
-    salary: "$90–$280/month (~25,000–78,000 PKR | ~₹7,500–23,500 INR) · 30–40 hrs/month",
+    salary: "$3–$7/hr · 30–40 hrs/week",
     hourlyMin: 3,
     hourlyMax: 7,
     description: "Help local businesses dominate their market. You'll optimize Google Business Profiles, build local citations, manage reviews, and get our clients into the Map Pack — where the real leads come from.",
@@ -282,6 +282,7 @@ const Careers = () => {
   const [isHovered, setIsHovered] = useState(false);
   const [mobileCardIndex, setMobileCardIndex] = useState(0);
   const [calcHours, setCalcHours] = useState(35);
+  const [calcRate, setCalcRate] = useState(5);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
   const { toast } = useToast();
@@ -299,6 +300,7 @@ const Careers = () => {
 
   const openPosition = (position: Position) => {
     setCalcHours(35);
+    setCalcRate(position.hourlyMin);
     setSelectedPosition(position);
   };
 
@@ -689,52 +691,77 @@ const Careers = () => {
                 </div>
 
                 <div className="rounded-lg bg-green-500/5 border border-green-500/20 p-3 mb-3">
-                  <div className="flex items-center gap-1.5 mb-2">
+                  <div className="flex items-center gap-1.5 mb-2.5">
                     <Calculator className="w-3.5 h-3.5 text-green-400" />
                     <span className="text-[10px] font-bold text-green-400 uppercase font-orbitron tracking-wider">Salary Calculator</span>
+                    <span className="ml-auto text-[9px] text-muted-foreground">Range: ${selectedPosition.hourlyMin}–${selectedPosition.hourlyMax}/hr</span>
                   </div>
-                  <div className="mb-2">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[10px] text-muted-foreground">Hours per month</span>
-                      <span className="text-xs font-bold text-foreground font-orbitron">{calcHours} hrs</span>
-                    </div>
-                    <input
-                      type="range"
-                      min={10}
-                      max={160}
-                      value={calcHours}
-                      onChange={(e) => setCalcHours(Number(e.target.value))}
-                      className="w-full h-1.5 rounded-full appearance-none cursor-pointer bg-white/10 accent-green-400"
-                      style={{ accentColor: '#4ade80' }}
-                    />
-                    <div className="flex justify-between text-[9px] text-muted-foreground mt-0.5">
-                      <span>10 hrs</span>
-                      <span>160 hrs</span>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    <div className="rounded-md bg-white/5 border border-white/10 p-2 text-center">
-                      <div className="text-[9px] text-muted-foreground mb-0.5">USD</div>
-                      <div className="text-xs font-bold text-green-400 font-orbitron">
-                        ${Math.round(selectedPosition.hourlyMin * calcHours)}–${Math.round(selectedPosition.hourlyMax * calcHours)}
+
+                  <div className="grid grid-cols-2 gap-2 mb-2.5">
+                    <div>
+                      <label className="text-[10px] text-muted-foreground mb-1 block">Your hourly rate (USD)</label>
+                      <div className="relative">
+                        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-green-400 font-bold">$</span>
+                        <input
+                          type="number"
+                          min={0.5}
+                          max={50}
+                          step={0.25}
+                          value={calcRate}
+                          onChange={(e) => setCalcRate(Number(e.target.value) || 0)}
+                          className="w-full h-8 pl-6 pr-2 rounded-md bg-white/5 border border-white/15 text-sm font-bold text-foreground font-orbitron focus:border-green-400/50 focus:outline-none transition-colors"
+                        />
                       </div>
                     </div>
-                    <div className="rounded-md bg-white/5 border border-white/10 p-2 text-center">
-                      <div className="text-[9px] text-muted-foreground mb-0.5">PKR</div>
-                      <div className="text-xs font-bold text-foreground font-orbitron">
-                        {Math.round(selectedPosition.hourlyMin * calcHours * 278).toLocaleString()}–{Math.round(selectedPosition.hourlyMax * calcHours * 278).toLocaleString()}
-                      </div>
-                    </div>
-                    <div className="rounded-md bg-white/5 border border-white/10 p-2 text-center">
-                      <div className="text-[9px] text-muted-foreground mb-0.5">INR</div>
-                      <div className="text-xs font-bold text-foreground font-orbitron">
-                        ₹{Math.round(selectedPosition.hourlyMin * calcHours * 84).toLocaleString()}–₹{Math.round(selectedPosition.hourlyMax * calcHours * 84).toLocaleString()}
-                      </div>
+                    <div>
+                      <label className="text-[10px] text-muted-foreground mb-1 block">Hours per week</label>
+                      <input
+                        type="number"
+                        min={1}
+                        max={80}
+                        value={calcHours}
+                        onChange={(e) => setCalcHours(Number(e.target.value) || 0)}
+                        className="w-full h-8 px-2.5 rounded-md bg-white/5 border border-white/15 text-sm font-bold text-foreground font-orbitron focus:border-green-400/50 focus:outline-none transition-colors"
+                      />
                     </div>
                   </div>
-                  <div className="text-[9px] text-muted-foreground mt-1.5 text-center">
-                    Rate: ${selectedPosition.hourlyMin}–${selectedPosition.hourlyMax}/hr based on experience
-                  </div>
+
+                  {(() => {
+                    const weekly = calcRate * calcHours;
+                    const monthly = weekly * 4.33;
+                    return (
+                      <div className="space-y-1.5">
+                        <div className="grid grid-cols-3 gap-2">
+                          <div className="rounded-md bg-white/5 border border-white/10 p-2 text-center">
+                            <div className="text-[8px] text-muted-foreground mb-0.5 uppercase">Weekly</div>
+                            <div className="text-xs font-bold text-green-400 font-orbitron">${Math.round(weekly).toLocaleString()}</div>
+                          </div>
+                          <div className="rounded-md bg-white/5 border border-white/10 p-2 text-center">
+                            <div className="text-[8px] text-muted-foreground mb-0.5 uppercase">Monthly</div>
+                            <div className="text-xs font-bold text-green-400 font-orbitron">${Math.round(monthly).toLocaleString()}</div>
+                          </div>
+                          <div className="rounded-md bg-white/5 border border-white/10 p-2 text-center">
+                            <div className="text-[8px] text-muted-foreground mb-0.5 uppercase">Yearly</div>
+                            <div className="text-xs font-bold text-green-400 font-orbitron">${Math.round(monthly * 12).toLocaleString()}</div>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="rounded-md bg-white/5 border border-white/10 p-1.5 text-center">
+                            <div className="text-[8px] text-muted-foreground mb-0.5">PKR / month</div>
+                            <div className="text-[11px] font-bold text-foreground font-orbitron">
+                              {Math.round(monthly * 278).toLocaleString()}
+                            </div>
+                          </div>
+                          <div className="rounded-md bg-white/5 border border-white/10 p-1.5 text-center">
+                            <div className="text-[8px] text-muted-foreground mb-0.5">INR / month</div>
+                            <div className="text-[11px] font-bold text-foreground font-orbitron">
+                              ₹{Math.round(monthly * 84).toLocaleString()}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 <p className="text-[11px] text-muted-foreground leading-relaxed mb-3">{selectedPosition.description}</p>
