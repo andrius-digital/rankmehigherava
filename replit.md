@@ -4,7 +4,16 @@
 
 This is the **Rank Me Higher** agency platform — a full-stack web application for a digital marketing agency that provides SEO, website creation, and AI-powered marketing services. The platform includes a public-facing marketing site, an internal agency dashboard, client portals, a reseller portal, and an AI assistant named "AVA" that handles voice calls, chat, and knowledge management.
 
-The app is built as a React SPA using Vite, TypeScript, Tailwind CSS, and shadcn/ui components. The backend is entirely **Supabase** (PostgreSQL database, Edge Functions, auth, and storage). There is no custom backend server beyond a simple Express static file server for production deployment.
+The app is built as a React SPA using Vite, TypeScript, Tailwind CSS, and shadcn/ui components. The backend uses **Supabase** (PostgreSQL database, Edge Functions, auth, and storage) plus a lightweight Express API server (`api-server.js`) for AI screening features. Production uses a static file server (`server.js`).
+
+### AI Screening System (Careers Page)
+
+- **API Server**: `api-server.js` runs on port 3001, proxied via Vite (`/api` routes)
+- **OpenAI Integration**: Uses Replit AI Integrations (no API key needed, billed to credits)
+- **Flow**: Basic info → AI-generated role-specific quiz (5 questions) → Optional Loom video → AI evaluation with scores → Submit to Telegram
+- **Component**: `src/components/AIScreeningQuiz.tsx` - multi-step quiz UI
+- **Endpoints**: `/api/screening/questions`, `/api/screening/evaluate`, `/api/screening/submit`
+- **Dev script**: `npm run dev` starts both API server (port 3001) and Vite (port 5000)
 
 ## User Preferences
 

@@ -8,9 +8,8 @@ import {
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import AIScreeningQuiz from "@/components/AIScreeningQuiz";
 
 interface Position {
   id: string;
@@ -276,7 +275,6 @@ const departments = ["All", ...Array.from(new Set(positions.map(p => p.departmen
 const Careers = () => {
   const [selectedPosition, setSelectedPosition] = useState<Position | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [activeDept, setActiveDept] = useState("All");
   const [isHovered, setIsHovered] = useState(false);
@@ -287,15 +285,6 @@ const Careers = () => {
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
   const { toast } = useToast();
-
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    portfolio: "",
-    experience: "",
-    why: "",
-  });
 
   const filteredPositions = activeDept === "All" ? positions : positions.filter(p => p.department === activeDept);
 
@@ -324,55 +313,10 @@ const Careers = () => {
     }
   }, [mobileCardIndex, filteredPositions.length]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedPosition) return;
-
-    setIsSubmitting(true);
-
-    try {
-      const telegramMessage = `\u{1F4CB} <b>New Job Application</b>\n\n<b>Position:</b> ${selectedPosition.title}\n<b>Department:</b> ${selectedPosition.department}\n\n<b>Name:</b> ${formData.name}\n<b>Email:</b> ${formData.email}\n<b>Phone:</b> ${formData.phone || "Not provided"}\n<b>Portfolio:</b> ${formData.portfolio || "Not provided"}\n\n<b>Experience:</b>\n${formData.experience}\n\n<b>Why RMH:</b>\n${formData.why}`;
-
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ava-notify`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({
-            message: telegramMessage,
-            type: "career_application",
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to submit application");
-      }
-
-      setSubmitted(true);
-      toast({
-        title: "Application Received!",
-        description: `Thanks for applying for ${selectedPosition.title}. We'll review and get back to you soon.`,
-      });
-    } catch {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Something went wrong. Please try again.",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   const closeModal = () => {
     setSelectedPosition(null);
     setShowForm(false);
     setSubmitted(false);
-    setFormData({ name: "", email: "", phone: "", portfolio: "", experience: "", why: "" });
   };
 
   const colorMap = (color: 'red' | 'cyan') => color === "cyan"
@@ -830,52 +774,19 @@ const Careers = () => {
                 </button>
               </div>
             ) : (
-              <div className="p-4 lg:p-6">
-                <h3 className="font-orbitron font-bold text-sm text-foreground mb-0.5">Apply for {selectedPosition.title}</h3>
-                <p className="text-[11px] text-muted-foreground mb-3">Fill out the form below and we'll review your application.</p>
-
-                <form onSubmit={handleSubmit} className="space-y-2.5">
-                  <div className="grid grid-cols-2 gap-2.5">
-                    <div>
-                      <Label htmlFor="name" className="text-[11px] font-medium text-foreground">Full Name *</Label>
-                      <Input id="name" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="mt-0.5 bg-white/5 border-white/10 text-sm h-8" placeholder="Your full name" />
-                    </div>
-                    <div>
-                      <Label htmlFor="email" className="text-[11px] font-medium text-foreground">Email *</Label>
-                      <Input id="email" type="email" required value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="mt-0.5 bg-white/5 border-white/10 text-sm h-8" placeholder="your@email.com" />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2.5">
-                    <div>
-                      <Label htmlFor="phone" className="text-[11px] font-medium text-foreground">Phone</Label>
-                      <Input id="phone" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="mt-0.5 bg-white/5 border-white/10 text-sm h-8" placeholder="+1 (555)..." />
-                    </div>
-                    <div>
-                      <Label htmlFor="portfolio" className="text-[11px] font-medium text-foreground">Portfolio / LinkedIn</Label>
-                      <Input id="portfolio" value={formData.portfolio} onChange={(e) => setFormData({...formData, portfolio: e.target.value})} className="mt-0.5 bg-white/5 border-white/10 text-sm h-8" placeholder="URL" />
-                    </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="experience" className="text-[11px] font-medium text-foreground">Relevant Experience *</Label>
-                    <Textarea id="experience" required value={formData.experience} onChange={(e) => setFormData({...formData, experience: e.target.value})} className="mt-0.5 bg-white/5 border-white/10 text-sm min-h-[48px] resize-none" rows={2} placeholder="Tell us about your relevant experience..." />
-                  </div>
-                  <div>
-                    <Label htmlFor="why" className="text-[11px] font-medium text-foreground">Why Rank Me Higher? *</Label>
-                    <Textarea id="why" required value={formData.why} onChange={(e) => setFormData({...formData, why: e.target.value})} className="mt-0.5 bg-white/5 border-white/10 text-sm min-h-[48px] resize-none" rows={2} placeholder="What excites you about joining our team?" />
-                  </div>
-
-                  <div className="flex gap-2 pt-0.5">
-                    <button type="button" onClick={() => setShowForm(false)} className="flex-1 py-2 rounded-xl bg-white/5 border border-white/10 text-sm font-medium hover:bg-white/10 transition-colors">
-                      Back
-                    </button>
-                    <button type="submit" disabled={isSubmitting} className="flex-1 py-2 rounded-xl bg-gradient-to-r from-red-600 to-red-500 text-white font-bold text-sm hover:from-red-500 hover:to-red-400 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
-                      {isSubmitting ? "Sending..." : <>
-                        <Send className="w-3.5 h-3.5" /> Submit
-                      </>}
-                    </button>
-                  </div>
-                </form>
-              </div>
+              <AIScreeningQuiz
+                position={selectedPosition.title}
+                department={selectedPosition.department}
+                positionColor={selectedPosition.color}
+                onBack={() => setShowForm(false)}
+                onComplete={() => {
+                  setSubmitted(true);
+                  toast({
+                    title: "Application Received!",
+                    description: `Thanks for applying for ${selectedPosition.title}. We'll review your AI assessment and get back to you soon.`,
+                  });
+                }}
+              />
             )}
           </div>
         </div>
