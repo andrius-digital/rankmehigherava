@@ -1,9 +1,9 @@
 import { Helmet } from "react-helmet-async";
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { 
   Briefcase, Code2, TrendingUp, Video, Users, 
   ArrowRight, X, Send, CheckCircle2, MapPin, Clock,
-  BarChart3, Mail, ChevronLeft, ChevronRight, Zap
+  BarChart3, Mail, Zap
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -259,12 +259,7 @@ const Careers = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [activeDept, setActiveDept] = useState("All");
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [isPaused, setIsPaused] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const animationRef = useRef<number | null>(null);
-  const isPausedRef = useRef(false);
-  const isHoveredRef = useRef(false);
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -277,62 +272,6 @@ const Careers = () => {
   });
 
   const filteredPositions = activeDept === "All" ? positions : positions.filter(p => p.department === activeDept);
-
-  const scroll = (dir: "left" | "right") => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: dir === "left" ? -320 : 320, behavior: "smooth" });
-    }
-  };
-
-  useEffect(() => {
-    isPausedRef.current = isPaused;
-  }, [isPaused]);
-
-  useEffect(() => {
-    isHoveredRef.current = isHovered;
-  }, [isHovered]);
-
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-
-    let lastTime = 0;
-    const normalSpeed = 0.35;
-    const slowSpeed = 0.12;
-    let currentSpeed = normalSpeed;
-    let running = true;
-
-    const step = (timestamp: number) => {
-      if (!running) return;
-      if (!lastTime) lastTime = timestamp;
-      const delta = timestamp - lastTime;
-      lastTime = timestamp;
-
-      if (!isPausedRef.current && !isHoveredRef.current) {
-        currentSpeed += (normalSpeed - currentSpeed) * 0.05;
-        el.scrollLeft += currentSpeed * (delta / 16);
-
-        if (el.scrollLeft >= el.scrollWidth - el.clientWidth - 1) {
-          el.scrollLeft = 0;
-        }
-      } else {
-        currentSpeed = 0;
-      }
-
-      animationRef.current = requestAnimationFrame(step);
-    };
-
-    animationRef.current = requestAnimationFrame(step);
-
-    return () => {
-      running = false;
-      if (animationRef.current) cancelAnimationFrame(animationRef.current);
-    };
-  }, []);
-
-  const togglePause = useCallback(() => {
-    setIsPaused(prev => !prev);
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -434,75 +373,61 @@ const Careers = () => {
 
         {/* Featured Positions — Auto-Scrolling Carousel */}
         <section className="pb-4 relative">
-          <div className="container mx-auto px-4 lg:px-8 max-w-6xl">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-3">
-                <h2 className="text-xs font-orbitron font-bold tracking-widest text-muted-foreground uppercase">Featured Roles</h2>
-                <button
-                  onClick={togglePause}
-                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-bold border transition-all ${
-                    isPaused
-                      ? "bg-red-500/10 border-red-500/30 text-red-400"
-                      : "bg-cyan-500/10 border-cyan-500/30 text-cyan-400"
-                  }`}
-                >
-                  <span className={`w-1.5 h-1.5 rounded-full ${isPaused ? "bg-red-400" : "bg-cyan-400 animate-pulse"}`} />
-                  {isPaused ? "PAUSED" : "LIVE"}
-                </button>
-              </div>
-              <div className="flex gap-1.5">
-                <button onClick={() => scroll("left")} className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors">
-                  <ChevronLeft className="w-4 h-4 text-muted-foreground" />
-                </button>
-                <button onClick={() => scroll("right")} className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors">
-                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                </button>
+          <div className="container mx-auto px-4 lg:px-8 max-w-6xl mb-3">
+            <div className="flex items-center gap-3">
+              <h2 className="text-xs font-orbitron font-bold tracking-widest text-muted-foreground uppercase">Featured Roles</h2>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-bold border bg-cyan-500/10 border-cyan-500/30 text-cyan-400">
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                LIVE
               </div>
             </div>
           </div>
 
           <div
-            ref={scrollRef}
-            onClick={togglePause}
+            className="overflow-hidden"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            className={`flex gap-3 overflow-x-auto pb-4 px-4 lg:px-8 cursor-pointer select-none ${isPaused ? "ring-1 ring-red-500/20 ring-inset" : ""}`}
-            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
-            <div className="shrink-0 w-[max(0px,calc((100vw-72rem)/2+0.5rem))]" />
-            {[...positions, ...positions].map((position, idx) => {
-              const c = colorMap(position.color);
-              return (
-                <div
-                  key={`${position.id}-${idx}`}
-                  onClick={(e) => { e.stopPropagation(); setSelectedPosition(position); }}
-                  className={`group shrink-0 w-[280px] text-left p-4 rounded-xl backdrop-blur-md border transition-all duration-300 cursor-pointer ${c.bg} ${c.border} ${c.hover} hover:bg-white/[0.06] hover:shadow-[0_0_20px_rgba(255,255,255,0.04)]`}
-                >
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className={`w-9 h-9 rounded-lg ${c.iconBg} flex items-center justify-center`}>
-                      <position.icon className={`w-4 h-4 ${c.icon}`} />
+            <div
+              className="flex gap-3 w-max"
+              style={{
+                animation: `marquee ${positions.length * 8}s linear infinite`,
+                animationPlayState: isHovered ? "paused" : "running",
+              }}
+            >
+              {[...positions, ...positions].map((position, idx) => {
+                const c = colorMap(position.color);
+                return (
+                  <div
+                    key={`${position.id}-${idx}`}
+                    onClick={() => setSelectedPosition(position)}
+                    className={`group shrink-0 w-[280px] text-left p-4 rounded-xl backdrop-blur-md border transition-all duration-300 cursor-pointer ${c.bg} ${c.border} ${c.hover} hover:bg-white/[0.06] hover:shadow-[0_0_20px_rgba(255,255,255,0.04)]`}
+                  >
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className={`w-9 h-9 rounded-lg ${c.iconBg} flex items-center justify-center`}>
+                        <position.icon className={`w-4 h-4 ${c.icon}`} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold text-sm text-foreground truncate">{position.title}</h3>
+                        <p className="text-[11px] text-muted-foreground">{position.department}</p>
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-sm text-foreground truncate">{position.title}</h3>
-                      <p className="text-[11px] text-muted-foreground">{position.department}</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 mb-3">{position.shortDescription}</p>
+                    <div className="flex items-center justify-between">
+                      <div className="flex gap-1.5">
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-bold border ${c.tag}`}>
+                          <Clock className="w-2.5 h-2.5" /> {position.type.split(" / ")[0]}
+                        </span>
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-bold border ${c.tag}`}>
+                          <MapPin className="w-2.5 h-2.5" /> {position.location}
+                        </span>
+                      </div>
+                      <ArrowRight className={`w-3.5 h-3.5 ${c.icon} opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all`} />
                     </div>
                   </div>
-                  <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 mb-3">{position.shortDescription}</p>
-                  <div className="flex items-center justify-between">
-                    <div className="flex gap-1.5">
-                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-bold border ${c.tag}`}>
-                        <Clock className="w-2.5 h-2.5" /> {position.type.split(" / ")[0]}
-                      </span>
-                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-bold border ${c.tag}`}>
-                        <MapPin className="w-2.5 h-2.5" /> {position.location}
-                      </span>
-                    </div>
-                    <ArrowRight className={`w-3.5 h-3.5 ${c.icon} opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all`} />
-                  </div>
-                </div>
-              );
-            })}
-            <div className="shrink-0 w-4" />
+                );
+              })}
+            </div>
           </div>
         </section>
 
