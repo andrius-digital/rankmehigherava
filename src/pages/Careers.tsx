@@ -1,9 +1,9 @@
 import { Helmet } from "react-helmet-async";
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { 
   Briefcase, Code2, TrendingUp, Video, Users, 
   ArrowRight, X, Send, CheckCircle2, MapPin, Clock,
-  BarChart3, Mail, Zap
+  BarChart3, Mail, Zap, ChevronLeft, ChevronRight
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -260,6 +260,9 @@ const Careers = () => {
   const [submitted, setSubmitted] = useState(false);
   const [activeDept, setActiveDept] = useState("All");
   const [isHovered, setIsHovered] = useState(false);
+  const [mobileCardIndex, setMobileCardIndex] = useState(0);
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -272,6 +275,25 @@ const Careers = () => {
   });
 
   const filteredPositions = activeDept === "All" ? positions : positions.filter(p => p.department === activeDept);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    const diff = touchStartX.current - touchEndX.current;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0 && mobileCardIndex < filteredPositions.length - 1) {
+        setMobileCardIndex(prev => prev + 1);
+      } else if (diff < 0 && mobileCardIndex > 0) {
+        setMobileCardIndex(prev => prev - 1);
+      }
+    }
+  }, [mobileCardIndex, filteredPositions.length]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -438,7 +460,7 @@ const Careers = () => {
               {departments.map((dept) => (
                 <button
                   key={dept}
-                  onClick={() => setActiveDept(dept)}
+                  onClick={() => { setActiveDept(dept); setMobileCardIndex(0); }}
                   className={`shrink-0 px-4 py-1.5 rounded-full text-xs font-bold tracking-wide border transition-all duration-200 ${
                     activeDept === dept
                       ? "bg-red-500/15 border-red-500/40 text-red-400"
@@ -455,7 +477,8 @@ const Careers = () => {
               ))}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {/* Desktop: Grid */}
+            <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {filteredPositions.map((position) => {
                 const c = colorMap(position.color);
                 return (
@@ -486,6 +509,94 @@ const Careers = () => {
                 );
               })}
             </div>
+
+            {/* Mobile: Swipeable Single Card */}
+            {filteredPositions.length > 0 && (
+              <div className="sm:hidden">
+                <div
+                  onTouchStart={handleTouchStart}
+                  onTouchMove={handleTouchMove}
+                  onTouchEnd={handleTouchEnd}
+                >
+                  {(() => {
+                    const safeIndex = Math.min(mobileCardIndex, filteredPositions.length - 1);
+                    const position = filteredPositions[safeIndex];
+                    const c = colorMap(position.color);
+                    return (
+                      <button
+                        key={position.id}
+                        onClick={() => setSelectedPosition(position)}
+                        className={`w-full text-left p-5 rounded-xl backdrop-blur-md border transition-all duration-300 ${c.bg} ${c.border}`}
+                      >
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className={`w-11 h-11 rounded-lg ${c.iconBg} flex items-center justify-center shrink-0`}>
+                            <position.icon className={`w-5 h-5 ${c.icon}`} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-bold text-base text-foreground">{position.title}</h3>
+                            <p className="text-[11px] text-muted-foreground">{position.department} &middot; {position.type} &middot; {position.location}</p>
+                          </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground leading-relaxed mb-3">{position.shortDescription}</p>
+                        {position.salary && (
+                          <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-green-500/10 border border-green-500/20 mb-3">
+                            <span className="text-[9px] font-bold text-green-400 uppercase">Salary:</span>
+                            <span className="text-[11px] font-bold text-foreground">{position.salary}</span>
+                          </div>
+                        )}
+                        <div className="flex flex-wrap gap-1.5">
+                          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-bold border ${c.tag}`}>
+                            <Briefcase className="w-3 h-3" /> {position.department}
+                          </span>
+                          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-bold border ${c.tag}`}>
+                            <Clock className="w-3 h-3" /> {position.type.split(" / ")[0]}
+                          </span>
+                          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-bold border ${c.tag}`}>
+                            <MapPin className="w-3 h-3" /> {position.location}
+                          </span>
+                        </div>
+                        <div className="mt-3 flex items-center justify-center gap-2 text-xs font-bold text-red-400">
+                          <span>Tap to view details</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </div>
+                      </button>
+                    );
+                  })()}
+                </div>
+
+                <div className="flex items-center justify-between mt-3 px-1">
+                  <button
+                    onClick={() => setMobileCardIndex(prev => Math.max(0, prev - 1))}
+                    disabled={mobileCardIndex === 0}
+                    className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center disabled:opacity-30 transition-colors"
+                  >
+                    <ChevronLeft className="w-4 h-4 text-muted-foreground" />
+                  </button>
+
+                  <div className="flex items-center gap-1.5">
+                    {filteredPositions.map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setMobileCardIndex(i)}
+                        className={`w-2 h-2 rounded-full transition-all ${
+                          i === Math.min(mobileCardIndex, filteredPositions.length - 1)
+                            ? "bg-red-400 w-4"
+                            : "bg-white/20"
+                        }`}
+                      />
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={() => setMobileCardIndex(prev => Math.min(filteredPositions.length - 1, prev + 1))}
+                    disabled={mobileCardIndex >= filteredPositions.length - 1}
+                    className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center disabled:opacity-30 transition-colors"
+                  >
+                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                  </button>
+                </div>
+              </div>
+            )}
 
             {filteredPositions.length === 0 && (
               <div className="text-center py-12">
