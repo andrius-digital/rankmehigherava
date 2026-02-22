@@ -108,17 +108,17 @@ const positions: Position[] = [
       "Document workflows and create reusable templates",
     ],
     requirements: [
-      "Proven experience with N8N and/or GoHighLevel",
+      "Experience with N8N, GoHighLevel, and vibe coding tools",
+      "We mainly use Replit, Lovable, and Claude Code",
+      "You may encounter tools like Vapi, Twilio, etc. depending on the project",
       "Strong understanding of APIs, webhooks, and data flows",
-      "Experience building GHL workflows, pipelines, and automations",
       "Problem-solving mindset — you figure things out",
-      "Experience with JavaScript/TypeScript is a plus",
     ],
     perks: [
+      "Starting salary: 80,000 PKR/month (~$285 USD | ~\u20B116,000 PHP)",
+      "Schedule: 9 AM \u2013 4 PM CT, Monday \u2013 Friday",
+      "Performance bonuses + room to grow",
       "Fully remote — work from anywhere",
-      "Flexible hours",
-      "Work on cutting-edge AI and automation projects",
-      "Opportunity to grow into a full-time role",
     ],
   },
   {
