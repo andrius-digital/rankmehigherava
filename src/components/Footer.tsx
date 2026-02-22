@@ -77,6 +77,13 @@ const Footer = () => {
           >
             CONTACT
           </Link>
+
+          <Link
+            to="/careers"
+            className="text-sm font-medium tracking-wider transition-colors text-muted-foreground hover:text-primary"
+          >
+            CAREERS
+          </Link>
         </nav>
 
         {/* Main Footer Content */}
