@@ -123,8 +123,9 @@ export default function AIScreeningQuiz({ position, department, positionColor, o
           }, 800);
         }, 600);
       }, 300);
-    } catch {
-      setError("Couldn't connect to AI. Please try again.");
+    } catch (err) {
+      console.error('Question generation failed:', err);
+      setError("Couldn't connect to AI. Close this error and click 'Start Chat with AVA' to try again.");
     } finally {
       setLoading(false);
     }
@@ -314,7 +315,8 @@ export default function AIScreeningQuiz({ position, department, positionColor, o
       {error && (
         <div className="mx-4 mt-2 p-2.5 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center gap-2">
           <AlertCircle className="w-3.5 h-3.5 text-red-400 shrink-0" />
-          <span className="text-xs text-red-300">{error}</span>
+          <span className="text-xs text-red-300 flex-1">{error}</span>
+          <button onClick={() => setError("")} className="text-red-400/60 hover:text-red-400 shrink-0 text-sm">&times;</button>
         </div>
       )}
 
