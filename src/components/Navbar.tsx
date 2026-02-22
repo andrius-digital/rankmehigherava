@@ -85,24 +85,28 @@ const Navbar = ({ onOpenLeadMagnet }: { onOpenLeadMagnet?: () => void }) => {
             </Link>
           </div>
 
-          {/* Desktop: Get Your Website CTA */}
-          <button
-            onClick={onOpenLeadMagnet || openCalendly}
-            className="group hidden lg:flex items-center gap-3 px-5 py-2.5 rounded-full bg-red-500/10 backdrop-blur-md border border-red-500/30 text-white font-medium hover:bg-red-500/20 hover:border-red-500/50 hover:shadow-lg hover:shadow-red-500/20 hover:scale-[1.02] transition-all duration-300 relative overflow-hidden"
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/10 to-red-500/0 group-hover:from-red-500/10 group-hover:via-red-500/20 group-hover:to-red-500/10 transition-all duration-500" />
-            <Phone className="w-4 h-4 text-red-400 relative z-10" />
-            <span className="text-sm font-bold relative z-10">Get Your Website</span>
-          </button>
+          {location.pathname !== "/careers" && (
+            <>
+              {/* Desktop: Get Your Website CTA */}
+              <button
+                onClick={onOpenLeadMagnet || openCalendly}
+                className="group hidden lg:flex items-center gap-3 px-5 py-2.5 rounded-full bg-red-500/10 backdrop-blur-md border border-red-500/30 text-white font-medium hover:bg-red-500/20 hover:border-red-500/50 hover:shadow-lg hover:shadow-red-500/20 hover:scale-[1.02] transition-all duration-300 relative overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/10 to-red-500/0 group-hover:from-red-500/10 group-hover:via-red-500/20 group-hover:to-red-500/10 transition-all duration-500" />
+                <Phone className="w-4 h-4 text-red-400 relative z-10" />
+                <span className="text-sm font-bold relative z-10">Get Your Website</span>
+              </button>
 
-          {/* Mobile: Get Your Website CTA */}
-          <button
-            onClick={onOpenLeadMagnet || openCalendly}
-            className="md:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-500/10 backdrop-blur-md border border-red-500/30 text-white text-xs font-bold hover:bg-red-500/20 transition-all"
-          >
-            <Phone className="w-3.5 h-3.5 text-red-400" />
-            <span>Get Your Website</span>
-          </button>
+              {/* Mobile: Get Your Website CTA */}
+              <button
+                onClick={onOpenLeadMagnet || openCalendly}
+                className="md:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-500/10 backdrop-blur-md border border-red-500/30 text-white text-xs font-bold hover:bg-red-500/20 transition-all"
+              >
+                <Phone className="w-3.5 h-3.5 text-red-400" />
+                <span>Get Your Website</span>
+              </button>
+            </>
+          )}
 
           {/* Mobile: Menu Button */}
           <button className="md:hidden text-foreground p-2" onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label="Toggle menu">
