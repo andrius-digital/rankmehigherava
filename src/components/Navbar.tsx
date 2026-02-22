@@ -80,6 +80,10 @@ const Navbar = ({ onOpenLeadMagnet }: { onOpenLeadMagnet?: () => void }) => {
             </Link>
 
 
+            <Link to="/careers" className="text-foreground font-medium hover:text-primary transition-colors">
+              Careers
+            </Link>
+
             <Link to="/contact" className="text-foreground font-medium hover:text-primary transition-colors">
               Contact
             </Link>
@@ -141,6 +145,14 @@ const Navbar = ({ onOpenLeadMagnet }: { onOpenLeadMagnet?: () => void }) => {
                 Blog
               </Link>
 
+
+              <Link
+                to="/careers"
+                onClick={() => setIsMenuOpen(false)}
+                className="text-foreground font-medium hover:text-primary transition-colors py-2"
+              >
+                Careers
+              </Link>
 
               <Link
                 to="/contact"
