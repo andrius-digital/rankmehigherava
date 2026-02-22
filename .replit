@@ -48,9 +48,3 @@ publicDir = "dist"
 
 [nix]
 channel = "stable-25_05"
-
-[userenv]
-
-[userenv.shared]
-SUPABASE_URL = "https://vyviopkpwcsdrfpdwzpa.supabase.co"
-SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5dmlvcGtwd2NzZHJmcGR3enBhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY5MDI0NjUsImV4cCI6MjA4MjQ3ODQ2NX0.-0fLKWyJ39io9kTmV0Y9vg_sCeKBHy5Ct4c2FgEqHOw"

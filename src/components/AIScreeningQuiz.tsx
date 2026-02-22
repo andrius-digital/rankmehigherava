@@ -290,10 +290,10 @@ export default function AIScreeningQuiz({ position, department, positionColor, o
           <div className="flex items-center gap-2 mb-2">
             <Video className={`w-4 h-4 ${accentClasses.text}`} />
             <h3 className="font-orbitron font-bold text-sm text-foreground">Video Introduction</h3>
-            <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/10 text-muted-foreground ml-auto">Optional</span>
+            <span className={`text-[9px] px-1.5 py-0.5 rounded ${accentClasses.bg} ${accentClasses.text} ml-auto font-bold`}>Required</span>
           </div>
           <p className="text-[11px] text-muted-foreground mb-3">
-            Record a 1-2 min Loom video introducing yourself. This is optional but helps you stand out. Just be yourself!
+            Record a 1-2 min Loom video introducing yourself. Just be yourself!
           </p>
 
           <div>
@@ -309,14 +309,8 @@ export default function AIScreeningQuiz({ position, department, positionColor, o
           <div className="flex gap-2 mt-3">
             <button 
               onClick={submitForEvaluation}
-              className="flex-1 py-2 rounded-xl bg-white/5 border border-white/10 text-sm font-medium hover:bg-white/10 transition-colors"
-            >
-              Skip & Continue
-            </button>
-            <button 
-              onClick={submitForEvaluation}
               disabled={!loomUrl}
-              className={`flex-1 py-2 rounded-xl ${accentClasses.bg} ${accentClasses.border} border ${accentClasses.text} font-bold text-sm hover:brightness-125 transition-all disabled:opacity-30 flex items-center justify-center gap-2`}
+              className={`w-full py-2 rounded-xl ${accentClasses.bg} ${accentClasses.border} border ${accentClasses.text} font-bold text-sm hover:brightness-125 transition-all disabled:opacity-30 flex items-center justify-center gap-2`}
             >
               Continue <ArrowRight className="w-3.5 h-3.5" />
             </button>
