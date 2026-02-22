@@ -319,6 +319,7 @@ const Careers = () => {
   const [activeDept, setActiveDept] = useState("All");
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isPaused, setIsPaused] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const animationRef = useRef<number | null>(null);
   const { toast } = useToast();
 
@@ -344,14 +345,19 @@ const Careers = () => {
     if (!el || isPaused) return;
 
     let lastTime = 0;
-    const speed = 0.5;
+    const normalSpeed = 0.5;
+    const slowSpeed = 0.12;
+    let currentSpeed = normalSpeed;
 
     const step = (timestamp: number) => {
       if (!lastTime) lastTime = timestamp;
       const delta = timestamp - lastTime;
       lastTime = timestamp;
 
-      el.scrollLeft += speed * (delta / 16);
+      const targetSpeed = isHovered ? slowSpeed : normalSpeed;
+      currentSpeed += (targetSpeed - currentSpeed) * 0.05;
+
+      el.scrollLeft += currentSpeed * (delta / 16);
 
       if (el.scrollLeft >= el.scrollWidth - el.clientWidth - 1) {
         el.scrollLeft = 0;
@@ -365,7 +371,7 @@ const Careers = () => {
     return () => {
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
     };
-  }, [isPaused]);
+  }, [isPaused, isHovered]);
 
   const togglePause = useCallback(() => {
     setIsPaused(prev => !prev);
@@ -511,6 +517,8 @@ const Careers = () => {
                 <div
                   key={`${position.id}-${idx}`}
                   onClick={(e) => { e.stopPropagation(); setSelectedPosition(position); }}
+                  onMouseEnter={() => setIsHovered(true)}
+                  onMouseLeave={() => setIsHovered(false)}
                   className={`group shrink-0 w-[280px] text-left p-4 rounded-xl backdrop-blur-md border transition-all duration-300 cursor-pointer ${c.bg} ${c.border} ${c.hover} hover:bg-white/[0.06] hover:shadow-[0_0_20px_rgba(255,255,255,0.04)]`}
                 >
                   <div className="flex items-center gap-3 mb-3">
