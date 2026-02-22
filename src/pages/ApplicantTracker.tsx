@@ -148,6 +148,13 @@ const ApplicantTracker: React.FC = () => {
       return new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime();
     });
 
+  const groupedByPosition: Record<string, typeof filtered> = {};
+  filtered.forEach(a => {
+    const key = a.position || 'Unknown Position';
+    if (!groupedByPosition[key]) groupedByPosition[key] = [];
+    groupedByPosition[key].push(a);
+  });
+
   const stats = {
     total: applicants.length,
     new: applicants.filter(a => a.status === 'new').length,
@@ -251,13 +258,25 @@ const ApplicantTracker: React.FC = () => {
                 </p>
               </div>
             ) : (
-              <div className="space-y-2">
-                {filtered.map(applicant => {
+              <div className="space-y-6">
+                {Object.entries(groupedByPosition).map(([position, posApplicants]) => (
+                  <div key={position}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-500/15 to-blue-600/15 border border-cyan-500/20 flex items-center justify-center">
+                        <Users className="w-3.5 h-3.5 text-cyan-400" />
+                      </div>
+                      <h3 className="font-orbitron font-bold text-sm text-foreground">{position}</h3>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-muted-foreground font-medium">
+                        {posApplicants.length} applicant{posApplicants.length !== 1 ? 's' : ''}
+                      </span>
+                      <div className="h-px flex-1 bg-white/5" />
+                    </div>
+                    <div className="space-y-2">
+                {posApplicants.map(applicant => {
                   const isExpanded = expandedId === applicant.id;
                   const status = statusConfig[applicant.status] || statusConfig.new;
                   const verdict = verdictConfig[applicant.evaluation?.verdict] || verdictConfig.maybe;
                   const score = applicant.evaluation?.overallScore || 0;
-                  const scoreColor = score >= 80 ? 'text-green-400' : score >= 60 ? 'text-yellow-400' : score >= 40 ? 'text-orange-400' : 'text-red-400';
 
                   return (
                     <div key={applicant.id} className="bg-card/20 border border-white/5 rounded-xl overflow-hidden hover:border-white/10 transition-colors">
@@ -404,6 +423,9 @@ const ApplicantTracker: React.FC = () => {
                     </div>
                   );
                 })}
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
