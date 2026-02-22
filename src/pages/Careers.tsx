@@ -222,7 +222,7 @@ const Careers = () => {
     if (!el || isPaused) return;
 
     let lastTime = 0;
-    const normalSpeed = 0.5;
+    const normalSpeed = 0.35;
     const slowSpeed = 0.12;
     let currentSpeed = normalSpeed;
 
