@@ -166,12 +166,15 @@ export default function AIScreeningQuiz({ position, department, positionColor, o
     }
   };
 
+  const [micWarning, setMicWarning] = useState("");
+
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mediaRecorder = new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
+      setMicWarning("");
 
       mediaRecorder.ondataavailable = (e) => {
         if (e.data.size > 0) chunksRef.current.push(e.data);
@@ -189,7 +192,8 @@ export default function AIScreeningQuiz({ position, department, positionColor, o
       mediaRecorder.start();
       setIsRecording(true);
     } catch {
-      setError("Microphone access denied. Please type your answer instead.");
+      setMicWarning("Mic blocked by browser preview. Open this page in a new tab for voice notes, or type your answer below.");
+      setTimeout(() => setMicWarning(""), 8000);
     }
   };
 
@@ -415,6 +419,14 @@ export default function AIScreeningQuiz({ position, department, positionColor, o
           </div>
 
           <div className="px-4 pb-3 pt-2 border-t border-white/5">
+            {micWarning && (
+              <div className="flex items-center gap-2 mb-2 p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 animate-in fade-in">
+                <AlertCircle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span className="text-[11px] text-amber-300 leading-tight">{micWarning}</span>
+                <button onClick={() => setMicWarning("")} className="text-amber-400/60 hover:text-amber-400 ml-auto shrink-0 text-xs">&times;</button>
+              </div>
+            )}
+
             {isTranscribing && (
               <div className="flex items-center gap-2 mb-2 text-xs text-muted-foreground">
                 <Loader2 className="w-3 h-3 animate-spin" />
