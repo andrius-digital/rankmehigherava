@@ -263,6 +263,8 @@ const Careers = () => {
   const [isPaused, setIsPaused] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const animationRef = useRef<number | null>(null);
+  const isPausedRef = useRef(false);
+  const isHoveredRef = useRef(false);
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -283,26 +285,37 @@ const Careers = () => {
   };
 
   useEffect(() => {
+    isPausedRef.current = isPaused;
+  }, [isPaused]);
+
+  useEffect(() => {
+    isHoveredRef.current = isHovered;
+  }, [isHovered]);
+
+  useEffect(() => {
     const el = scrollRef.current;
-    if (!el || isPaused) return;
+    if (!el) return;
 
     let lastTime = 0;
     const normalSpeed = 0.35;
     const slowSpeed = 0.12;
     let currentSpeed = normalSpeed;
+    let running = true;
 
     const step = (timestamp: number) => {
+      if (!running) return;
       if (!lastTime) lastTime = timestamp;
       const delta = timestamp - lastTime;
       lastTime = timestamp;
 
-      const targetSpeed = isHovered ? slowSpeed : normalSpeed;
-      currentSpeed += (targetSpeed - currentSpeed) * 0.05;
+      if (!isPausedRef.current) {
+        const targetSpeed = isHoveredRef.current ? slowSpeed : normalSpeed;
+        currentSpeed += (targetSpeed - currentSpeed) * 0.05;
+        el.scrollLeft += currentSpeed * (delta / 16);
 
-      el.scrollLeft += currentSpeed * (delta / 16);
-
-      if (el.scrollLeft >= el.scrollWidth - el.clientWidth - 1) {
-        el.scrollLeft = 0;
+        if (el.scrollLeft >= el.scrollWidth - el.clientWidth - 1) {
+          el.scrollLeft = 0;
+        }
       }
 
       animationRef.current = requestAnimationFrame(step);
@@ -311,9 +324,10 @@ const Careers = () => {
     animationRef.current = requestAnimationFrame(step);
 
     return () => {
+      running = false;
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
     };
-  }, [isPaused, isHovered]);
+  }, []);
 
   const togglePause = useCallback(() => {
     setIsPaused(prev => !prev);
