@@ -69,6 +69,7 @@ const positions: Position[] = [
     icon: Video,
     color: "red",
     shortDescription: "Edit short-form reels, VSLs, and long-form content that converts.",
+    salary: "$3–$7/hr (~835–1,950 PKR/hr | ~₹250–585 INR/hr)",
     description: "Create scroll-stopping video content across all formats. From short-form social reels to high-converting VSLs and polished long-form videos — you'll bring ideas to life through editing that drives results.",
     responsibilities: [
       "Edit short-form video content for social media (Reels, TikTok, Shorts)",
@@ -100,7 +101,7 @@ const positions: Position[] = [
     icon: Code2,
     color: "cyan",
     shortDescription: "Build powerful automations with N8N and GoHighLevel that scale operations.",
-    salary: "80,000 PKR/month (~$285 USD | ~\u20B116,000 PHP)",
+    salary: "80,000 PKR/month (~$285 USD | ~₹24,000 INR)",
     description: "Design and maintain automation workflows using N8N and GoHighLevel. You'll connect APIs, automate client onboarding, build smart follow-up sequences, and create systems that save the team hundreds of hours.",
     responsibilities: [
       "Design and build automation workflows in N8N and GoHighLevel",
@@ -131,7 +132,7 @@ const positions: Position[] = [
     icon: Zap,
     color: "cyan",
     shortDescription: "Lead complex automation architecture across client operations at scale.",
-    salary: "200,000 PKR/month (~$715 USD | ~₱40,000 PHP)",
+    salary: "200,000 PKR/month (~$715 USD | ~₹60,000 INR)",
     description: "Take the lead on our most complex automation projects. You'll architect end-to-end systems using N8N and GoHighLevel, mentor junior specialists, and own the reliability of our client-facing automations. This role is for someone who's been in the trenches and can build systems that don't break.",
     responsibilities: [
       "Architect and lead complex multi-step automation workflows in N8N and GoHighLevel",
@@ -163,7 +164,7 @@ const positions: Position[] = [
     icon: Code2,
     color: "cyan",
     shortDescription: "Lead SaaS development, manage engineers, and own our internal products.",
-    salary: "200,000 PKR/month (~$715 USD | ~₱40,000 PHP)",
+    salary: "200,000 PKR/month (~$715 USD | ~₹60,000 INR)",
     description: "Own and lead the development of our internal SaaS products. You'll manage other engineers, make architectural decisions, and build production-grade software using vibe coding tools. This role focuses on our own platforms — not client automations — covering everything from security and databases to CRM integrations, domains, and hosting.",
     responsibilities: [
       "Lead development of internal SaaS products and agency tools",
