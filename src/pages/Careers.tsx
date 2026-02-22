@@ -830,45 +830,47 @@ const Careers = () => {
                 </button>
               </div>
             ) : (
-              <div className="p-6 lg:p-8">
-                <h3 className="font-orbitron font-bold text-base text-foreground mb-1">Apply for {selectedPosition.title}</h3>
-                <p className="text-xs text-muted-foreground mb-5">Fill out the form below and we'll review your application.</p>
+              <div className="p-4 lg:p-6">
+                <h3 className="font-orbitron font-bold text-sm text-foreground mb-0.5">Apply for {selectedPosition.title}</h3>
+                <p className="text-[11px] text-muted-foreground mb-3">Fill out the form below and we'll review your application.</p>
 
-                <form onSubmit={handleSubmit} className="space-y-3.5">
-                  <div>
-                    <Label htmlFor="name" className="text-xs font-medium text-foreground">Full Name *</Label>
-                    <Input id="name" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="mt-1 bg-white/5 border-white/10 text-sm h-9" placeholder="Your full name" />
-                  </div>
-                  <div>
-                    <Label htmlFor="email" className="text-xs font-medium text-foreground">Email *</Label>
-                    <Input id="email" type="email" required value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="mt-1 bg-white/5 border-white/10 text-sm h-9" placeholder="your@email.com" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
+                <form onSubmit={handleSubmit} className="space-y-2.5">
+                  <div className="grid grid-cols-2 gap-2.5">
                     <div>
-                      <Label htmlFor="phone" className="text-xs font-medium text-foreground">Phone</Label>
-                      <Input id="phone" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="mt-1 bg-white/5 border-white/10 text-sm h-9" placeholder="+1 (555)..." />
+                      <Label htmlFor="name" className="text-[11px] font-medium text-foreground">Full Name *</Label>
+                      <Input id="name" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="mt-0.5 bg-white/5 border-white/10 text-sm h-8" placeholder="Your full name" />
                     </div>
                     <div>
-                      <Label htmlFor="portfolio" className="text-xs font-medium text-foreground">Portfolio / LinkedIn</Label>
-                      <Input id="portfolio" value={formData.portfolio} onChange={(e) => setFormData({...formData, portfolio: e.target.value})} className="mt-1 bg-white/5 border-white/10 text-sm h-9" placeholder="URL" />
+                      <Label htmlFor="email" className="text-[11px] font-medium text-foreground">Email *</Label>
+                      <Input id="email" type="email" required value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="mt-0.5 bg-white/5 border-white/10 text-sm h-8" placeholder="your@email.com" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <div>
+                      <Label htmlFor="phone" className="text-[11px] font-medium text-foreground">Phone</Label>
+                      <Input id="phone" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="mt-0.5 bg-white/5 border-white/10 text-sm h-8" placeholder="+1 (555)..." />
+                    </div>
+                    <div>
+                      <Label htmlFor="portfolio" className="text-[11px] font-medium text-foreground">Portfolio / LinkedIn</Label>
+                      <Input id="portfolio" value={formData.portfolio} onChange={(e) => setFormData({...formData, portfolio: e.target.value})} className="mt-0.5 bg-white/5 border-white/10 text-sm h-8" placeholder="URL" />
                     </div>
                   </div>
                   <div>
-                    <Label htmlFor="experience" className="text-xs font-medium text-foreground">Relevant Experience *</Label>
-                    <Textarea id="experience" required value={formData.experience} onChange={(e) => setFormData({...formData, experience: e.target.value})} className="mt-1 bg-white/5 border-white/10 text-sm min-h-[70px]" placeholder="Tell us about your relevant experience..." />
+                    <Label htmlFor="experience" className="text-[11px] font-medium text-foreground">Relevant Experience *</Label>
+                    <Textarea id="experience" required value={formData.experience} onChange={(e) => setFormData({...formData, experience: e.target.value})} className="mt-0.5 bg-white/5 border-white/10 text-sm min-h-[48px] resize-none" rows={2} placeholder="Tell us about your relevant experience..." />
                   </div>
                   <div>
-                    <Label htmlFor="why" className="text-xs font-medium text-foreground">Why Rank Me Higher? *</Label>
-                    <Textarea id="why" required value={formData.why} onChange={(e) => setFormData({...formData, why: e.target.value})} className="mt-1 bg-white/5 border-white/10 text-sm min-h-[70px]" placeholder="What excites you about joining our team?" />
+                    <Label htmlFor="why" className="text-[11px] font-medium text-foreground">Why Rank Me Higher? *</Label>
+                    <Textarea id="why" required value={formData.why} onChange={(e) => setFormData({...formData, why: e.target.value})} className="mt-0.5 bg-white/5 border-white/10 text-sm min-h-[48px] resize-none" rows={2} placeholder="What excites you about joining our team?" />
                   </div>
 
-                  <div className="flex gap-2 pt-1">
-                    <button type="button" onClick={() => setShowForm(false)} className="flex-1 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm font-medium hover:bg-white/10 transition-colors">
+                  <div className="flex gap-2 pt-0.5">
+                    <button type="button" onClick={() => setShowForm(false)} className="flex-1 py-2 rounded-xl bg-white/5 border border-white/10 text-sm font-medium hover:bg-white/10 transition-colors">
                       Back
                     </button>
-                    <button type="submit" disabled={isSubmitting} className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-red-500 text-white font-bold text-sm hover:from-red-500 hover:to-red-400 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+                    <button type="submit" disabled={isSubmitting} className="flex-1 py-2 rounded-xl bg-gradient-to-r from-red-600 to-red-500 text-white font-bold text-sm hover:from-red-500 hover:to-red-400 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
                       {isSubmitting ? "Sending..." : <>
-                        <Send className="w-3.5 h-3.5" /> Submit Application
+                        <Send className="w-3.5 h-3.5" /> Submit
                       </>}
                     </button>
                   </div>
