@@ -209,7 +209,7 @@ export default function AIScreeningQuiz({ position, department, positionColor, o
                 <Input value={basicInfo.phone} onChange={(e) => setBasicInfo({...basicInfo, phone: e.target.value})} className="mt-0.5 bg-white/5 border-white/10 text-sm h-8" placeholder="+1 (555)..." />
               </div>
               <div>
-                <Label className="text-[11px] font-medium text-foreground">Portfolio / LinkedIn</Label>
+                <Label className="text-[11px] font-medium text-foreground">Portfolio</Label>
                 <Input value={basicInfo.portfolio} onChange={(e) => setBasicInfo({...basicInfo, portfolio: e.target.value})} className="mt-0.5 bg-white/5 border-white/10 text-sm h-8" placeholder="URL" />
               </div>
             </div>
