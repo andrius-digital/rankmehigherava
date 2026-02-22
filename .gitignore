@@ -34,5 +34,8 @@ lerna-debug.log*
 *~
 .DS_Store
 
+# Data
+data/
+
 # OS
 Thumbs.db

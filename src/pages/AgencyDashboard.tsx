@@ -18,7 +18,8 @@ import {
     CreditCard,
     Clock,
     ChevronRight,
-    Layers
+    Layers,
+    UserCheck
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -74,6 +75,14 @@ const AgencyDashboard: React.FC = () => {
                     icon: Layers,
                     description: 'Project management',
                     href: '/task-flow',
+                    color: 'cyan' as const
+                },
+                {
+                    id: 'applicant-tracker',
+                    title: 'Applicant Tracker',
+                    icon: UserCheck,
+                    description: 'AI-screened applications',
+                    href: '/applicant-tracker',
                     color: 'cyan' as const
                 }
             ]

@@ -1,8 +1,31 @@
 import express from 'express';
 import OpenAI from 'openai';
+import fs from 'fs';
+import path from 'path';
 
 const app = express();
 app.use(express.json({ limit: '1mb' }));
+
+const APPLICANTS_FILE = path.join(process.cwd(), 'data', 'applicants.json');
+
+function ensureDataDir() {
+  const dir = path.dirname(APPLICANTS_FILE);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+}
+
+function loadApplicants() {
+  ensureDataDir();
+  if (!fs.existsSync(APPLICANTS_FILE)) return [];
+  try {
+    return JSON.parse(fs.readFileSync(APPLICANTS_FILE, 'utf-8'));
+  } catch { return []; }
+}
+
+function saveApplicant(applicant) {
+  const applicants = loadApplicants();
+  applicants.unshift(applicant);
+  fs.writeFileSync(APPLICANTS_FILE, JSON.stringify(applicants, null, 2));
+}
 
 const openai = new OpenAI({
   apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
@@ -122,6 +145,33 @@ app.post('/api/screening/submit', async (req, res) => {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
+    const applicantRecord = {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+      submittedAt: new Date().toISOString(),
+      position: String(position).slice(0, 100),
+      department: String(department).slice(0, 100),
+      name: String(basicInfo.name).slice(0, 200),
+      email: String(basicInfo.email).slice(0, 200),
+      phone: basicInfo.phone ? String(basicInfo.phone).slice(0, 30) : null,
+      portfolio: basicInfo.portfolio ? String(basicInfo.portfolio).slice(0, 500) : null,
+      loomUrl: loomUrl ? String(loomUrl).slice(0, 500) : null,
+      evaluation: {
+        overallScore: evaluation.overallScore,
+        verdict: evaluation.verdict,
+        summary: evaluation.summary,
+        scores: evaluation.scores,
+        standoutPoints: evaluation.standoutPoints,
+        concerns: evaluation.concerns
+      },
+      answers: answers.slice(0, 10).map(a => ({
+        question: String(a.question).slice(0, 500),
+        answer: String(a.answer).slice(0, 1000)
+      })),
+      status: 'new'
+    };
+
+    saveApplicant(applicantRecord);
+
     const verdictEmoji = {
       strong_yes: '🟢🟢',
       yes: '🟢',
@@ -192,6 +242,46 @@ ${answersText}`;
     console.error('Error submitting:', error);
     res.status(500).json({ error: 'Failed to submit application' });
   }
+});
+
+function verifySupabaseAuth(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  next();
+}
+
+app.get('/api/applicants', verifySupabaseAuth, (req, res) => {
+  const applicants = loadApplicants();
+  res.json({ applicants });
+});
+
+app.patch('/api/applicants/:id/status', verifySupabaseAuth, (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+  const validStatuses = ['new', 'reviewing', 'interview', 'hired', 'rejected'];
+  if (!validStatuses.includes(status)) {
+    return res.status(400).json({ error: 'Invalid status' });
+  }
+  const applicants = loadApplicants();
+  const idx = applicants.findIndex(a => a.id === id);
+  if (idx === -1) return res.status(404).json({ error: 'Not found' });
+  applicants[idx].status = status;
+  ensureDataDir();
+  fs.writeFileSync(APPLICANTS_FILE, JSON.stringify(applicants, null, 2));
+  res.json({ success: true, applicant: applicants[idx] });
+});
+
+app.delete('/api/applicants/:id', verifySupabaseAuth, (req, res) => {
+  const { id } = req.params;
+  let applicants = loadApplicants();
+  const idx = applicants.findIndex(a => a.id === id);
+  if (idx === -1) return res.status(404).json({ error: 'Not found' });
+  applicants.splice(idx, 1);
+  ensureDataDir();
+  fs.writeFileSync(APPLICANTS_FILE, JSON.stringify(applicants, null, 2));
+  res.json({ success: true });
 });
 
 const PORT = 3001;

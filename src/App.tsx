@@ -22,6 +22,7 @@ import WebsiteSubmissions from "./pages/WebsiteSubmissions";
 import ClientProfile from "./pages/ClientProfile";
 import IndividualClientProfile from "./pages/IndividualClientProfile";
 import AgencyDashboard from "./pages/AgencyDashboard";
+import ApplicantTracker from "./pages/ApplicantTracker";
 import ClientPortal from "./pages/ClientPortal";
 import ClientDashboard from "./pages/ClientDashboard";
 import ResellerPortal from "./pages/ResellerPortal";
@@ -186,6 +187,11 @@ const App = () => (
               <Route path="/task-flow" element={
                 <ProtectedRoute>
                   <TaskFlow />
+                </ProtectedRoute>
+              } />
+              <Route path="/applicant-tracker" element={
+                <ProtectedRoute requireAdmin>
+                  <ApplicantTracker />
                 </ProtectedRoute>
               } />
               <Route path="/avaseo" element={<ProtectedRoute><SEOSpiderDashboard /></ProtectedRoute>} />
