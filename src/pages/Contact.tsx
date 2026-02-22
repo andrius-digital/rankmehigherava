@@ -263,12 +263,12 @@ const Contact = () => {
               </div>
 
               <div className="lg:col-span-2 space-y-4">
-                <a href="tel:773-572-4686" className="flex items-start gap-4 p-5 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/40 transition-all group">
+                <a href="sms:773-572-4686" className="flex items-start gap-4 p-5 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/40 transition-all group">
                   <div className="w-10 h-10 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center shrink-0">
                     <Phone className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <p className="font-orbitron font-bold text-foreground text-sm">(773) 572-4686</p>
+                    <p className="font-orbitron font-bold text-foreground text-sm">(773) 572-4686 <span className="text-xs text-primary/70 ml-1">SMS Only</span></p>
                     <p className="text-xs text-muted-foreground">Mon-Fri, 9am - 6pm CST</p>
                   </div>
                 </a>

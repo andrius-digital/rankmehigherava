@@ -125,8 +125,8 @@ const Footer = () => {
 
               <div className="flex items-center gap-4">
                 <Phone className="w-5 h-5 text-primary flex-shrink-0" />
-                <a href="tel:773-572-4686" className="text-muted-foreground hover:text-primary transition-colors">
-                  (773) 572-4686
+                <a href="sms:773-572-4686" className="text-muted-foreground hover:text-primary transition-colors">
+                  (773) 572-4686 <span className="text-xs text-primary/70 font-orbitron ml-1">SMS Only</span>
                 </a>
               </div>
 
