@@ -700,7 +700,7 @@ const Careers = () => {
 
                 <button
                   onClick={() => setShowForm(true)}
-                  className="w-full py-3 rounded-xl bg-gradient-to-r from-red-600 to-red-500 text-white font-bold text-sm hover:from-red-500 hover:to-red-400 transition-all duration-300 flex items-center justify-center gap-2"
+                  className="w-full py-3 rounded-xl bg-red-500/15 backdrop-blur-md border border-red-500/30 text-white font-bold text-sm hover:bg-red-500/25 hover:border-red-500/50 transition-all duration-300 flex items-center justify-center gap-2 font-orbitron"
                 >
                   <Send className="w-4 h-4" />
                   Apply for This Position
