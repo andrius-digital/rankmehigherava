@@ -12,6 +12,7 @@ import LocalMapBooster from "./pages/LocalMapBooster";
 import Websites from "./pages/services/Websites";
 import SEO from "./pages/services/SEO";
 import AdsContent from "./pages/services/AdsContent";
+import ContentAds from "./pages/services/ContentAds";
 import Outbound from "./pages/services/Outbound";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
@@ -82,6 +83,7 @@ const App = () => (
               <Route path="/services/websites" element={<Websites />} />
               <Route path="/services/seo" element={<SEO />} />
               <Route path="/services/ads-content" element={<AdsContent />} />
+              <Route path="/services/content-ads" element={<ContentAds />} />
               <Route path="/services/outbound" element={<Outbound />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:slug" element={<BlogPost />} />

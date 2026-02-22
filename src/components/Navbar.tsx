@@ -1,7 +1,6 @@
 import { Phone, Menu, X, Calendar } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
 
 declare global {
   interface Window {
@@ -17,8 +16,6 @@ const Navbar = ({ onOpenLeadMagnet }: { onOpenLeadMagnet?: () => void }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { toast } = useToast();
-
   const openCalendly = () => {
     if (window.Calendly) {
       window.Calendly.initPopupWidget({ url: CALENDLY_URL });
@@ -68,12 +65,9 @@ const Navbar = ({ onOpenLeadMagnet }: { onOpenLeadMagnet?: () => void }) => {
               Home
             </Link>
 
-            <button
-              onClick={() => toast({ title: "Coming Soon", description: "Our services pages are launching soon. Contact us to learn more!" })}
-              className="text-foreground font-medium hover:text-primary transition-colors"
-            >
-              Services
-            </button>
+            <Link to="/services/content-ads" className="text-foreground font-medium hover:text-primary transition-colors">
+              Content & Ads
+            </Link>
 
             <Link to="/blog" className="text-foreground font-medium hover:text-primary transition-colors">
               Blog
@@ -130,12 +124,13 @@ const Navbar = ({ onOpenLeadMagnet }: { onOpenLeadMagnet?: () => void }) => {
                 Home
               </Link>
 
-              <button
-                onClick={() => { setIsMenuOpen(false); toast({ title: "Coming Soon", description: "Our services pages are launching soon. Contact us to learn more!" }); }}
-                className="text-foreground font-medium hover:text-primary transition-colors py-2 text-left"
+              <Link
+                to="/services/content-ads"
+                onClick={() => setIsMenuOpen(false)}
+                className="text-foreground font-medium hover:text-primary transition-colors py-2"
               >
-                Services
-              </button>
+                Content & Ads
+              </Link>
 
               <Link
                 to="/blog"

@@ -17,7 +17,7 @@ const TikTokIcon = ({ className }: { className?: string }) => (
 const services = [
   { label: "Custom Websites", href: "/services/websites" },
   { label: "Local Map Booster", href: "/localmapbooster" },
-  { label: "Ads & Content", href: "/services/ads-content" },
+  { label: "Content & Ads", href: "/services/content-ads" },
   { label: "SEO Services", href: "/services/seo" },
   { label: "Live Outbound Sales Agents", href: "/services/outbound" },
 ];

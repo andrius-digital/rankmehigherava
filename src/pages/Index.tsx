@@ -34,7 +34,7 @@ const services = [
     title: "Qualified Lead Systems",
     description: "Zero-touch content and high-ROI ads. We fill your calendar with appointments while you work.",
     icon: Megaphone,
-    link: "/services/ads-content",
+    link: "/services/content-ads",
   },
   {
     id: "seo",
