@@ -1,4 +1,4 @@
-project_id = "rmzmocmhjsbnckvbtypw"
+project_id = "vyviopkpwcsdrfpdwzpa"
 
 [functions.chat]
 verify_jwt = false
@@ -28,4 +28,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.clockify]
+verify_jwt = false
+
+[functions.ava-notify]
 verify_jwt = false

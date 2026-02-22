@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+const TELEGRAM_BOT_TOKEN = Deno.env.get("TELEGRAM_BOT_TOKEN");
 
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
@@ -8,7 +9,7 @@ const corsHeaders = {
 };
 
 interface AvaEmailData {
-    type: "lead_collection" | "live_rep_request" | "conversation_summary";
+    type: "lead_collection" | "live_rep_request" | "conversation_summary" | "ai_screened_application";
     userEmail?: string;
     userName?: string;
     userPhone?: string;
@@ -16,22 +17,26 @@ interface AvaEmailData {
     conversationHistory?: Array<{ role: string; content: string }>;
     pageUrl?: string;
     timestamp?: string;
+    message?: string;
+    chat_id?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
-    // Handle CORS preflight requests
     if (req.method === "OPTIONS") {
         return new Response(null, { headers: corsHeaders });
     }
 
     try {
         const data: AvaEmailData = await req.json();
-        console.log("AVA email notification request:", data.type);
+        console.log("AVA notification request:", data.type);
+
+        if (data.type === "ai_screened_application") {
+            return await handleTelegramNotification(data);
+        }
 
         let emailHtml = "";
         let subject = "";
 
-        // Build email based on type
         switch (data.type) {
             case "lead_collection":
                 subject = `🎯 AVA Lead: ${data.userName || "New Lead"}`;
@@ -49,10 +54,9 @@ const handler = async (req: Request): Promise<Response> => {
                 break;
 
             default:
-                throw new Error("Invalid email type");
+                throw new Error("Invalid notification type");
         }
 
-        // Send email using Resend API
         const recipients = ["rubbail@rankmehigher.com", "andrius@cdlagency.com"];
 
         console.log("Sending AVA email to:", recipients);
@@ -99,6 +103,62 @@ const handler = async (req: Request): Promise<Response> => {
         );
     }
 };
+
+async function handleTelegramNotification(data: AvaEmailData): Promise<Response> {
+    if (!TELEGRAM_BOT_TOKEN) {
+        console.error("TELEGRAM_BOT_TOKEN not set in Supabase secrets");
+        return new Response(
+            JSON.stringify({ error: "Telegram bot token not configured" }),
+            { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+    }
+
+    if (!data.message || !data.chat_id) {
+        return new Response(
+            JSON.stringify({ error: "Missing message or chat_id" }),
+            { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+    }
+
+    try {
+        const tgResponse = await fetch(
+            `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    chat_id: data.chat_id,
+                    text: data.message,
+                    parse_mode: "HTML",
+                    disable_web_page_preview: true,
+                }),
+            }
+        );
+
+        const tgResult = await tgResponse.json();
+
+        if (!tgResponse.ok) {
+            console.error("Telegram send failed:", tgResult);
+            return new Response(
+                JSON.stringify({ error: "Telegram send failed", details: tgResult }),
+                { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+            );
+        }
+
+        console.log(`Telegram notification sent to ${data.chat_id}`);
+        return new Response(
+            JSON.stringify({ success: true, telegram: tgResult }),
+            { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+    } catch (err) {
+        const errMsg = err instanceof Error ? err.message : "Unknown error";
+        console.error("Telegram error:", errMsg);
+        return new Response(
+            JSON.stringify({ error: errMsg }),
+            { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+    }
+}
 
 function buildLeadEmail(data: AvaEmailData): string {
     return `
