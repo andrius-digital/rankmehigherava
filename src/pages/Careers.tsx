@@ -283,6 +283,7 @@ const Careers = () => {
   const [mobileCardIndex, setMobileCardIndex] = useState(0);
   const [calcHours, setCalcHours] = useState(35);
   const [calcRate, setCalcRate] = useState(5);
+  const [calcCurrency, setCalcCurrency] = useState<'USD' | 'PKR' | 'INR'>('USD');
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
   const { toast } = useToast();
@@ -694,72 +695,76 @@ const Careers = () => {
                   <div className="flex items-center gap-1.5 mb-2.5">
                     <Calculator className="w-3.5 h-3.5 text-green-400" />
                     <span className="text-[10px] font-bold text-green-400 uppercase font-orbitron tracking-wider">Salary Calculator</span>
-                    <span className="ml-auto text-[9px] text-muted-foreground">Range: ${selectedPosition.hourlyMin}–${selectedPosition.hourlyMax}/hr</span>
+                    <span className="ml-auto text-[9px] text-muted-foreground">${selectedPosition.hourlyMin}–${selectedPosition.hourlyMax}/hr · 30–40 hrs/wk</span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 mb-2.5">
-                    <div>
-                      <label className="text-[10px] text-muted-foreground mb-1 block">Your hourly rate (USD)</label>
-                      <div className="relative">
-                        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-green-400 font-bold">$</span>
-                        <input
-                          type="number"
-                          min={0.5}
-                          max={50}
-                          step={0.25}
-                          value={calcRate}
-                          onChange={(e) => setCalcRate(Number(e.target.value) || 0)}
-                          className="w-full h-8 pl-6 pr-2 rounded-md bg-white/5 border border-white/15 text-sm font-bold text-foreground font-orbitron focus:border-green-400/50 focus:outline-none transition-colors"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="text-[10px] text-muted-foreground mb-1 block">Hours per week</label>
-                      <input
-                        type="number"
-                        min={1}
-                        max={80}
-                        value={calcHours}
-                        onChange={(e) => setCalcHours(Number(e.target.value) || 0)}
-                        className="w-full h-8 px-2.5 rounded-md bg-white/5 border border-white/15 text-sm font-bold text-foreground font-orbitron focus:border-green-400/50 focus:outline-none transition-colors"
-                      />
-                    </div>
+                  <div className="flex items-center gap-1.5 mb-2.5">
+                    {([
+                      { key: 'USD' as const, label: '$ USD' },
+                      { key: 'PKR' as const, label: '₨ PKR' },
+                      { key: 'INR' as const, label: '₹ INR' },
+                    ]).map((c) => (
+                      <button
+                        key={c.key}
+                        onClick={() => setCalcCurrency(c.key)}
+                        className={`flex-1 py-1.5 rounded-md text-[10px] font-bold font-orbitron tracking-wide border transition-all duration-200 ${
+                          calcCurrency === c.key
+                            ? 'bg-green-500/15 border-green-500/40 text-green-400'
+                            : 'bg-white/5 border-white/10 text-muted-foreground hover:text-foreground hover:border-white/20'
+                        }`}
+                      >
+                        {c.label}
+                      </button>
+                    ))}
                   </div>
 
                   {(() => {
-                    const weekly = calcRate * calcHours;
-                    const monthly = weekly * 4.33;
+                    const multiplier = calcCurrency === 'PKR' ? 278 : calcCurrency === 'INR' ? 84 : 1;
+                    const symbol = calcCurrency === 'PKR' ? '₨' : calcCurrency === 'INR' ? '₹' : '$';
+                    const minHr = selectedPosition.hourlyMin * multiplier;
+                    const maxHr = selectedPosition.hourlyMax * multiplier;
+                    const minWeekly = minHr * calcHours;
+                    const maxWeekly = maxHr * calcHours;
+                    const minMonthly = minWeekly * 4.33;
+                    const maxMonthly = maxWeekly * 4.33;
+                    const fmt = (n: number) => Math.round(n).toLocaleString();
                     return (
-                      <div className="space-y-1.5">
+                      <>
+                        <div className="mb-2">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[10px] text-muted-foreground">Hours per week</span>
+                            <span className="text-xs font-bold text-foreground font-orbitron">{calcHours} hrs</span>
+                          </div>
+                          <input
+                            type="range"
+                            min={10}
+                            max={60}
+                            value={calcHours}
+                            onChange={(e) => setCalcHours(Number(e.target.value))}
+                            className="w-full h-1.5 rounded-full appearance-none cursor-pointer accent-green-400"
+                            style={{ accentColor: '#4ade80', background: 'rgba(255,255,255,0.08)' }}
+                          />
+                          <div className="flex justify-between text-[9px] text-muted-foreground mt-0.5">
+                            <span>10 hrs</span>
+                            <span>60 hrs</span>
+                          </div>
+                        </div>
+
                         <div className="grid grid-cols-3 gap-2">
                           <div className="rounded-md bg-white/5 border border-white/10 p-2 text-center">
                             <div className="text-[8px] text-muted-foreground mb-0.5 uppercase">Weekly</div>
-                            <div className="text-xs font-bold text-green-400 font-orbitron">${Math.round(weekly).toLocaleString()}</div>
+                            <div className="text-[11px] font-bold text-green-400 font-orbitron">{symbol}{fmt(minWeekly)}–{fmt(maxWeekly)}</div>
                           </div>
                           <div className="rounded-md bg-white/5 border border-white/10 p-2 text-center">
                             <div className="text-[8px] text-muted-foreground mb-0.5 uppercase">Monthly</div>
-                            <div className="text-xs font-bold text-green-400 font-orbitron">${Math.round(monthly).toLocaleString()}</div>
+                            <div className="text-[11px] font-bold text-green-400 font-orbitron">{symbol}{fmt(minMonthly)}–{fmt(maxMonthly)}</div>
                           </div>
                           <div className="rounded-md bg-white/5 border border-white/10 p-2 text-center">
                             <div className="text-[8px] text-muted-foreground mb-0.5 uppercase">Yearly</div>
-                            <div className="text-xs font-bold text-green-400 font-orbitron">${Math.round(monthly * 12).toLocaleString()}</div>
+                            <div className="text-[11px] font-bold text-green-400 font-orbitron">{symbol}{fmt(minMonthly * 12)}–{fmt(maxMonthly * 12)}</div>
                           </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-2">
-                          <div className="rounded-md bg-white/5 border border-white/10 p-1.5 text-center">
-                            <div className="text-[8px] text-muted-foreground mb-0.5">PKR / month</div>
-                            <div className="text-[11px] font-bold text-foreground font-orbitron">
-                              {Math.round(monthly * 278).toLocaleString()}
-                            </div>
-                          </div>
-                          <div className="rounded-md bg-white/5 border border-white/10 p-1.5 text-center">
-                            <div className="text-[8px] text-muted-foreground mb-0.5">INR / month</div>
-                            <div className="text-[11px] font-bold text-foreground font-orbitron">
-                              ₹{Math.round(monthly * 84).toLocaleString()}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                      </>
                     );
                   })()}
                 </div>
