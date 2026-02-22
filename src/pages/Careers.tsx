@@ -111,7 +111,7 @@ const positions: Position[] = [
     ],
     requirements: [
       "Experience with N8N, GoHighLevel, and vibe coding tools",
-      "We mainly use Replit, Lovable, and Claude Code",
+      "We mainly use Replit and Claude Code",
       "You may encounter tools like Vapi, Twilio, etc. depending on the project",
       "Strong understanding of APIs, webhooks, and data flows",
       "Problem-solving mindset — you figure things out",
