@@ -56,36 +56,66 @@ app.post('/api/screening/questions', async (req, res) => {
     const { position, department } = req.body;
 
     const response = await openai.chat.completions.create({
-      model: "gpt-5-mini",
+      model: "gpt-4o-mini",
       messages: [
-        { role: "system", content: SCREENING_SYSTEM_PROMPT },
+        { role: "system", content: SCREENING_SYSTEM_PROMPT + `\n\nIMPORTANT: Always respond with a JSON object containing a "questions" key with an array of exactly 5 question objects.` },
         { role: "user", content: `Generate exactly 5 screening questions for a "${position}" applicant in the "${department}" department.
 
-Mix of question types:
-1. One role-specific technical/skill question
-2. One scenario-based problem-solving question (give them a realistic work situation)
-3. One personality/work-style question
-4. One question about their motivation/drive
-5. One creative or unexpected question that reveals character
+Mix: 1 technical, 1 scenario, 1 personality, 1 motivation, 1 creative. Keep each question conversational and short (1-2 sentences).
 
-Each question should be conversational, not corporate. Keep them short (1-2 sentences max).
-
-Return as JSON array: [{"id": 1, "question": "...", "type": "technical|scenario|personality|motivation|creative"}]` }
+You MUST return exactly this format: {"questions": [{"id": 1, "question": "your question here", "type": "technical"}, {"id": 2, "question": "...", "type": "scenario"}, {"id": 3, "question": "...", "type": "personality"}, {"id": 4, "question": "...", "type": "motivation"}, {"id": 5, "question": "...", "type": "creative"}]}` }
       ],
       response_format: { type: "json_object" },
     });
 
     const content = response.choices[0]?.message?.content || '{"questions":[]}';
+    console.log('OpenAI raw response:', content.substring(0, 300));
     const parsed = JSON.parse(content);
-    let questions = parsed.questions || parsed;
-    if (questions && !Array.isArray(questions)) {
-      questions = questions.array || questions.items || questions.list || Object.values(questions).find(v => Array.isArray(v)) || [];
+
+    let questions = [];
+
+    if (Array.isArray(parsed)) {
+      questions = parsed;
+    } else if (Array.isArray(parsed.questions)) {
+      questions = parsed.questions;
+    } else if (typeof parsed === 'object' && parsed !== null) {
+      const arrayVal = Object.values(parsed).find(v => Array.isArray(v));
+      if (arrayVal) {
+        questions = arrayVal;
+      } else if (parsed.id && parsed.question) {
+        questions = [parsed];
+      }
     }
-    if (!Array.isArray(questions)) questions = [];
+
+    if (questions.length === 0) {
+      console.error('Parsed 0 questions. Retrying with stricter prompt...');
+      const retry = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: "You generate interview questions. Return ONLY a JSON object with a 'questions' key containing an array." },
+          { role: "user", content: `Generate 5 screening questions for a "${position}" role. Mix: technical, scenario, personality, motivation, creative. Return: {"questions": [{"id": 1, "question": "...", "type": "technical"}, ...]}` }
+        ],
+        response_format: { type: "json_object" },
+      });
+      const retryContent = retry.choices[0]?.message?.content || '{}';
+      console.log('Retry response:', retryContent.substring(0, 300));
+      const retryParsed = JSON.parse(retryContent);
+      if (Array.isArray(retryParsed.questions)) questions = retryParsed.questions;
+      else if (Array.isArray(retryParsed)) questions = retryParsed;
+      else {
+        const retryArr = Object.values(retryParsed).find(v => Array.isArray(v));
+        if (retryArr) questions = retryArr;
+      }
+    }
+
+    if (questions.length === 0) {
+      return res.status(500).json({ error: 'Could not generate questions. Please try again.' });
+    }
+
     res.json({ questions });
   } catch (error) {
-    console.error('Error generating questions:', error);
-    res.status(500).json({ error: 'Failed to generate questions' });
+    console.error('Error generating questions:', error?.message || error);
+    res.status(500).json({ error: 'Failed to generate questions. Please try again.' });
   }
 });
 
@@ -96,7 +126,7 @@ app.post('/api/screening/evaluate', async (req, res) => {
     const answersFormatted = answers.map((a, i) => `Q${i+1}: ${a.question}\nA${i+1}: ${a.answer}`).join('\n\n');
 
     const response = await openai.chat.completions.create({
-      model: "gpt-5-mini",
+      model: "gpt-4o-mini",
       messages: [
         { role: "system", content: SCREENING_SYSTEM_PROMPT },
         { role: "user", content: `Evaluate this applicant for the "${position}" role in "${department}".

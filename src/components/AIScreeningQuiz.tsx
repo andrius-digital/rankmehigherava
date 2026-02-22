@@ -102,14 +102,22 @@ export default function AIScreeningQuiz({ position, department, positionColor, o
     setError("");
 
     try {
-      const res = await fetch('/api/screening/questions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ position, department }),
-      });
-      if (!res.ok) throw new Error('Failed to generate questions');
-      const data = await res.json();
-      const qs = Array.isArray(data.questions) ? data.questions : [];
+      let qs: ScreeningQuestion[] = [];
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const res = await fetch('/api/screening/questions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ position, department }),
+        });
+        if (!res.ok) {
+          if (attempt === 0) { await new Promise(r => setTimeout(r, 1000)); continue; }
+          throw new Error('Failed to generate questions');
+        }
+        const data = await res.json();
+        qs = Array.isArray(data.questions) ? data.questions : [];
+        if (qs.length > 0) break;
+        if (attempt === 0) { await new Promise(r => setTimeout(r, 1000)); continue; }
+      }
       if (qs.length === 0) throw new Error('No questions received');
       setQuestions(qs);
       setStep(1);
