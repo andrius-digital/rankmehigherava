@@ -602,7 +602,7 @@ const Careers = () => {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={closeModal}>
           <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
           <div 
-            className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-background/95 backdrop-blur-xl border border-white/10 shadow-2xl"
+            className="relative w-full max-w-lg h-[100vh] max-h-[100vh] overflow-y-auto rounded-none lg:rounded-2xl lg:h-auto lg:max-h-[95vh] bg-background/95 backdrop-blur-xl border border-white/10 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
             style={{ scrollbarWidth: "thin" }}
           >
@@ -614,55 +614,55 @@ const Careers = () => {
             </button>
 
             {!showForm && !submitted ? (
-              <div className="p-6 lg:p-8">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className={`w-12 h-12 rounded-xl ${selectedPosition.color === 'cyan' ? 'bg-cyan-500/15' : 'bg-red-500/15'} flex items-center justify-center`}>
+              <div className="p-5 lg:p-6">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className={`w-10 h-10 rounded-xl ${selectedPosition.color === 'cyan' ? 'bg-cyan-500/15' : 'bg-red-500/15'} flex items-center justify-center`}>
                     <selectedPosition.icon className={`w-5 h-5 ${selectedPosition.color === 'cyan' ? 'text-cyan-400' : 'text-red-400'}`} />
                   </div>
                   <div>
-                    <h2 className="font-orbitron font-bold text-lg lg:text-xl text-foreground">{selectedPosition.title}</h2>
+                    <h2 className="font-orbitron font-bold text-base lg:text-lg text-foreground">{selectedPosition.title}</h2>
                     <p className="text-xs text-muted-foreground">{selectedPosition.department} &middot; {selectedPosition.type} &middot; {selectedPosition.location}</p>
                   </div>
                 </div>
 
                 {selectedPosition.salary && (
-                  <div className="flex items-center gap-2 p-3 rounded-lg bg-green-500/10 border border-green-500/20 mb-4">
-                    <span className="text-xs font-bold text-green-400">STARTING SALARY:</span>
-                    <span className="text-sm font-bold text-foreground">{selectedPosition.salary}</span>
+                  <div className="flex items-center gap-2 p-2.5 rounded-lg bg-green-500/10 border border-green-500/20 mb-3">
+                    <span className="text-[10px] font-bold text-green-400 uppercase">Starting Salary:</span>
+                    <span className="text-xs font-bold text-foreground">{selectedPosition.salary}</span>
                   </div>
                 )}
 
-                <p className="text-sm text-muted-foreground leading-relaxed mb-5">{selectedPosition.description}</p>
+                <p className="text-xs text-muted-foreground leading-relaxed mb-4">{selectedPosition.description}</p>
 
-                <div className="mb-4">
-                  <h4 className="font-orbitron font-bold text-[11px] text-foreground mb-2 tracking-wider uppercase">What You'll Do</h4>
-                  <div className="space-y-1.5">
+                <div className="mb-3">
+                  <h4 className="font-orbitron font-bold text-[10px] text-foreground mb-1.5 tracking-wider uppercase">What You'll Do</h4>
+                  <div className="space-y-1">
                     {selectedPosition.responsibilities.map((item, i) => (
                       <div key={i} className="flex items-start gap-2">
-                        <CheckCircle2 className={`w-3.5 h-3.5 shrink-0 mt-0.5 ${selectedPosition.color === 'cyan' ? 'text-cyan-400' : 'text-red-400'}`} />
-                        <span className="text-xs text-muted-foreground">{item}</span>
+                        <CheckCircle2 className={`w-3 h-3 shrink-0 mt-0.5 ${selectedPosition.color === 'cyan' ? 'text-cyan-400' : 'text-red-400'}`} />
+                        <span className="text-[11px] text-muted-foreground">{item}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div className="mb-4">
-                  <h4 className="font-orbitron font-bold text-[11px] text-foreground mb-2 tracking-wider uppercase">What We're Looking For</h4>
-                  <div className="space-y-1.5">
+                <div className="mb-3">
+                  <h4 className="font-orbitron font-bold text-[10px] text-foreground mb-1.5 tracking-wider uppercase">What We're Looking For</h4>
+                  <div className="space-y-1">
                     {selectedPosition.requirements.map((item, i) => (
                       <div key={i} className="flex items-start gap-2">
                         <ArrowRight className={`w-3 h-3 shrink-0 mt-0.5 ${selectedPosition.color === 'cyan' ? 'text-cyan-400' : 'text-red-400'}`} />
-                        <span className="text-xs text-muted-foreground">{item}</span>
+                        <span className="text-[11px] text-muted-foreground">{item}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div className="mb-6">
-                  <h4 className="font-orbitron font-bold text-[11px] text-foreground mb-2 tracking-wider uppercase">Perks</h4>
-                  <div className="flex flex-wrap gap-2">
+                <div className="mb-4">
+                  <h4 className="font-orbitron font-bold text-[10px] text-foreground mb-1.5 tracking-wider uppercase">Perks</h4>
+                  <div className="flex flex-wrap gap-1.5">
                     {selectedPosition.perks.map((item, i) => (
-                      <span key={i} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-green-500/10 border border-green-500/20 text-[10px] font-medium text-green-400">
+                      <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-green-500/10 border border-green-500/20 text-[10px] font-medium text-green-400">
                         <CheckCircle2 className="w-2.5 h-2.5" /> {item}
                       </span>
                     ))}
@@ -671,9 +671,9 @@ const Careers = () => {
 
                 <button
                   onClick={() => setShowForm(true)}
-                  className="w-full py-3 rounded-xl bg-red-500/15 backdrop-blur-md border border-red-500/30 text-white font-bold text-sm hover:bg-red-500/25 hover:border-red-500/50 transition-all duration-300 flex items-center justify-center gap-2 font-orbitron"
+                  className="w-full py-2.5 rounded-xl bg-red-500/15 backdrop-blur-md border border-red-500/30 text-white font-bold text-xs hover:bg-red-500/25 hover:border-red-500/50 transition-all duration-300 flex items-center justify-center gap-2 font-orbitron"
                 >
-                  <Send className="w-4 h-4" />
+                  <Send className="w-3.5 h-3.5" />
                   Apply for This Position
                 </button>
               </div>
