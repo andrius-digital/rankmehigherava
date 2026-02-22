@@ -528,7 +528,7 @@ const Careers = () => {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={closeModal}>
           <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
           <div 
-            className="relative w-full max-w-md lg:max-w-2xl h-[100vh] max-h-[100vh] overflow-y-auto rounded-none lg:rounded-2xl lg:h-auto lg:max-h-[95vh] bg-background/95 backdrop-blur-xl border border-white/10 shadow-2xl"
+            className="relative w-full max-w-md lg:max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl bg-background/95 backdrop-blur-xl border border-white/10 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
             style={{ scrollbarWidth: "thin" }}
           >
