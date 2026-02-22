@@ -22,6 +22,7 @@ interface Position {
   color: 'red' | 'cyan';
   description: string;
   shortDescription: string;
+  salary?: string;
   responsibilities: string[];
   requirements: string[];
   perks: string[];
@@ -92,13 +93,14 @@ const positions: Position[] = [
   },
   {
     id: "automation-specialist",
-    title: "Automation Specialist",
+    title: "Junior Automation Specialist",
     department: "Software Engineers",
     type: "Contract / Full-time",
     location: "Remote",
     icon: Code2,
     color: "cyan",
     shortDescription: "Build powerful automations with N8N and GoHighLevel that scale operations.",
+    salary: "80,000 PKR/month (~$285 USD | ~\u20B116,000 PHP)",
     description: "Design and maintain automation workflows using N8N and GoHighLevel. You'll connect APIs, automate client onboarding, build smart follow-up sequences, and create systems that save the team hundreds of hours.",
     responsibilities: [
       "Design and build automation workflows in N8N and GoHighLevel",
@@ -115,7 +117,6 @@ const positions: Position[] = [
       "Problem-solving mindset — you figure things out",
     ],
     perks: [
-      "Starting salary: 80,000 PKR/month (~$285 USD | ~\u20B116,000 PHP)",
       "Schedule: 9 AM \u2013 4 PM CT, Monday \u2013 Friday",
       "Performance bonuses + room to grow",
       "Fully remote — work from anywhere",
@@ -544,6 +545,13 @@ const Careers = () => {
                     <p className="text-xs text-muted-foreground">{selectedPosition.department} &middot; {selectedPosition.type} &middot; {selectedPosition.location}</p>
                   </div>
                 </div>
+
+                {selectedPosition.salary && (
+                  <div className="flex items-center gap-2 p-3 rounded-lg bg-green-500/10 border border-green-500/20 mb-4">
+                    <span className="text-xs font-bold text-green-400">STARTING SALARY:</span>
+                    <span className="text-sm font-bold text-foreground">{selectedPosition.salary}</span>
+                  </div>
+                )}
 
                 <p className="text-sm text-muted-foreground leading-relaxed mb-5">{selectedPosition.description}</p>
 
