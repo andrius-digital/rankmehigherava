@@ -157,10 +157,6 @@ const Navbar = ({ onOpenLeadMagnet }: { onOpenLeadMagnet?: () => void }) => {
                 Contact
               </Link>
 
-              <button onClick={() => { setIsMenuOpen(false); if (onOpenLeadMagnet) onOpenLeadMagnet(); else openCalendly(); }} className="flex items-center justify-center gap-3 px-4 py-3 rounded-full bg-gradient-to-r from-primary to-red-600 text-white font-bold mt-2">
-                <Phone className="w-4 h-4" />
-                <span className="text-sm">Get Your Website</span>
-              </button>
             </div>
           </div>
         )}
