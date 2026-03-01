@@ -1,9 +1,10 @@
 import { Helmet } from "react-helmet-async";
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { 
   Briefcase, Code2, TrendingUp, Video, Users, 
   ArrowRight, X, Send, CheckCircle2, MapPin, Clock,
-  BarChart3, Mail, Zap, ChevronLeft, ChevronRight, Calculator
+  BarChart3, Mail, Zap, ChevronLeft, ChevronRight, Calculator, Link2, Check
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -282,16 +283,40 @@ const Careers = () => {
   const [calcHours, setCalcHours] = useState(30);
   const [calcRate, setCalcRate] = useState(5);
   const [calcCurrency, setCalcCurrency] = useState<'USD' | 'PKR' | 'INR'>('USD');
+  const [linkCopied, setLinkCopied] = useState(false);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
   const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const filteredPositions = activeDept === "All" ? positions : positions.filter(p => p.department === activeDept);
+
+  useEffect(() => {
+    const positionId = searchParams.get("position");
+    if (positionId) {
+      const found = positions.find(p => p.id === positionId);
+      if (found) {
+        setCalcHours(30);
+        setCalcRate(found.hourlyMin);
+        setSelectedPosition(found);
+      }
+    }
+  }, [searchParams]);
 
   const openPosition = (position: Position) => {
     setCalcHours(30);
     setCalcRate(position.hourlyMin);
     setSelectedPosition(position);
+    setSearchParams({ position: position.id });
+  };
+
+  const copyPositionLink = (positionId: string) => {
+    const url = `${window.location.origin}/careers?position=${positionId}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+      toast({ title: "Link copied!", description: "Share this link with applicants." });
+    });
   };
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -317,6 +342,9 @@ const Careers = () => {
     setSelectedPosition(null);
     setShowForm(false);
     setSubmitted(false);
+    setLinkCopied(false);
+    searchParams.delete("position");
+    setSearchParams(searchParams);
   };
 
   const colorMap = (color: 'red' | 'cyan') => color === "cyan"
@@ -616,12 +644,25 @@ const Careers = () => {
             onClick={(e) => e.stopPropagation()}
             style={{ scrollbarWidth: "thin" }}
           >
-            <button
-              onClick={closeModal}
-              className="sticky top-3 float-right mr-3 z-10 w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center hover:bg-white/20 transition-colors"
-            >
-              <X className="w-4 h-4 text-white" />
-            </button>
+            <div className="sticky top-3 float-right mr-3 z-10 flex items-center gap-2">
+              <button
+                onClick={() => copyPositionLink(selectedPosition.id)}
+                className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all duration-300 ${
+                  linkCopied
+                    ? 'bg-green-500/20 border-green-500/40'
+                    : 'bg-white/10 border-white/20 hover:bg-white/20'
+                }`}
+                title="Copy link to this position"
+              >
+                {linkCopied ? <Check className="w-4 h-4 text-green-400" /> : <Link2 className="w-4 h-4 text-white" />}
+              </button>
+              <button
+                onClick={closeModal}
+                className="w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center hover:bg-white/20 transition-colors"
+              >
+                <X className="w-4 h-4 text-white" />
+              </button>
+            </div>
 
             {!showForm && !submitted ? (
               <div className="p-4 lg:p-5">
