@@ -4,18 +4,22 @@
 
 This is the **Rank Me Higher** agency platform — a full-stack web application for a digital marketing agency that provides SEO, website creation, and AI-powered marketing services. The platform includes a public-facing marketing site, an internal agency dashboard, client portals, a reseller portal, and an AI assistant named "AVA" that handles voice calls, chat, and knowledge management.
 
-The app is built as a React SPA using Vite, TypeScript, Tailwind CSS, and shadcn/ui components. The backend uses **Supabase** (PostgreSQL database, Edge Functions, auth, and storage) plus a lightweight Express API server (`api-server.js`) for AI screening features. Production uses a static file server (`server.js`).
+The app is built as a React SPA using Vite, TypeScript, Tailwind CSS, and shadcn/ui components. The backend uses **Supabase** (PostgreSQL database, Edge Functions, auth, and storage) plus an Express API server for AI screening features. Both dev and production use the same API logic.
 
 ### AI Screening System (Careers Page)
 
-- **API Server**: `api-server.js` runs on port 3001, proxied via Vite (`/api` routes)
+- **Production Server**: `server.js` — unified Express server with API endpoints + static file serving (port 5000)
+- **Dev API Server**: `api-server.js` — standalone API server (port 3001), proxied via Vite (`/api` routes)
 - **OpenAI Integration**: Uses Replit AI Integrations (no API key needed, billed to credits)
 - **Flow**: Basic info → Chat-style AI conversation with AVA (5 questions, text or voice notes) → Required Loom video → AI evaluation with scores → Submit to Telegram
 - **Component**: `src/components/AIScreeningQuiz.tsx` - chat-style conversation UI with voice recording
 - **Endpoints**: `/api/screening/questions`, `/api/screening/evaluate`, `/api/screening/submit`, `/api/screening/transcribe` (Whisper voice-to-text)
+- **Telegram Notifications**: Direct Telegram Bot API calls routed by department (Creative, Marketing, Software Engineers → separate channels)
 - **Voice Notes**: Browser MediaRecorder captures audio → sent to `/api/screening/transcribe` → OpenAI Whisper transcription → pre-filled as text answer
+- **Shareable Position Links**: `/careers?position=<id>` auto-opens the position popup, with copy-link button in modal
 - **Dependencies**: `multer` for file upload handling on transcription endpoint
 - **Dev script**: `npm run dev` starts both API server (port 3001) and Vite (port 5000)
+- **Deployment**: Autoscale with `node server.js` (build: `npm run build`)
 
 ## User Preferences
 
