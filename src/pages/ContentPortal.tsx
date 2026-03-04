@@ -506,46 +506,57 @@ const ContentPortal = () => {
                 })()}
               </div>
 
-              {/* Upcoming Shoots */}
+              {/* Shoot Pipeline */}
               {(() => {
-                const upcomingShoots = clients.flatMap(c =>
-                  c.shoots
-                    .filter(s => s.status === "scheduled" || s.status === "in-progress")
-                    .map(s => ({ ...s, clientName: c.name, clientId: c.id }))
+                const allShoots = clients.flatMap(c =>
+                  c.shoots.map(s => ({ ...s, clientName: c.name, clientId: c.id }))
                 ).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-                if (upcomingShoots.length === 0) return null;
+                if (allShoots.length === 0) return null;
+
+                const pipeline: { label: string; status: ShootStatus; color: string; dotColor: string; shoots: typeof allShoots }[] = [
+                  { label: "Scheduled", status: "scheduled", color: "border-blue-500/30", dotColor: "bg-blue-400", shoots: allShoots.filter(s => s.status === "scheduled") },
+                  { label: "In Progress", status: "in-progress", color: "border-yellow-500/30", dotColor: "bg-yellow-400 animate-pulse", shoots: allShoots.filter(s => s.status === "in-progress") },
+                  { label: "Completed", status: "completed", color: "border-green-500/30", dotColor: "bg-green-400", shoots: allShoots.filter(s => s.status === "completed") },
+                ];
 
                 return (
                   <div className="mb-6">
-                    <h3 className="font-orbitron font-bold text-sm mb-2 flex items-center gap-1.5">
-                      <Calendar className="w-4 h-4 text-cyan-400" /> Upcoming Shoots
+                    <h3 className="font-orbitron font-bold text-sm mb-3 flex items-center gap-1.5">
+                      <Calendar className="w-4 h-4 text-cyan-400" /> Shoot Pipeline
                     </h3>
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
-                      {upcomingShoots.map(shoot => (
-                        <button
-                          key={shoot.id}
-                          onClick={() => { setSelectedClientId(shoot.clientId); setSelectedShootId(shoot.id); setView("shoot-detail"); }}
-                          className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10 hover:border-cyan-500/30 hover:bg-white/[0.07] transition-all text-left group"
-                        >
-                          <div className={`w-2 h-2 rounded-full ${shoot.status === "in-progress" ? "bg-yellow-400 animate-pulse" : "bg-blue-400"}`} />
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs font-bold truncate">{shoot.name || shoot.clientName}</span>
-                              <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold border ${shootStatusColor[shoot.status]}`}>
-                                {shoot.status === "in-progress" ? "LIVE" : "SCHEDULED"}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2 text-[10px] text-muted-foreground mt-0.5">
-                              <span>{shoot.clientName}</span>
-                              <span>·</span>
-                              <span>{new Date(shoot.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}</span>
-                              <span className="flex items-center gap-0.5"><MapPin className="w-2.5 h-2.5" />{shoot.location}</span>
-                              <span>{(shoot.shortFormCount || 0) + (shoot.vslCount || 0) + (shoot.valueAddedCount || 0)} video{((shoot.shortFormCount || 0) + (shoot.vslCount || 0) + (shoot.valueAddedCount || 0)) !== 1 ? "s" : ""}</span>
-                            </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                      {pipeline.map(col => (
+                        <div key={col.status} className={`rounded-xl bg-white/[0.03] border ${col.color} p-3`}>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-[10px] font-bold uppercase font-orbitron text-muted-foreground">{col.label}</span>
+                            <span className="text-[10px] text-muted-foreground">{col.shoots.length}</span>
                           </div>
-                          <ChevronRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-cyan-400 transition-colors" />
-                        </button>
+                          <div className="space-y-2">
+                            {col.shoots.length === 0 && (
+                              <p className="text-[10px] text-muted-foreground text-center py-3">No shoots</p>
+                            )}
+                            {col.shoots.map(shoot => (
+                              <button
+                                key={shoot.id}
+                                onClick={() => { setSelectedClientId(shoot.clientId); setSelectedShootId(shoot.id); setView("shoot-detail"); }}
+                                className="w-full flex items-center gap-2.5 p-2.5 rounded-lg bg-white/5 border border-white/10 hover:border-cyan-500/30 hover:bg-white/[0.07] transition-all text-left group"
+                              >
+                                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${col.dotColor}`} />
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-xs font-bold truncate">{shoot.name || shoot.clientName}</p>
+                                  <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mt-0.5">
+                                    <span>{shoot.clientName}</span>
+                                    <span>·</span>
+                                    <span>{new Date(shoot.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+                                    <span className="flex items-center gap-0.5"><MapPin className="w-2.5 h-2.5" />{shoot.location}</span>
+                                  </div>
+                                </div>
+                                <ChevronRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-cyan-400 transition-colors flex-shrink-0" />
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                       ))}
                     </div>
                   </div>
