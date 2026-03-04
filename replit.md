@@ -30,6 +30,9 @@ The app is built as a React SPA using Vite, TypeScript, Tailwind CSS, and shadcn
 - **Training Materials**: Upload script frameworks, style guides, examples — AI references all training docs when generating
 - **Script Status**: `draft` → `ai-generated` → `approved` (tracked per video)
 - **Content Portal Pricing**: ACTOR_COST=$75/hr, FILMER_COST=$75/hr, ACTOR_CHARGE=$150/hr, FILMER_CHARGE=$150/hr, SHORT_FORM_PRICE=$30, VSL_PRICE=$150, VALUE_ADDED_PRICE=$30, EDITOR_COST_PER_VIDEO=$7, EDITOR_COST_PER_VSL=$30, MANAGER_FEE=10% of gross profit
+- **Shoot Pipeline**: 3-column Kanban (Scheduled/In Progress/Completed) on clients view; shoot cannot be marked Completed until all videos are Done
+- **Video Managers**: Manager profiles stored in localStorage (`rmh_video_managers`) with name, email, access code; assigned per shoot via `managerName` field
+- **Manager Portal**: `/manager-portal` — standalone page (no auth required), managers log in with access code, see only their assigned shoots in pipeline view with shoot details (read-only)
 
 ## User Preferences
 

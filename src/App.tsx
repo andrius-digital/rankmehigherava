@@ -46,6 +46,7 @@ import ClientSitesTracker from "./pages/ClientSitesTracker";
 import Contact from "./pages/Contact";
 import Careers from "./pages/Careers";
 import ContentPortal from "./pages/ContentPortal";
+import ManagerPortal from "./pages/ManagerPortal";
 
 // AVA by Rank Me Higher Pages
 import SEOSpiderDashboard from "./pages/seo-spider/Dashboard";
@@ -200,6 +201,7 @@ const App = () => (
                   <ContentPortal />
                 </ProtectedRoute>
               } />
+              <Route path="/manager-portal" element={<ManagerPortal />} />
               <Route path="/avaseo" element={<ProtectedRoute><SEOSpiderDashboard /></ProtectedRoute>} />
               <Route path="/avaseo/ai-assistant" element={<ProtectedRoute><SEOSpiderAIAssistant /></ProtectedRoute>} />
               <Route path="/avaseo/analytics" element={<ProtectedRoute><SEOSpiderAnalytics /></ProtectedRoute>} />
