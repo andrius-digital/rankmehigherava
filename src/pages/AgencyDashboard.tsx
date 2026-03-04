@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import {
     Brain,
@@ -18,9 +18,11 @@ import {
     CreditCard,
     Clock,
     ChevronRight,
+    ChevronDown,
     Layers,
     UserCheck,
-    Clapperboard
+    Clapperboard,
+    Archive
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -53,8 +55,8 @@ interface CardItem {
 const AgencyDashboard: React.FC = () => {
     const { signOut } = useAuth();
     const isMobile = useIsMobile();
+    const [showUnused, setShowUnused] = useState(false);
 
-    // All cards organized by section
     const sections = [
         {
             id: 'agency',
@@ -62,22 +64,6 @@ const AgencyDashboard: React.FC = () => {
             icon: Building2,
             color: 'cyan' as const,
             cards: [
-                {
-                    id: 'ava-voice-calls',
-                    title: 'AVA Voice Calls',
-                    icon: Mic,
-                    description: 'Voice chat analytics',
-                    href: '/ava-voice-calls',
-                    color: 'cyan' as const
-                },
-                {
-                    id: 'task-flow',
-                    title: 'Task Flow',
-                    icon: Layers,
-                    description: 'Project management',
-                    href: '/task-flow',
-                    color: 'cyan' as const
-                },
                 {
                     id: 'applicant-tracker',
                     title: 'Applicant Tracker',
@@ -93,46 +79,6 @@ const AgencyDashboard: React.FC = () => {
                     description: 'Shoots & video tracking',
                     href: '/content-portal',
                     color: 'cyan' as const
-                }
-            ]
-        },
-        {
-            id: 'ai-lab',
-            title: 'AI Lab',
-            icon: Brain,
-            color: 'purple' as const,
-            cards: [
-                {
-                    id: 'ava-training',
-                    title: 'AVA Training',
-                    icon: GraduationCap,
-                    description: 'Train AVA AI',
-                    href: '/ava-training',
-                    color: 'purple' as const
-                },
-                {
-                    id: 'ava-seo',
-                    title: 'AVA SEO',
-                    icon: Brain,
-                    description: 'AI SEO autopilot',
-                    href: '/avaseo',
-                    color: 'cyan' as const
-                },
-                {
-                    id: 'cdl-agency',
-                    title: 'CDL Agency Onboard',
-                    icon: Users,
-                    description: 'Driver brokerage',
-                    href: '/cdl-agency-portal',
-                    color: 'blue' as const
-                },
-                {
-                    id: 'drum-kit',
-                    title: 'Drum Kit Bazaar',
-                    icon: Music,
-                    description: 'Sample packs AI',
-                    href: '#',
-                    color: 'orange' as const
                 }
             ]
         },
@@ -184,6 +130,15 @@ const AgencyDashboard: React.FC = () => {
                 }
             ]
         }
+    ];
+
+    const unusedCards: CardItem[] = [
+        { id: 'ava-voice-calls', title: 'AVA Voice Calls', icon: Mic, description: 'Voice chat analytics', href: '/ava-voice-calls', color: 'cyan' as const },
+        { id: 'task-flow', title: 'Task Flow', icon: Layers, description: 'Project management', href: '/task-flow', color: 'cyan' as const },
+        { id: 'ava-training', title: 'AVA Training', icon: GraduationCap, description: 'Train AVA AI', href: '/ava-training', color: 'purple' as const },
+        { id: 'ava-seo', title: 'AVA SEO', icon: Brain, description: 'AI SEO autopilot', href: '/avaseo', color: 'cyan' as const },
+        { id: 'cdl-agency', title: 'CDL Agency Onboard', icon: Users, description: 'Driver brokerage', href: '/cdl-agency-portal', color: 'blue' as const },
+        { id: 'drum-kit', title: 'Drum Kit Bazaar', icon: Music, description: 'Sample packs AI', href: '#', color: 'orange' as const },
     ];
 
     // Mobile ultra-compact card
@@ -286,7 +241,6 @@ const AgencyDashboard: React.FC = () => {
                 <main className={`flex-1 container mx-auto ${isMobile ? 'px-2.5 py-3' : 'px-4 py-8'}`}>
                     <div className={`max-w-7xl mx-auto ${isMobile ? 'space-y-3' : 'space-y-12'}`}>
                         
-                        {/* Mobile: Ultra-compact sections */}
                         {isMobile ? (
                             <>
                                 {sections.map((section) => {
@@ -308,23 +262,36 @@ const AgencyDashboard: React.FC = () => {
                                     );
                                 })}
 
-                                {/* Coming Soon sections - minimal on mobile */}
-                                <div className="flex gap-2 pt-2">
-                                    <div className="flex items-center gap-1 px-2 py-1 bg-card/10 rounded-md border border-white/5">
-                                        <Search className="w-3 h-3 text-blue-400" />
-                                        <span className="text-[10px] text-muted-foreground">SEO</span>
-                                        <span className="text-[8px] bg-muted/50 px-1 rounded text-muted-foreground/70">Soon</span>
+                                <section>
+                                    <div className="flex items-center gap-1.5 mb-1.5">
+                                        <div className="w-5 h-5 rounded bg-gradient-to-br from-orange-500/20 to-orange-600/20 border border-orange-500/30 flex items-center justify-center">
+                                            <Phone className="w-3 h-3 text-orange-400" />
+                                        </div>
+                                        <h2 className="font-orbitron text-xs font-bold text-foreground uppercase tracking-wide">Call Center</h2>
                                     </div>
-                                    <div className="flex items-center gap-1 px-2 py-1 bg-card/10 rounded-md border border-white/5">
-                                        <Phone className="w-3 h-3 text-orange-400" />
-                                        <span className="text-[10px] text-muted-foreground">Call Center</span>
-                                        <span className="text-[8px] bg-muted/50 px-1 rounded text-muted-foreground/70">Soon</span>
+                                    <div className="space-y-1">
+                                        <MobileCard card={{ id: 'call-center-kpi', title: 'Call Center KPI', icon: Phone, description: 'Leads & analytics', href: '/call-center-kpi', color: 'orange' }} />
                                     </div>
-                                </div>
+                                </section>
+
+                                <section className="pt-2">
+                                    <button onClick={() => setShowUnused(!showUnused)} className="flex items-center gap-1.5 w-full">
+                                        <div className="w-5 h-5 rounded bg-white/5 border border-white/10 flex items-center justify-center">
+                                            <Archive className="w-3 h-3 text-muted-foreground" />
+                                        </div>
+                                        <span className="font-orbitron text-[10px] font-bold text-muted-foreground uppercase tracking-wide">Unused Cards</span>
+                                        <span className="text-[9px] text-muted-foreground/50 ml-1">({unusedCards.length})</span>
+                                        <ChevronDown className={`w-3 h-3 text-muted-foreground ml-auto transition-transform ${showUnused ? 'rotate-180' : ''}`} />
+                                    </button>
+                                    {showUnused && (
+                                        <div className="space-y-1 mt-1.5">
+                                            {unusedCards.map(card => <MobileCard key={card.id} card={card} />)}
+                                        </div>
+                                    )}
+                                </section>
                             </>
                         ) : (
                             <>
-                                {/* Desktop: Full sections */}
                                 {sections.map((section) => {
                                     const SectionIcon = section.icon;
                                     return (
@@ -344,20 +311,6 @@ const AgencyDashboard: React.FC = () => {
                                     );
                                 })}
 
-                                {/* SEO Section - Coming Soon */}
-                                <section className="space-y-6">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 border border-blue-500/30 flex items-center justify-center">
-                                            <Search className="w-5 h-5 text-blue-400" />
-                                        </div>
-                                        <h2 className="font-orbitron text-2xl font-bold text-foreground">SEO</h2>
-                                    </div>
-                                    <div className="bg-card/10 backdrop-blur-md border border-primary/10 rounded-2xl p-8 text-center">
-                                        <p className="text-muted-foreground">SEO cards coming soon...</p>
-                                    </div>
-                                </section>
-
-                                {/* Call Center Section */}
                                 <section className="space-y-6">
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500/20 to-orange-600/20 border border-orange-500/30 flex items-center justify-center">
@@ -365,26 +318,44 @@ const AgencyDashboard: React.FC = () => {
                                         </div>
                                         <h2 className="font-orbitron text-2xl font-bold text-foreground">Call Center</h2>
                                     </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                        <Link
-                                            to="/call-center-kpi"
-                                            className="group relative bg-card/20 backdrop-blur-md border border-orange-500/20 rounded-2xl p-6 hover:border-orange-500/40 transition-all hover:translate-y-[-4px] overflow-hidden"
-                                        >
-                                            <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full blur-3xl group-hover:bg-orange-500/10 transition-colors" />
-                                            <div className="relative z-10 space-y-4">
-                                                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500/20 to-orange-600/20 border border-orange-500/30 flex items-center justify-center">
-                                                    <Phone className="w-6 h-6 text-orange-400" />
-                                                </div>
-                                                <div>
-                                                    <h3 className="font-orbitron font-bold text-lg text-foreground mb-2">Call Center KPI</h3>
-                                                    <p className="text-sm text-muted-foreground">Leads, metrics & analytics</p>
-                                                </div>
-                                                <div className="flex items-center gap-2 text-orange-400 text-sm font-orbitron font-bold opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    View KPIs <ArrowRight className="w-4 h-4" />
-                                                </div>
-                                            </div>
-                                        </Link>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                        <DesktopCard card={{ id: 'call-center-kpi', title: 'Call Center KPI', icon: Phone, description: 'Leads, metrics & analytics', href: '/call-center-kpi', color: 'orange' }} />
                                     </div>
+                                </section>
+
+                                <section className="pt-4">
+                                    <button
+                                        onClick={() => setShowUnused(!showUnused)}
+                                        className="flex items-center gap-3 group cursor-pointer"
+                                    >
+                                        <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
+                                            <Archive className="w-4 h-4 text-muted-foreground" />
+                                        </div>
+                                        <span className="font-orbitron text-sm font-bold text-muted-foreground uppercase tracking-wide group-hover:text-foreground transition-colors">
+                                            Unused Cards
+                                        </span>
+                                        <span className="text-xs text-muted-foreground/50">({unusedCards.length})</span>
+                                        <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${showUnused ? 'rotate-180' : ''}`} />
+                                    </button>
+                                    {showUnused && (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
+                                            {unusedCards.map(card => (
+                                                <Link
+                                                    key={card.id}
+                                                    to={card.href}
+                                                    className="group flex items-center gap-3 p-3 bg-card/10 border border-white/5 rounded-xl hover:border-white/15 transition-all opacity-60 hover:opacity-100"
+                                                >
+                                                    <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${colorClasses[card.color]} border flex items-center justify-center flex-shrink-0`}>
+                                                        <card.icon className="w-4 h-4" />
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <h3 className="font-orbitron font-bold text-xs text-foreground truncate">{card.title}</h3>
+                                                        <p className="text-[10px] text-muted-foreground truncate">{card.description}</p>
+                                                    </div>
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    )}
                                 </section>
                             </>
                         )}
