@@ -45,6 +45,7 @@ import TaskFlow from "./pages/TaskFlow";
 import ClientSitesTracker from "./pages/ClientSitesTracker";
 import Contact from "./pages/Contact";
 import Careers from "./pages/Careers";
+import ContentPortal from "./pages/ContentPortal";
 
 // AVA by Rank Me Higher Pages
 import SEOSpiderDashboard from "./pages/seo-spider/Dashboard";
@@ -192,6 +193,11 @@ const App = () => (
               <Route path="/applicant-tracker" element={
                 <ProtectedRoute requireAdmin>
                   <ApplicantTracker />
+                </ProtectedRoute>
+              } />
+              <Route path="/content-portal" element={
+                <ProtectedRoute requireAdmin>
+                  <ContentPortal />
                 </ProtectedRoute>
               } />
               <Route path="/avaseo" element={<ProtectedRoute><SEOSpiderDashboard /></ProtectedRoute>} />

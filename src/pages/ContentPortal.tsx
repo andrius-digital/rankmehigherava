@@ -1,0 +1,826 @@
+import { useState } from "react";
+import { Helmet } from "react-helmet-async";
+import { Link } from "react-router-dom";
+import {
+  ArrowLeft, Plus, X, Video, Camera, FileText, Users, MapPin,
+  Clock, DollarSign, ExternalLink, ChevronRight,
+  Trash2, CheckCircle2, Clapperboard,
+  Building2, Link2, Search
+} from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
+
+type ContentType = "short-form" | "vsl" | "value-added";
+type EditStatus = "not-started" | "editing" | "review" | "done";
+type ShootStatus = "scheduled" | "in-progress" | "completed" | "cancelled";
+
+interface Script {
+  id: string;
+  title: string;
+  content: string;
+  contentType: ContentType;
+}
+
+interface ShootVideo {
+  id: string;
+  title: string;
+  contentType: ContentType;
+  editStatus: EditStatus;
+  editor: string;
+  price: number;
+}
+
+interface Shoot {
+  id: string;
+  clientId: string;
+  date: string;
+  location: string;
+  status: ShootStatus;
+  actorHours: number;
+  filmerHours: number;
+  videos: ShootVideo[];
+  scripts: Script[];
+  dropboxLink: string;
+  notes: string;
+}
+
+interface Client {
+  id: string;
+  name: string;
+  business: string;
+  email: string;
+  phone: string;
+  onboardedAt: string;
+  shoots: Shoot[];
+}
+
+const ACTOR_COST = 75;
+const FILMER_COST = 75;
+const ACTOR_CHARGE = 150;
+const FILMER_CHARGE = 150;
+const SHORT_FORM_PRICE = 30;
+const VSL_PRICE = 150;
+
+const contentTypeLabel: Record<ContentType, string> = {
+  "short-form": "Short Form Ad",
+  "vsl": "VSL",
+  "value-added": "Value Added Content",
+};
+
+const contentTypeColor: Record<ContentType, string> = {
+  "short-form": "text-cyan-400 bg-cyan-500/10 border-cyan-500/20",
+  "vsl": "text-red-400 bg-red-500/10 border-red-500/20",
+  "value-added": "text-green-400 bg-green-500/10 border-green-500/20",
+};
+
+const editStatusLabel: Record<EditStatus, string> = {
+  "not-started": "Not Started",
+  "editing": "Editing",
+  "review": "In Review",
+  "done": "Done",
+};
+
+const editStatusColor: Record<EditStatus, string> = {
+  "not-started": "text-gray-400 bg-gray-500/10 border-gray-500/20",
+  "editing": "text-yellow-400 bg-yellow-500/10 border-yellow-500/20",
+  "review": "text-blue-400 bg-blue-500/10 border-blue-500/20",
+  "done": "text-green-400 bg-green-500/10 border-green-500/20",
+};
+
+const shootStatusColor: Record<ShootStatus, string> = {
+  "scheduled": "text-blue-400 bg-blue-500/10 border-blue-500/20",
+  "in-progress": "text-yellow-400 bg-yellow-500/10 border-yellow-500/20",
+  "completed": "text-green-400 bg-green-500/10 border-green-500/20",
+  "cancelled": "text-red-400 bg-red-500/10 border-red-500/20",
+};
+
+const getVideoPrice = (type: ContentType) => type === "vsl" ? VSL_PRICE : type === "short-form" ? SHORT_FORM_PRICE : 0;
+
+const generateId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
+const STORAGE_KEY = "rmh_content_portal";
+
+function loadData(): Client[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+function saveData(clients: Client[]) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(clients));
+}
+
+const ContentPortal = () => {
+  const [clients, setClients] = useState<Client[]>(loadData);
+  const [view, setView] = useState<"clients" | "client-detail" | "shoot-detail">("clients");
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+  const [selectedShootId, setSelectedShootId] = useState<string | null>(null);
+  const [showAddClient, setShowAddClient] = useState(false);
+  const [showAddShoot, setShowAddShoot] = useState(false);
+  const [showAddVideo, setShowAddVideo] = useState(false);
+  const [showAddScript, setShowAddScript] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const { toast } = useToast();
+
+  const persist = (updated: Client[]) => {
+    setClients(updated);
+    saveData(updated);
+  };
+
+  const selectedClient = clients.find(c => c.id === selectedClientId) || null;
+  const selectedShoot = selectedClient?.shoots.find(s => s.id === selectedShootId) || null;
+
+  const [newClient, setNewClient] = useState({ name: "", business: "", email: "", phone: "" });
+  const [newShoot, setNewShoot] = useState({ date: "", location: "", notes: "" });
+  const [newVideo, setNewVideo] = useState<{ title: string; contentType: ContentType; editor: string }>({ title: "", contentType: "short-form", editor: "" });
+  const [newScript, setNewScript] = useState<{ title: string; content: string; contentType: ContentType }>({ title: "", content: "", contentType: "short-form" });
+
+  const addClient = () => {
+    if (!newClient.name || !newClient.business) return;
+    const client: Client = {
+      id: generateId(),
+      ...newClient,
+      onboardedAt: new Date().toISOString(),
+      shoots: [],
+    };
+    persist([client, ...clients]);
+    setNewClient({ name: "", business: "", email: "", phone: "" });
+    setShowAddClient(false);
+    toast({ title: "Client added", description: `${client.name} has been onboarded.` });
+  };
+
+  const deleteClient = (id: string) => {
+    persist(clients.filter(c => c.id !== id));
+    if (selectedClientId === id) { setSelectedClientId(null); setView("clients"); }
+    toast({ title: "Client removed" });
+  };
+
+  const addShoot = () => {
+    if (!newShoot.date || !newShoot.location || !selectedClientId) return;
+    const shoot: Shoot = {
+      id: generateId(),
+      clientId: selectedClientId,
+      date: newShoot.date,
+      location: newShoot.location,
+      status: "scheduled",
+      actorHours: 0,
+      filmerHours: 0,
+      videos: [],
+      scripts: [],
+      dropboxLink: "",
+      notes: newShoot.notes,
+    };
+    const updated = clients.map(c =>
+      c.id === selectedClientId ? { ...c, shoots: [shoot, ...c.shoots] } : c
+    );
+    persist(updated);
+    setNewShoot({ date: "", location: "", notes: "" });
+    setShowAddShoot(false);
+    toast({ title: "Shoot scheduled" });
+  };
+
+  const updateShoot = (field: string, value: any) => {
+    if (!selectedClientId || !selectedShootId) return;
+    const updated = clients.map(c =>
+      c.id === selectedClientId
+        ? { ...c, shoots: c.shoots.map(s => s.id === selectedShootId ? { ...s, [field]: value } : s) }
+        : c
+    );
+    persist(updated);
+  };
+
+  const deleteShoot = (shootId: string) => {
+    if (!selectedClientId) return;
+    const updated = clients.map(c =>
+      c.id === selectedClientId ? { ...c, shoots: c.shoots.filter(s => s.id !== shootId) } : c
+    );
+    persist(updated);
+    if (selectedShootId === shootId) { setSelectedShootId(null); setView("client-detail"); }
+    toast({ title: "Shoot deleted" });
+  };
+
+  const addVideo = () => {
+    if (!newVideo.title || !selectedClientId || !selectedShootId) return;
+    const video: ShootVideo = {
+      id: generateId(),
+      title: newVideo.title,
+      contentType: newVideo.contentType,
+      editStatus: "not-started",
+      editor: newVideo.editor,
+      price: getVideoPrice(newVideo.contentType),
+    };
+    const updated = clients.map(c =>
+      c.id === selectedClientId
+        ? { ...c, shoots: c.shoots.map(s => s.id === selectedShootId ? { ...s, videos: [...s.videos, video] } : s) }
+        : c
+    );
+    persist(updated);
+    setNewVideo({ title: "", contentType: "short-form", editor: "" });
+    setShowAddVideo(false);
+    toast({ title: "Video added" });
+  };
+
+  const updateVideoStatus = (videoId: string, editStatus: EditStatus) => {
+    if (!selectedClientId || !selectedShootId) return;
+    const updated = clients.map(c =>
+      c.id === selectedClientId
+        ? {
+          ...c, shoots: c.shoots.map(s =>
+            s.id === selectedShootId
+              ? { ...s, videos: s.videos.map(v => v.id === videoId ? { ...v, editStatus } : v) }
+              : s
+          )
+        }
+        : c
+    );
+    persist(updated);
+  };
+
+  const deleteVideo = (videoId: string) => {
+    if (!selectedClientId || !selectedShootId) return;
+    const updated = clients.map(c =>
+      c.id === selectedClientId
+        ? { ...c, shoots: c.shoots.map(s => s.id === selectedShootId ? { ...s, videos: s.videos.filter(v => v.id !== videoId) } : s) }
+        : c
+    );
+    persist(updated);
+    toast({ title: "Video removed" });
+  };
+
+  const addScript = () => {
+    if (!newScript.title || !selectedClientId || !selectedShootId) return;
+    const script: Script = { id: generateId(), ...newScript };
+    const updated = clients.map(c =>
+      c.id === selectedClientId
+        ? { ...c, shoots: c.shoots.map(s => s.id === selectedShootId ? { ...s, scripts: [...s.scripts, script] } : s) }
+        : c
+    );
+    persist(updated);
+    setNewScript({ title: "", content: "", contentType: "short-form" });
+    setShowAddScript(false);
+    toast({ title: "Script added" });
+  };
+
+  const deleteScript = (scriptId: string) => {
+    if (!selectedClientId || !selectedShootId) return;
+    const updated = clients.map(c =>
+      c.id === selectedClientId
+        ? { ...c, shoots: c.shoots.map(s => s.id === selectedShootId ? { ...s, scripts: s.scripts.filter(sc => sc.id !== scriptId) } : s) }
+        : c
+    );
+    persist(updated);
+  };
+
+  const calcShootFinancials = (shoot: Shoot) => {
+    const actorCost = shoot.actorHours * ACTOR_COST;
+    const filmerCost = shoot.filmerHours * FILMER_COST;
+    const actorRevenue = shoot.actorHours * ACTOR_CHARGE;
+    const filmerRevenue = shoot.filmerHours * FILMER_CHARGE;
+    const videoRevenue = shoot.videos.reduce((sum, v) => sum + v.price, 0);
+    const totalCost = actorCost + filmerCost;
+    const totalRevenue = actorRevenue + filmerRevenue + videoRevenue;
+    const margin = totalRevenue - totalCost;
+    return { actorCost, filmerCost, actorRevenue, filmerRevenue, videoRevenue, totalCost, totalRevenue, margin };
+  };
+
+  const calcClientTotals = (client: Client) => {
+    let totalRevenue = 0, totalCost = 0, totalVideos = 0;
+    client.shoots.forEach(s => {
+      const f = calcShootFinancials(s);
+      totalRevenue += f.totalRevenue;
+      totalCost += f.totalCost;
+      totalVideos += s.videos.length;
+    });
+    return { totalRevenue, totalCost, margin: totalRevenue - totalCost, totalVideos, totalShoots: client.shoots.length };
+  };
+
+  const filteredClients = searchQuery
+    ? clients.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()) || c.business.toLowerCase().includes(searchQuery.toLowerCase()))
+    : clients;
+
+  return (
+    <>
+      <Helmet>
+        <title>Content Portal | Rank Me Higher</title>
+      </Helmet>
+
+      <div className="min-h-screen bg-background text-foreground">
+        <div className="border-b border-white/10 bg-background/80 backdrop-blur-xl sticky top-0 z-50">
+          <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex items-center gap-4">
+            <Link to="/avaadminpanel" className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors">
+              <ArrowLeft className="w-4 h-4" />
+            </Link>
+            <div className="flex items-center gap-2">
+              <Clapperboard className="w-5 h-5 text-red-400" />
+              <h1 className="font-orbitron font-bold text-base lg:text-lg">Content Portal</h1>
+            </div>
+
+            {view !== "clients" && (
+              <div className="flex items-center gap-1 text-xs text-muted-foreground ml-2">
+                <button onClick={() => { setView("clients"); setSelectedClientId(null); setSelectedShootId(null); }} className="hover:text-foreground transition-colors">Clients</button>
+                {selectedClient && (
+                  <>
+                    <ChevronRight className="w-3 h-3" />
+                    <button onClick={() => { setView("client-detail"); setSelectedShootId(null); }} className="hover:text-foreground transition-colors">{selectedClient.name}</button>
+                  </>
+                )}
+                {selectedShoot && (
+                  <>
+                    <ChevronRight className="w-3 h-3" />
+                    <span className="text-foreground">{new Date(selectedShoot.date).toLocaleDateString()}</span>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-6">
+          {view === "clients" && (
+            <>
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="font-orbitron font-bold text-xl">Clients</h2>
+                  <p className="text-xs text-muted-foreground mt-1">{clients.length} client{clients.length !== 1 ? "s" : ""} onboarded</p>
+                </div>
+                <button onClick={() => setShowAddClient(true)} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm font-bold hover:bg-red-500/20 transition-all">
+                  <Plus className="w-4 h-4" /> Onboard Client
+                </button>
+              </div>
+
+              <div className="relative mb-4">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search clients..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="pl-10 bg-white/5 border-white/10"
+                />
+              </div>
+
+              {/* Stats overview */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+                {(() => {
+                  let totalRev = 0, totalCost = 0, totalVids = 0, totalShoots = 0;
+                  clients.forEach(c => { const t = calcClientTotals(c); totalRev += t.totalRevenue; totalCost += t.totalCost; totalVids += t.totalVideos; totalShoots += t.totalShoots; });
+                  return [
+                    { label: "Total Revenue", value: `$${totalRev.toLocaleString()}`, icon: DollarSign, color: "text-green-400" },
+                    { label: "Total Margin", value: `$${(totalRev - totalCost).toLocaleString()}`, icon: DollarSign, color: "text-cyan-400" },
+                    { label: "Total Videos", value: totalVids, icon: Video, color: "text-red-400" },
+                    { label: "Total Shoots", value: totalShoots, icon: Camera, color: "text-yellow-400" },
+                  ].map(s => (
+                    <div key={s.label} className="p-4 rounded-xl bg-white/5 border border-white/10">
+                      <div className="flex items-center gap-2 mb-1">
+                        <s.icon className={`w-4 h-4 ${s.color}`} />
+                        <span className="text-[10px] text-muted-foreground uppercase font-orbitron">{s.label}</span>
+                      </div>
+                      <p className={`text-xl font-black font-orbitron ${s.color}`}>{s.value}</p>
+                    </div>
+                  ));
+                })()}
+              </div>
+
+              <div className="grid gap-3">
+                {filteredClients.map(client => {
+                  const totals = calcClientTotals(client);
+                  return (
+                    <button
+                      key={client.id}
+                      onClick={() => { setSelectedClientId(client.id); setView("client-detail"); }}
+                      className="w-full text-left p-4 rounded-xl bg-white/5 border border-white/10 hover:border-red-500/30 hover:bg-white/[0.07] transition-all group"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+                            <Building2 className="w-5 h-5 text-red-400" />
+                          </div>
+                          <div>
+                            <p className="font-bold text-sm">{client.name}</p>
+                            <p className="text-xs text-muted-foreground">{client.business}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                          <div className="text-right hidden sm:block">
+                            <p className="text-green-400 font-bold">${totals.totalRevenue.toLocaleString()}</p>
+                            <p>{totals.totalShoots} shoot{totals.totalShoots !== 1 ? "s" : ""} · {totals.totalVideos} video{totals.totalVideos !== 1 ? "s" : ""}</p>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-red-400 transition-colors" />
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+                {filteredClients.length === 0 && (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <Users className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">{searchQuery ? "No clients match your search" : "No clients yet. Onboard your first client."}</p>
+                  </div>
+                )}
+              </div>
+
+              {showAddClient && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={() => setShowAddClient(false)}>
+                  <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+                  <div className="relative w-full max-w-md rounded-2xl bg-background/95 backdrop-blur-xl border border-white/10 p-6" onClick={e => e.stopPropagation()}>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-orbitron font-bold">Onboard Client</h3>
+                      <button onClick={() => setShowAddClient(false)} className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20"><X className="w-3.5 h-3.5" /></button>
+                    </div>
+                    <div className="space-y-3">
+                      <Input placeholder="Client name *" value={newClient.name} onChange={e => setNewClient(p => ({ ...p, name: e.target.value }))} className="bg-white/5 border-white/10" />
+                      <Input placeholder="Business name *" value={newClient.business} onChange={e => setNewClient(p => ({ ...p, business: e.target.value }))} className="bg-white/5 border-white/10" />
+                      <Input placeholder="Email" value={newClient.email} onChange={e => setNewClient(p => ({ ...p, email: e.target.value }))} className="bg-white/5 border-white/10" />
+                      <Input placeholder="Phone" value={newClient.phone} onChange={e => setNewClient(p => ({ ...p, phone: e.target.value }))} className="bg-white/5 border-white/10" />
+                      <button onClick={addClient} className="w-full py-2.5 rounded-lg bg-red-500/20 border border-red-500/30 text-red-400 font-bold text-sm hover:bg-red-500/30 transition-all">
+                        Onboard Client
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {view === "client-detail" && selectedClient && (
+            <>
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="font-orbitron font-bold text-xl">{selectedClient.name}</h2>
+                  <p className="text-xs text-muted-foreground mt-1">{selectedClient.business} · Onboarded {new Date(selectedClient.onboardedAt).toLocaleDateString()}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => setShowAddShoot(true)} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm font-bold hover:bg-red-500/20 transition-all">
+                    <Plus className="w-4 h-4" /> New Shoot
+                  </button>
+                  <button onClick={() => deleteClient(selectedClient.id)} className="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center hover:bg-red-500/20 hover:border-red-500/30 transition-all">
+                    <Trash2 className="w-4 h-4 text-muted-foreground hover:text-red-400" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Client summary cards */}
+              {(() => {
+                const t = calcClientTotals(selectedClient);
+                return (
+                  <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
+                    {[
+                      { label: "Revenue", value: `$${t.totalRevenue.toLocaleString()}`, color: "text-green-400" },
+                      { label: "Cost", value: `$${t.totalCost.toLocaleString()}`, color: "text-red-400" },
+                      { label: "Margin", value: `$${t.margin.toLocaleString()}`, color: "text-cyan-400" },
+                      { label: "Videos", value: t.totalVideos, color: "text-yellow-400" },
+                      { label: "Shoots", value: t.totalShoots, color: "text-blue-400" },
+                    ].map(s => (
+                      <div key={s.label} className="p-3 rounded-xl bg-white/5 border border-white/10 text-center">
+                        <p className="text-[10px] text-muted-foreground uppercase font-orbitron">{s.label}</p>
+                        <p className={`text-lg font-black font-orbitron ${s.color}`}>{s.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+
+              {selectedClient.email && (
+                <div className="flex items-center gap-4 text-xs text-muted-foreground mb-4">
+                  {selectedClient.email && <span>{selectedClient.email}</span>}
+                  {selectedClient.phone && <span>{selectedClient.phone}</span>}
+                </div>
+              )}
+
+              <h3 className="font-orbitron font-bold text-sm mb-3">Shoots</h3>
+              <div className="grid gap-3">
+                {selectedClient.shoots.map(shoot => {
+                  const fin = calcShootFinancials(shoot);
+                  const doneCount = shoot.videos.filter(v => v.editStatus === "done").length;
+                  return (
+                    <button
+                      key={shoot.id}
+                      onClick={() => { setSelectedShootId(shoot.id); setView("shoot-detail"); }}
+                      className="w-full text-left p-4 rounded-xl bg-white/5 border border-white/10 hover:border-cyan-500/30 hover:bg-white/[0.07] transition-all group"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
+                            <Camera className="w-4 h-4 text-cyan-400" />
+                          </div>
+                          <div>
+                            <p className="font-bold text-sm">{new Date(shoot.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}</p>
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <MapPin className="w-3 h-3" /> {shoot.location}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${shootStatusColor[shoot.status]}`}>
+                            {shoot.status.replace("-", " ").toUpperCase()}
+                          </span>
+                          <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-cyan-400 transition-colors" />
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1"><Video className="w-3 h-3" /> {shoot.videos.length} video{shoot.videos.length !== 1 ? "s" : ""}</span>
+                        <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-green-400" /> {doneCount}/{shoot.videos.length} edited</span>
+                        <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {shoot.actorHours + shoot.filmerHours}h on site</span>
+                        <span className="flex items-center gap-1 text-green-400 font-bold"><DollarSign className="w-3 h-3" /> ${fin.totalRevenue}</span>
+                      </div>
+                    </button>
+                  );
+                })}
+                {selectedClient.shoots.length === 0 && (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <Camera className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">No shoots yet. Schedule your first shoot.</p>
+                  </div>
+                )}
+              </div>
+
+              {showAddShoot && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={() => setShowAddShoot(false)}>
+                  <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+                  <div className="relative w-full max-w-md rounded-2xl bg-background/95 backdrop-blur-xl border border-white/10 p-6" onClick={e => e.stopPropagation()}>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-orbitron font-bold">Schedule Shoot</h3>
+                      <button onClick={() => setShowAddShoot(false)} className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20"><X className="w-3.5 h-3.5" /></button>
+                    </div>
+                    <div className="space-y-3">
+                      <Input type="date" value={newShoot.date} onChange={e => setNewShoot(p => ({ ...p, date: e.target.value }))} className="bg-white/5 border-white/10" />
+                      <Input placeholder="Location *" value={newShoot.location} onChange={e => setNewShoot(p => ({ ...p, location: e.target.value }))} className="bg-white/5 border-white/10" />
+                      <textarea
+                        placeholder="Notes (optional)"
+                        value={newShoot.notes}
+                        onChange={e => setNewShoot(p => ({ ...p, notes: e.target.value }))}
+                        className="w-full p-3 rounded-lg bg-white/5 border border-white/10 text-sm text-foreground placeholder:text-muted-foreground resize-none h-20 focus:outline-none focus:border-red-500/40"
+                      />
+                      <button onClick={addShoot} className="w-full py-2.5 rounded-lg bg-red-500/20 border border-red-500/30 text-red-400 font-bold text-sm hover:bg-red-500/30 transition-all">
+                        Schedule Shoot
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {view === "shoot-detail" && selectedShoot && selectedClient && (
+            <>
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="font-orbitron font-bold text-lg">
+                    {new Date(selectedShoot.date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
+                  </h2>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                    <MapPin className="w-3 h-3" /> {selectedShoot.location}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <select
+                    value={selectedShoot.status}
+                    onChange={e => updateShoot("status", e.target.value)}
+                    className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-bold text-foreground focus:outline-none"
+                  >
+                    <option value="scheduled">Scheduled</option>
+                    <option value="in-progress">In Progress</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                  <button onClick={() => deleteShoot(selectedShoot.id)} className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center hover:bg-red-500/20 hover:border-red-500/30 transition-all">
+                    <Trash2 className="w-3.5 h-3.5 text-muted-foreground" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Financials */}
+              {(() => {
+                const fin = calcShootFinancials(selectedShoot);
+                return (
+                  <div className="rounded-xl bg-white/5 border border-white/10 p-4 mb-4">
+                    <h3 className="text-xs font-bold text-muted-foreground uppercase font-orbitron mb-3 flex items-center gap-1.5">
+                      <DollarSign className="w-3.5 h-3.5 text-green-400" /> Financials
+                    </h3>
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
+                      <div>
+                        <label className="text-[10px] text-muted-foreground block mb-1">Actor Hours</label>
+                        <Input
+                          type="number" min="0" step="0.5"
+                          value={selectedShoot.actorHours}
+                          onChange={e => updateShoot("actorHours", parseFloat(e.target.value) || 0)}
+                          className="bg-white/5 border-white/10 h-8 text-sm"
+                        />
+                        <p className="text-[10px] text-muted-foreground mt-0.5">Cost: ${fin.actorCost} · Charge: ${fin.actorRevenue}</p>
+                      </div>
+                      <div>
+                        <label className="text-[10px] text-muted-foreground block mb-1">Filmer Hours</label>
+                        <Input
+                          type="number" min="0" step="0.5"
+                          value={selectedShoot.filmerHours}
+                          onChange={e => updateShoot("filmerHours", parseFloat(e.target.value) || 0)}
+                          className="bg-white/5 border-white/10 h-8 text-sm"
+                        />
+                        <p className="text-[10px] text-muted-foreground mt-0.5">Cost: ${fin.filmerCost} · Charge: ${fin.filmerRevenue}</p>
+                      </div>
+                      <div className="flex flex-col justify-center text-center">
+                        <p className="text-[10px] text-muted-foreground uppercase">Video Revenue</p>
+                        <p className="text-lg font-black font-orbitron text-green-400">${fin.videoRevenue}</p>
+                      </div>
+                      <div className="flex flex-col justify-center text-center">
+                        <p className="text-[10px] text-muted-foreground uppercase">Margin</p>
+                        <p className={`text-lg font-black font-orbitron ${fin.margin >= 0 ? "text-cyan-400" : "text-red-400"}`}>${fin.margin}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between text-xs border-t border-white/5 pt-2">
+                      <span className="text-muted-foreground">Total Revenue: <span className="text-green-400 font-bold">${fin.totalRevenue}</span></span>
+                      <span className="text-muted-foreground">Total Cost: <span className="text-red-400 font-bold">${fin.totalCost}</span></span>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Dropbox Link */}
+              <div className="rounded-xl bg-white/5 border border-white/10 p-4 mb-4">
+                <h3 className="text-xs font-bold text-muted-foreground uppercase font-orbitron mb-2 flex items-center gap-1.5">
+                  <Link2 className="w-3.5 h-3.5 text-blue-400" /> Dropbox Link
+                </h3>
+                <div className="flex items-center gap-2">
+                  <Input
+                    placeholder="Paste Dropbox link..."
+                    value={selectedShoot.dropboxLink}
+                    onChange={e => updateShoot("dropboxLink", e.target.value)}
+                    className="bg-white/5 border-white/10 text-sm flex-1"
+                  />
+                  {selectedShoot.dropboxLink && (
+                    <a href={selectedShoot.dropboxLink} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center hover:bg-blue-500/20 transition-all">
+                      <ExternalLink className="w-3.5 h-3.5 text-blue-400" />
+                    </a>
+                  )}
+                </div>
+              </div>
+
+              {/* Notes */}
+              {selectedShoot.notes && (
+                <div className="rounded-xl bg-white/5 border border-white/10 p-4 mb-4">
+                  <h3 className="text-xs font-bold text-muted-foreground uppercase font-orbitron mb-2">Notes</h3>
+                  <p className="text-sm text-muted-foreground">{selectedShoot.notes}</p>
+                </div>
+              )}
+
+              {/* Videos */}
+              <div className="rounded-xl bg-white/5 border border-white/10 p-4 mb-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-xs font-bold text-muted-foreground uppercase font-orbitron flex items-center gap-1.5">
+                    <Video className="w-3.5 h-3.5 text-red-400" /> Videos ({selectedShoot.videos.length})
+                  </h3>
+                  <button onClick={() => setShowAddVideo(true)} className="flex items-center gap-1 px-3 py-1 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold hover:bg-red-500/20 transition-all">
+                    <Plus className="w-3 h-3" /> Add
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  {selectedShoot.videos.map(video => (
+                    <div key={video.id} className="flex items-center gap-3 p-3 rounded-lg bg-white/[0.03] border border-white/5 group">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="font-bold text-sm truncate">{video.title}</p>
+                          <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold border ${contentTypeColor[video.contentType]}`}>
+                            {contentTypeLabel[video.contentType]}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                          {video.editor && <span>Editor: {video.editor}</span>}
+                          <span className="text-green-400 font-bold">${video.price}</span>
+                        </div>
+                      </div>
+                      <select
+                        value={video.editStatus}
+                        onChange={e => updateVideoStatus(video.id, e.target.value as EditStatus)}
+                        className={`px-2 py-1 rounded-lg text-[10px] font-bold border focus:outline-none ${editStatusColor[video.editStatus]}`}
+                      >
+                        <option value="not-started">Not Started</option>
+                        <option value="editing">Editing</option>
+                        <option value="review">In Review</option>
+                        <option value="done">Done</option>
+                      </select>
+                      <button onClick={() => deleteVideo(video.id)} className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-red-500/20 transition-all">
+                        <Trash2 className="w-3 h-3 text-muted-foreground" />
+                      </button>
+                    </div>
+                  ))}
+                  {selectedShoot.videos.length === 0 && (
+                    <p className="text-xs text-muted-foreground text-center py-4">No videos added yet</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Scripts */}
+              <div className="rounded-xl bg-white/5 border border-white/10 p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-xs font-bold text-muted-foreground uppercase font-orbitron flex items-center gap-1.5">
+                    <FileText className="w-3.5 h-3.5 text-yellow-400" /> Scripts ({selectedShoot.scripts.length})
+                  </h3>
+                  <button onClick={() => setShowAddScript(true)} className="flex items-center gap-1 px-3 py-1 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-xs font-bold hover:bg-yellow-500/20 transition-all">
+                    <Plus className="w-3 h-3" /> Add
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  {selectedShoot.scripts.map(script => (
+                    <div key={script.id} className="p-3 rounded-lg bg-white/[0.03] border border-white/5 group">
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-2">
+                          <p className="font-bold text-sm">{script.title}</p>
+                          <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold border ${contentTypeColor[script.contentType]}`}>
+                            {contentTypeLabel[script.contentType]}
+                          </span>
+                        </div>
+                        <button onClick={() => deleteScript(script.id)} className="w-6 h-6 rounded bg-white/5 flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-red-500/20 transition-all">
+                          <Trash2 className="w-3 h-3 text-muted-foreground" />
+                        </button>
+                      </div>
+                      {script.content && (
+                        <pre className="text-xs text-muted-foreground whitespace-pre-wrap mt-2 p-2 rounded bg-white/[0.02] border border-white/5 max-h-40 overflow-y-auto">{script.content}</pre>
+                      )}
+                    </div>
+                  ))}
+                  {selectedShoot.scripts.length === 0 && (
+                    <p className="text-xs text-muted-foreground text-center py-4">No scripts added yet</p>
+                  )}
+                </div>
+              </div>
+
+              {showAddVideo && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={() => setShowAddVideo(false)}>
+                  <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+                  <div className="relative w-full max-w-md rounded-2xl bg-background/95 backdrop-blur-xl border border-white/10 p-6" onClick={e => e.stopPropagation()}>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-orbitron font-bold">Add Video</h3>
+                      <button onClick={() => setShowAddVideo(false)} className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20"><X className="w-3.5 h-3.5" /></button>
+                    </div>
+                    <div className="space-y-3">
+                      <Input placeholder="Video title *" value={newVideo.title} onChange={e => setNewVideo(p => ({ ...p, title: e.target.value }))} className="bg-white/5 border-white/10" />
+                      <div>
+                        <label className="text-xs text-muted-foreground mb-1 block">Content Type</label>
+                        <div className="flex gap-2">
+                          {(["short-form", "vsl", "value-added"] as ContentType[]).map(ct => (
+                            <button
+                              key={ct}
+                              onClick={() => setNewVideo(p => ({ ...p, contentType: ct }))}
+                              className={`flex-1 py-2 rounded-lg text-xs font-bold border transition-all ${newVideo.contentType === ct ? contentTypeColor[ct] : "bg-white/5 border-white/10 text-muted-foreground"}`}
+                            >
+                              {contentTypeLabel[ct]}
+                              <span className="block text-[10px] opacity-70">${getVideoPrice(ct)}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <Input placeholder="Editor name (optional)" value={newVideo.editor} onChange={e => setNewVideo(p => ({ ...p, editor: e.target.value }))} className="bg-white/5 border-white/10" />
+                      <button onClick={addVideo} className="w-full py-2.5 rounded-lg bg-red-500/20 border border-red-500/30 text-red-400 font-bold text-sm hover:bg-red-500/30 transition-all">
+                        Add Video
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {showAddScript && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={() => setShowAddScript(false)}>
+                  <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+                  <div className="relative w-full max-w-lg rounded-2xl bg-background/95 backdrop-blur-xl border border-white/10 p-6" onClick={e => e.stopPropagation()}>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-orbitron font-bold">Add Script</h3>
+                      <button onClick={() => setShowAddScript(false)} className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20"><X className="w-3.5 h-3.5" /></button>
+                    </div>
+                    <div className="space-y-3">
+                      <Input placeholder="Script title *" value={newScript.title} onChange={e => setNewScript(p => ({ ...p, title: e.target.value }))} className="bg-white/5 border-white/10" />
+                      <div>
+                        <label className="text-xs text-muted-foreground mb-1 block">Content Type</label>
+                        <div className="flex gap-2">
+                          {(["short-form", "vsl", "value-added"] as ContentType[]).map(ct => (
+                            <button
+                              key={ct}
+                              onClick={() => setNewScript(p => ({ ...p, contentType: ct }))}
+                              className={`flex-1 py-2 rounded-lg text-xs font-bold border transition-all ${newScript.contentType === ct ? contentTypeColor[ct] : "bg-white/5 border-white/10 text-muted-foreground"}`}
+                            >
+                              {contentTypeLabel[ct]}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <textarea
+                        placeholder="Paste script here..."
+                        value={newScript.content}
+                        onChange={e => setNewScript(p => ({ ...p, content: e.target.value }))}
+                        className="w-full p-3 rounded-lg bg-white/5 border border-white/10 text-sm text-foreground placeholder:text-muted-foreground resize-none h-40 focus:outline-none focus:border-yellow-500/40"
+                      />
+                      <button onClick={addScript} className="w-full py-2.5 rounded-lg bg-yellow-500/20 border border-yellow-500/30 text-yellow-400 font-bold text-sm hover:bg-yellow-500/30 transition-all">
+                        Add Script
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default ContentPortal;

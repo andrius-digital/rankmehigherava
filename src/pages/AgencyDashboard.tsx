@@ -19,7 +19,8 @@ import {
     Clock,
     ChevronRight,
     Layers,
-    UserCheck
+    UserCheck,
+    Clapperboard
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -83,6 +84,14 @@ const AgencyDashboard: React.FC = () => {
                     icon: UserCheck,
                     description: 'AI-screened applications',
                     href: '/applicant-tracker',
+                    color: 'cyan' as const
+                },
+                {
+                    id: 'content-portal',
+                    title: 'Content',
+                    icon: Clapperboard,
+                    description: 'Shoots & video tracking',
+                    href: '/content-portal',
                     color: 'cyan' as const
                 }
             ]
