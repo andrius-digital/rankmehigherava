@@ -56,7 +56,7 @@ export function clearTeamSession() {
   sessionStorage.removeItem(TEAM_SESSION_KEY);
 }
 
-const TeamPortal = ({ onLogin }: { onLogin?: () => void } = {}) => {
+const TeamPortal = () => {
   const [loggedIn, setLoggedIn] = useState<TeamMember | null>(null);
   const [usernameInput, setUsernameInput] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
@@ -79,7 +79,6 @@ const TeamPortal = ({ onLogin }: { onLogin?: () => void } = {}) => {
       if (found) {
         sessionStorage.setItem(TEAM_SESSION_KEY, JSON.stringify(found));
         setLoggedIn(found);
-        onLogin?.();
       } else {
         toast({ title: "Invalid credentials", description: "Please check your username and password.", variant: "destructive" });
       }

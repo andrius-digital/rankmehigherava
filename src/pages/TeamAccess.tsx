@@ -137,7 +137,7 @@ const TeamAccess = () => {
   };
 
   const copyCredentials = (member: TeamMember) => {
-    const text = `Username: ${member.username}\nPassword: ${member.password}\nLogin at: /avaadminpanel`;
+    const text = `Username: ${member.username}\nPassword: ${member.password}\nLogin at: /team`;
     navigator.clipboard.writeText(text);
     toast({ title: "Login credentials copied!" });
   };
@@ -148,7 +148,7 @@ const TeamAccess = () => {
       <div className="min-h-screen bg-background text-foreground">
         <div className="border-b border-white/10 bg-background/80 backdrop-blur-xl sticky top-0 z-50">
           <div className="max-w-5xl mx-auto px-4 lg:px-8 py-3 flex items-center gap-4">
-            <Link to="/avaadminpanel" className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors">
+            <Link to="/team" className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors">
               <ArrowLeft className="w-4 h-4" />
             </Link>
             <div className="flex items-center gap-2">
@@ -165,7 +165,7 @@ const TeamAccess = () => {
 
         <div className="max-w-5xl mx-auto px-4 lg:px-8 py-6">
           <div className="mb-6 p-4 rounded-xl bg-cyan-500/5 border border-cyan-500/20">
-            <p className="text-xs text-cyan-400">Team members can log in at <Link to="/avaadminpanel" className="font-mono font-bold underline underline-offset-2 hover:text-cyan-300">/avaadminpanel</Link> using their generated username and password. They'll only see the cards you've enabled for them.</p>
+            <p className="text-xs text-cyan-400">Team members can log in at <Link to="/team" className="font-mono font-bold underline underline-offset-2 hover:text-cyan-300">/team</Link> using their generated username and password. They'll only see the cards you've enabled for them.</p>
           </div>
 
           {members.length === 0 ? (

@@ -459,7 +459,10 @@ const ContentPortal = () => {
               onClick={() => {
                 if (view === "shoot-detail") { setSelectedShootId(null); setView("client-detail"); }
                 else if (view === "client-detail") { setSelectedClientId(null); setView("clients"); }
-                else { window.location.href = "/avaadminpanel"; }
+                else {
+                  const teamSession = sessionStorage.getItem("rmh_team_session");
+                  window.location.href = teamSession ? "/team" : "/avaadminpanel";
+                }
               }}
               className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors"
             >

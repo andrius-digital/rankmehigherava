@@ -49,7 +49,6 @@ import ContentPortal from "./pages/ContentPortal";
 import ManagerPortal from "./pages/ManagerPortal";
 import TeamAccess from "./pages/TeamAccess";
 import TeamPortal from "./pages/TeamPortal";
-import AdminPanel from "./pages/AdminPanel";
 
 // AVA by Rank Me Higher Pages
 import SEOSpiderDashboard from "./pages/seo-spider/Dashboard";
@@ -116,7 +115,12 @@ const App = () => (
                   <AgencyDashboard />
                 </ProtectedRoute>
               } />
-              <Route path="/avaadminpanel" element={<AdminPanel />} />
+              <Route path="/avaadminpanel" element={
+                <ProtectedRoute>
+                  <AgencyDashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/team" element={<TeamPortal />} />
               <Route path="/cdl-agency-portal" element={
                 <ProtectedRoute>
                   <CDLAgencyPortal />
@@ -206,7 +210,7 @@ const App = () => (
                   <TeamAccess />
                 </ProtectedRoute>
               } />
-              <Route path="/team-portal" element={<Navigate to="/avaadminpanel" replace />} />
+              <Route path="/team-portal" element={<Navigate to="/team" replace />} />
               <Route path="/avaseo" element={<ProtectedRoute><SEOSpiderDashboard /></ProtectedRoute>} />
               <Route path="/avaseo/ai-assistant" element={<ProtectedRoute><SEOSpiderAIAssistant /></ProtectedRoute>} />
               <Route path="/avaseo/analytics" element={<ProtectedRoute><SEOSpiderAnalytics /></ProtectedRoute>} />

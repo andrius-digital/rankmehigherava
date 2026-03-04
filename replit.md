@@ -34,8 +34,8 @@ The app is built as a React SPA using Vite, TypeScript, Tailwind CSS, and shadcn
 - **Video Managers**: Manager profiles stored in localStorage (`rmh_video_managers`) with name, email, access code; assigned per shoot via `managerName` field
 - **Manager Portal**: `/manager-portal` — standalone page (no auth required), managers log in with access code, see only their assigned shoots in pipeline view with shoot details (read-only)
 - **Team Access**: `/team-access` — admin page for creating team members with auto-generated username/password and granular per-card permissions; stored in `rmh_team_members` localStorage; username and password are editable inline with "Saved" feedback
-- **Team Portal**: `/avaadminpanel` — smart page: if admin (Supabase auth) shows AgencyDashboard; if team member (username/password login) shows permitted cards only; `/team-portal` redirects here; session stored in `rmh_team_session` sessionStorage
-- **Admin Panel**: `src/pages/AdminPanel.tsx` — wrapper component that checks Supabase admin auth first, falls back to TeamPortal login
+- **Team Portal**: `/team` — standalone team login page (no Supabase auth); team members log in with username/password, see only their permitted cards; `/team-portal` redirects here; session stored in `rmh_team_session` sessionStorage; back buttons in sub-pages detect team session and route back to `/team` instead of admin dashboard
+- **Admin Dashboard**: `/avaadminpanel` — protected admin-only route (Supabase auth required), renders AgencyDashboard; all admin sub-pages link back here
 - **Team Permissions**: content-portal, applicant-tracker, client-portal, build-website, subscriptions, team-tracker, call-center-kpi
 - **ProtectedRoute**: `teamPermission` prop allows team sessions to bypass Supabase auth for permitted routes
 
