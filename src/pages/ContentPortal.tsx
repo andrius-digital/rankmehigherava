@@ -33,7 +33,8 @@ interface Shoot {
   actorMinutes: number;
   filmerMinutes: number;
   videos: ShootVideo[];
-  dropboxLink: string;
+  dropboxFootage: string;
+  dropboxDeliverables: string;
   notes: string;
 }
 
@@ -161,7 +162,8 @@ const ContentPortal = () => {
       actorMinutes: 0,
       filmerMinutes: 0,
       videos: [],
-      dropboxLink: "",
+      dropboxFootage: "",
+      dropboxDeliverables: "",
       notes: newShoot.notes,
     };
     const updated = clients.map(c =>
@@ -632,23 +634,44 @@ const ContentPortal = () => {
                 );
               })()}
 
-              {/* Dropbox Link */}
+              {/* Dropbox Folder Links */}
               <div className="rounded-xl bg-white/5 border border-white/10 p-4 mb-4">
-                <h3 className="text-xs font-bold text-muted-foreground uppercase font-orbitron mb-2 flex items-center gap-1.5">
-                  <Link2 className="w-3.5 h-3.5 text-blue-400" /> Dropbox Link
+                <h3 className="text-xs font-bold text-muted-foreground uppercase font-orbitron mb-3 flex items-center gap-1.5">
+                  <Link2 className="w-3.5 h-3.5 text-blue-400" /> Dropbox Folder Links
                 </h3>
-                <div className="flex items-center gap-2">
-                  <Input
-                    placeholder="Paste Dropbox link..."
-                    value={selectedShoot.dropboxLink}
-                    onChange={e => updateShoot("dropboxLink", e.target.value)}
-                    className="bg-white/5 border-white/10 text-sm flex-1"
-                  />
-                  {selectedShoot.dropboxLink && (
-                    <a href={selectedShoot.dropboxLink} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center hover:bg-blue-500/20 transition-all">
-                      <ExternalLink className="w-3.5 h-3.5 text-blue-400" />
-                    </a>
-                  )}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[10px] text-muted-foreground block mb-1">Footage</label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        placeholder="Paste footage folder link..."
+                        value={selectedShoot.dropboxFootage || ""}
+                        onChange={e => updateShoot("dropboxFootage", e.target.value)}
+                        className="bg-white/5 border-white/10 text-sm flex-1"
+                      />
+                      {selectedShoot.dropboxFootage && (
+                        <a href={selectedShoot.dropboxFootage} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center hover:bg-blue-500/20 transition-all">
+                          <ExternalLink className="w-3.5 h-3.5 text-blue-400" />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-muted-foreground block mb-1">Deliverables</label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        placeholder="Paste deliverables folder link..."
+                        value={selectedShoot.dropboxDeliverables || ""}
+                        onChange={e => updateShoot("dropboxDeliverables", e.target.value)}
+                        className="bg-white/5 border-white/10 text-sm flex-1"
+                      />
+                      {selectedShoot.dropboxDeliverables && (
+                        <a href={selectedShoot.dropboxDeliverables} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center hover:bg-blue-500/20 transition-all">
+                          <ExternalLink className="w-3.5 h-3.5 text-blue-400" />
+                        </a>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
 
