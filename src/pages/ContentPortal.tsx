@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import {
@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 type ContentType = "short-form" | "vsl" | "value-added";
 type EditStatus = "not-started" | "editing" | "review" | "done";
@@ -55,7 +56,7 @@ interface VideoManager {
   createdAt: string;
 }
 
-const MANAGERS_KEY = "rmh_video_managers";
+const CP_TABLE = "content_portal_data" as any;
 
 interface Client {
   id: string;
@@ -118,21 +119,9 @@ const getVideoPrice = (type: ContentType) => type === "vsl" ? VSL_PRICE : type =
 
 const generateId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 
-const STORAGE_KEY = "rmh_content_portal";
-
-function loadData(): Client[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch { return []; }
-}
-
-function saveData(clients: Client[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(clients));
-}
-
 const ContentPortal = () => {
-  const [clients, setClients] = useState<Client[]>(loadData);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [dataLoaded, setDataLoaded] = useState(false);
   const [view, setView] = useState<"clients" | "client-detail" | "shoot-detail">("clients");
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [selectedShootId, setSelectedShootId] = useState<string | null>(null);
@@ -143,9 +132,37 @@ const ContentPortal = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
 
+  const loadFromSupabase = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.from(CP_TABLE).select("*").eq("id", 1).maybeSingle();
+      if (error) throw error;
+      if (data && ((data as any).clients?.length > 0 || (data as any).managers?.length > 0)) {
+        setClients((data as any).clients || []);
+        setManagers((data as any).managers || []);
+      } else {
+        const localClients = (() => { try { const r = localStorage.getItem("rmh_content_portal"); return r ? JSON.parse(r) : []; } catch { return []; } })();
+        const localManagers = (() => { try { const r = localStorage.getItem("rmh_video_managers"); return r ? JSON.parse(r) : []; } catch { return []; } })();
+        if (localClients.length > 0 || localManagers.length > 0) {
+          await supabase.from(CP_TABLE).upsert({ id: 1, clients: localClients, managers: localManagers, updated_at: new Date().toISOString() } as any);
+          setClients(localClients);
+          setManagers(localManagers);
+        }
+      }
+    } catch {
+      const localClients = (() => { try { const r = localStorage.getItem("rmh_content_portal"); return r ? JSON.parse(r) : []; } catch { return []; } })();
+      const localManagers = (() => { try { const r = localStorage.getItem("rmh_video_managers"); return r ? JSON.parse(r) : []; } catch { return []; } })();
+      setClients(localClients);
+      setManagers(localManagers);
+    } finally {
+      setDataLoaded(true);
+    }
+  }, []);
+
+  useEffect(() => { loadFromSupabase(); }, [loadFromSupabase]);
+
   const persist = (updated: Client[]) => {
     setClients(updated);
-    saveData(updated);
+    supabase.from(CP_TABLE).upsert({ id: 1, clients: updated, updated_at: new Date().toISOString() } as any).then();
   };
 
   const selectedClient = clients.find(c => c.id === selectedClientId) || null;
@@ -159,13 +176,15 @@ const ContentPortal = () => {
   const [approvedCount, setApprovedCount] = useState(0);
   const [newTraining, setNewTraining] = useState({ title: "", content: "" });
   const [newShoot, setNewShoot] = useState({ name: "", date: "", location: "", notes: "", managerName: "" });
-  const [managers, setManagers] = useState<VideoManager[]>(() => {
-    try { const raw = localStorage.getItem(MANAGERS_KEY); return raw ? JSON.parse(raw) : []; } catch { return []; }
-  });
+  const [managers, setManagers] = useState<VideoManager[]>([]);
   const [showManagerSetup, setShowManagerSetup] = useState(false);
   const [newManager, setNewManager] = useState({ name: "", email: "" });
 
-  const persistManagers = (updated: VideoManager[]) => { setManagers(updated); localStorage.setItem(MANAGERS_KEY, JSON.stringify(updated)); };
+
+  const persistManagers = (updated: VideoManager[]) => {
+    setManagers(updated);
+    supabase.from(CP_TABLE).upsert({ id: 1, managers: updated, updated_at: new Date().toISOString() } as any).then();
+  };
   const addManager = () => {
     if (!newManager.name || !newManager.email) return;
     const code = Math.random().toString(36).slice(2, 8).toUpperCase();

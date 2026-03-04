@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import {
   ArrowLeft, Video, Camera, MapPin, ChevronRight, Clapperboard,
@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 type ShootStatus = "scheduled" | "in-progress" | "completed" | "cancelled";
 type EditStatus = "not-started" | "editing" | "review" | "done";
@@ -61,8 +62,7 @@ interface VideoManager {
   createdAt: string;
 }
 
-const STORAGE_KEY = "rmh_content_portal";
-const MANAGERS_KEY = "rmh_video_managers";
+const CP_TABLE = "content_portal_data" as any;
 
 const editStatusLabel: Record<EditStatus, string> = { "not-started": "Not Started", "editing": "Editing", "review": "In Review", "done": "Done" };
 const editStatusColor: Record<EditStatus, string> = {
@@ -77,14 +77,24 @@ const ManagerPortal = () => {
   const [loggedInManager, setLoggedInManager] = useState<VideoManager | null>(null);
   const [accessInput, setAccessInput] = useState("");
   const [selectedShootData, setSelectedShootData] = useState<{ shoot: Shoot; client: Client } | null>(null);
+  const [cpData, setCpData] = useState<{ clients: Client[]; managers: VideoManager[] }>({ clients: [], managers: [] });
+  const [dataLoaded, setDataLoaded] = useState(false);
   const { toast } = useToast();
 
-  const getClients = (): Client[] => {
-    try { const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : []; } catch { return []; }
-  };
-  const getManagers = (): VideoManager[] => {
-    try { const raw = localStorage.getItem(MANAGERS_KEY); return raw ? JSON.parse(raw) : []; } catch { return []; }
-  };
+  useEffect(() => {
+    supabase.from(CP_TABLE).select("*").eq("id", 1).maybeSingle().then(({ data, error }) => {
+      if (error) {
+        console.error("Failed to load content portal data:", error);
+        toast({ title: "Connection error", description: "Could not load data. Please try again.", variant: "destructive" });
+      } else if (data) {
+        setCpData({ clients: (data as any).clients || [], managers: (data as any).managers || [] });
+      }
+      setDataLoaded(true);
+    });
+  }, []);
+
+  const getClients = (): Client[] => cpData.clients;
+  const getManagers = (): VideoManager[] => cpData.managers;
 
   const handleLogin = () => {
     const managers = getManagers();
