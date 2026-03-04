@@ -689,7 +689,7 @@ const ContentPortal = () => {
                           placeholder="0"
                           className="bg-white/5 border-white/10 h-8 text-sm"
                         />
-                        <p className="text-[10px] text-muted-foreground mt-0.5">Cost: ${fin.actorCost.toFixed(2)} · Charge: ${fin.actorRevenue.toFixed(2)}</p>
+                        <p className="text-[10px] mt-0.5"><span className="text-red-400">Cost: ${fin.actorCost.toFixed(2)}</span> · <span className="text-green-400">Charge: ${fin.actorRevenue.toFixed(2)}</span></p>
                       </div>
                       <div>
                         <label className="text-[10px] text-muted-foreground block mb-1">Filmer Minutes on Site</label>
@@ -701,7 +701,7 @@ const ContentPortal = () => {
                           placeholder="0"
                           className="bg-white/5 border-white/10 h-8 text-sm"
                         />
-                        <p className="text-[10px] text-muted-foreground mt-0.5">Cost: ${fin.filmerCost.toFixed(2)} · Charge: ${fin.filmerRevenue.toFixed(2)}</p>
+                        <p className="text-[10px] mt-0.5"><span className="text-red-400">Cost: ${fin.filmerCost.toFixed(2)}</span> · <span className="text-green-400">Charge: ${fin.filmerRevenue.toFixed(2)}</span></p>
                       </div>
                       <div>
                         <label className="text-[10px] text-muted-foreground block mb-1">Short Form Ads Shot</label>
@@ -713,7 +713,7 @@ const ContentPortal = () => {
                           placeholder="0"
                           className="bg-white/5 border-white/10 h-8 text-sm"
                         />
-                        <p className="text-[10px] text-cyan-400 mt-0.5">${SHORT_FORM_PRICE} each · Rev: ${((selectedShoot.shortFormCount || 0) * SHORT_FORM_PRICE).toFixed(2)}</p>
+                        <p className="text-[10px] text-green-400 mt-0.5">${SHORT_FORM_PRICE} each · Rev: ${((selectedShoot.shortFormCount || 0) * SHORT_FORM_PRICE).toFixed(2)}</p>
                       </div>
                       <div>
                         <label className="text-[10px] text-muted-foreground block mb-1">VSLs Shot</label>
@@ -725,7 +725,7 @@ const ContentPortal = () => {
                           placeholder="0"
                           className="bg-white/5 border-white/10 h-8 text-sm"
                         />
-                        <p className="text-[10px] text-red-400 mt-0.5">${VSL_PRICE} each · Rev: ${((selectedShoot.vslCount || 0) * VSL_PRICE).toFixed(2)}</p>
+                        <p className="text-[10px] text-green-400 mt-0.5">${VSL_PRICE} each · Rev: ${((selectedShoot.vslCount || 0) * VSL_PRICE).toFixed(2)}</p>
                       </div>
                       <div>
                         <label className="text-[10px] text-muted-foreground block mb-1">Value Added Shot</label>
