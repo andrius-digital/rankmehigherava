@@ -310,9 +310,16 @@ const ContentPortal = () => {
       <div className="min-h-screen bg-background text-foreground">
         <div className="border-b border-white/10 bg-background/80 backdrop-blur-xl sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex items-center gap-4">
-            <Link to="/avaadminpanel" className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors">
+            <button
+              onClick={() => {
+                if (view === "shoot-detail") { setSelectedShootId(null); setView("client-detail"); }
+                else if (view === "client-detail") { setSelectedClientId(null); setView("clients"); }
+                else { window.location.href = "/avaadminpanel"; }
+              }}
+              className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors"
+            >
               <ArrowLeft className="w-4 h-4" />
-            </Link>
+            </button>
             <div className="flex items-center gap-2">
               <Clapperboard className="w-5 h-5 text-red-400" />
               <h1 className="font-orbitron font-bold text-base lg:text-lg">Content Portal</h1>
