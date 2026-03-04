@@ -235,6 +235,95 @@ serve(async (req) => {
         break;
       }
 
+      case 'create_team_portal_member': {
+        const { email: teamEmail, password: teamPassword, name: teamName, role: teamRole, permissions: teamPermissions } = data;
+        if (!teamEmail || !teamPassword || !teamName) throw new Error('email, password, and name are required');
+
+        const { data: newTeamUser, error: createTeamError } = await supabaseAdmin.auth.admin.createUser({
+          email: teamEmail,
+          password: teamPassword,
+          email_confirm: true,
+          user_metadata: { full_name: teamName },
+        });
+        if (createTeamError) throw createTeamError;
+
+        const teamUserId = newTeamUser.user.id;
+
+        const { error: teamRoleError } = await supabaseAdmin.rpc('assign_team_role', { _user_id: teamUserId });
+        if (teamRoleError) throw teamRoleError;
+
+        const { data: teamMemberRow, error: teamInsertError } = await supabaseAdmin
+          .from('team_portal_members')
+          .insert({
+            user_id: teamUserId,
+            name: teamName,
+            email: teamEmail,
+            role: teamRole || 'Team Member',
+            permissions: teamPermissions || [],
+          })
+          .select()
+          .single();
+        if (teamInsertError) throw teamInsertError;
+
+        result = { ...teamMemberRow, auth_user_id: teamUserId };
+        break;
+      }
+
+      case 'list_team_portal_members': {
+        const { data: teamList, error: teamListError } = await supabaseAdmin
+          .from('team_portal_members')
+          .select('*')
+          .order('created_at', { ascending: false });
+        if (teamListError) throw teamListError;
+        result = teamList || [];
+        break;
+      }
+
+      case 'update_team_portal_member': {
+        const { id: teamMemberId, permissions: updPerms, role: updRole, name: updName, password: updPassword } = data;
+        if (!teamMemberId) throw new Error('id is required');
+
+        const updateFields: Record<string, unknown> = { updated_at: new Date().toISOString() };
+        if (updPerms !== undefined) updateFields.permissions = updPerms;
+        if (updRole !== undefined) updateFields.role = updRole;
+        if (updName !== undefined) updateFields.name = updName;
+
+        const { data: updatedTeam, error: updTeamError } = await supabaseAdmin
+          .from('team_portal_members')
+          .update(updateFields)
+          .eq('id', teamMemberId)
+          .select()
+          .single();
+        if (updTeamError) throw updTeamError;
+
+        if (updPassword && updatedTeam.user_id) {
+          const { error: pwErr } = await supabaseAdmin.auth.admin.updateUserById(updatedTeam.user_id, { password: updPassword });
+          if (pwErr) throw pwErr;
+        }
+
+        result = updatedTeam;
+        break;
+      }
+
+      case 'delete_team_portal_member': {
+        const { id: delTeamId } = data;
+        if (!delTeamId) throw new Error('id is required');
+
+        const { data: memberToDelete, error: fetchDelError } = await supabaseAdmin
+          .from('team_portal_members')
+          .select('user_id')
+          .eq('id', delTeamId)
+          .single();
+        if (fetchDelError) throw fetchDelError;
+
+        await supabaseAdmin.from('team_portal_members').delete().eq('id', delTeamId);
+        await supabaseAdmin.from('user_roles').delete().eq('user_id', memberToDelete.user_id).eq('role', 'team');
+        await supabaseAdmin.auth.admin.deleteUser(memberToDelete.user_id);
+
+        result = { success: true };
+        break;
+      }
+
       default:
         return new Response(
           JSON.stringify({ error: 'Invalid action' }),

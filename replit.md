@@ -33,9 +33,10 @@ The app is built as a React SPA using Vite, TypeScript, Tailwind CSS, and shadcn
 - **Shoot Pipeline**: 3-column Kanban (Scheduled/In Progress/Completed) on clients view; shoot cannot be marked Completed until all videos are Done
 - **Video Managers**: Manager profiles stored in localStorage (`rmh_video_managers`) with name, email, access code; assigned per shoot via `managerName` field
 - **Manager Portal**: `/manager-portal` — standalone page (no auth required), managers log in with access code, see only their assigned shoots in pipeline view with shoot details (read-only)
-- **Team Access**: `/team-access` — admin page for creating team members with auto-generated username/password and granular per-card permissions; stored in `rmh_team_members` localStorage; username and password are editable inline with "Saved" feedback
-- **Team Portal**: `/team` — standalone team login page (no Supabase auth); team members log in with username/password, see only their permitted cards; `/team-portal` redirects here; session stored in `rmh_team_session` sessionStorage; back buttons in sub-pages detect team session and route back to `/team` instead of admin dashboard
+- **Team Access**: `/team-access` — admin page for creating team members with real Supabase Auth accounts; stores permissions in `team_portal_members` table; admin creates account → Supabase Auth user created + 'team' role assigned + permissions saved to DB
+- **Team Portal**: `/team` — standalone team login page using Supabase Auth (email/password); after login checks `team_portal_members` table for permissions; shows only permitted cards; `/team-portal` redirects here; session cached in `rmh_team_session` sessionStorage; back buttons in sub-pages detect team session and route back to `/team` instead of admin dashboard
 - **Admin Dashboard**: `/avaadminpanel` — protected admin-only route (Supabase auth required), renders AgencyDashboard; all admin sub-pages link back here
+- **Database Table**: `team_portal_members` — id, user_id (FK to auth.users), name, email, role, permissions (TEXT[]), created_at, updated_at; RLS: admins full access, team members read own record
 - **Team Permissions**: content-portal, applicant-tracker, client-portal, build-website, subscriptions, team-tracker, call-center-kpi
 - **ProtectedRoute**: `teamPermission` prop allows team sessions to bypass Supabase auth for permitted routes
 

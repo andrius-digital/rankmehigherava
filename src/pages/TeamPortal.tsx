@@ -3,23 +3,21 @@ import { Helmet } from "react-helmet-async";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft, ArrowRight, LogOut, User, Shield, Lock,
-  Clapperboard, UserCheck, UsersRound, Palette, CreditCard, Clock, Phone
+  Clapperboard, UserCheck, UsersRound, Palette, CreditCard, Clock, Phone, Loader2
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
-interface TeamMember {
+interface TeamSession {
   id: string;
+  user_id: string;
   name: string;
   email: string;
   role: string;
-  username: string;
-  password: string;
   permissions: string[];
-  createdAt: string;
 }
 
-const TEAM_KEY = "rmh_team_members";
 const TEAM_SESSION_KEY = "rmh_team_session";
 
 const colorClasses: Record<string, string> = {
@@ -39,7 +37,7 @@ const CARD_CONFIG: Record<string, { label: string; icon: typeof Clapperboard; de
   "call-center-kpi": { label: "Call Center KPI", icon: Phone, description: "Leads & analytics", href: "/call-center-kpi", color: "orange" },
 };
 
-export function getTeamSession(): TeamMember | null {
+export function getTeamSession(): TeamSession | null {
   try {
     const raw = sessionStorage.getItem(TEAM_SESSION_KEY);
     return raw ? JSON.parse(raw) : null;
@@ -57,42 +55,100 @@ export function clearTeamSession() {
 }
 
 const TeamPortal = () => {
-  const [loggedIn, setLoggedIn] = useState<TeamMember | null>(null);
-  const [usernameInput, setUsernameInput] = useState("");
+  const [loggedIn, setLoggedIn] = useState<TeamSession | null>(null);
+  const [emailInput, setEmailInput] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
     const existing = getTeamSession();
-    if (existing) setLoggedIn(existing);
+    if (existing) {
+      setLoggedIn(existing);
+      setCheckingSession(false);
+      return;
+    }
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session?.user) {
+        const teamData = await fetchTeamData(session.user.id);
+        if (teamData) {
+          sessionStorage.setItem(TEAM_SESSION_KEY, JSON.stringify(teamData));
+          setLoggedIn(teamData);
+        }
+      }
+      setCheckingSession(false);
+    });
   }, []);
 
-  const handleLogin = () => {
+  async function fetchTeamData(userId: string): Promise<TeamSession | null> {
+    const { data, error } = await supabase
+      .from("team_portal_members" as any)
+      .select("*")
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (error || !data) return null;
+    return {
+      id: (data as any).id,
+      user_id: (data as any).user_id,
+      name: (data as any).name,
+      email: (data as any).email,
+      role: (data as any).role,
+      permissions: (data as any).permissions || [],
+    };
+  }
+
+  const handleLogin = async () => {
+    if (!emailInput || !passwordInput) return;
+    setIsLoading(true);
     try {
-      const raw = localStorage.getItem(TEAM_KEY);
-      const members: TeamMember[] = raw ? JSON.parse(raw) : [];
-      const found = members.find(
-        m => m.username === usernameInput.trim().toLowerCase() && m.password === passwordInput
-      );
-      if (found) {
-        sessionStorage.setItem(TEAM_SESSION_KEY, JSON.stringify(found));
-        setLoggedIn(found);
-      } else {
-        toast({ title: "Invalid credentials", description: "Please check your username and password.", variant: "destructive" });
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: emailInput.trim(),
+        password: passwordInput,
+      });
+      if (error) {
+        toast({ title: "Login failed", description: error.message, variant: "destructive" });
+        setIsLoading(false);
+        return;
       }
-    } catch {
-      toast({ title: "Error", description: "Something went wrong.", variant: "destructive" });
+      if (!data.user) {
+        toast({ title: "Login failed", description: "No user returned", variant: "destructive" });
+        setIsLoading(false);
+        return;
+      }
+      const teamData = await fetchTeamData(data.user.id);
+      if (!teamData) {
+        await supabase.auth.signOut();
+        toast({ title: "Access denied", description: "This account is not a team portal member. Use the admin login instead.", variant: "destructive" });
+        setIsLoading(false);
+        return;
+      }
+      sessionStorage.setItem(TEAM_SESSION_KEY, JSON.stringify(teamData));
+      setLoggedIn(teamData);
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message || "Something went wrong.", variant: "destructive" });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     clearTeamSession();
+    await supabase.auth.signOut();
     setLoggedIn(null);
-    setUsernameInput("");
+    setEmailInput("");
     setPasswordInput("");
   };
+
+  if (checkingSession) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   const permittedCards = loggedIn
     ? loggedIn.permissions.map(p => CARD_CONFIG[p]).filter(Boolean)
@@ -145,11 +201,12 @@ const TeamPortal = () => {
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
-                      placeholder="Username"
-                      value={usernameInput}
-                      onChange={e => setUsernameInput(e.target.value)}
+                      placeholder="Email"
+                      type="email"
+                      value={emailInput}
+                      onChange={e => setEmailInput(e.target.value)}
                       onKeyDown={e => e.key === "Enter" && document.getElementById("team-pwd")?.focus()}
-                      className="bg-white/5 border-white/10 pl-9 font-mono"
+                      className="bg-white/5 border-white/10 pl-9"
                     />
                   </div>
                   <div className="relative">
@@ -161,7 +218,7 @@ const TeamPortal = () => {
                       value={passwordInput}
                       onChange={e => setPasswordInput(e.target.value)}
                       onKeyDown={e => e.key === "Enter" && handleLogin()}
-                      className="bg-white/5 border-white/10 pl-9 pr-9 font-mono"
+                      className="bg-white/5 border-white/10 pl-9 pr-9"
                     />
                     <button
                       type="button"
@@ -176,8 +233,13 @@ const TeamPortal = () => {
                     </button>
                   </div>
                 </div>
-                <button onClick={handleLogin} className="w-full py-2.5 rounded-lg bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 font-bold text-sm hover:bg-cyan-500/30 transition-all">
-                  Sign In
+                <button
+                  onClick={handleLogin}
+                  disabled={isLoading}
+                  className="w-full py-2.5 rounded-lg bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 font-bold text-sm hover:bg-cyan-500/30 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                  {isLoading ? "Signing In..." : "Sign In"}
                 </button>
                 <Link to="/auth" className="block text-center text-[11px] text-muted-foreground mt-4 hover:text-cyan-400 transition-colors">
                   Admin Sign In

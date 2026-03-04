@@ -23,7 +23,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireAdmin 
 
   if (teamPermission) {
     const teamSession = getTeamSession();
-    if (teamSession && teamSession.permissions?.includes(teamPermission)) {
+    if (user && teamSession && teamSession.permissions?.includes(teamPermission)) {
       return <>{children}</>;
     }
   }

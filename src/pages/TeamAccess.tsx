@@ -1,26 +1,24 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
 import {
-  ArrowLeft, Plus, X, Users, Trash2, Copy, KeyRound, Shield,
+  ArrowLeft, Plus, X, Users, Trash2, Copy, Shield,
   Clapperboard, UserCheck, UsersRound, Palette, CreditCard, Clock, Phone,
-  ChevronDown, RefreshCw, User, Lock, Eye, EyeOff, Briefcase
+  ChevronDown, RefreshCw, User, Lock, Eye, EyeOff, Briefcase, Loader2
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 interface TeamMember {
   id: string;
+  user_id: string;
   name: string;
   email: string;
   role: string;
-  username: string;
-  password: string;
   permissions: string[];
-  createdAt: string;
+  created_at: string;
 }
-
-const TEAM_KEY = "rmh_team_members";
 
 const AVAILABLE_PERMISSIONS = [
   { id: "content-portal", label: "Content Portal", icon: Clapperboard, description: "Shoots & video tracking" },
@@ -32,20 +30,6 @@ const AVAILABLE_PERMISSIONS = [
   { id: "call-center-kpi", label: "Call Center KPI", icon: Phone, description: "Leads & analytics" },
 ];
 
-const generateId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-
-function generateUsername(name: string, existingUsernames: string[]): string {
-  const base = name.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 12);
-  if (!base) return "user" + Math.floor(Math.random() * 9000 + 1000);
-  let candidate = base;
-  let counter = 1;
-  while (existingUsernames.includes(candidate)) {
-    candidate = base + counter;
-    counter++;
-  }
-  return candidate;
-}
-
 function generatePassword(): string {
   const chars = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
   const special = "!@#$%";
@@ -56,88 +40,115 @@ function generatePassword(): string {
   return pwd;
 }
 
-function loadTeam(): TeamMember[] {
-  try {
-    const raw = localStorage.getItem(TEAM_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as any[];
-    let needsSave = false;
-    const existingUsernames: string[] = parsed.filter(m => m.username).map(m => m.username);
-    const migrated = parsed.map(m => {
-      if (!m.username || !m.password) {
-        needsSave = true;
-        const username = generateUsername(m.name || "user", existingUsernames);
-        existingUsernames.push(username);
-        return { ...m, username, password: generatePassword() };
-      }
-      return m;
-    });
-    if (needsSave) localStorage.setItem(TEAM_KEY, JSON.stringify(migrated));
-    return migrated;
-  } catch { return []; }
+async function adminAction(action: string, data: Record<string, unknown>) {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error("Not authenticated");
+  const resp = await supabase.functions.invoke("admin-operations", {
+    body: { action, data },
+  });
+  if (resp.error) throw new Error(resp.error.message || "Request failed");
+  if (resp.data?.error) throw new Error(resp.data.error);
+  return resp.data?.data;
 }
-function saveTeam(members: TeamMember[]) { localStorage.setItem(TEAM_KEY, JSON.stringify(members)); }
 
 const TeamAccess = () => {
-  const [members, setMembers] = useState<TeamMember[]>(loadTeam);
+  const [members, setMembers] = useState<TeamMember[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
-  const [newMember, setNewMember] = useState({ name: "", email: "", role: "" });
+  const [newMember, setNewMember] = useState({ name: "", email: "", role: "", password: "" });
   const [selectedPerms, setSelectedPerms] = useState<string[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
   const [savedId, setSavedId] = useState<string | null>(null);
+  const [newPassword, setNewPassword] = useState<Record<string, string>>({});
+  const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
   const { toast } = useToast();
 
-  const persist = (updated: TeamMember[]) => { setMembers(updated); saveTeam(updated); };
+  const loadMembers = useCallback(async () => {
+    try {
+      const result = await adminAction("list_team_portal_members", {});
+      setMembers(result || []);
+    } catch (err: any) {
+      toast({ title: "Failed to load team members", description: err.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
 
-  const persistWithFeedback = (updated: TeamMember[], memberId: string) => {
-    persist(updated);
-    setSavedId(memberId);
-    setTimeout(() => setSavedId(prev => prev === memberId ? null : prev), 1500);
-  };
+  useEffect(() => { loadMembers(); }, [loadMembers]);
 
-  const addMember = () => {
+  const addMember = async () => {
     if (!newMember.name || !newMember.email) return;
-    const existingUsernames = members.map(m => m.username);
-    const username = generateUsername(newMember.name, existingUsernames);
-    const password = generatePassword();
-    const member: TeamMember = {
-      id: generateId(),
-      name: newMember.name,
-      email: newMember.email,
-      role: newMember.role || "Team Member",
-      username,
-      password,
-      permissions: selectedPerms,
-      createdAt: new Date().toISOString(),
-    };
-    persist([...members, member]);
-    setNewMember({ name: "", email: "", role: "" });
-    setSelectedPerms([]);
-    setShowAdd(false);
-    toast({ title: "Team member added", description: `Login: ${username}` });
+    const password = newMember.password || generatePassword();
+    setSaving(true);
+    try {
+      await adminAction("create_team_portal_member", {
+        name: newMember.name,
+        email: newMember.email,
+        password,
+        role: newMember.role || "Team Member",
+        permissions: selectedPerms,
+      });
+      await loadMembers();
+      const text = `Email: ${newMember.email}\nPassword: ${password}\nLogin at: /team`;
+      navigator.clipboard.writeText(text);
+      setNewMember({ name: "", email: "", role: "", password: "" });
+      setSelectedPerms([]);
+      setShowAdd(false);
+      toast({ title: "Team member created!", description: "Login credentials copied to clipboard." });
+    } catch (err: any) {
+      toast({ title: "Failed to create member", description: err.message, variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const deleteMember = (id: string) => { persist(members.filter(m => m.id !== id)); toast({ title: "Member removed" }); };
-
-  const togglePerm = (memberId: string, permId: string) => {
-    persist(members.map(m => {
-      if (m.id !== memberId) return m;
-      const perms = m.permissions.includes(permId)
-        ? m.permissions.filter(p => p !== permId)
-        : [...m.permissions, permId];
-      return { ...m, permissions: perms };
-    }));
+  const deleteMember = async (id: string) => {
+    try {
+      await adminAction("delete_team_portal_member", { id });
+      setMembers(prev => prev.filter(m => m.id !== id));
+      toast({ title: "Member removed" });
+    } catch (err: any) {
+      toast({ title: "Failed to remove member", description: err.message, variant: "destructive" });
+    }
   };
 
-  const regeneratePassword = (id: string) => {
-    const newPwd = generatePassword();
-    persist(members.map(m => m.id === id ? { ...m, password: newPwd } : m));
-    toast({ title: "New password generated" });
+  const updateMember = async (id: string, updates: Record<string, unknown>) => {
+    try {
+      const result = await adminAction("update_team_portal_member", { id, ...updates });
+      setMembers(prev => prev.map(m => m.id === id ? { ...m, ...result } : m));
+      setSavedId(id);
+      setTimeout(() => setSavedId(prev => prev === id ? null : prev), 1500);
+    } catch (err: any) {
+      toast({ title: "Failed to update", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const togglePerm = async (memberId: string, permId: string) => {
+    const member = members.find(m => m.id === memberId);
+    if (!member) return;
+    const perms = member.permissions.includes(permId)
+      ? member.permissions.filter(p => p !== permId)
+      : [...member.permissions, permId];
+    setMembers(prev => prev.map(m => m.id === memberId ? { ...m, permissions: perms } : m));
+    await updateMember(memberId, { permissions: perms });
+  };
+
+  const resetPassword = async (id: string) => {
+    const pwd = newPassword[id] || generatePassword();
+    try {
+      await adminAction("update_team_portal_member", { id, password: pwd });
+      setNewPassword(prev => ({ ...prev, [id]: pwd }));
+      setShowPasswords(prev => ({ ...prev, [id]: true }));
+      toast({ title: "Password updated" });
+    } catch (err: any) {
+      toast({ title: "Failed to reset password", description: err.message, variant: "destructive" });
+    }
   };
 
   const copyCredentials = (member: TeamMember) => {
-    const text = `Username: ${member.username}\nPassword: ${member.password}\nLogin at: /team`;
+    const pwd = newPassword[member.id] || "(use existing password)";
+    const text = `Email: ${member.email}\nPassword: ${pwd}\nLogin at: /team`;
     navigator.clipboard.writeText(text);
     toast({ title: "Login credentials copied!" });
   };
@@ -148,7 +159,7 @@ const TeamAccess = () => {
       <div className="min-h-screen bg-background text-foreground">
         <div className="border-b border-white/10 bg-background/80 backdrop-blur-xl sticky top-0 z-50">
           <div className="max-w-5xl mx-auto px-4 lg:px-8 py-3 flex items-center gap-4">
-            <Link to="/team" className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors">
+            <Link to="/avaadminpanel" className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors">
               <ArrowLeft className="w-4 h-4" />
             </Link>
             <div className="flex items-center gap-2">
@@ -165,10 +176,14 @@ const TeamAccess = () => {
 
         <div className="max-w-5xl mx-auto px-4 lg:px-8 py-6">
           <div className="mb-6 p-4 rounded-xl bg-cyan-500/5 border border-cyan-500/20">
-            <p className="text-xs text-cyan-400">Team members can log in at <Link to="/team" className="font-mono font-bold underline underline-offset-2 hover:text-cyan-300">/team</Link> using their generated username and password. They'll only see the cards you've enabled for them.</p>
+            <p className="text-xs text-cyan-400">Team members can log in at <Link to="/team" className="font-mono font-bold underline underline-offset-2 hover:text-cyan-300">/team</Link> using their email and password. They'll only see the cards you've enabled for them.</p>
           </div>
 
-          {members.length === 0 ? (
+          {loading ? (
+            <div className="flex items-center justify-center py-16">
+              <Loader2 className="w-6 h-6 animate-spin text-cyan-400" />
+            </div>
+          ) : members.length === 0 ? (
             <div className="text-center py-16">
               <Users className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-30" />
               <p className="text-sm text-muted-foreground">No team members yet. Add your first team member above.</p>
@@ -195,13 +210,10 @@ const TeamAccess = () => {
                       <p className="text-[10px] text-muted-foreground">{member.email} · {member.permissions.length} permission{member.permissions.length !== 1 ? "s" : ""}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-white/5 border border-white/10">
-                        <User className="w-3 h-3 text-cyan-400" />
-                        <span className="text-xs font-mono font-bold">{member.username}</span>
-                        <button onClick={e => { e.stopPropagation(); copyCredentials(member); }} className="ml-1 hover:text-cyan-400 transition-colors">
-                          <Copy className="w-3 h-3" />
-                        </button>
-                      </div>
+                      <button onClick={e => { e.stopPropagation(); copyCredentials(member); }} className="flex items-center gap-1 px-2 py-1 rounded bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+                        <Copy className="w-3 h-3 text-cyan-400" />
+                        <span className="text-[10px] font-bold text-muted-foreground">Copy</span>
+                      </button>
                       <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${expandedId === member.id ? "rotate-180" : ""}`} />
                     </div>
                   </div>
@@ -216,7 +228,11 @@ const TeamAccess = () => {
                             <input
                               type="text"
                               value={member.role}
-                              onChange={e => persistWithFeedback(members.map(m => m.id === member.id ? { ...m, role: e.target.value } : m), member.id)}
+                              onChange={e => {
+                                const val = e.target.value;
+                                setMembers(prev => prev.map(m => m.id === member.id ? { ...m, role: val } : m));
+                              }}
+                              onBlur={() => updateMember(member.id, { role: member.role })}
                               className="bg-transparent text-sm font-bold w-full outline-none border-b border-transparent focus:border-cyan-500/40 transition-colors"
                               placeholder="e.g. Content Manager"
                             />
@@ -225,29 +241,22 @@ const TeamAccess = () => {
                       </div>
                       <div className="flex items-center gap-3 mb-4 p-3 rounded-lg bg-white/[0.02] border border-white/10">
                         <div className="flex-1 min-w-0">
-                          <p className="text-[9px] text-muted-foreground uppercase font-bold mb-1">Username</p>
+                          <p className="text-[9px] text-muted-foreground uppercase font-bold mb-1">Email</p>
                           <div className="flex items-center gap-1.5">
                             <User className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
-                            <input
-                              type="text"
-                              value={member.username}
-                              onChange={e => {
-                                const val = e.target.value.toLowerCase().replace(/[^a-z0-9]/g, "");
-                                persistWithFeedback(members.map(m => m.id === member.id ? { ...m, username: val } : m), member.id);
-                              }}
-                              className="bg-transparent text-sm font-mono font-bold w-full outline-none border-b border-transparent focus:border-cyan-500/40 transition-colors"
-                            />
+                            <span className="text-sm font-mono font-bold">{member.email}</span>
                           </div>
                         </div>
                         <div className="w-px h-10 bg-white/10 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-[9px] text-muted-foreground uppercase font-bold mb-1">Password</p>
+                          <p className="text-[9px] text-muted-foreground uppercase font-bold mb-1">New Password</p>
                           <div className="flex items-center gap-1.5">
                             <Lock className="w-3.5 h-3.5 text-yellow-400 flex-shrink-0" />
                             <input
                               type={showPasswords[member.id] ? "text" : "password"}
-                              value={member.password}
-                              onChange={e => persistWithFeedback(members.map(m => m.id === member.id ? { ...m, password: e.target.value } : m), member.id)}
+                              value={newPassword[member.id] || ""}
+                              onChange={e => setNewPassword(prev => ({ ...prev, [member.id]: e.target.value }))}
+                              placeholder="Enter new password"
                               className="bg-transparent text-sm font-mono font-bold w-full outline-none border-b border-transparent focus:border-cyan-500/40 transition-colors"
                             />
                             <button
@@ -306,7 +315,7 @@ const TeamAccess = () => {
                       </div>
 
                       <div className="flex items-center gap-2 pt-2 border-t border-white/10">
-                        <button onClick={() => regeneratePassword(member.id)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs text-muted-foreground hover:text-foreground hover:bg-white/10 transition-all">
+                        <button onClick={() => resetPassword(member.id)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs text-muted-foreground hover:text-foreground hover:bg-white/10 transition-all">
                           <RefreshCw className="w-3 h-3" /> Reset Password
                         </button>
                         <button onClick={() => deleteMember(member.id)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-xs text-red-400 hover:bg-red-500/20 transition-all ml-auto">
@@ -331,7 +340,8 @@ const TeamAccess = () => {
               </div>
               <div className="space-y-3 mb-5">
                 <Input placeholder="Full name *" value={newMember.name} onChange={e => setNewMember(p => ({ ...p, name: e.target.value }))} className="bg-white/5 border-white/10" />
-                <Input placeholder="Email *" value={newMember.email} onChange={e => setNewMember(p => ({ ...p, email: e.target.value }))} className="bg-white/5 border-white/10" />
+                <Input placeholder="Email *" type="email" value={newMember.email} onChange={e => setNewMember(p => ({ ...p, email: e.target.value }))} className="bg-white/5 border-white/10" />
+                <Input placeholder="Password (auto-generated if empty)" type="text" value={newMember.password} onChange={e => setNewMember(p => ({ ...p, password: e.target.value }))} className="bg-white/5 border-white/10" />
                 <Input placeholder="Role (e.g. Editor, Manager)" value={newMember.role} onChange={e => setNewMember(p => ({ ...p, role: e.target.value }))} className="bg-white/5 border-white/10" />
               </div>
               <p className="text-[10px] font-bold text-muted-foreground uppercase mb-2">Grant Access To</p>
@@ -353,8 +363,13 @@ const TeamAccess = () => {
                   );
                 })}
               </div>
-              <button onClick={addMember} className="w-full py-2.5 rounded-lg bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 font-bold text-sm hover:bg-cyan-500/30 transition-all">
-                Add Member & Generate Login
+              <button
+                onClick={addMember}
+                disabled={saving || !newMember.name || !newMember.email}
+                className="w-full py-2.5 rounded-lg bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 font-bold text-sm hover:bg-cyan-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+                {saving ? "Creating Account..." : "Create Account & Copy Login"}
               </button>
             </div>
           </div>
