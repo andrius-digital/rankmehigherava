@@ -36,8 +36,8 @@ interface Shoot {
   date: string;
   location: string;
   status: ShootStatus;
-  actorHours: number;
-  filmerHours: number;
+  actorMinutes: number;
+  filmerMinutes: number;
   videos: ShootVideo[];
   scripts: Script[];
   dropboxLink: string;
@@ -164,8 +164,8 @@ const ContentPortal = () => {
       date: newShoot.date,
       location: newShoot.location,
       status: "scheduled",
-      actorHours: 0,
-      filmerHours: 0,
+      actorMinutes: 0,
+      filmerMinutes: 0,
       videos: [],
       scripts: [],
       dropboxLink: "",
@@ -273,10 +273,10 @@ const ContentPortal = () => {
   };
 
   const calcShootFinancials = (shoot: Shoot) => {
-    const actorCost = shoot.actorHours * ACTOR_COST;
-    const filmerCost = shoot.filmerHours * FILMER_COST;
-    const actorRevenue = shoot.actorHours * ACTOR_CHARGE;
-    const filmerRevenue = shoot.filmerHours * FILMER_CHARGE;
+    const actorCost = (shoot.actorMinutes / 60) * ACTOR_COST;
+    const filmerCost = (shoot.filmerMinutes / 60) * FILMER_COST;
+    const actorRevenue = (shoot.actorMinutes / 60) * ACTOR_CHARGE;
+    const filmerRevenue = (shoot.filmerMinutes / 60) * FILMER_CHARGE;
     const videoRevenue = shoot.videos.reduce((sum, v) => sum + v.price, 0);
     const totalCost = actorCost + filmerCost;
     const totalRevenue = actorRevenue + filmerRevenue + videoRevenue;
@@ -520,8 +520,8 @@ const ContentPortal = () => {
                       <div className="flex items-center gap-4 text-xs text-muted-foreground">
                         <span className="flex items-center gap-1"><Video className="w-3 h-3" /> {shoot.videos.length} video{shoot.videos.length !== 1 ? "s" : ""}</span>
                         <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-green-400" /> {doneCount}/{shoot.videos.length} edited</span>
-                        <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {shoot.actorHours + shoot.filmerHours}h on site</span>
-                        <span className="flex items-center gap-1 text-green-400 font-bold"><DollarSign className="w-3 h-3" /> ${fin.totalRevenue}</span>
+                        <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {shoot.actorMinutes + shoot.filmerMinutes}min on site</span>
+                        <span className="flex items-center gap-1 text-green-400 font-bold"><DollarSign className="w-3 h-3" /> ${fin.totalRevenue.toFixed(2)}</span>
                       </div>
                     </button>
                   );
@@ -599,37 +599,37 @@ const ContentPortal = () => {
                     </h3>
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
                       <div>
-                        <label className="text-[10px] text-muted-foreground block mb-1">Actor Hours</label>
+                        <label className="text-[10px] text-muted-foreground block mb-1">Actor Minutes on Site</label>
                         <Input
-                          type="number" min="0" step="0.5"
-                          value={selectedShoot.actorHours}
-                          onChange={e => updateShoot("actorHours", parseFloat(e.target.value) || 0)}
+                          type="number" min="0" step="5"
+                          value={selectedShoot.actorMinutes}
+                          onChange={e => updateShoot("actorMinutes", parseFloat(e.target.value) || 0)}
                           className="bg-white/5 border-white/10 h-8 text-sm"
                         />
-                        <p className="text-[10px] text-muted-foreground mt-0.5">Cost: ${fin.actorCost} · Charge: ${fin.actorRevenue}</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">Cost: ${fin.actorCost.toFixed(2)} · Charge: ${fin.actorRevenue.toFixed(2)}</p>
                       </div>
                       <div>
-                        <label className="text-[10px] text-muted-foreground block mb-1">Filmer Hours</label>
+                        <label className="text-[10px] text-muted-foreground block mb-1">Filmer Minutes on Site</label>
                         <Input
-                          type="number" min="0" step="0.5"
-                          value={selectedShoot.filmerHours}
-                          onChange={e => updateShoot("filmerHours", parseFloat(e.target.value) || 0)}
+                          type="number" min="0" step="5"
+                          value={selectedShoot.filmerMinutes}
+                          onChange={e => updateShoot("filmerMinutes", parseFloat(e.target.value) || 0)}
                           className="bg-white/5 border-white/10 h-8 text-sm"
                         />
-                        <p className="text-[10px] text-muted-foreground mt-0.5">Cost: ${fin.filmerCost} · Charge: ${fin.filmerRevenue}</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">Cost: ${fin.filmerCost.toFixed(2)} · Charge: ${fin.filmerRevenue.toFixed(2)}</p>
                       </div>
                       <div className="flex flex-col justify-center text-center">
                         <p className="text-[10px] text-muted-foreground uppercase">Video Revenue</p>
-                        <p className="text-lg font-black font-orbitron text-green-400">${fin.videoRevenue}</p>
+                        <p className="text-lg font-black font-orbitron text-green-400">${fin.videoRevenue.toFixed(2)}</p>
                       </div>
                       <div className="flex flex-col justify-center text-center">
                         <p className="text-[10px] text-muted-foreground uppercase">Margin</p>
-                        <p className={`text-lg font-black font-orbitron ${fin.margin >= 0 ? "text-cyan-400" : "text-red-400"}`}>${fin.margin}</p>
+                        <p className={`text-lg font-black font-orbitron ${fin.margin >= 0 ? "text-cyan-400" : "text-red-400"}`}>${fin.margin.toFixed(2)}</p>
                       </div>
                     </div>
                     <div className="flex items-center justify-between text-xs border-t border-white/5 pt-2">
-                      <span className="text-muted-foreground">Total Revenue: <span className="text-green-400 font-bold">${fin.totalRevenue}</span></span>
-                      <span className="text-muted-foreground">Total Cost: <span className="text-red-400 font-bold">${fin.totalCost}</span></span>
+                      <span className="text-muted-foreground">Total Revenue: <span className="text-green-400 font-bold">${fin.totalRevenue.toFixed(2)}</span></span>
+                      <span className="text-muted-foreground">Total Cost: <span className="text-red-400 font-bold">${fin.totalCost.toFixed(2)}</span></span>
                     </div>
                   </div>
                 );
