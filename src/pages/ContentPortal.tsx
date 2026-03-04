@@ -14,13 +14,6 @@ type ContentType = "short-form" | "vsl" | "value-added";
 type EditStatus = "not-started" | "editing" | "review" | "done";
 type ShootStatus = "scheduled" | "in-progress" | "completed" | "cancelled";
 
-interface Script {
-  id: string;
-  title: string;
-  content: string;
-  contentType: ContentType;
-}
-
 interface ShootVideo {
   id: string;
   title: string;
@@ -28,6 +21,7 @@ interface ShootVideo {
   editStatus: EditStatus;
   editor: string;
   price: number;
+  script: string;
 }
 
 interface Shoot {
@@ -39,7 +33,6 @@ interface Shoot {
   actorMinutes: number;
   filmerMinutes: number;
   videos: ShootVideo[];
-  scripts: Script[];
   dropboxLink: string;
   notes: string;
 }
@@ -121,7 +114,7 @@ const ContentPortal = () => {
   const [showAddClient, setShowAddClient] = useState(false);
   const [showAddShoot, setShowAddShoot] = useState(false);
   const [showAddVideo, setShowAddVideo] = useState(false);
-  const [showAddScript, setShowAddScript] = useState(false);
+  const [expandedVideoId, setExpandedVideoId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
 
@@ -135,8 +128,7 @@ const ContentPortal = () => {
 
   const [newClient, setNewClient] = useState({ name: "", business: "", email: "", phone: "" });
   const [newShoot, setNewShoot] = useState({ date: "", location: "", notes: "" });
-  const [newVideo, setNewVideo] = useState<{ title: string; contentType: ContentType; editor: string }>({ title: "", contentType: "short-form", editor: "" });
-  const [newScript, setNewScript] = useState<{ title: string; content: string; contentType: ContentType }>({ title: "", content: "", contentType: "short-form" });
+  const [newVideo, setNewVideo] = useState<{ title: string; contentType: ContentType; editor: string; script: string }>({ title: "", contentType: "short-form", editor: "", script: "" });
 
   const addClient = () => {
     if (!newClient.name || !newClient.business) return;
@@ -169,7 +161,6 @@ const ContentPortal = () => {
       actorMinutes: 0,
       filmerMinutes: 0,
       videos: [],
-      scripts: [],
       dropboxLink: "",
       notes: newShoot.notes,
     };
@@ -211,6 +202,7 @@ const ContentPortal = () => {
       editStatus: "not-started",
       editor: newVideo.editor,
       price: getVideoPrice(newVideo.contentType),
+      script: newVideo.script,
     };
     const updated = clients.map(c =>
       c.id === selectedClientId
@@ -218,7 +210,7 @@ const ContentPortal = () => {
         : c
     );
     persist(updated);
-    setNewVideo({ title: "", contentType: "short-form", editor: "" });
+    setNewVideo({ title: "", contentType: "short-form", editor: "", script: "" });
     setShowAddVideo(false);
     toast({ title: "Video added" });
   };
@@ -250,25 +242,17 @@ const ContentPortal = () => {
     toast({ title: "Video removed" });
   };
 
-  const addScript = () => {
-    if (!newScript.title || !selectedClientId || !selectedShootId) return;
-    const script: Script = { id: generateId(), ...newScript };
-    const updated = clients.map(c =>
-      c.id === selectedClientId
-        ? { ...c, shoots: c.shoots.map(s => s.id === selectedShootId ? { ...s, scripts: [...s.scripts, script] } : s) }
-        : c
-    );
-    persist(updated);
-    setNewScript({ title: "", content: "", contentType: "short-form" });
-    setShowAddScript(false);
-    toast({ title: "Script added" });
-  };
-
-  const deleteScript = (scriptId: string) => {
+  const updateVideoScript = (videoId: string, script: string) => {
     if (!selectedClientId || !selectedShootId) return;
     const updated = clients.map(c =>
       c.id === selectedClientId
-        ? { ...c, shoots: c.shoots.map(s => s.id === selectedShootId ? { ...s, scripts: s.scripts.filter(sc => sc.id !== scriptId) } : s) }
+        ? {
+          ...c, shoots: c.shoots.map(s =>
+            s.id === selectedShootId
+              ? { ...s, videos: s.videos.map(v => v.id === videoId ? { ...v, script } : v) }
+              : s
+          )
+        }
         : c
     );
     persist(updated);
@@ -688,71 +672,55 @@ const ContentPortal = () => {
                 </div>
                 <div className="space-y-2">
                   {selectedShoot.videos.map(video => (
-                    <div key={video.id} className="flex items-center gap-3 p-3 rounded-lg bg-white/[0.03] border border-white/5 group">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <p className="font-bold text-sm truncate">{video.title}</p>
-                          <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold border ${contentTypeColor[video.contentType]}`}>
-                            {contentTypeLabel[video.contentType]}
-                          </span>
+                    <div key={video.id} className="p-3 rounded-lg bg-white/[0.03] border border-white/5 group">
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <p className="font-bold text-sm truncate">{video.title}</p>
+                            <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold border ${contentTypeColor[video.contentType]}`}>
+                              {contentTypeLabel[video.contentType]}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                            {video.editor && <span>Editor: {video.editor}</span>}
+                            <span className="text-green-400 font-bold">${video.price}</span>
+                            <button
+                              onClick={() => setExpandedVideoId(expandedVideoId === video.id ? null : video.id)}
+                              className="flex items-center gap-1 text-yellow-400 hover:text-yellow-300 transition-colors"
+                            >
+                              <FileText className="w-3 h-3" />
+                              {video.script ? "Script" : "Add Script"}
+                            </button>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                          {video.editor && <span>Editor: {video.editor}</span>}
-                          <span className="text-green-400 font-bold">${video.price}</span>
-                        </div>
+                        <select
+                          value={video.editStatus}
+                          onChange={e => updateVideoStatus(video.id, e.target.value as EditStatus)}
+                          className={`px-2 py-1 rounded-lg text-[10px] font-bold border focus:outline-none ${editStatusColor[video.editStatus]}`}
+                        >
+                          <option value="not-started">Not Started</option>
+                          <option value="editing">Editing</option>
+                          <option value="review">In Review</option>
+                          <option value="done">Done</option>
+                        </select>
+                        <button onClick={() => deleteVideo(video.id)} className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-red-500/20 transition-all">
+                          <Trash2 className="w-3 h-3 text-muted-foreground" />
+                        </button>
                       </div>
-                      <select
-                        value={video.editStatus}
-                        onChange={e => updateVideoStatus(video.id, e.target.value as EditStatus)}
-                        className={`px-2 py-1 rounded-lg text-[10px] font-bold border focus:outline-none ${editStatusColor[video.editStatus]}`}
-                      >
-                        <option value="not-started">Not Started</option>
-                        <option value="editing">Editing</option>
-                        <option value="review">In Review</option>
-                        <option value="done">Done</option>
-                      </select>
-                      <button onClick={() => deleteVideo(video.id)} className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-red-500/20 transition-all">
-                        <Trash2 className="w-3 h-3 text-muted-foreground" />
-                      </button>
+                      {expandedVideoId === video.id && (
+                        <div className="mt-2 pt-2 border-t border-white/5">
+                          <textarea
+                            placeholder="Paste script here..."
+                            value={video.script || ""}
+                            onChange={e => updateVideoScript(video.id, e.target.value)}
+                            className="w-full p-2 rounded-lg bg-white/[0.03] border border-white/10 text-xs text-foreground placeholder:text-muted-foreground resize-none h-28 focus:outline-none focus:border-yellow-500/40"
+                          />
+                        </div>
+                      )}
                     </div>
                   ))}
                   {selectedShoot.videos.length === 0 && (
                     <p className="text-xs text-muted-foreground text-center py-4">No videos added yet</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Scripts */}
-              <div className="rounded-xl bg-white/5 border border-white/10 p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-xs font-bold text-muted-foreground uppercase font-orbitron flex items-center gap-1.5">
-                    <FileText className="w-3.5 h-3.5 text-yellow-400" /> Scripts ({selectedShoot.scripts.length})
-                  </h3>
-                  <button onClick={() => setShowAddScript(true)} className="flex items-center gap-1 px-3 py-1 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-xs font-bold hover:bg-yellow-500/20 transition-all">
-                    <Plus className="w-3 h-3" /> Add
-                  </button>
-                </div>
-                <div className="space-y-2">
-                  {selectedShoot.scripts.map(script => (
-                    <div key={script.id} className="p-3 rounded-lg bg-white/[0.03] border border-white/5 group">
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="flex items-center gap-2">
-                          <p className="font-bold text-sm">{script.title}</p>
-                          <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold border ${contentTypeColor[script.contentType]}`}>
-                            {contentTypeLabel[script.contentType]}
-                          </span>
-                        </div>
-                        <button onClick={() => deleteScript(script.id)} className="w-6 h-6 rounded bg-white/5 flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-red-500/20 transition-all">
-                          <Trash2 className="w-3 h-3 text-muted-foreground" />
-                        </button>
-                      </div>
-                      {script.content && (
-                        <pre className="text-xs text-muted-foreground whitespace-pre-wrap mt-2 p-2 rounded bg-white/[0.02] border border-white/5 max-h-40 overflow-y-auto">{script.content}</pre>
-                      )}
-                    </div>
-                  ))}
-                  {selectedShoot.scripts.length === 0 && (
-                    <p className="text-xs text-muted-foreground text-center py-4">No scripts added yet</p>
                   )}
                 </div>
               </div>
@@ -783,6 +751,12 @@ const ContentPortal = () => {
                         </div>
                       </div>
                       <Input placeholder="Editor name (optional)" value={newVideo.editor} onChange={e => setNewVideo(p => ({ ...p, editor: e.target.value }))} className="bg-white/5 border-white/10" />
+                      <textarea
+                        placeholder="Paste script (optional)..."
+                        value={newVideo.script}
+                        onChange={e => setNewVideo(p => ({ ...p, script: e.target.value }))}
+                        className="w-full p-3 rounded-lg bg-white/5 border border-white/10 text-sm text-foreground placeholder:text-muted-foreground resize-none h-24 focus:outline-none focus:border-yellow-500/40"
+                      />
                       <button onClick={addVideo} className="w-full py-2.5 rounded-lg bg-red-500/20 border border-red-500/30 text-red-400 font-bold text-sm hover:bg-red-500/30 transition-all">
                         Add Video
                       </button>
@@ -791,43 +765,6 @@ const ContentPortal = () => {
                 </div>
               )}
 
-              {showAddScript && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={() => setShowAddScript(false)}>
-                  <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-                  <div className="relative w-full max-w-lg rounded-2xl bg-background/95 backdrop-blur-xl border border-white/10 p-6" onClick={e => e.stopPropagation()}>
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="font-orbitron font-bold">Add Script</h3>
-                      <button onClick={() => setShowAddScript(false)} className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20"><X className="w-3.5 h-3.5" /></button>
-                    </div>
-                    <div className="space-y-3">
-                      <Input placeholder="Script title *" value={newScript.title} onChange={e => setNewScript(p => ({ ...p, title: e.target.value }))} className="bg-white/5 border-white/10" />
-                      <div>
-                        <label className="text-xs text-muted-foreground mb-1 block">Content Type</label>
-                        <div className="flex gap-2">
-                          {(["short-form", "vsl", "value-added"] as ContentType[]).map(ct => (
-                            <button
-                              key={ct}
-                              onClick={() => setNewScript(p => ({ ...p, contentType: ct }))}
-                              className={`flex-1 py-2 rounded-lg text-xs font-bold border transition-all ${newScript.contentType === ct ? contentTypeColor[ct] : "bg-white/5 border-white/10 text-muted-foreground"}`}
-                            >
-                              {contentTypeLabel[ct]}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                      <textarea
-                        placeholder="Paste script here..."
-                        value={newScript.content}
-                        onChange={e => setNewScript(p => ({ ...p, content: e.target.value }))}
-                        className="w-full p-3 rounded-lg bg-white/5 border border-white/10 text-sm text-foreground placeholder:text-muted-foreground resize-none h-40 focus:outline-none focus:border-yellow-500/40"
-                      />
-                      <button onClick={addScript} className="w-full py-2.5 rounded-lg bg-yellow-500/20 border border-yellow-500/30 text-yellow-400 font-bold text-sm hover:bg-yellow-500/30 transition-all">
-                        Add Script
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
             </>
           )}
         </div>
