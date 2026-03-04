@@ -1,14 +1,49 @@
-User-agent: Googlebot
-Allow: /
+# Rank Me Higher - robots.txt
+# Only allow indexing of public pages
 
-User-agent: Bingbot
-Allow: /
+User-agent: *
+Allow: /$
+Allow: /contact
+Allow: /careers
+Allow: /blog
 
+# Block all internal and unready pages
+Disallow: /localmapbooster
+Disallow: /services/
+Disallow: /website-submissions
+Disallow: /website-submission-confirmation
+Disallow: /funnel-submissions
+Disallow: /funnel-submission-confirmation
+Disallow: /call-center-kpi
+Disallow: /submissions-dashboard
+Disallow: /agency-dashboard
+Disallow: /avaadminpanel
+Disallow: /cdl-agency-portal
+Disallow: /cdl-recruiters
+Disallow: /cdl-carriers
+Disallow: /agency/
+Disallow: /subscriptions
+Disallow: /website-prompting
+Disallow: /website-builder
+Disallow: /website-command-center
+Disallow: /client-portal
+Disallow: /client-dashboard
+Disallow: /reseller-portal
+Disallow: /ava-voice-calls
+Disallow: /ava-training
+Disallow: /task-flow
+Disallow: /applicant-tracker
+Disallow: /avaseo
+Disallow: /avabyrankmehigher
+Disallow: /task-pipeline
+Disallow: /team-tracker
+Disallow: /client-sites-tracker
+
+# Allow social media bots for link previews
 User-agent: Twitterbot
 Allow: /
 
 User-agent: facebookexternalhit
 Allow: /
 
-User-agent: *
-Allow: /
+Sitemap: https://rankmehigher.com/sitemap.xml
