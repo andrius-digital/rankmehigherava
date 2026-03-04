@@ -21,6 +21,16 @@ The app is built as a React SPA using Vite, TypeScript, Tailwind CSS, and shadcn
 - **Dev script**: `npm run dev` starts both API server (port 3001) and Vite (port 5000)
 - **Deployment**: Autoscale with `node server.js` (build: `npm run build`)
 
+### AI Script Generation System (Content Portal)
+
+- **Endpoints**: `/api/script/generate`, `/api/script/knowledge`, `/api/script/training`, `/api/script/approve`
+- **Knowledge Base**: Stored in `data/script_knowledge.json` — contains training docs and approved scripts
+- **Self-Learning Loop**: AI generates script → manager reviews/edits → approves → script saved to knowledge base tagged by industry → future scripts reference approved examples
+- **Industry Memory**: Scripts tagged by client industry (Trucking, HVAC, etc.) — AI pulls same-industry approved scripts as examples when generating
+- **Training Materials**: Upload script frameworks, style guides, examples — AI references all training docs when generating
+- **Script Status**: `draft` → `ai-generated` → `approved` (tracked per video)
+- **Content Portal Pricing**: ACTOR_COST=$75/hr, FILMER_COST=$75/hr, ACTOR_CHARGE=$150/hr, FILMER_CHARGE=$150/hr, SHORT_FORM_PRICE=$30, VSL_PRICE=$150, VALUE_ADDED_PRICE=$30, EDITOR_COST_PER_VIDEO=$7, EDITOR_COST_PER_VSL=$30, MANAGER_FEE=10% of gross profit
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.

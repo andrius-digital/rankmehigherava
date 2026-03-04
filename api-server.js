@@ -352,6 +352,125 @@ app.post('/api/screening/transcribe', upload.single('file'), async (req, res) =>
   }
 });
 
+const SCRIPT_KNOWLEDGE_FILE = path.join(process.cwd(), 'data', 'script_knowledge.json');
+
+function loadScriptKnowledge() {
+  ensureDataDir();
+  if (!fs.existsSync(SCRIPT_KNOWLEDGE_FILE)) return { trainingDocs: [], approvedScripts: [] };
+  try {
+    return JSON.parse(fs.readFileSync(SCRIPT_KNOWLEDGE_FILE, 'utf-8'));
+  } catch { return { trainingDocs: [], approvedScripts: [] }; }
+}
+
+function saveScriptKnowledge(data) {
+  ensureDataDir();
+  fs.writeFileSync(SCRIPT_KNOWLEDGE_FILE, JSON.stringify(data, null, 2));
+}
+
+app.post('/api/script/generate', async (req, res) => {
+  try {
+    const { videoTitle, contentType, clientName, clientBusiness, clientIndustry, shootNotes, existingScript, userPrompt } = req.body;
+    const knowledge = loadScriptKnowledge();
+
+    const industryScripts = knowledge.approvedScripts
+      .filter(s => s.industry && s.industry.toLowerCase() === (clientIndustry || '').toLowerCase())
+      .slice(-5);
+    const recentScripts = knowledge.approvedScripts
+      .filter(s => !industryScripts.find(is => is.id === s.id))
+      .slice(-3);
+
+    let trainingContext = '';
+    if (knowledge.trainingDocs.length > 0) {
+      trainingContext = '\n\n## TRAINING MATERIAL (follow these guidelines):\n' +
+        knowledge.trainingDocs.map(d => `### ${d.title}\n${d.content}`).join('\n\n');
+    }
+
+    let examplesContext = '';
+    if (industryScripts.length > 0) {
+      examplesContext += '\n\n## APPROVED SCRIPTS FROM SAME INDUSTRY (' + clientIndustry + '):\n' +
+        industryScripts.map(s => `### ${s.videoTitle} (${s.contentType}) for ${s.clientBusiness}\n${s.script}`).join('\n\n');
+    }
+    if (recentScripts.length > 0) {
+      examplesContext += '\n\n## OTHER APPROVED SCRIPT EXAMPLES:\n' +
+        recentScripts.map(s => `### ${s.videoTitle} (${s.contentType}) for ${s.clientBusiness} [${s.industry}]\n${s.script}`).join('\n\n');
+    }
+
+    const systemPrompt = `You are an expert video script writer for Lucky World, a content production company. You write scripts for short-form ads, VSLs (Video Sales Letters), and value-added content videos.
+
+Your scripts should be:
+- Engaging and attention-grabbing from the first line
+- Written in a natural, conversational tone
+- Structured with clear hooks, body, and call-to-action
+- Tailored to the specific business and industry
+- Appropriate length for the content type:
+  - Short Form Ad: 30-60 seconds (concise, punchy, hook-driven)
+  - VSL: 2-5 minutes (persuasive, story-driven, problem-solution-CTA)
+  - Value Added: 60-90 seconds (educational, helpful, builds trust)
+
+Format scripts with clear sections like [HOOK], [BODY], [CTA] and include visual/action notes in parentheses where helpful.
+${trainingContext}${examplesContext}`;
+
+    const userMessage = `Write a ${contentType === 'short-form' ? 'Short Form Ad' : contentType === 'vsl' ? 'VSL' : 'Value Added'} script for:
+
+Client: ${clientName} (${clientBusiness})
+Industry: ${clientIndustry || 'General'}
+Video Title: ${videoTitle}
+${shootNotes ? `Shoot Notes: ${shootNotes}` : ''}
+${existingScript ? `\nExisting draft to improve:\n${existingScript}` : ''}
+${userPrompt ? `\nSpecific instructions: ${userPrompt}` : ''}
+
+Write the complete script now.`;
+
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userMessage }
+      ],
+      temperature: 0.7,
+      max_tokens: 2000,
+    });
+
+    res.json({ script: response.choices[0].message.content });
+  } catch (error) {
+    console.error('Script generation error:', error);
+    res.status(500).json({ error: 'Script generation failed' });
+  }
+});
+
+app.get('/api/script/knowledge', (req, res) => {
+  res.json(loadScriptKnowledge());
+});
+
+app.post('/api/script/training', (req, res) => {
+  const { title, content } = req.body;
+  if (!title || !content) return res.status(400).json({ error: 'Title and content required' });
+  const knowledge = loadScriptKnowledge();
+  knowledge.trainingDocs.push({ id: Date.now().toString(36), title, content, addedAt: new Date().toISOString() });
+  saveScriptKnowledge(knowledge);
+  res.json({ success: true, knowledge });
+});
+
+app.delete('/api/script/training/:id', (req, res) => {
+  const knowledge = loadScriptKnowledge();
+  knowledge.trainingDocs = knowledge.trainingDocs.filter(d => d.id !== req.params.id);
+  saveScriptKnowledge(knowledge);
+  res.json({ success: true, knowledge });
+});
+
+app.post('/api/script/approve', (req, res) => {
+  const { script, videoTitle, contentType, clientName, clientBusiness, industry } = req.body;
+  if (!script) return res.status(400).json({ error: 'Script required' });
+  const knowledge = loadScriptKnowledge();
+  knowledge.approvedScripts.push({
+    id: Date.now().toString(36),
+    script, videoTitle, contentType, clientName, clientBusiness, industry,
+    approvedAt: new Date().toISOString()
+  });
+  saveScriptKnowledge(knowledge);
+  res.json({ success: true, totalApproved: knowledge.approvedScripts.length });
+});
+
 const PORT = 3001;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`API server running on port ${PORT}`);

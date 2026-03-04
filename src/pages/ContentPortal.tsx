@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import {
   ArrowLeft, Plus, X, Video, Camera, FileText, Users, MapPin,
   Clock, DollarSign, ExternalLink, ChevronRight,
   Trash2, CheckCircle2, Clapperboard,
-  Building2, Link2, Search, Calendar
+  Building2, Link2, Search, Calendar, Sparkles, ThumbsUp, BookOpen, Loader2, Brain
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -13,6 +13,8 @@ import { useToast } from "@/hooks/use-toast";
 type ContentType = "short-form" | "vsl" | "value-added";
 type EditStatus = "not-started" | "editing" | "review" | "done";
 type ShootStatus = "scheduled" | "in-progress" | "completed" | "cancelled";
+
+type ScriptStatus = "draft" | "ai-generated" | "approved";
 
 interface ShootVideo {
   id: string;
@@ -22,6 +24,7 @@ interface ShootVideo {
   editor: string;
   price: number;
   script: string;
+  scriptStatus: ScriptStatus;
 }
 
 interface Shoot {
@@ -46,6 +49,7 @@ interface Client {
   id: string;
   name: string;
   business: string;
+  industry: string;
   email: string;
   phone: string;
   dropboxFolder: string;
@@ -135,7 +139,13 @@ const ContentPortal = () => {
   const selectedClient = clients.find(c => c.id === selectedClientId) || null;
   const selectedShoot = selectedClient?.shoots.find(s => s.id === selectedShootId) || null;
 
-  const [newClient, setNewClient] = useState({ name: "", business: "", email: "", phone: "", dropboxFolder: "" });
+  const [newClient, setNewClient] = useState({ name: "", business: "", industry: "", email: "", phone: "", dropboxFolder: "" });
+  const [aiGenerating, setAiGenerating] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [showTraining, setShowTraining] = useState(false);
+  const [trainingDocs, setTrainingDocs] = useState<{id: string; title: string; content: string; addedAt: string}[]>([]);
+  const [approvedCount, setApprovedCount] = useState(0);
+  const [newTraining, setNewTraining] = useState({ title: "", content: "" });
   const [newShoot, setNewShoot] = useState({ name: "", date: "", location: "", notes: "" });
   const [newVideo, setNewVideo] = useState<{ title: string; contentType: ContentType; editor: string; script: string }>({ title: "", contentType: "short-form", editor: "", script: "" });
 
@@ -148,7 +158,7 @@ const ContentPortal = () => {
       shoots: [],
     };
     persist([client, ...clients]);
-    setNewClient({ name: "", business: "", email: "", phone: "", dropboxFolder: "" });
+    setNewClient({ name: "", business: "", industry: "", email: "", phone: "", dropboxFolder: "" });
     setShowAddClient(false);
     toast({ title: "Client added", description: `${client.name} has been onboarded.` });
   };
@@ -225,6 +235,7 @@ const ContentPortal = () => {
       editor: newVideo.editor,
       price: getVideoPrice(newVideo.contentType),
       script: newVideo.script,
+      scriptStatus: "draft",
     };
     const updated = clients.map(c =>
       c.id === selectedClientId
@@ -264,14 +275,14 @@ const ContentPortal = () => {
     toast({ title: "Video removed" });
   };
 
-  const updateVideoScript = (videoId: string, script: string) => {
+  const updateVideoScript = (videoId: string, script: string, scriptStatus?: ScriptStatus) => {
     if (!selectedClientId || !selectedShootId) return;
     const updated = clients.map(c =>
       c.id === selectedClientId
         ? {
           ...c, shoots: c.shoots.map(s =>
             s.id === selectedShootId
-              ? { ...s, videos: s.videos.map(v => v.id === videoId ? { ...v, script } : v) }
+              ? { ...s, videos: s.videos.map(v => v.id === videoId ? { ...v, script, ...(scriptStatus ? { scriptStatus } : {}) } : v) }
               : s
           )
         }
@@ -279,6 +290,98 @@ const ContentPortal = () => {
     );
     persist(updated);
   };
+
+  const loadKnowledge = async () => {
+    try {
+      const res = await fetch("/api/script/knowledge");
+      const data = await res.json();
+      setTrainingDocs(data.trainingDocs || []);
+      setApprovedCount((data.approvedScripts || []).length);
+    } catch {}
+  };
+
+  const generateScript = async (video: ShootVideo) => {
+    if (!selectedClient || !selectedShoot) return;
+    setAiGenerating(true);
+    try {
+      const res = await fetch("/api/script/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          videoTitle: video.title,
+          contentType: video.contentType,
+          clientName: selectedClient.name,
+          clientBusiness: selectedClient.business,
+          clientIndustry: selectedClient.industry,
+          shootNotes: selectedShoot.notes,
+          existingScript: video.script,
+          userPrompt: aiPrompt,
+        }),
+      });
+      const data = await res.json();
+      if (data.script) {
+        updateVideoScript(video.id, data.script, "ai-generated");
+        toast({ title: "Script generated", description: "AI script has been generated. Review and approve it." });
+      }
+    } catch {
+      toast({ title: "Error", description: "Failed to generate script", variant: "destructive" });
+    } finally {
+      setAiGenerating(false);
+      setAiPrompt("");
+    }
+  };
+
+  const approveScript = async (video: ShootVideo) => {
+    if (!selectedClient) return;
+    try {
+      await fetch("/api/script/approve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          script: video.script,
+          videoTitle: video.title,
+          contentType: video.contentType,
+          clientName: selectedClient.name,
+          clientBusiness: selectedClient.business,
+          industry: selectedClient.industry,
+        }),
+      });
+      updateVideoScript(video.id, video.script, "approved");
+      setApprovedCount(p => p + 1);
+      toast({ title: "Script approved", description: "Saved to knowledge base for future AI training." });
+    } catch {
+      toast({ title: "Error", description: "Failed to approve script", variant: "destructive" });
+    }
+  };
+
+  const addTrainingDoc = async () => {
+    if (!newTraining.title || !newTraining.content) return;
+    try {
+      const res = await fetch("/api/script/training", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newTraining),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setTrainingDocs(data.knowledge.trainingDocs);
+        setNewTraining({ title: "", content: "" });
+        toast({ title: "Training added", description: "AI will use this for future scripts." });
+      }
+    } catch {
+      toast({ title: "Error", description: "Failed to add training", variant: "destructive" });
+    }
+  };
+
+  const removeTrainingDoc = async (id: string) => {
+    try {
+      const res = await fetch(`/api/script/training/${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.success) setTrainingDocs(data.knowledge.trainingDocs);
+    } catch {}
+  };
+
+  useEffect(() => { loadKnowledge(); }, []);
 
   const calcShootFinancials = (shoot: Shoot) => {
     const actorCost = (shoot.actorMinutes / 60) * ACTOR_COST;
@@ -498,6 +601,7 @@ const ContentPortal = () => {
                     <div className="space-y-3">
                       <Input placeholder="Client name *" value={newClient.name} onChange={e => setNewClient(p => ({ ...p, name: e.target.value }))} className="bg-white/5 border-white/10" />
                       <Input placeholder="Business name *" value={newClient.business} onChange={e => setNewClient(p => ({ ...p, business: e.target.value }))} className="bg-white/5 border-white/10" />
+                      <Input placeholder="Industry (e.g. Trucking, Restaurant, HVAC)" value={newClient.industry} onChange={e => setNewClient(p => ({ ...p, industry: e.target.value }))} className="bg-white/5 border-white/10" />
                       <Input placeholder="Email" value={newClient.email} onChange={e => setNewClient(p => ({ ...p, email: e.target.value }))} className="bg-white/5 border-white/10" />
                       <Input placeholder="Phone" value={newClient.phone} onChange={e => setNewClient(p => ({ ...p, phone: e.target.value }))} className="bg-white/5 border-white/10" />
                       <Input placeholder="Lucky World Dropbox folder link" value={newClient.dropboxFolder} onChange={e => setNewClient(p => ({ ...p, dropboxFolder: e.target.value }))} className="bg-white/5 border-white/10" />
@@ -516,7 +620,7 @@ const ContentPortal = () => {
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h2 className="font-orbitron font-bold text-xl">{selectedClient.name}</h2>
-                  <p className="text-xs text-muted-foreground mt-1">{selectedClient.business} · Onboarded {new Date(selectedClient.onboardedAt).toLocaleDateString()}
+                  <p className="text-xs text-muted-foreground mt-1">{selectedClient.business}{selectedClient.industry && ` · ${selectedClient.industry}`} · Onboarded {new Date(selectedClient.onboardedAt).toLocaleDateString()}
                     {selectedClient.dropboxFolder && (
                       <> · <a href={selectedClient.dropboxFolder} target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 inline-flex items-center gap-1">Lucky World Dropbox <ExternalLink className="w-3 h-3 inline" /></a></>
                     )}
@@ -944,31 +1048,144 @@ const ContentPortal = () => {
               {expandedVideoId && (() => {
                 const video = selectedShoot.videos.find(v => v.id === expandedVideoId);
                 if (!video) return null;
+                const statusColors: Record<string, string> = {
+                  "draft": "text-muted-foreground bg-white/5 border-white/10",
+                  "ai-generated": "text-yellow-400 bg-yellow-500/10 border-yellow-500/20",
+                  "approved": "text-green-400 bg-green-500/10 border-green-500/20",
+                };
+                const scriptSt = video.scriptStatus || "draft";
                 return (
-                  <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={() => setExpandedVideoId(null)}>
+                  <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={() => { setExpandedVideoId(null); setAiPrompt(""); }}>
                     <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-                    <div className="relative w-full max-w-lg rounded-2xl bg-background/95 backdrop-blur-xl border border-white/10 p-6" onClick={e => e.stopPropagation()}>
+                    <div className="relative w-full max-w-2xl rounded-2xl bg-background/95 backdrop-blur-xl border border-white/10 p-6" onClick={e => e.stopPropagation()}>
                       <div className="flex items-center justify-between mb-4">
                         <div>
                           <h3 className="font-orbitron font-bold flex items-center gap-2">
                             <FileText className="w-4 h-4 text-yellow-400" /> Script
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${statusColors[scriptSt]}`}>
+                              {scriptSt === "ai-generated" ? "AI GENERATED" : scriptSt.toUpperCase()}
+                            </span>
                           </h3>
-                          <p className="text-xs text-muted-foreground mt-0.5">{video.title}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">{video.title} · {contentTypeLabel[video.contentType]}{selectedClient?.industry && ` · ${selectedClient.industry}`}</p>
                         </div>
-                        <button onClick={() => setExpandedVideoId(null)} className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20">
+                        <button onClick={() => { setExpandedVideoId(null); setAiPrompt(""); }} className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20">
                           <X className="w-3.5 h-3.5" />
                         </button>
                       </div>
                       <textarea
-                        placeholder="Paste script here..."
+                        placeholder="Write or generate a script..."
                         value={video.script || ""}
-                        onChange={e => updateVideoScript(video.id, e.target.value)}
-                        className="w-full p-3 rounded-lg bg-white/5 border border-white/10 text-sm text-foreground placeholder:text-muted-foreground resize-y min-h-[200px] h-[300px] focus:outline-none focus:border-yellow-500/40"
+                        onChange={e => updateVideoScript(video.id, e.target.value, "draft")}
+                        className="w-full p-3 rounded-lg bg-white/5 border border-white/10 text-sm text-foreground placeholder:text-muted-foreground resize-y min-h-[200px] h-[300px] focus:outline-none focus:border-yellow-500/40 mb-3"
                       />
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Input
+                            placeholder="Optional: Tell AI what to focus on..."
+                            value={aiPrompt}
+                            onChange={e => setAiPrompt(e.target.value)}
+                            className="bg-white/5 border-white/10 text-sm flex-1"
+                          />
+                          <button
+                            onClick={() => generateScript(video)}
+                            disabled={aiGenerating}
+                            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-500/20 border border-purple-500/30 text-purple-400 text-sm font-bold hover:bg-purple-500/30 transition-all disabled:opacity-50"
+                          >
+                            {aiGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                            {aiGenerating ? "Generating..." : video.script ? "Regenerate" : "AI Generate"}
+                          </button>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                            <Brain className="w-3 h-3" /> {approvedCount} approved scripts in memory · {trainingDocs.length} training docs loaded
+                          </p>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => setShowTraining(true)}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-muted-foreground text-xs hover:bg-white/10 transition-all"
+                            >
+                              <BookOpen className="w-3 h-3" /> Training
+                            </button>
+                            {video.script && scriptSt !== "approved" && (
+                              <button
+                                onClick={() => approveScript(video)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-500/20 border border-green-500/30 text-green-400 text-xs font-bold hover:bg-green-500/30 transition-all"
+                              >
+                                <ThumbsUp className="w-3 h-3" /> Approve & Save to Memory
+                              </button>
+                            )}
+                            {scriptSt === "approved" && (
+                              <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-bold">
+                                <CheckCircle2 className="w-3 h-3" /> Approved & Saved
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 );
               })()}
+
+              {showTraining && (
+                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4" onClick={() => setShowTraining(false)}>
+                  <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+                  <div className="relative w-full max-w-2xl max-h-[80vh] rounded-2xl bg-background/95 backdrop-blur-xl border border-white/10 p-6 overflow-y-auto" onClick={e => e.stopPropagation()}>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-orbitron font-bold flex items-center gap-2">
+                        <BookOpen className="w-4 h-4 text-purple-400" /> Script Training Materials
+                      </h3>
+                      <button onClick={() => setShowTraining(false)} className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20">
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-4">
+                      Add your script frameworks, style guides, and examples here. The AI will reference all training materials when generating scripts. Approved scripts are automatically saved and used as examples for future generation.
+                    </p>
+                    <div className="mb-4 p-3 rounded-lg bg-purple-500/5 border border-purple-500/20">
+                      <p className="text-xs text-purple-400 font-bold mb-1 flex items-center gap-1"><Brain className="w-3 h-3" /> AI Memory Status</p>
+                      <p className="text-xs text-muted-foreground">{trainingDocs.length} training document{trainingDocs.length !== 1 ? "s" : ""} · {approvedCount} approved script{approvedCount !== 1 ? "s" : ""} saved to memory</p>
+                    </div>
+                    <div className="space-y-3 mb-4">
+                      <Input
+                        placeholder="Training document title *"
+                        value={newTraining.title}
+                        onChange={e => setNewTraining(p => ({ ...p, title: e.target.value }))}
+                        className="bg-white/5 border-white/10"
+                      />
+                      <textarea
+                        placeholder="Paste your script framework, guidelines, or example scripts here..."
+                        value={newTraining.content}
+                        onChange={e => setNewTraining(p => ({ ...p, content: e.target.value }))}
+                        className="w-full p-3 rounded-lg bg-white/5 border border-white/10 text-sm text-foreground placeholder:text-muted-foreground resize-y min-h-[120px] h-[150px] focus:outline-none focus:border-purple-500/40"
+                      />
+                      <button
+                        onClick={addTrainingDoc}
+                        className="w-full py-2.5 rounded-lg bg-purple-500/20 border border-purple-500/30 text-purple-400 font-bold text-sm hover:bg-purple-500/30 transition-all"
+                      >
+                        Add Training Document
+                      </button>
+                    </div>
+                    {trainingDocs.length > 0 && (
+                      <div className="space-y-2">
+                        <p className="text-[10px] text-muted-foreground uppercase font-orbitron">Loaded Training Documents</p>
+                        {trainingDocs.map(doc => (
+                          <div key={doc.id} className="p-3 rounded-lg bg-white/5 border border-white/10">
+                            <div className="flex items-center justify-between mb-1">
+                              <p className="text-sm font-bold">{doc.title}</p>
+                              <button onClick={() => removeTrainingDoc(doc.id)} className="w-6 h-6 rounded bg-white/5 flex items-center justify-center hover:bg-red-500/20 transition-all">
+                                <Trash2 className="w-3 h-3 text-muted-foreground hover:text-red-400" />
+                              </button>
+                            </div>
+                            <p className="text-xs text-muted-foreground line-clamp-3">{doc.content}</p>
+                            <p className="text-[10px] text-muted-foreground mt-1">Added {new Date(doc.addedAt).toLocaleDateString()}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
             </>
           )}
