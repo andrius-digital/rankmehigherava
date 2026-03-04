@@ -57,7 +57,24 @@ function generatePassword(): string {
 }
 
 function loadTeam(): TeamMember[] {
-  try { const raw = localStorage.getItem(TEAM_KEY); return raw ? JSON.parse(raw) : []; } catch { return []; }
+  try {
+    const raw = localStorage.getItem(TEAM_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as any[];
+    let needsSave = false;
+    const existingUsernames: string[] = parsed.filter(m => m.username).map(m => m.username);
+    const migrated = parsed.map(m => {
+      if (!m.username || !m.password) {
+        needsSave = true;
+        const username = generateUsername(m.name || "user", existingUsernames);
+        existingUsernames.push(username);
+        return { ...m, username, password: generatePassword() };
+      }
+      return m;
+    });
+    if (needsSave) localStorage.setItem(TEAM_KEY, JSON.stringify(migrated));
+    return migrated;
+  } catch { return []; }
 }
 function saveTeam(members: TeamMember[]) { localStorage.setItem(TEAM_KEY, JSON.stringify(members)); }
 
@@ -141,7 +158,7 @@ const TeamAccess = () => {
 
         <div className="max-w-5xl mx-auto px-4 lg:px-8 py-6">
           <div className="mb-6 p-4 rounded-xl bg-cyan-500/5 border border-cyan-500/20">
-            <p className="text-xs text-cyan-400">Team members can log in at <span className="font-mono font-bold">/team-portal</span> using their generated username and password. They'll only see the cards you've enabled for them.</p>
+            <p className="text-xs text-cyan-400">Team members can log in at <Link to="/team-portal" className="font-mono font-bold underline underline-offset-2 hover:text-cyan-300">/team-portal</Link> using their generated username and password. They'll only see the cards you've enabled for them.</p>
           </div>
 
           {members.length === 0 ? (
@@ -153,9 +170,12 @@ const TeamAccess = () => {
             <div className="space-y-3">
               {members.map(member => (
                 <div key={member.id} className="rounded-xl bg-white/5 border border-white/10 overflow-hidden">
-                  <button
+                  <div
                     onClick={() => setExpandedId(expandedId === member.id ? null : member.id)}
-                    className="w-full flex items-center gap-3 p-4 text-left hover:bg-white/[0.02] transition-all"
+                    className="w-full flex items-center gap-3 p-4 text-left hover:bg-white/[0.02] transition-all cursor-pointer"
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={e => { if (e.key === "Enter" || e.key === " ") setExpandedId(expandedId === member.id ? null : member.id); }}
                   >
                     <div className="w-10 h-10 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center flex-shrink-0">
                       <span className="font-orbitron font-bold text-sm text-cyan-400">{member.name.charAt(0).toUpperCase()}</span>
@@ -177,7 +197,7 @@ const TeamAccess = () => {
                       </div>
                       <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${expandedId === member.id ? "rotate-180" : ""}`} />
                     </div>
-                  </button>
+                  </div>
 
                   {expandedId === member.id && (
                     <div className="border-t border-white/10 p-4">
