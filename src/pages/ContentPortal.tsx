@@ -58,6 +58,7 @@ const FILMER_CHARGE = 150;
 const SHORT_FORM_PRICE = 30;
 const VSL_PRICE = 150;
 const EDITOR_COST_PER_VIDEO = 7;
+const MANAGER_FEE_PERCENT = 0.10;
 
 const contentTypeLabel: Record<ContentType, string> = {
   "short-form": "Short Form Ad",
@@ -276,10 +277,11 @@ const ContentPortal = () => {
     const totalVideoCount = (shoot.shortFormCount || 0) + (shoot.vslCount || 0) + (shoot.valueAddedCount || 0);
     const shootVideoRevenue = (shoot.shortFormCount || 0) * SHORT_FORM_PRICE + (shoot.vslCount || 0) * VSL_PRICE + (shoot.valueAddedCount || 0) * VALUE_ADDED_PRICE;
     const editorCost = totalVideoCount * EDITOR_COST_PER_VIDEO;
-    const totalCost = actorCost + filmerCost + editorCost;
     const totalRevenue = actorRevenue + filmerRevenue + shootVideoRevenue;
-    const margin = totalRevenue - totalCost;
-    return { actorCost, filmerCost, editorCost, actorRevenue, filmerRevenue, videoRevenue: shootVideoRevenue, totalVideoCount, totalCost, totalRevenue, margin };
+    const managerFee = totalRevenue * MANAGER_FEE_PERCENT;
+    const totalCost = actorCost + filmerCost + editorCost + managerFee;
+    const profit = totalRevenue - totalCost;
+    return { actorCost, filmerCost, editorCost, managerFee, actorRevenue, filmerRevenue, videoRevenue: shootVideoRevenue, totalVideoCount, totalCost, totalRevenue, profit };
   };
 
   const calcClientTotals = (client: Client) => {
@@ -290,7 +292,9 @@ const ContentPortal = () => {
       totalCost += f.totalCost;
       totalVideos += f.totalVideoCount;
     });
-    return { totalRevenue, totalCost, margin: totalRevenue - totalCost, totalVideos, totalShoots: client.shoots.length };
+    let totalProfit = 0;
+    client.shoots.forEach(s2 => { totalProfit += calcShootFinancials(s2).profit; });
+    return { totalRevenue, totalCost, profit: totalProfit, totalVideos, totalShoots: client.shoots.length };
   };
 
   const filteredClients = searchQuery
@@ -371,7 +375,7 @@ const ContentPortal = () => {
                   clients.forEach(c => { const t = calcClientTotals(c); totalRev += t.totalRevenue; totalCost += t.totalCost; totalVids += t.totalVideos; totalShoots += t.totalShoots; });
                   return [
                     { label: "Total Revenue", value: `$${totalRev.toLocaleString()}`, icon: DollarSign, color: "text-green-400" },
-                    { label: "Total Margin", value: `$${(totalRev - totalCost).toLocaleString()}`, icon: DollarSign, color: "text-cyan-400" },
+                    { label: "Total Profit", value: `$${(totalRev - totalCost).toLocaleString()}`, icon: DollarSign, color: "text-cyan-400" },
                     { label: "Total Videos", value: totalVids, icon: Video, color: "text-red-400" },
                     { label: "Total Shoots", value: totalShoots, icon: Camera, color: "text-yellow-400" },
                   ].map(s => (
@@ -516,7 +520,7 @@ const ContentPortal = () => {
                     {[
                       { label: "Revenue", value: `$${t.totalRevenue.toLocaleString()}`, color: "text-green-400" },
                       { label: "Cost", value: `$${t.totalCost.toLocaleString()}`, color: "text-red-400" },
-                      { label: "Margin", value: `$${t.margin.toLocaleString()}`, color: "text-cyan-400" },
+                      { label: "Profit", value: `$${t.profit.toLocaleString()}`, color: "text-cyan-400" },
                       { label: "Videos", value: t.totalVideos, color: "text-yellow-400" },
                       { label: "Shoots", value: t.totalShoots, color: "text-blue-400" },
                     ].map(s => (
@@ -724,8 +728,8 @@ const ContentPortal = () => {
                         <p className="text-lg font-black font-orbitron text-red-400">${fin.totalCost.toFixed(2)}</p>
                       </div>
                       <div className="flex flex-col justify-center text-center">
-                        <p className="text-[10px] text-muted-foreground uppercase">Margin</p>
-                        <p className={`text-lg font-black font-orbitron ${fin.margin >= 0 ? "text-cyan-400" : "text-red-400"}`}>${fin.margin.toFixed(2)}</p>
+                        <p className="text-[10px] text-muted-foreground uppercase">Total Profit</p>
+                        <p className={`text-lg font-black font-orbitron ${fin.profit >= 0 ? "text-cyan-400" : "text-red-400"}`}>${fin.profit.toFixed(2)}</p>
                       </div>
                     </div>
                     <div className="border-t border-white/5 pt-3">
@@ -745,6 +749,7 @@ const ContentPortal = () => {
                             <div className="flex justify-between"><span className="text-muted-foreground">Actor cost ({selectedShoot.actorMinutes || 0}min × ${ACTOR_COST}/hr)</span><span className="text-red-400 font-bold">${fin.actorCost.toFixed(2)}</span></div>
                             <div className="flex justify-between"><span className="text-muted-foreground">Filmer cost ({selectedShoot.filmerMinutes || 0}min × ${FILMER_COST}/hr)</span><span className="text-red-400 font-bold">${fin.filmerCost.toFixed(2)}</span></div>
                             <div className="flex justify-between"><span className="text-muted-foreground">Editor cost ({fin.totalVideoCount} × ${EDITOR_COST_PER_VIDEO})</span><span className="text-red-400 font-bold">${fin.editorCost.toFixed(2)}</span></div>
+                            <div className="flex justify-between"><span className="text-muted-foreground">Manager's fee (10% of revenue)</span><span className="text-orange-400 font-bold">${fin.managerFee.toFixed(2)}</span></div>
                             <div className="flex justify-between border-t border-white/5 pt-1 mt-1"><span className="font-bold">Total Cost</span><span className="text-red-400 font-black">${fin.totalCost.toFixed(2)}</span></div>
                           </div>
                         </div>
