@@ -836,12 +836,15 @@ const ContentPortal = () => {
               </div>
 
               {/* Notes */}
-              {selectedShoot.notes && (
-                <div className="rounded-xl bg-white/5 border border-white/10 p-4 mb-4">
-                  <h3 className="text-xs font-bold text-muted-foreground uppercase font-orbitron mb-2">Notes</h3>
-                  <p className="text-sm text-muted-foreground">{selectedShoot.notes}</p>
-                </div>
-              )}
+              <div className="rounded-xl bg-white/5 border border-white/10 p-4 mb-4">
+                <h3 className="text-xs font-bold text-muted-foreground uppercase font-orbitron mb-2">Notes</h3>
+                <textarea
+                  value={selectedShoot.notes || ""}
+                  onChange={e => updateShoot("notes", e.target.value)}
+                  placeholder="Add shoot notes..."
+                  className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm text-foreground resize-none min-h-[80px] focus:outline-none focus:border-cyan-500/30"
+                />
+              </div>
 
               {/* Videos */}
               <div className="rounded-xl bg-white/5 border border-white/10 p-4 mb-4">
