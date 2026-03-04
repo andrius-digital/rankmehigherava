@@ -604,8 +604,10 @@ const ContentPortal = () => {
                         <label className="text-[10px] text-muted-foreground block mb-1">Actor Minutes on Site</label>
                         <Input
                           type="number" min="0" step="5"
-                          value={selectedShoot.actorMinutes}
+                          value={selectedShoot.actorMinutes || ""}
                           onChange={e => updateShoot("actorMinutes", parseFloat(e.target.value) || 0)}
+                          onBlur={e => { if (e.target.value === "") updateShoot("actorMinutes", 0); }}
+                          placeholder="0"
                           className="bg-white/5 border-white/10 h-8 text-sm"
                         />
                         <p className="text-[10px] text-muted-foreground mt-0.5">Cost: ${fin.actorCost.toFixed(2)} · Charge: ${fin.actorRevenue.toFixed(2)}</p>
@@ -614,8 +616,10 @@ const ContentPortal = () => {
                         <label className="text-[10px] text-muted-foreground block mb-1">Filmer Minutes on Site</label>
                         <Input
                           type="number" min="0" step="5"
-                          value={selectedShoot.filmerMinutes}
+                          value={selectedShoot.filmerMinutes || ""}
                           onChange={e => updateShoot("filmerMinutes", parseFloat(e.target.value) || 0)}
+                          onBlur={e => { if (e.target.value === "") updateShoot("filmerMinutes", 0); }}
+                          placeholder="0"
                           className="bg-white/5 border-white/10 h-8 text-sm"
                         />
                         <p className="text-[10px] text-muted-foreground mt-0.5">Cost: ${fin.filmerCost.toFixed(2)} · Charge: ${fin.filmerRevenue.toFixed(2)}</p>
