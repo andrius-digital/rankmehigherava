@@ -59,6 +59,7 @@ const FILMER_CHARGE = 150;
 const SHORT_FORM_PRICE = 30;
 const VSL_PRICE = 150;
 const EDITOR_COST_PER_VIDEO = 7;
+const EDITOR_COST_PER_VSL = 30;
 const MANAGER_FEE_PERCENT = 0.10;
 
 const contentTypeLabel: Record<ContentType, string> = {
@@ -285,7 +286,7 @@ const ContentPortal = () => {
     const videoRevenue = shoot.videos.reduce((sum, v) => sum + v.price, 0);
     const totalVideoCount = (shoot.shortFormCount || 0) + (shoot.vslCount || 0) + (shoot.valueAddedCount || 0);
     const shootVideoRevenue = (shoot.shortFormCount || 0) * SHORT_FORM_PRICE + (shoot.vslCount || 0) * VSL_PRICE + (shoot.valueAddedCount || 0) * VALUE_ADDED_PRICE;
-    const editorCost = totalVideoCount * EDITOR_COST_PER_VIDEO;
+    const editorCost = ((shoot.shortFormCount || 0) + (shoot.valueAddedCount || 0)) * EDITOR_COST_PER_VIDEO + (shoot.vslCount || 0) * EDITOR_COST_PER_VSL;
     const totalRevenue = actorRevenue + filmerRevenue + shootVideoRevenue;
     const grossProfit = totalRevenue - actorCost - filmerCost - editorCost;
     const managerFee = Math.max(0, grossProfit * MANAGER_FEE_PERCENT);
@@ -727,35 +728,7 @@ const ContentPortal = () => {
                         <p className="text-[10px] text-green-400 mt-0.5">${VALUE_ADDED_PRICE} each · Rev: ${((selectedShoot.valueAddedCount || 0) * VALUE_ADDED_PRICE).toFixed(2)}</p>
                       </div>
                     </div>
-                    <div className="grid grid-cols-3 lg:grid-cols-6 gap-3 mb-3 pt-2 border-t border-white/5">
-                      <div className="flex flex-col justify-center text-center">
-                        <p className="text-[10px] text-muted-foreground uppercase">Crew Charge</p>
-                        <p className="text-sm font-black font-orbitron text-green-400">${(fin.actorRevenue + fin.filmerRevenue).toFixed(2)}</p>
-                      </div>
-                      <div className="flex flex-col justify-center text-center">
-                        <p className="text-[10px] text-muted-foreground uppercase">Video Revenue</p>
-                        <p className="text-sm font-black font-orbitron text-green-400">${fin.videoRevenue.toFixed(2)}</p>
-                        <p className="text-[10px] text-muted-foreground">{fin.totalVideoCount} videos</p>
-                      </div>
-                      <div className="flex flex-col justify-center text-center">
-                        <p className="text-[10px] text-muted-foreground uppercase">Total Revenue</p>
-                        <p className="text-sm font-black font-orbitron text-green-400">${fin.totalRevenue.toFixed(2)}</p>
-                      </div>
-                      <div className="flex flex-col justify-center text-center">
-                        <p className="text-[10px] text-muted-foreground uppercase">All Expenses</p>
-                        <p className="text-sm font-black font-orbitron text-red-400">${fin.totalCost.toFixed(2)}</p>
-                      </div>
-                      <div className="flex flex-col justify-center text-center">
-                        <p className="text-[10px] text-muted-foreground uppercase">Manager's Fee</p>
-                        <p className="text-sm font-black font-orbitron text-orange-400">${fin.managerFee.toFixed(2)}</p>
-                        <p className="text-[10px] text-muted-foreground">10% of profit</p>
-                      </div>
-                      <div className="flex flex-col justify-center text-center">
-                        <p className="text-[10px] text-muted-foreground uppercase">Net Profit</p>
-                        <p className={`text-sm font-black font-orbitron ${fin.profit >= 0 ? "text-cyan-400" : "text-red-400"}`}>${fin.profit.toFixed(2)}</p>
-                      </div>
-                    </div>
-                    <div className="border-t border-white/5 pt-3">
+                    <div className="pt-2 border-t border-white/5">
                       <div className="grid grid-cols-2 gap-4 text-xs">
                         <div>
                           <p className="text-[10px] text-muted-foreground uppercase font-orbitron mb-1.5">Revenue Breakdown</p>
@@ -771,7 +744,12 @@ const ContentPortal = () => {
                           <div className="space-y-1">
                             <div className="flex justify-between"><span className="text-muted-foreground">Actor cost ({selectedShoot.actorMinutes || 0}min × ${ACTOR_COST}/hr)</span><span className="text-red-400 font-bold">${fin.actorCost.toFixed(2)}</span></div>
                             <div className="flex justify-between"><span className="text-muted-foreground">Filmer cost ({selectedShoot.filmerMinutes || 0}min × ${FILMER_COST}/hr)</span><span className="text-red-400 font-bold">${fin.filmerCost.toFixed(2)}</span></div>
-                            <div className="flex justify-between"><span className="text-muted-foreground">Editor cost ({fin.totalVideoCount} × ${EDITOR_COST_PER_VIDEO})</span><span className="text-red-400 font-bold">${fin.editorCost.toFixed(2)}</span></div>
+                            {((selectedShoot.shortFormCount || 0) + (selectedShoot.valueAddedCount || 0)) > 0 && (
+                              <div className="flex justify-between"><span className="text-muted-foreground">Editor cost — SF/VA ({(selectedShoot.shortFormCount || 0) + (selectedShoot.valueAddedCount || 0)} × ${EDITOR_COST_PER_VIDEO})</span><span className="text-red-400 font-bold">${(((selectedShoot.shortFormCount || 0) + (selectedShoot.valueAddedCount || 0)) * EDITOR_COST_PER_VIDEO).toFixed(2)}</span></div>
+                            )}
+                            {(selectedShoot.vslCount || 0) > 0 && (
+                              <div className="flex justify-between"><span className="text-muted-foreground">Editor cost — VSL ({selectedShoot.vslCount} × ${EDITOR_COST_PER_VSL})</span><span className="text-red-400 font-bold">${((selectedShoot.vslCount || 0) * EDITOR_COST_PER_VSL).toFixed(2)}</span></div>
+                            )}
                             <div className="flex justify-between"><span className="text-muted-foreground">Manager's fee (10% of profit)</span><span className="text-orange-400 font-bold">${fin.managerFee.toFixed(2)}</span></div>
                             <div className="flex justify-between border-t border-white/5 pt-1 mt-1"><span className="font-bold">Total Cost</span><span className="text-red-400 font-black">${fin.totalCost.toFixed(2)}</span></div>
                           </div>
