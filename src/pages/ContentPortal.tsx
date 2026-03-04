@@ -94,7 +94,9 @@ const shootStatusColor: Record<ShootStatus, string> = {
   "cancelled": "text-red-400 bg-red-500/10 border-red-500/20",
 };
 
-const getVideoPrice = (type: ContentType) => type === "vsl" ? VSL_PRICE : type === "short-form" ? SHORT_FORM_PRICE : 0;
+const VALUE_ADDED_PRICE = 30;
+
+const getVideoPrice = (type: ContentType) => type === "vsl" ? VSL_PRICE : type === "short-form" ? SHORT_FORM_PRICE : VALUE_ADDED_PRICE;
 
 const generateId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 
