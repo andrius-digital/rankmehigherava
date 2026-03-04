@@ -27,6 +27,7 @@ interface ShootVideo {
 interface Shoot {
   id: string;
   clientId: string;
+  name: string;
   date: string;
   location: string;
   status: ShootStatus;
@@ -135,7 +136,7 @@ const ContentPortal = () => {
   const selectedShoot = selectedClient?.shoots.find(s => s.id === selectedShootId) || null;
 
   const [newClient, setNewClient] = useState({ name: "", business: "", email: "", phone: "", dropboxFolder: "" });
-  const [newShoot, setNewShoot] = useState({ date: "", location: "", notes: "" });
+  const [newShoot, setNewShoot] = useState({ name: "", date: "", location: "", notes: "" });
   const [newVideo, setNewVideo] = useState<{ title: string; contentType: ContentType; editor: string; script: string }>({ title: "", contentType: "short-form", editor: "", script: "" });
 
   const addClient = () => {
@@ -163,6 +164,7 @@ const ContentPortal = () => {
     const shoot: Shoot = {
       id: generateId(),
       clientId: selectedClientId,
+      name: newShoot.name || `Shoot ${new Date(newShoot.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`,
       date: newShoot.date,
       location: newShoot.location,
       status: "scheduled",
@@ -180,7 +182,7 @@ const ContentPortal = () => {
       c.id === selectedClientId ? { ...c, shoots: [shoot, ...c.shoots] } : c
     );
     persist(updated);
-    setNewShoot({ date: "", location: "", notes: "" });
+    setNewShoot({ name: "", date: "", location: "", notes: "" });
     setShowAddShoot(false);
     toast({ title: "Shoot scheduled" });
   };
@@ -426,12 +428,14 @@ const ContentPortal = () => {
                           <div className={`w-2 h-2 rounded-full ${shoot.status === "in-progress" ? "bg-yellow-400 animate-pulse" : "bg-blue-400"}`} />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className="text-xs font-bold truncate">{shoot.clientName}</span>
+                              <span className="text-xs font-bold truncate">{shoot.name || shoot.clientName}</span>
                               <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold border ${shootStatusColor[shoot.status]}`}>
                                 {shoot.status === "in-progress" ? "LIVE" : "SCHEDULED"}
                               </span>
                             </div>
                             <div className="flex items-center gap-2 text-[10px] text-muted-foreground mt-0.5">
+                              <span>{shoot.clientName}</span>
+                              <span>·</span>
                               <span>{new Date(shoot.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}</span>
                               <span className="flex items-center gap-0.5"><MapPin className="w-2.5 h-2.5" />{shoot.location}</span>
                               <span>{(shoot.shortFormCount || 0) + (shoot.vslCount || 0) + (shoot.valueAddedCount || 0)} video{((shoot.shortFormCount || 0) + (shoot.vslCount || 0) + (shoot.valueAddedCount || 0)) !== 1 ? "s" : ""}</span>
@@ -573,8 +577,10 @@ const ContentPortal = () => {
                             <Camera className="w-4 h-4 text-cyan-400" />
                           </div>
                           <div>
-                            <p className="font-bold text-sm">{new Date(shoot.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}</p>
+                            <p className="font-bold text-sm">{shoot.name || new Date(shoot.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}</p>
                             <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <span>{new Date(shoot.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}</span>
+                              <span>·</span>
                               <MapPin className="w-3 h-3" /> {shoot.location}
                             </div>
                           </div>
@@ -612,6 +618,7 @@ const ContentPortal = () => {
                       <button onClick={() => setShowAddShoot(false)} className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20"><X className="w-3.5 h-3.5" /></button>
                     </div>
                     <div className="space-y-3">
+                      <Input placeholder="Shoot name (optional)" value={newShoot.name} onChange={e => setNewShoot(p => ({ ...p, name: e.target.value }))} className="bg-white/5 border-white/10" />
                       <Input type="date" value={newShoot.date} onChange={e => setNewShoot(p => ({ ...p, date: e.target.value }))} className="bg-white/5 border-white/10" />
                       <Input placeholder="Location *" value={newShoot.location} onChange={e => setNewShoot(p => ({ ...p, location: e.target.value }))} className="bg-white/5 border-white/10" />
                       <textarea
@@ -634,10 +641,15 @@ const ContentPortal = () => {
             <>
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h2 className="font-orbitron font-bold text-lg">
-                    {new Date(selectedShoot.date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
-                  </h2>
+                  <Input
+                    value={selectedShoot.name || ""}
+                    onChange={e => updateShoot("name", e.target.value)}
+                    placeholder="Shoot name..."
+                    className="bg-transparent border-none p-0 h-auto font-orbitron font-bold text-lg focus-visible:ring-0 focus-visible:ring-offset-0"
+                  />
                   <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                    <span>{new Date(selectedShoot.date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}</span>
+                    <span>·</span>
                     <MapPin className="w-3 h-3" /> {selectedShoot.location}
                   </div>
                 </div>
