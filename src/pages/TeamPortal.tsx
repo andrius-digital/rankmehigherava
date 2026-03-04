@@ -2,10 +2,13 @@ import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, ArrowRight, LogOut, User, Shield, Lock,
-  Clapperboard, UserCheck, UsersRound, Palette, CreditCard, Clock, Phone, Loader2
+  ArrowLeft, ArrowRight, LogOut, User, Shield, Lock, Mail,
+  Clapperboard, UserCheck, UsersRound, Palette, CreditCard, Clock, Phone, Loader2, LogIn
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -191,60 +194,126 @@ const TeamPortal = () => {
         <div className="max-w-5xl mx-auto px-4 lg:px-8 py-6">
           {!loggedIn && (
             <div className="flex items-center justify-center min-h-[60vh]">
-              <div className="w-full max-w-sm rounded-2xl bg-white/5 border border-white/10 p-8 text-center">
-                <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mx-auto mb-4">
-                  <Shield className="w-8 h-8 text-cyan-400" />
+              <Card className="w-full max-w-md relative z-10 border-cyan-400/30 overflow-hidden shadow-[0_0_80px_rgba(6,182,212,0.3)]">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-900/40 via-cyan-900/30 to-blue-950/40 backdrop-blur-xl" />
+
+                <svg className="absolute inset-0 w-full h-full opacity-10 blur-sm" viewBox="0 0 400 600">
+                  <defs>
+                    <linearGradient id="teamGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.6" />
+                      <stop offset="50%" stopColor="#3b82f6" stopOpacity="0.6" />
+                      <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.6" />
+                    </linearGradient>
+                    <filter id="teamGlow">
+                      <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+                      <feMerge>
+                        <feMergeNode in="coloredBlur" />
+                        <feMergeNode in="SourceGraphic" />
+                      </feMerge>
+                    </filter>
+                  </defs>
+                  <circle cx="200" cy="100" r="8" fill="url(#teamGradient)" filter="url(#teamGlow)" className="animate-pulse" />
+                  <circle cx="120" cy="150" r="6" fill="url(#teamGradient)" filter="url(#teamGlow)" className="animate-pulse" style={{ animationDelay: '0.2s' }} />
+                  <circle cx="280" cy="150" r="6" fill="url(#teamGradient)" filter="url(#teamGlow)" className="animate-pulse" style={{ animationDelay: '0.4s' }} />
+                  <circle cx="80" cy="250" r="7" fill="url(#teamGradient)" filter="url(#teamGlow)" className="animate-pulse" style={{ animationDelay: '0.6s' }} />
+                  <circle cx="200" cy="250" r="9" fill="url(#teamGradient)" filter="url(#teamGlow)" className="animate-pulse" style={{ animationDelay: '0.8s' }} />
+                  <circle cx="320" cy="250" r="7" fill="url(#teamGradient)" filter="url(#teamGlow)" className="animate-pulse" style={{ animationDelay: '1s' }} />
+                  <circle cx="150" cy="350" r="6" fill="url(#teamGradient)" filter="url(#teamGlow)" className="animate-pulse" style={{ animationDelay: '1.2s' }} />
+                  <circle cx="250" cy="350" r="6" fill="url(#teamGradient)" filter="url(#teamGlow)" className="animate-pulse" style={{ animationDelay: '1.4s' }} />
+                  <line x1="200" y1="100" x2="120" y2="150" stroke="url(#teamGradient)" strokeWidth="2" opacity="0.4" filter="url(#teamGlow)" />
+                  <line x1="200" y1="100" x2="280" y2="150" stroke="url(#teamGradient)" strokeWidth="2" opacity="0.4" filter="url(#teamGlow)" />
+                  <line x1="120" y1="150" x2="80" y2="250" stroke="url(#teamGradient)" strokeWidth="2" opacity="0.4" filter="url(#teamGlow)" />
+                  <line x1="120" y1="150" x2="200" y2="250" stroke="url(#teamGradient)" strokeWidth="2" opacity="0.4" filter="url(#teamGlow)" />
+                  <line x1="280" y1="150" x2="200" y2="250" stroke="url(#teamGradient)" strokeWidth="2" opacity="0.4" filter="url(#teamGlow)" />
+                  <line x1="280" y1="150" x2="320" y2="250" stroke="url(#teamGradient)" strokeWidth="2" opacity="0.4" filter="url(#teamGlow)" />
+                  <line x1="80" y1="250" x2="150" y2="350" stroke="url(#teamGradient)" strokeWidth="2" opacity="0.4" filter="url(#teamGlow)" />
+                  <line x1="200" y1="250" x2="150" y2="350" stroke="url(#teamGradient)" strokeWidth="2" opacity="0.4" filter="url(#teamGlow)" />
+                  <line x1="200" y1="250" x2="250" y2="350" stroke="url(#teamGradient)" strokeWidth="2" opacity="0.4" filter="url(#teamGlow)" />
+                  <line x1="320" y1="250" x2="250" y2="350" stroke="url(#teamGradient)" strokeWidth="2" opacity="0.4" filter="url(#teamGlow)" />
+                </svg>
+
+                <div className="absolute inset-0 opacity-20">
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-400/30 to-transparent animate-scan" />
                 </div>
-                <h2 className="font-orbitron font-bold text-lg mb-1">Team Portal</h2>
-                <p className="text-xs text-muted-foreground mb-6">Sign in with your team credentials</p>
-                <div className="space-y-3 mb-4">
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Email"
-                      type="email"
-                      value={emailInput}
-                      onChange={e => setEmailInput(e.target.value)}
-                      onKeyDown={e => e.key === "Enter" && document.getElementById("team-pwd")?.focus()}
-                      className="bg-white/5 border-white/10 pl-9"
-                    />
+
+                <div className="absolute inset-0 rounded-lg border-2 border-cyan-400/20 shadow-[inset_0_0_60px_rgba(6,182,212,0.1)]" />
+
+                <CardHeader className="text-center space-y-6 pb-8 relative z-10">
+                  <div className="flex justify-center">
+                    <div className="relative">
+                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border-2 border-cyan-400/40 flex items-center justify-center shadow-[0_0_30px_rgba(6,182,212,0.3)]">
+                        <Shield className="w-8 h-8 text-cyan-300" />
+                      </div>
+                      <div className="absolute inset-0 rounded-full border-2 border-cyan-400/20 animate-ping" style={{ animationDuration: '3s' }} />
+                    </div>
                   </div>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      id="team-pwd"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Password"
-                      value={passwordInput}
-                      onChange={e => setPasswordInput(e.target.value)}
-                      onKeyDown={e => e.key === "Enter" && handleLogin()}
-                      className="bg-white/5 border-white/10 pl-9 pr-9"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {showPassword ? (
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-                      ) : (
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                      )}
-                    </button>
+                  <div className="space-y-3">
+                    <CardTitle className="text-3xl font-orbitron font-black bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(6,182,212,0.5)]">
+                      Team Portal
+                    </CardTitle>
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-cyan-300 animate-pulse shadow-[0_0_10px_rgba(6,182,212,0.8)]" />
+                      <span className="text-xs font-orbitron tracking-[0.2em] text-cyan-300 uppercase drop-shadow-[0_0_10px_rgba(6,182,212,0.6)]">Secure Team Access</span>
+                    </div>
+                    <CardDescription className="text-cyan-100/80 font-orbitron text-sm">
+                      Sign in with your team credentials
+                    </CardDescription>
                   </div>
-                </div>
-                <button
-                  onClick={handleLogin}
-                  disabled={isLoading}
-                  className="w-full py-2.5 rounded-lg bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 font-bold text-sm hover:bg-cyan-500/30 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-                  {isLoading ? "Signing In..." : "Sign In"}
-                </button>
-                <Link to="/auth" className="block text-center text-[11px] text-muted-foreground mt-4 hover:text-cyan-400 transition-colors">
-                  Admin Sign In
-                </Link>
-              </div>
+                </CardHeader>
+
+                <CardContent className="relative z-10 space-y-4 pb-8">
+                  <div className="space-y-2">
+                    <Label htmlFor="team-email" className="font-orbitron text-xs tracking-wider text-cyan-200">Email</Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cyan-300/80" />
+                      <Input
+                        id="team-email"
+                        placeholder="you@example.com"
+                        type="email"
+                        value={emailInput}
+                        onChange={e => setEmailInput(e.target.value)}
+                        onKeyDown={e => e.key === "Enter" && document.getElementById("team-pwd")?.focus()}
+                        className="pl-10 bg-blue-950/30 border-cyan-400/30 focus:border-cyan-300/60 font-orbitron text-cyan-100 placeholder:text-cyan-300/40 backdrop-blur-sm"
+                        disabled={isLoading}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="team-pwd" className="font-orbitron text-xs tracking-wider text-cyan-200">Password</Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cyan-400/60" />
+                      <Input
+                        id="team-pwd"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        value={passwordInput}
+                        onChange={e => setPasswordInput(e.target.value)}
+                        onKeyDown={e => e.key === "Enter" && handleLogin()}
+                        className="pl-10 bg-background/50 border-cyan-400/20 focus:border-cyan-400/50 font-orbitron"
+                        disabled={isLoading}
+                      />
+                    </div>
+                  </div>
+
+                  <Button
+                    onClick={handleLogin}
+                    disabled={isLoading}
+                    className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-orbitron tracking-wider shadow-[0_0_20px_rgba(6,182,212,0.3)]"
+                  >
+                    {isLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    ) : (
+                      <LogIn className="h-4 w-4 mr-2" />
+                    )}
+                    {isLoading ? "Signing In..." : "Sign In"}
+                  </Button>
+
+                  <Link to="/auth" className="block text-center text-[11px] text-cyan-300/50 mt-2 hover:text-cyan-300 transition-colors font-orbitron tracking-wider">
+                    Admin Sign In
+                  </Link>
+                </CardContent>
+              </Card>
             </div>
           )}
 
