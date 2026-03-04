@@ -82,7 +82,7 @@ const TeamAccess = () => {
     const password = newMember.password || generatePassword();
     setSaving(true);
     try {
-      await adminAction("create_team_portal_member", {
+      const result = await adminAction("create_team_portal_member", {
         name: newMember.name,
         email: newMember.email,
         password,
@@ -90,6 +90,10 @@ const TeamAccess = () => {
         permissions: selectedPerms,
       });
       await loadMembers();
+      if (result?.id) {
+        setNewPassword(prev => ({ ...prev, [result.id]: password }));
+        setShowPasswords(prev => ({ ...prev, [result.id]: true }));
+      }
       const text = `Email: ${newMember.email}\nPassword: ${password}\nLogin at: /team`;
       navigator.clipboard.writeText(text);
       setNewMember({ name: "", email: "", role: "", password: "" });
@@ -147,10 +151,12 @@ const TeamAccess = () => {
   };
 
   const copyCredentials = (member: TeamMember) => {
-    const pwd = newPassword[member.id] || "(use existing password)";
-    const text = `Email: ${member.email}\nPassword: ${pwd}\nLogin at: /team`;
-    navigator.clipboard.writeText(text);
-    toast({ title: "Login credentials copied!" });
+    const pwd = newPassword[member.id];
+    const lines = [`Email: ${member.email}`];
+    if (pwd) lines.push(`Password: ${pwd}`);
+    lines.push("Login at: /team");
+    navigator.clipboard.writeText(lines.join("\n"));
+    toast({ title: pwd ? "Login credentials copied!" : "Email copied! (reset password to include it)" });
   };
 
   return (
@@ -249,14 +255,14 @@ const TeamAccess = () => {
                         </div>
                         <div className="w-px h-10 bg-white/10 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-[9px] text-muted-foreground uppercase font-bold mb-1">New Password</p>
+                          <p className="text-[9px] text-muted-foreground uppercase font-bold mb-1">Password</p>
                           <div className="flex items-center gap-1.5">
                             <Lock className="w-3.5 h-3.5 text-yellow-400 flex-shrink-0" />
                             <input
                               type={showPasswords[member.id] ? "text" : "password"}
-                              value={newPassword[member.id] || ""}
+                              value={newPassword[member.id] ?? ""}
                               onChange={e => setNewPassword(prev => ({ ...prev, [member.id]: e.target.value }))}
-                              placeholder="Enter new password"
+                              placeholder="Click Reset to set"
                               className="bg-transparent text-sm font-mono font-bold w-full outline-none border-b border-transparent focus:border-cyan-500/40 transition-colors"
                             />
                             <button
