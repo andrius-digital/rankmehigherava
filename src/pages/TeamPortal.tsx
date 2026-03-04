@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, ArrowRight, KeyRound, LogOut, User, Shield,
+  ArrowLeft, ArrowRight, LogOut, User, Shield, Lock,
   Clapperboard, UserCheck, UsersRound, Palette, CreditCard, Clock, Phone
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,8 @@ interface TeamMember {
   name: string;
   email: string;
   role: string;
-  accessCode: string;
+  username: string;
+  password: string;
   permissions: string[];
   createdAt: string;
 }
@@ -57,7 +58,9 @@ export function clearTeamSession() {
 
 const TeamPortal = () => {
   const [loggedIn, setLoggedIn] = useState<TeamMember | null>(null);
-  const [accessInput, setAccessInput] = useState("");
+  const [usernameInput, setUsernameInput] = useState("");
+  const [passwordInput, setPasswordInput] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -70,12 +73,14 @@ const TeamPortal = () => {
     try {
       const raw = localStorage.getItem(TEAM_KEY);
       const members: TeamMember[] = raw ? JSON.parse(raw) : [];
-      const found = members.find(m => m.accessCode === accessInput.trim());
+      const found = members.find(
+        m => m.username === usernameInput.trim().toLowerCase() && m.password === passwordInput
+      );
       if (found) {
         sessionStorage.setItem(TEAM_SESSION_KEY, JSON.stringify(found));
         setLoggedIn(found);
       } else {
-        toast({ title: "Invalid code", description: "Please check your access code and try again.", variant: "destructive" });
+        toast({ title: "Invalid credentials", description: "Please check your username and password.", variant: "destructive" });
       }
     } catch {
       toast({ title: "Error", description: "Something went wrong.", variant: "destructive" });
@@ -85,7 +90,8 @@ const TeamPortal = () => {
   const handleLogout = () => {
     clearTeamSession();
     setLoggedIn(null);
-    setAccessInput("");
+    setUsernameInput("");
+    setPasswordInput("");
   };
 
   const permittedCards = loggedIn
@@ -131,19 +137,47 @@ const TeamPortal = () => {
             <div className="flex items-center justify-center min-h-[60vh]">
               <div className="w-full max-w-sm rounded-2xl bg-white/5 border border-white/10 p-8 text-center">
                 <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mx-auto mb-4">
-                  <KeyRound className="w-8 h-8 text-cyan-400" />
+                  <Shield className="w-8 h-8 text-cyan-400" />
                 </div>
                 <h2 className="font-orbitron font-bold text-lg mb-1">Team Portal</h2>
-                <p className="text-xs text-muted-foreground mb-6">Enter your access code to get started</p>
-                <Input
-                  placeholder="Access code"
-                  value={accessInput}
-                  onChange={e => setAccessInput(e.target.value.toUpperCase())}
-                  onKeyDown={e => e.key === "Enter" && handleLogin()}
-                  className="bg-white/5 border-white/10 text-center font-mono font-bold tracking-widest mb-3"
-                />
+                <p className="text-xs text-muted-foreground mb-6">Sign in with your team credentials</p>
+                <div className="space-y-3 mb-4">
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Username"
+                      value={usernameInput}
+                      onChange={e => setUsernameInput(e.target.value)}
+                      onKeyDown={e => e.key === "Enter" && document.getElementById("team-pwd")?.focus()}
+                      className="bg-white/5 border-white/10 pl-9 font-mono"
+                    />
+                  </div>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="team-pwd"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Password"
+                      value={passwordInput}
+                      onChange={e => setPasswordInput(e.target.value)}
+                      onKeyDown={e => e.key === "Enter" && handleLogin()}
+                      className="bg-white/5 border-white/10 pl-9 pr-9 font-mono"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {showPassword ? (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                      ) : (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                      )}
+                    </button>
+                  </div>
+                </div>
                 <button onClick={handleLogin} className="w-full py-2.5 rounded-lg bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 font-bold text-sm hover:bg-cyan-500/30 transition-all">
-                  Access Portal
+                  Sign In
                 </button>
               </div>
             </div>

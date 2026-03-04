@@ -3,7 +3,7 @@ import { Helmet } from "react-helmet-async";
 import {
   ArrowLeft, Plus, X, Users, Trash2, Copy, KeyRound, Shield,
   Clapperboard, UserCheck, UsersRound, Palette, CreditCard, Clock, Phone,
-  ChevronDown
+  ChevronDown, RefreshCw, User, Lock, Eye, EyeOff
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -14,7 +14,8 @@ interface TeamMember {
   name: string;
   email: string;
   role: string;
-  accessCode: string;
+  username: string;
+  password: string;
   permissions: string[];
   createdAt: string;
 }
@@ -32,7 +33,28 @@ const AVAILABLE_PERMISSIONS = [
 ];
 
 const generateId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-const generateCode = () => Math.random().toString(36).slice(2, 8).toUpperCase();
+
+function generateUsername(name: string, existingUsernames: string[]): string {
+  const base = name.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 12);
+  if (!base) return "user" + Math.floor(Math.random() * 9000 + 1000);
+  let candidate = base;
+  let counter = 1;
+  while (existingUsernames.includes(candidate)) {
+    candidate = base + counter;
+    counter++;
+  }
+  return candidate;
+}
+
+function generatePassword(): string {
+  const chars = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+  const special = "!@#$%";
+  let pwd = "";
+  for (let i = 0; i < 8; i++) pwd += chars[Math.floor(Math.random() * chars.length)];
+  pwd += special[Math.floor(Math.random() * special.length)];
+  pwd += Math.floor(Math.random() * 90 + 10);
+  return pwd;
+}
 
 function loadTeam(): TeamMember[] {
   try { const raw = localStorage.getItem(TEAM_KEY); return raw ? JSON.parse(raw) : []; } catch { return []; }
@@ -45,18 +67,23 @@ const TeamAccess = () => {
   const [newMember, setNewMember] = useState({ name: "", email: "", role: "" });
   const [selectedPerms, setSelectedPerms] = useState<string[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
   const { toast } = useToast();
 
   const persist = (updated: TeamMember[]) => { setMembers(updated); saveTeam(updated); };
 
   const addMember = () => {
     if (!newMember.name || !newMember.email) return;
+    const existingUsernames = members.map(m => m.username);
+    const username = generateUsername(newMember.name, existingUsernames);
+    const password = generatePassword();
     const member: TeamMember = {
       id: generateId(),
       name: newMember.name,
       email: newMember.email,
       role: newMember.role || "Team Member",
-      accessCode: generateCode(),
+      username,
+      password,
       permissions: selectedPerms,
       createdAt: new Date().toISOString(),
     };
@@ -64,7 +91,7 @@ const TeamAccess = () => {
     setNewMember({ name: "", email: "", role: "" });
     setSelectedPerms([]);
     setShowAdd(false);
-    toast({ title: "Team member added", description: `Access code: ${member.accessCode}` });
+    toast({ title: "Team member added", description: `Login: ${username}` });
   };
 
   const deleteMember = (id: string) => { persist(members.filter(m => m.id !== id)); toast({ title: "Member removed" }); };
@@ -79,10 +106,16 @@ const TeamAccess = () => {
     }));
   };
 
-  const regenerateCode = (id: string) => {
-    const code = generateCode();
-    persist(members.map(m => m.id === id ? { ...m, accessCode: code } : m));
-    toast({ title: "New access code generated", description: code });
+  const regeneratePassword = (id: string) => {
+    const newPwd = generatePassword();
+    persist(members.map(m => m.id === id ? { ...m, password: newPwd } : m));
+    toast({ title: "New password generated" });
+  };
+
+  const copyCredentials = (member: TeamMember) => {
+    const text = `Username: ${member.username}\nPassword: ${member.password}\nLogin at: /team-portal`;
+    navigator.clipboard.writeText(text);
+    toast({ title: "Login credentials copied!" });
   };
 
   return (
@@ -108,7 +141,7 @@ const TeamAccess = () => {
 
         <div className="max-w-5xl mx-auto px-4 lg:px-8 py-6">
           <div className="mb-6 p-4 rounded-xl bg-cyan-500/5 border border-cyan-500/20">
-            <p className="text-xs text-cyan-400">Team members can log in at <span className="font-mono font-bold">/team-portal</span> using their access code. They'll only see the cards you've enabled for them.</p>
+            <p className="text-xs text-cyan-400">Team members can log in at <span className="font-mono font-bold">/team-portal</span> using their generated username and password. They'll only see the cards you've enabled for them.</p>
           </div>
 
           {members.length === 0 ? (
@@ -135,10 +168,10 @@ const TeamAccess = () => {
                       <p className="text-[10px] text-muted-foreground">{member.email} · {member.permissions.length} permission{member.permissions.length !== 1 ? "s" : ""}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-1 px-2 py-1 rounded bg-white/5 border border-white/10">
-                        <KeyRound className="w-3 h-3 text-yellow-400" />
-                        <span className="text-xs font-mono font-bold">{member.accessCode}</span>
-                        <button onClick={e => { e.stopPropagation(); navigator.clipboard.writeText(member.accessCode); toast({ title: "Copied!" }); }} className="ml-1 hover:text-cyan-400 transition-colors">
+                      <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-white/5 border border-white/10">
+                        <User className="w-3 h-3 text-cyan-400" />
+                        <span className="text-xs font-mono font-bold">{member.username}</span>
+                        <button onClick={e => { e.stopPropagation(); copyCredentials(member); }} className="ml-1 hover:text-cyan-400 transition-colors">
                           <Copy className="w-3 h-3" />
                         </button>
                       </div>
@@ -148,6 +181,38 @@ const TeamAccess = () => {
 
                   {expandedId === member.id && (
                     <div className="border-t border-white/10 p-4">
+                      <div className="flex items-center gap-4 mb-4 p-3 rounded-lg bg-white/[0.02] border border-white/10">
+                        <div className="flex items-center gap-2 flex-1">
+                          <User className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
+                          <div>
+                            <p className="text-[9px] text-muted-foreground uppercase font-bold">Username</p>
+                            <p className="text-sm font-mono font-bold">{member.username}</p>
+                          </div>
+                        </div>
+                        <div className="w-px h-8 bg-white/10" />
+                        <div className="flex items-center gap-2 flex-1">
+                          <Lock className="w-3.5 h-3.5 text-yellow-400 flex-shrink-0" />
+                          <div>
+                            <p className="text-[9px] text-muted-foreground uppercase font-bold">Password</p>
+                            <div className="flex items-center gap-1.5">
+                              <p className="text-sm font-mono font-bold">{showPasswords[member.id] ? member.password : "••••••••••"}</p>
+                              <button
+                                onClick={() => setShowPasswords(p => ({ ...p, [member.id]: !p[member.id] }))}
+                                className="hover:text-cyan-400 transition-colors"
+                              >
+                                {showPasswords[member.id] ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => copyCredentials(member)}
+                          className="px-2 py-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-[10px] text-cyan-400 font-bold hover:bg-cyan-500/20 transition-all flex items-center gap-1"
+                        >
+                          <Copy className="w-3 h-3" /> Copy Login
+                        </button>
+                      </div>
+
                       <p className="text-[10px] font-bold text-muted-foreground uppercase mb-3">Access Permissions</p>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 mb-4">
                         {AVAILABLE_PERMISSIONS.map(perm => {
@@ -183,8 +248,8 @@ const TeamAccess = () => {
                       </div>
 
                       <div className="flex items-center gap-2 pt-2 border-t border-white/10">
-                        <button onClick={() => regenerateCode(member.id)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs text-muted-foreground hover:text-foreground hover:bg-white/10 transition-all">
-                          <KeyRound className="w-3 h-3" /> Regenerate Code
+                        <button onClick={() => regeneratePassword(member.id)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs text-muted-foreground hover:text-foreground hover:bg-white/10 transition-all">
+                          <RefreshCw className="w-3 h-3" /> Reset Password
                         </button>
                         <button onClick={() => deleteMember(member.id)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-xs text-red-400 hover:bg-red-500/20 transition-all ml-auto">
                           <Trash2 className="w-3 h-3" /> Remove
@@ -231,7 +296,7 @@ const TeamAccess = () => {
                 })}
               </div>
               <button onClick={addMember} className="w-full py-2.5 rounded-lg bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 font-bold text-sm hover:bg-cyan-500/30 transition-all">
-                Add Member & Generate Access Code
+                Add Member & Generate Login
               </button>
             </div>
           </div>

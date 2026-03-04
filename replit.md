@@ -33,6 +33,10 @@ The app is built as a React SPA using Vite, TypeScript, Tailwind CSS, and shadcn
 - **Shoot Pipeline**: 3-column Kanban (Scheduled/In Progress/Completed) on clients view; shoot cannot be marked Completed until all videos are Done
 - **Video Managers**: Manager profiles stored in localStorage (`rmh_video_managers`) with name, email, access code; assigned per shoot via `managerName` field
 - **Manager Portal**: `/manager-portal` — standalone page (no auth required), managers log in with access code, see only their assigned shoots in pipeline view with shoot details (read-only)
+- **Team Access**: `/team-access` — admin page for creating team members with auto-generated username/password and granular per-card permissions; stored in `rmh_team_members` localStorage
+- **Team Portal**: `/team-portal` — standalone login page (username + password), shows only permitted dashboard cards; session stored in `rmh_team_session` sessionStorage
+- **Team Permissions**: content-portal, applicant-tracker, client-portal, build-website, subscriptions, team-tracker, call-center-kpi
+- **ProtectedRoute**: `teamPermission` prop allows team sessions to bypass Supabase auth for permitted routes
 
 ## User Preferences
 
