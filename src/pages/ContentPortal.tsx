@@ -5,7 +5,7 @@ import {
   ArrowLeft, Plus, X, Video, Camera, FileText, Users, MapPin,
   Clock, DollarSign, ExternalLink, ChevronRight,
   Trash2, CheckCircle2, Clapperboard,
-  Building2, Link2, Search
+  Building2, Link2, Search, Calendar
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -375,6 +375,50 @@ const ContentPortal = () => {
                   ));
                 })()}
               </div>
+
+              {/* Upcoming Shoots */}
+              {(() => {
+                const upcomingShoots = clients.flatMap(c =>
+                  c.shoots
+                    .filter(s => s.status === "scheduled" || s.status === "in-progress")
+                    .map(s => ({ ...s, clientName: c.name, clientId: c.id }))
+                ).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+                if (upcomingShoots.length === 0) return null;
+
+                return (
+                  <div className="mb-6">
+                    <h3 className="font-orbitron font-bold text-sm mb-2 flex items-center gap-1.5">
+                      <Calendar className="w-4 h-4 text-cyan-400" /> Upcoming Shoots
+                    </h3>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+                      {upcomingShoots.map(shoot => (
+                        <button
+                          key={shoot.id}
+                          onClick={() => { setSelectedClientId(shoot.clientId); setSelectedShootId(shoot.id); setView("shoot-detail"); }}
+                          className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10 hover:border-cyan-500/30 hover:bg-white/[0.07] transition-all text-left group"
+                        >
+                          <div className={`w-2 h-2 rounded-full ${shoot.status === "in-progress" ? "bg-yellow-400 animate-pulse" : "bg-blue-400"}`} />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-bold truncate">{shoot.clientName}</span>
+                              <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold border ${shootStatusColor[shoot.status]}`}>
+                                {shoot.status === "in-progress" ? "LIVE" : "SCHEDULED"}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 text-[10px] text-muted-foreground mt-0.5">
+                              <span>{new Date(shoot.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}</span>
+                              <span className="flex items-center gap-0.5"><MapPin className="w-2.5 h-2.5" />{shoot.location}</span>
+                              <span>{shoot.videos.length} video{shoot.videos.length !== 1 ? "s" : ""}</span>
+                            </div>
+                          </div>
+                          <ChevronRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-cyan-400 transition-colors" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
 
               <div className="grid gap-3">
                 {filteredClients.map(client => {
