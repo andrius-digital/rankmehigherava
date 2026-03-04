@@ -3,7 +3,7 @@ import { Helmet } from "react-helmet-async";
 import {
   ArrowLeft, Plus, X, Users, Trash2, Copy, KeyRound, Shield,
   Clapperboard, UserCheck, UsersRound, Palette, CreditCard, Clock, Phone,
-  ChevronDown, RefreshCw, User, Lock, Eye, EyeOff
+  ChevronDown, RefreshCw, User, Lock, Eye, EyeOff, Briefcase
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -208,6 +208,21 @@ const TeamAccess = () => {
 
                   {expandedId === member.id && (
                     <div className="border-t border-white/10 p-4">
+                      <div className="flex items-center gap-3 mb-3 p-3 rounded-lg bg-white/[0.02] border border-white/10">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[9px] text-muted-foreground uppercase font-bold mb-1">Position / Role</p>
+                          <div className="flex items-center gap-1.5">
+                            <Briefcase className="w-3.5 h-3.5 text-purple-400 flex-shrink-0" />
+                            <input
+                              type="text"
+                              value={member.role}
+                              onChange={e => persistWithFeedback(members.map(m => m.id === member.id ? { ...m, role: e.target.value } : m), member.id)}
+                              className="bg-transparent text-sm font-bold w-full outline-none border-b border-transparent focus:border-cyan-500/40 transition-colors"
+                              placeholder="e.g. Content Manager"
+                            />
+                          </div>
+                        </div>
+                      </div>
                       <div className="flex items-center gap-3 mb-4 p-3 rounded-lg bg-white/[0.02] border border-white/10">
                         <div className="flex-1 min-w-0">
                           <p className="text-[9px] text-muted-foreground uppercase font-bold mb-1">Username</p>
