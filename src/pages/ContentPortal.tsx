@@ -685,7 +685,7 @@ const ContentPortal = () => {
                             {video.editor && <span>Editor: {video.editor}</span>}
                             <span className="text-green-400 font-bold">${video.price}</span>
                             <button
-                              onClick={() => setExpandedVideoId(expandedVideoId === video.id ? null : video.id)}
+                              onClick={() => setExpandedVideoId(video.id)}
                               className="flex items-center gap-1 text-yellow-400 hover:text-yellow-300 transition-colors"
                             >
                               <FileText className="w-3 h-3" />
@@ -707,16 +707,6 @@ const ContentPortal = () => {
                           <Trash2 className="w-3 h-3 text-muted-foreground" />
                         </button>
                       </div>
-                      {expandedVideoId === video.id && (
-                        <div className="mt-2 pt-2 border-t border-white/5">
-                          <textarea
-                            placeholder="Paste script here..."
-                            value={video.script || ""}
-                            onChange={e => updateVideoScript(video.id, e.target.value)}
-                            className="w-full p-2 rounded-lg bg-white/[0.03] border border-white/10 text-xs text-foreground placeholder:text-muted-foreground resize-none h-28 focus:outline-none focus:border-yellow-500/40"
-                          />
-                        </div>
-                      )}
                     </div>
                   ))}
                   {selectedShoot.videos.length === 0 && (
@@ -764,6 +754,35 @@ const ContentPortal = () => {
                   </div>
                 </div>
               )}
+
+              {expandedVideoId && (() => {
+                const video = selectedShoot.videos.find(v => v.id === expandedVideoId);
+                if (!video) return null;
+                return (
+                  <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={() => setExpandedVideoId(null)}>
+                    <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+                    <div className="relative w-full max-w-lg rounded-2xl bg-background/95 backdrop-blur-xl border border-white/10 p-6" onClick={e => e.stopPropagation()}>
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <h3 className="font-orbitron font-bold flex items-center gap-2">
+                            <FileText className="w-4 h-4 text-yellow-400" /> Script
+                          </h3>
+                          <p className="text-xs text-muted-foreground mt-0.5">{video.title}</p>
+                        </div>
+                        <button onClick={() => setExpandedVideoId(null)} className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20">
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                      <textarea
+                        placeholder="Paste script here..."
+                        value={video.script || ""}
+                        onChange={e => updateVideoScript(video.id, e.target.value)}
+                        className="w-full p-3 rounded-lg bg-white/5 border border-white/10 text-sm text-foreground placeholder:text-muted-foreground resize-y min-h-[200px] h-[300px] focus:outline-none focus:border-yellow-500/40"
+                      />
+                    </div>
+                  </div>
+                );
+              })()}
 
             </>
           )}
