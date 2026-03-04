@@ -85,9 +85,16 @@ const TeamAccess = () => {
   const [selectedPerms, setSelectedPerms] = useState<string[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
+  const [savedId, setSavedId] = useState<string | null>(null);
   const { toast } = useToast();
 
   const persist = (updated: TeamMember[]) => { setMembers(updated); saveTeam(updated); };
+
+  const persistWithFeedback = (updated: TeamMember[], memberId: string) => {
+    persist(updated);
+    setSavedId(memberId);
+    setTimeout(() => setSavedId(prev => prev === memberId ? null : prev), 1500);
+  };
 
   const addMember = () => {
     if (!newMember.name || !newMember.email) return;
@@ -130,7 +137,7 @@ const TeamAccess = () => {
   };
 
   const copyCredentials = (member: TeamMember) => {
-    const text = `Username: ${member.username}\nPassword: ${member.password}\nLogin at: /team-portal`;
+    const text = `Username: ${member.username}\nPassword: ${member.password}\nLogin at: /avaadminpanel`;
     navigator.clipboard.writeText(text);
     toast({ title: "Login credentials copied!" });
   };
@@ -158,7 +165,7 @@ const TeamAccess = () => {
 
         <div className="max-w-5xl mx-auto px-4 lg:px-8 py-6">
           <div className="mb-6 p-4 rounded-xl bg-cyan-500/5 border border-cyan-500/20">
-            <p className="text-xs text-cyan-400">Team members can log in at <Link to="/team-portal" className="font-mono font-bold underline underline-offset-2 hover:text-cyan-300">/team-portal</Link> using their generated username and password. They'll only see the cards you've enabled for them.</p>
+            <p className="text-xs text-cyan-400">Team members can log in at <Link to="/avaadminpanel" className="font-mono font-bold underline underline-offset-2 hover:text-cyan-300">/avaadminpanel</Link> using their generated username and password. They'll only see the cards you've enabled for them.</p>
           </div>
 
           {members.length === 0 ? (
@@ -211,7 +218,7 @@ const TeamAccess = () => {
                               value={member.username}
                               onChange={e => {
                                 const val = e.target.value.toLowerCase().replace(/[^a-z0-9]/g, "");
-                                persist(members.map(m => m.id === member.id ? { ...m, username: val } : m));
+                                persistWithFeedback(members.map(m => m.id === member.id ? { ...m, username: val } : m), member.id);
                               }}
                               className="bg-transparent text-sm font-mono font-bold w-full outline-none border-b border-transparent focus:border-cyan-500/40 transition-colors"
                             />
@@ -225,7 +232,7 @@ const TeamAccess = () => {
                             <input
                               type={showPasswords[member.id] ? "text" : "password"}
                               value={member.password}
-                              onChange={e => persist(members.map(m => m.id === member.id ? { ...m, password: e.target.value } : m))}
+                              onChange={e => persistWithFeedback(members.map(m => m.id === member.id ? { ...m, password: e.target.value } : m), member.id)}
                               className="bg-transparent text-sm font-mono font-bold w-full outline-none border-b border-transparent focus:border-cyan-500/40 transition-colors"
                             />
                             <button
@@ -236,12 +243,17 @@ const TeamAccess = () => {
                             </button>
                           </div>
                         </div>
-                        <button
-                          onClick={() => copyCredentials(member)}
-                          className="px-2 py-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-[10px] text-cyan-400 font-bold hover:bg-cyan-500/20 transition-all flex items-center gap-1 flex-shrink-0"
-                        >
-                          <Copy className="w-3 h-3" /> Copy Login
-                        </button>
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                          {savedId === member.id && (
+                            <span className="text-[10px] text-green-400 font-bold animate-in fade-in">Saved</span>
+                          )}
+                          <button
+                            onClick={() => copyCredentials(member)}
+                            className="px-2 py-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-[10px] text-cyan-400 font-bold hover:bg-cyan-500/20 transition-all flex items-center gap-1"
+                          >
+                            <Copy className="w-3 h-3" /> Copy Login
+                          </button>
+                        </div>
                       </div>
 
                       <p className="text-[10px] font-bold text-muted-foreground uppercase mb-3">Access Permissions</p>

@@ -56,7 +56,7 @@ export function clearTeamSession() {
   sessionStorage.removeItem(TEAM_SESSION_KEY);
 }
 
-const TeamPortal = () => {
+const TeamPortal = ({ onLogin }: { onLogin?: () => void } = {}) => {
   const [loggedIn, setLoggedIn] = useState<TeamMember | null>(null);
   const [usernameInput, setUsernameInput] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
@@ -79,6 +79,7 @@ const TeamPortal = () => {
       if (found) {
         sessionStorage.setItem(TEAM_SESSION_KEY, JSON.stringify(found));
         setLoggedIn(found);
+        onLogin?.();
       } else {
         toast({ title: "Invalid credentials", description: "Please check your username and password.", variant: "destructive" });
       }
@@ -179,6 +180,9 @@ const TeamPortal = () => {
                 <button onClick={handleLogin} className="w-full py-2.5 rounded-lg bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 font-bold text-sm hover:bg-cyan-500/30 transition-all">
                   Sign In
                 </button>
+                <Link to="/auth" className="block text-center text-[11px] text-muted-foreground mt-4 hover:text-cyan-400 transition-colors">
+                  Admin Sign In
+                </Link>
               </div>
             </div>
           )}
