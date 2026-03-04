@@ -32,6 +32,9 @@ interface Shoot {
   status: ShootStatus;
   actorMinutes: number;
   filmerMinutes: number;
+  shortFormCount: number;
+  vslCount: number;
+  valueAddedCount: number;
   videos: ShootVideo[];
   dropboxFootage: string;
   dropboxDeliverables: string;
@@ -162,6 +165,9 @@ const ContentPortal = () => {
       status: "scheduled",
       actorMinutes: 0,
       filmerMinutes: 0,
+      shortFormCount: 0,
+      vslCount: 0,
+      valueAddedCount: 0,
       videos: [],
       dropboxFootage: "",
       dropboxDeliverables: "",
@@ -267,11 +273,13 @@ const ContentPortal = () => {
     const actorRevenue = (shoot.actorMinutes / 60) * ACTOR_CHARGE;
     const filmerRevenue = (shoot.filmerMinutes / 60) * FILMER_CHARGE;
     const videoRevenue = shoot.videos.reduce((sum, v) => sum + v.price, 0);
-    const editorCost = shoot.videos.length * EDITOR_COST_PER_VIDEO;
+    const totalVideoCount = (shoot.shortFormCount || 0) + (shoot.vslCount || 0) + (shoot.valueAddedCount || 0);
+    const shootVideoRevenue = (shoot.shortFormCount || 0) * SHORT_FORM_PRICE + (shoot.vslCount || 0) * VSL_PRICE + (shoot.valueAddedCount || 0) * VALUE_ADDED_PRICE;
+    const editorCost = totalVideoCount * EDITOR_COST_PER_VIDEO;
     const totalCost = actorCost + filmerCost + editorCost;
-    const totalRevenue = actorRevenue + filmerRevenue + videoRevenue;
+    const totalRevenue = actorRevenue + filmerRevenue + shootVideoRevenue;
     const margin = totalRevenue - totalCost;
-    return { actorCost, filmerCost, editorCost, actorRevenue, filmerRevenue, videoRevenue, totalCost, totalRevenue, margin };
+    return { actorCost, filmerCost, editorCost, actorRevenue, filmerRevenue, videoRevenue: shootVideoRevenue, totalVideoCount, totalCost, totalRevenue, margin };
   };
 
   const calcClientTotals = (client: Client) => {
@@ -280,7 +288,7 @@ const ContentPortal = () => {
       const f = calcShootFinancials(s);
       totalRevenue += f.totalRevenue;
       totalCost += f.totalCost;
-      totalVideos += s.videos.length;
+      totalVideos += f.totalVideoCount;
     });
     return { totalRevenue, totalCost, margin: totalRevenue - totalCost, totalVideos, totalShoots: client.shoots.length };
   };
@@ -411,7 +419,7 @@ const ContentPortal = () => {
                             <div className="flex items-center gap-2 text-[10px] text-muted-foreground mt-0.5">
                               <span>{new Date(shoot.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}</span>
                               <span className="flex items-center gap-0.5"><MapPin className="w-2.5 h-2.5" />{shoot.location}</span>
-                              <span>{shoot.videos.length} video{shoot.videos.length !== 1 ? "s" : ""}</span>
+                              <span>{(shoot.shortFormCount || 0) + (shoot.vslCount || 0) + (shoot.valueAddedCount || 0)} video{((shoot.shortFormCount || 0) + (shoot.vslCount || 0) + (shoot.valueAddedCount || 0)) !== 1 ? "s" : ""}</span>
                             </div>
                           </div>
                           <ChevronRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-cyan-400 transition-colors" />
@@ -559,7 +567,7 @@ const ContentPortal = () => {
                         </div>
                       </div>
                       <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1"><Video className="w-3 h-3" /> {shoot.videos.length} video{shoot.videos.length !== 1 ? "s" : ""}</span>
+                        <span className="flex items-center gap-1"><Video className="w-3 h-3" /> {fin.totalVideoCount} video{fin.totalVideoCount !== 1 ? "s" : ""} shot</span>
                         <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-green-400" /> {doneCount}/{shoot.videos.length} edited</span>
                         <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {shoot.actorMinutes + shoot.filmerMinutes}min on site</span>
                         <span className="flex items-center gap-1 text-green-400 font-bold"><DollarSign className="w-3 h-3" /> ${fin.totalRevenue.toFixed(2)}</span>
@@ -663,15 +671,57 @@ const ContentPortal = () => {
                         />
                         <p className="text-[10px] text-muted-foreground mt-0.5">Cost: ${fin.filmerCost.toFixed(2)} · Charge: ${fin.filmerRevenue.toFixed(2)}</p>
                       </div>
+                      <div>
+                        <label className="text-[10px] text-muted-foreground block mb-1">Short Form Ads Shot</label>
+                        <Input
+                          type="number" min="0" step="1"
+                          value={selectedShoot.shortFormCount || ""}
+                          onChange={e => updateShoot("shortFormCount", parseInt(e.target.value) || 0)}
+                          onBlur={e => { if (e.target.value === "") updateShoot("shortFormCount", 0); }}
+                          placeholder="0"
+                          className="bg-white/5 border-white/10 h-8 text-sm"
+                        />
+                        <p className="text-[10px] text-cyan-400 mt-0.5">${SHORT_FORM_PRICE} each · Rev: ${((selectedShoot.shortFormCount || 0) * SHORT_FORM_PRICE).toFixed(2)}</p>
+                      </div>
+                      <div>
+                        <label className="text-[10px] text-muted-foreground block mb-1">VSLs Shot</label>
+                        <Input
+                          type="number" min="0" step="1"
+                          value={selectedShoot.vslCount || ""}
+                          onChange={e => updateShoot("vslCount", parseInt(e.target.value) || 0)}
+                          onBlur={e => { if (e.target.value === "") updateShoot("vslCount", 0); }}
+                          placeholder="0"
+                          className="bg-white/5 border-white/10 h-8 text-sm"
+                        />
+                        <p className="text-[10px] text-red-400 mt-0.5">${VSL_PRICE} each · Rev: ${((selectedShoot.vslCount || 0) * VSL_PRICE).toFixed(2)}</p>
+                      </div>
+                      <div>
+                        <label className="text-[10px] text-muted-foreground block mb-1">Value Added Shot</label>
+                        <Input
+                          type="number" min="0" step="1"
+                          value={selectedShoot.valueAddedCount || ""}
+                          onChange={e => updateShoot("valueAddedCount", parseInt(e.target.value) || 0)}
+                          onBlur={e => { if (e.target.value === "") updateShoot("valueAddedCount", 0); }}
+                          placeholder="0"
+                          className="bg-white/5 border-white/10 h-8 text-sm"
+                        />
+                        <p className="text-[10px] text-green-400 mt-0.5">${VALUE_ADDED_PRICE} each · Rev: ${((selectedShoot.valueAddedCount || 0) * VALUE_ADDED_PRICE).toFixed(2)}</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3 pt-2 border-t border-white/5">
                       <div className="flex flex-col justify-center text-center">
                         <p className="text-[10px] text-muted-foreground uppercase">Video Revenue</p>
                         <p className="text-lg font-black font-orbitron text-green-400">${fin.videoRevenue.toFixed(2)}</p>
-                        <p className="text-[10px] text-muted-foreground">{selectedShoot.videos.length} video{selectedShoot.videos.length !== 1 ? "s" : ""}</p>
+                        <p className="text-[10px] text-muted-foreground">{fin.totalVideoCount} video{fin.totalVideoCount !== 1 ? "s" : ""} total</p>
                       </div>
                       <div className="flex flex-col justify-center text-center">
                         <p className="text-[10px] text-muted-foreground uppercase">Editor Cost</p>
                         <p className="text-lg font-black font-orbitron text-orange-400">${fin.editorCost.toFixed(2)}</p>
-                        <p className="text-[10px] text-muted-foreground">${EDITOR_COST_PER_VIDEO}/video</p>
+                        <p className="text-[10px] text-muted-foreground">${EDITOR_COST_PER_VIDEO}/video × {fin.totalVideoCount}</p>
+                      </div>
+                      <div className="flex flex-col justify-center text-center">
+                        <p className="text-[10px] text-muted-foreground uppercase">Total Cost</p>
+                        <p className="text-lg font-black font-orbitron text-red-400">${fin.totalCost.toFixed(2)}</p>
                       </div>
                       <div className="flex flex-col justify-center text-center">
                         <p className="text-[10px] text-muted-foreground uppercase">Margin</p>
