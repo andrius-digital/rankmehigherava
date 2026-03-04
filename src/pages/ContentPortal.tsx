@@ -728,9 +728,27 @@ const ContentPortal = () => {
                         <p className={`text-lg font-black font-orbitron ${fin.margin >= 0 ? "text-cyan-400" : "text-red-400"}`}>${fin.margin.toFixed(2)}</p>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between text-xs border-t border-white/5 pt-2">
-                      <span className="text-muted-foreground">Total Revenue: <span className="text-green-400 font-bold">${fin.totalRevenue.toFixed(2)}</span></span>
-                      <span className="text-muted-foreground">Total Cost: <span className="text-red-400 font-bold">${fin.totalCost.toFixed(2)}</span></span>
+                    <div className="border-t border-white/5 pt-3">
+                      <div className="grid grid-cols-2 gap-4 text-xs">
+                        <div>
+                          <p className="text-[10px] text-muted-foreground uppercase font-orbitron mb-1.5">Revenue Breakdown</p>
+                          <div className="space-y-1">
+                            <div className="flex justify-between"><span className="text-muted-foreground">Actor charge ({selectedShoot.actorMinutes || 0}min × ${ACTOR_CHARGE}/hr)</span><span className="text-green-400 font-bold">${fin.actorRevenue.toFixed(2)}</span></div>
+                            <div className="flex justify-between"><span className="text-muted-foreground">Filmer charge ({selectedShoot.filmerMinutes || 0}min × ${FILMER_CHARGE}/hr)</span><span className="text-green-400 font-bold">${fin.filmerRevenue.toFixed(2)}</span></div>
+                            <div className="flex justify-between"><span className="text-muted-foreground">Video revenue ({fin.totalVideoCount} videos)</span><span className="text-green-400 font-bold">${fin.videoRevenue.toFixed(2)}</span></div>
+                            <div className="flex justify-between border-t border-white/5 pt-1 mt-1"><span className="font-bold">Total Revenue</span><span className="text-green-400 font-black">${fin.totalRevenue.toFixed(2)}</span></div>
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-muted-foreground uppercase font-orbitron mb-1.5">Cost Breakdown</p>
+                          <div className="space-y-1">
+                            <div className="flex justify-between"><span className="text-muted-foreground">Actor cost ({selectedShoot.actorMinutes || 0}min × ${ACTOR_COST}/hr)</span><span className="text-red-400 font-bold">${fin.actorCost.toFixed(2)}</span></div>
+                            <div className="flex justify-between"><span className="text-muted-foreground">Filmer cost ({selectedShoot.filmerMinutes || 0}min × ${FILMER_COST}/hr)</span><span className="text-red-400 font-bold">${fin.filmerCost.toFixed(2)}</span></div>
+                            <div className="flex justify-between"><span className="text-muted-foreground">Editor cost ({fin.totalVideoCount} × ${EDITOR_COST_PER_VIDEO})</span><span className="text-red-400 font-bold">${fin.editorCost.toFixed(2)}</span></div>
+                            <div className="flex justify-between border-t border-white/5 pt-1 mt-1"><span className="font-bold">Total Cost</span><span className="text-red-400 font-black">${fin.totalCost.toFixed(2)}</span></div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 );
