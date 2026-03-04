@@ -47,6 +47,7 @@ interface Client {
   business: string;
   email: string;
   phone: string;
+  dropboxFolder: string;
   onboardedAt: string;
   shoots: Shoot[];
 }
@@ -132,7 +133,7 @@ const ContentPortal = () => {
   const selectedClient = clients.find(c => c.id === selectedClientId) || null;
   const selectedShoot = selectedClient?.shoots.find(s => s.id === selectedShootId) || null;
 
-  const [newClient, setNewClient] = useState({ name: "", business: "", email: "", phone: "" });
+  const [newClient, setNewClient] = useState({ name: "", business: "", email: "", phone: "", dropboxFolder: "" });
   const [newShoot, setNewShoot] = useState({ date: "", location: "", notes: "" });
   const [newVideo, setNewVideo] = useState<{ title: string; contentType: ContentType; editor: string; script: string }>({ title: "", contentType: "short-form", editor: "", script: "" });
 
@@ -145,7 +146,7 @@ const ContentPortal = () => {
       shoots: [],
     };
     persist([client, ...clients]);
-    setNewClient({ name: "", business: "", email: "", phone: "" });
+    setNewClient({ name: "", business: "", email: "", phone: "", dropboxFolder: "" });
     setShowAddClient(false);
     toast({ title: "Client added", description: `${client.name} has been onboarded.` });
   };
@@ -181,6 +182,14 @@ const ContentPortal = () => {
     setNewShoot({ date: "", location: "", notes: "" });
     setShowAddShoot(false);
     toast({ title: "Shoot scheduled" });
+  };
+
+  const updateClient = (field: string, value: any) => {
+    if (!selectedClientId) return;
+    const updated = clients.map(c =>
+      c.id === selectedClientId ? { ...c, [field]: value } : c
+    );
+    persist(updated);
   };
 
   const updateShoot = (field: string, value: any) => {
@@ -278,10 +287,11 @@ const ContentPortal = () => {
     const shootVideoRevenue = (shoot.shortFormCount || 0) * SHORT_FORM_PRICE + (shoot.vslCount || 0) * VSL_PRICE + (shoot.valueAddedCount || 0) * VALUE_ADDED_PRICE;
     const editorCost = totalVideoCount * EDITOR_COST_PER_VIDEO;
     const totalRevenue = actorRevenue + filmerRevenue + shootVideoRevenue;
-    const managerFee = totalRevenue * MANAGER_FEE_PERCENT;
+    const grossProfit = totalRevenue - actorCost - filmerCost - editorCost;
+    const managerFee = Math.max(0, grossProfit * MANAGER_FEE_PERCENT);
     const totalCost = actorCost + filmerCost + editorCost + managerFee;
     const profit = totalRevenue - totalCost;
-    return { actorCost, filmerCost, editorCost, managerFee, actorRevenue, filmerRevenue, videoRevenue: shootVideoRevenue, totalVideoCount, totalCost, totalRevenue, profit };
+    return { actorCost, filmerCost, editorCost, managerFee, grossProfit, actorRevenue, filmerRevenue, videoRevenue: shootVideoRevenue, totalVideoCount, totalCost, totalRevenue, profit };
   };
 
   const calcClientTotals = (client: Client) => {
@@ -485,6 +495,7 @@ const ContentPortal = () => {
                       <Input placeholder="Business name *" value={newClient.business} onChange={e => setNewClient(p => ({ ...p, business: e.target.value }))} className="bg-white/5 border-white/10" />
                       <Input placeholder="Email" value={newClient.email} onChange={e => setNewClient(p => ({ ...p, email: e.target.value }))} className="bg-white/5 border-white/10" />
                       <Input placeholder="Phone" value={newClient.phone} onChange={e => setNewClient(p => ({ ...p, phone: e.target.value }))} className="bg-white/5 border-white/10" />
+                      <Input placeholder="Lucky World Dropbox folder link" value={newClient.dropboxFolder} onChange={e => setNewClient(p => ({ ...p, dropboxFolder: e.target.value }))} className="bg-white/5 border-white/10" />
                       <button onClick={addClient} className="w-full py-2.5 rounded-lg bg-red-500/20 border border-red-500/30 text-red-400 font-bold text-sm hover:bg-red-500/30 transition-all">
                         Onboard Client
                       </button>
@@ -500,7 +511,11 @@ const ContentPortal = () => {
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h2 className="font-orbitron font-bold text-xl">{selectedClient.name}</h2>
-                  <p className="text-xs text-muted-foreground mt-1">{selectedClient.business} · Onboarded {new Date(selectedClient.onboardedAt).toLocaleDateString()}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{selectedClient.business} · Onboarded {new Date(selectedClient.onboardedAt).toLocaleDateString()}
+                    {selectedClient.dropboxFolder && (
+                      <> · <a href={selectedClient.dropboxFolder} target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 inline-flex items-center gap-1">Lucky World Dropbox <ExternalLink className="w-3 h-3 inline" /></a></>
+                    )}
+                  </p>
                 </div>
                 <div className="flex items-center gap-2">
                   <button onClick={() => setShowAddShoot(true)} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm font-bold hover:bg-red-500/20 transition-all">
@@ -712,24 +727,32 @@ const ContentPortal = () => {
                         <p className="text-[10px] text-green-400 mt-0.5">${VALUE_ADDED_PRICE} each · Rev: ${((selectedShoot.valueAddedCount || 0) * VALUE_ADDED_PRICE).toFixed(2)}</p>
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3 pt-2 border-t border-white/5">
+                    <div className="grid grid-cols-3 lg:grid-cols-6 gap-3 mb-3 pt-2 border-t border-white/5">
+                      <div className="flex flex-col justify-center text-center">
+                        <p className="text-[10px] text-muted-foreground uppercase">Crew Charge</p>
+                        <p className="text-sm font-black font-orbitron text-green-400">${(fin.actorRevenue + fin.filmerRevenue).toFixed(2)}</p>
+                      </div>
                       <div className="flex flex-col justify-center text-center">
                         <p className="text-[10px] text-muted-foreground uppercase">Video Revenue</p>
-                        <p className="text-lg font-black font-orbitron text-green-400">${fin.videoRevenue.toFixed(2)}</p>
-                        <p className="text-[10px] text-muted-foreground">{fin.totalVideoCount} video{fin.totalVideoCount !== 1 ? "s" : ""} total</p>
+                        <p className="text-sm font-black font-orbitron text-green-400">${fin.videoRevenue.toFixed(2)}</p>
+                        <p className="text-[10px] text-muted-foreground">{fin.totalVideoCount} videos</p>
                       </div>
                       <div className="flex flex-col justify-center text-center">
-                        <p className="text-[10px] text-muted-foreground uppercase">Editor Cost</p>
-                        <p className="text-lg font-black font-orbitron text-orange-400">${fin.editorCost.toFixed(2)}</p>
-                        <p className="text-[10px] text-muted-foreground">${EDITOR_COST_PER_VIDEO}/video × {fin.totalVideoCount}</p>
+                        <p className="text-[10px] text-muted-foreground uppercase">Total Revenue</p>
+                        <p className="text-sm font-black font-orbitron text-green-400">${fin.totalRevenue.toFixed(2)}</p>
                       </div>
                       <div className="flex flex-col justify-center text-center">
-                        <p className="text-[10px] text-muted-foreground uppercase">Total Cost</p>
-                        <p className="text-lg font-black font-orbitron text-red-400">${fin.totalCost.toFixed(2)}</p>
+                        <p className="text-[10px] text-muted-foreground uppercase">All Expenses</p>
+                        <p className="text-sm font-black font-orbitron text-red-400">${fin.totalCost.toFixed(2)}</p>
                       </div>
                       <div className="flex flex-col justify-center text-center">
-                        <p className="text-[10px] text-muted-foreground uppercase">Total Profit</p>
-                        <p className={`text-lg font-black font-orbitron ${fin.profit >= 0 ? "text-cyan-400" : "text-red-400"}`}>${fin.profit.toFixed(2)}</p>
+                        <p className="text-[10px] text-muted-foreground uppercase">Manager's Fee</p>
+                        <p className="text-sm font-black font-orbitron text-orange-400">${fin.managerFee.toFixed(2)}</p>
+                        <p className="text-[10px] text-muted-foreground">10% of profit</p>
+                      </div>
+                      <div className="flex flex-col justify-center text-center">
+                        <p className="text-[10px] text-muted-foreground uppercase">Net Profit</p>
+                        <p className={`text-sm font-black font-orbitron ${fin.profit >= 0 ? "text-cyan-400" : "text-red-400"}`}>${fin.profit.toFixed(2)}</p>
                       </div>
                     </div>
                     <div className="border-t border-white/5 pt-3">
@@ -749,9 +772,15 @@ const ContentPortal = () => {
                             <div className="flex justify-between"><span className="text-muted-foreground">Actor cost ({selectedShoot.actorMinutes || 0}min × ${ACTOR_COST}/hr)</span><span className="text-red-400 font-bold">${fin.actorCost.toFixed(2)}</span></div>
                             <div className="flex justify-between"><span className="text-muted-foreground">Filmer cost ({selectedShoot.filmerMinutes || 0}min × ${FILMER_COST}/hr)</span><span className="text-red-400 font-bold">${fin.filmerCost.toFixed(2)}</span></div>
                             <div className="flex justify-between"><span className="text-muted-foreground">Editor cost ({fin.totalVideoCount} × ${EDITOR_COST_PER_VIDEO})</span><span className="text-red-400 font-bold">${fin.editorCost.toFixed(2)}</span></div>
-                            <div className="flex justify-between"><span className="text-muted-foreground">Manager's fee (10% of revenue)</span><span className="text-orange-400 font-bold">${fin.managerFee.toFixed(2)}</span></div>
+                            <div className="flex justify-between"><span className="text-muted-foreground">Manager's fee (10% of profit)</span><span className="text-orange-400 font-bold">${fin.managerFee.toFixed(2)}</span></div>
                             <div className="flex justify-between border-t border-white/5 pt-1 mt-1"><span className="font-bold">Total Cost</span><span className="text-red-400 font-black">${fin.totalCost.toFixed(2)}</span></div>
                           </div>
+                        </div>
+                      </div>
+                      <div className="mt-3 pt-3 border-t border-white/10">
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="font-orbitron font-bold uppercase">Net Profit</span>
+                          <span className={`text-xl font-black font-orbitron ${fin.profit >= 0 ? "text-cyan-400" : "text-red-400"}`}>${fin.profit.toFixed(2)}</span>
                         </div>
                       </div>
                     </div>
@@ -764,9 +793,25 @@ const ContentPortal = () => {
                 <h3 className="text-xs font-bold text-muted-foreground uppercase font-orbitron mb-3 flex items-center gap-1.5">
                   <Link2 className="w-3.5 h-3.5 text-blue-400" /> Dropbox Folder Links
                 </h3>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                   <div>
-                    <label className="text-[10px] text-muted-foreground block mb-1">Footage</label>
+                    <label className="text-[10px] text-muted-foreground block mb-1">Lucky World Dropbox</label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        placeholder="Client Dropbox folder link..."
+                        value={selectedClient?.dropboxFolder || ""}
+                        onChange={e => updateClient("dropboxFolder", e.target.value)}
+                        className="bg-white/5 border-white/10 text-sm flex-1"
+                      />
+                      {selectedClient?.dropboxFolder && (
+                        <a href={selectedClient.dropboxFolder} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center hover:bg-purple-500/20 transition-all">
+                          <ExternalLink className="w-3.5 h-3.5 text-purple-400" />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-muted-foreground block mb-1">Shoot Footage</label>
                     <div className="flex items-center gap-2">
                       <Input
                         placeholder="Paste footage folder link..."
@@ -782,7 +827,7 @@ const ContentPortal = () => {
                     </div>
                   </div>
                   <div>
-                    <label className="text-[10px] text-muted-foreground block mb-1">Deliverables</label>
+                    <label className="text-[10px] text-muted-foreground block mb-1">Shoot Deliverables</label>
                     <div className="flex items-center gap-2">
                       <Input
                         placeholder="Paste deliverables folder link..."
