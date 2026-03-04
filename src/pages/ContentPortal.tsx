@@ -54,6 +54,7 @@ const ACTOR_CHARGE = 150;
 const FILMER_CHARGE = 150;
 const SHORT_FORM_PRICE = 30;
 const VSL_PRICE = 150;
+const EDITOR_COST_PER_VIDEO = 7;
 
 const contentTypeLabel: Record<ContentType, string> = {
   "short-form": "Short Form Ad",
@@ -266,10 +267,11 @@ const ContentPortal = () => {
     const actorRevenue = (shoot.actorMinutes / 60) * ACTOR_CHARGE;
     const filmerRevenue = (shoot.filmerMinutes / 60) * FILMER_CHARGE;
     const videoRevenue = shoot.videos.reduce((sum, v) => sum + v.price, 0);
-    const totalCost = actorCost + filmerCost;
+    const editorCost = shoot.videos.length * EDITOR_COST_PER_VIDEO;
+    const totalCost = actorCost + filmerCost + editorCost;
     const totalRevenue = actorRevenue + filmerRevenue + videoRevenue;
     const margin = totalRevenue - totalCost;
-    return { actorCost, filmerCost, actorRevenue, filmerRevenue, videoRevenue, totalCost, totalRevenue, margin };
+    return { actorCost, filmerCost, editorCost, actorRevenue, filmerRevenue, videoRevenue, totalCost, totalRevenue, margin };
   };
 
   const calcClientTotals = (client: Client) => {
@@ -636,7 +638,7 @@ const ContentPortal = () => {
                     <h3 className="text-xs font-bold text-muted-foreground uppercase font-orbitron mb-3 flex items-center gap-1.5">
                       <DollarSign className="w-3.5 h-3.5 text-green-400" /> Financials
                     </h3>
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
+                    <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-3">
                       <div>
                         <label className="text-[10px] text-muted-foreground block mb-1">Actor Minutes on Site</label>
                         <Input
@@ -664,6 +666,12 @@ const ContentPortal = () => {
                       <div className="flex flex-col justify-center text-center">
                         <p className="text-[10px] text-muted-foreground uppercase">Video Revenue</p>
                         <p className="text-lg font-black font-orbitron text-green-400">${fin.videoRevenue.toFixed(2)}</p>
+                        <p className="text-[10px] text-muted-foreground">{selectedShoot.videos.length} video{selectedShoot.videos.length !== 1 ? "s" : ""}</p>
+                      </div>
+                      <div className="flex flex-col justify-center text-center">
+                        <p className="text-[10px] text-muted-foreground uppercase">Editor Cost</p>
+                        <p className="text-lg font-black font-orbitron text-orange-400">${fin.editorCost.toFixed(2)}</p>
+                        <p className="text-[10px] text-muted-foreground">${EDITOR_COST_PER_VIDEO}/video</p>
                       </div>
                       <div className="flex flex-col justify-center text-center">
                         <p className="text-[10px] text-muted-foreground uppercase">Margin</p>
