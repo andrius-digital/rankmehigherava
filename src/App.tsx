@@ -47,6 +47,8 @@ import Contact from "./pages/Contact";
 import Careers from "./pages/Careers";
 import ContentPortal from "./pages/ContentPortal";
 import ManagerPortal from "./pages/ManagerPortal";
+import TeamAccess from "./pages/TeamAccess";
+import TeamPortal from "./pages/TeamPortal";
 
 // AVA by Rank Me Higher Pages
 import SEOSpiderDashboard from "./pages/seo-spider/Dashboard";
@@ -99,7 +101,7 @@ const App = () => (
 
               {/* Protected routes - require authentication */}
               <Route path="/call-center-kpi" element={
-                <ProtectedRoute>
+                <ProtectedRoute teamPermission="call-center-kpi">
                   <CallCenterKPI />
                 </ProtectedRoute>
               } />
@@ -139,12 +141,12 @@ const App = () => (
                 </ProtectedRoute>
               } />
               <Route path="/subscriptions" element={
-                <ProtectedRoute>
+                <ProtectedRoute teamPermission="subscriptions">
                   <Subscriptions />
                 </ProtectedRoute>
               } />
               <Route path="/website-prompting" element={
-                <ProtectedRoute>
+                <ProtectedRoute teamPermission="build-website">
                   <WebsitePromptingPage />
                 </ProtectedRoute>
               } />
@@ -160,7 +162,7 @@ const App = () => (
               } />
               {/* Agency Portal (previously Client Portal) - accessible by admins and resellers */}
               <Route path="/client-portal" element={
-                <ProtectedRoute allowReseller>
+                <ProtectedRoute allowReseller teamPermission="client-portal">
                   <ClientPortal />
                 </ProtectedRoute>
               } />
@@ -192,16 +194,22 @@ const App = () => (
                 </ProtectedRoute>
               } />
               <Route path="/applicant-tracker" element={
-                <ProtectedRoute requireAdmin>
+                <ProtectedRoute requireAdmin teamPermission="applicant-tracker">
                   <ApplicantTracker />
                 </ProtectedRoute>
               } />
               <Route path="/content-portal" element={
-                <ProtectedRoute requireAdmin>
+                <ProtectedRoute requireAdmin teamPermission="content-portal">
                   <ContentPortal />
                 </ProtectedRoute>
               } />
               <Route path="/manager-portal" element={<ManagerPortal />} />
+              <Route path="/team-access" element={
+                <ProtectedRoute requireAdmin>
+                  <TeamAccess />
+                </ProtectedRoute>
+              } />
+              <Route path="/team-portal" element={<TeamPortal />} />
               <Route path="/avaseo" element={<ProtectedRoute><SEOSpiderDashboard /></ProtectedRoute>} />
               <Route path="/avaseo/ai-assistant" element={<ProtectedRoute><SEOSpiderAIAssistant /></ProtectedRoute>} />
               <Route path="/avaseo/analytics" element={<ProtectedRoute><SEOSpiderAnalytics /></ProtectedRoute>} />
@@ -224,7 +232,7 @@ const App = () => (
                 </ProtectedRoute>
               } />
               <Route path="/team-tracker" element={
-                <ProtectedRoute>
+                <ProtectedRoute teamPermission="team-tracker">
                   <TeamTracker />
                 </ProtectedRoute>
               } />

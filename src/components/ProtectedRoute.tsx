@@ -7,11 +7,26 @@ interface ProtectedRouteProps {
   children: React.ReactNode;
   requireAdmin?: boolean;
   allowReseller?: boolean;
+  teamPermission?: string;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireAdmin = false, allowReseller = false }) => {
+function getTeamSession() {
+  try {
+    const raw = sessionStorage.getItem("rmh_team_session");
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireAdmin = false, allowReseller = false, teamPermission }) => {
   const { user, isLoading, isAdmin, isReseller } = useAuth();
   const location = useLocation();
+
+  if (teamPermission) {
+    const teamSession = getTeamSession();
+    if (teamSession && teamSession.permissions?.includes(teamPermission)) {
+      return <>{children}</>;
+    }
+  }
 
   if (isLoading) {
     return (
@@ -25,7 +40,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireAdmin 
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
-  // If route requires admin and user is not admin
   if (requireAdmin && !isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -37,7 +51,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireAdmin 
     );
   }
 
-  // If route allows resellers, let both admins and resellers through
   if (allowReseller) {
     if (!isAdmin && !isReseller) {
       return (
@@ -51,7 +64,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireAdmin 
     }
   }
 
-  // Reseller users can only access routes that explicitly allow them
   if (isReseller && !isAdmin && !allowReseller && !requireAdmin) {
     return <Navigate to="/client-portal" replace />;
   }
