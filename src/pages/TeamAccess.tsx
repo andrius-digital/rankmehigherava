@@ -271,6 +271,23 @@ const TeamAccess = () => {
                             >
                               {showPasswords[member.id] ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                             </button>
+                            {newPassword[member.id] && (
+                              <button
+                                onClick={async () => {
+                                  try {
+                                    await adminAction("update_team_portal_member", { id: member.id, password: newPassword[member.id] });
+                                    setSavedId(member.id);
+                                    setTimeout(() => setSavedId(prev => prev === member.id ? null : prev), 2000);
+                                    toast({ title: "Password saved!" });
+                                  } catch (err: any) {
+                                    toast({ title: "Failed to save password", description: err.message, variant: "destructive" });
+                                  }
+                                }}
+                                className="px-2 py-0.5 rounded bg-green-500/20 border border-green-500/30 text-[10px] text-green-400 font-bold hover:bg-green-500/30 transition-all flex-shrink-0"
+                              >
+                                Save
+                              </button>
+                            )}
                           </div>
                         </div>
                         <div className="flex items-center gap-1.5 flex-shrink-0">
