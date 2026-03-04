@@ -771,7 +771,19 @@ const ContentPortal = () => {
                 <div className="flex items-center gap-2">
                   <select
                     value={selectedShoot.status}
-                    onChange={e => updateShoot("status", e.target.value)}
+                    onChange={e => {
+                      const newStatus = e.target.value;
+                      if (newStatus === "completed") {
+                        const videos = selectedShoot.videos || [];
+                        const allDone = videos.length > 0 && videos.every(v => v.editStatus === "done");
+                        if (!allDone) {
+                          toast({ title: "Cannot mark as Completed", description: videos.length === 0 ? "This shoot has no videos yet." : `${videos.filter(v => v.editStatus !== "done").length} of ${videos.length} video(s) are not marked as Done.`, variant: "destructive" });
+                          e.target.value = selectedShoot.status;
+                          return;
+                        }
+                      }
+                      updateShoot("status", newStatus);
+                    }}
                     className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-bold text-foreground focus:outline-none"
                   >
                     <option value="scheduled">Scheduled</option>
