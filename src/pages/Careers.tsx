@@ -764,6 +764,7 @@ const Careers = () => {
                     const minMonthly = minWeekly * 4.33;
                     const maxMonthly = maxWeekly * 4.33;
                     const fmt = (n: number) => Math.round(n).toLocaleString();
+                    const range = (min: number, max: number) => Math.round(min) === Math.round(max) ? `${symbol}${fmt(min)}` : `${symbol}${fmt(min)}–${fmt(max)}`;
                     return (
                       <>
                         <div className="mb-2">
@@ -795,15 +796,15 @@ const Careers = () => {
                         <div className="grid grid-cols-3 gap-2">
                           <div className="rounded-md bg-white/5 border border-white/10 p-2 text-center">
                             <div className="text-[8px] text-muted-foreground mb-0.5 uppercase">Weekly</div>
-                            <div className="text-[11px] font-bold text-green-400 font-orbitron">{symbol}{fmt(minWeekly)}–{fmt(maxWeekly)}</div>
+                            <div className="text-[11px] font-bold text-green-400 font-orbitron">{range(minWeekly, maxWeekly)}</div>
                           </div>
                           <div className="rounded-md bg-white/5 border border-white/10 p-2 text-center">
                             <div className="text-[8px] text-muted-foreground mb-0.5 uppercase">Monthly</div>
-                            <div className="text-[11px] font-bold text-green-400 font-orbitron">{symbol}{fmt(minMonthly)}–{fmt(maxMonthly)}</div>
+                            <div className="text-[11px] font-bold text-green-400 font-orbitron">{range(minMonthly, maxMonthly)}</div>
                           </div>
                           <div className="rounded-md bg-white/5 border border-white/10 p-2 text-center">
                             <div className="text-[8px] text-muted-foreground mb-0.5 uppercase">Yearly</div>
-                            <div className="text-[11px] font-bold text-green-400 font-orbitron">{symbol}{fmt(minMonthly * 12)}–{fmt(maxMonthly * 12)}</div>
+                            <div className="text-[11px] font-bold text-green-400 font-orbitron">{range(minMonthly * 12, maxMonthly * 12)}</div>
                           </div>
                         </div>
                         {selectedPosition.commission && (
