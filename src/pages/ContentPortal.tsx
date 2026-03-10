@@ -655,7 +655,7 @@ const ContentPortal = () => {
                             {col.shoots.map(shoot => (
                               <button
                                 key={shoot.id}
-                                onClick={() => { setSelectedClientId(shoot.clientId); setSelectedShootId(shoot.id); setView("shoot-detail"); }}
+                                onClick={() => { setSelectedClientId(shoot.clientId); setView("client-detail"); }}
                                 className="w-full flex items-center gap-2.5 p-2.5 rounded-lg bg-white/5 border border-white/10 hover:border-cyan-500/30 hover:bg-white/[0.07] transition-all text-left group"
                               >
                                 <div className={`w-2 h-2 rounded-full flex-shrink-0 ${col.dotColor}`} />
@@ -960,12 +960,15 @@ const ContentPortal = () => {
             <>
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <Input
-                    value={selectedShoot.name || ""}
-                    onChange={e => updateShoot("name", e.target.value)}
-                    placeholder="Shoot name..."
-                    className="bg-transparent border-none p-0 h-auto font-orbitron font-bold text-lg focus-visible:ring-0 focus-visible:ring-offset-0"
-                  />
+                  <div className="relative inline-flex items-center group">
+                    <Input
+                      value={selectedShoot.name || ""}
+                      onChange={e => updateShoot("name", e.target.value)}
+                      placeholder="Shoot name..."
+                      className="bg-transparent border-none p-0 pr-6 h-auto font-orbitron font-bold text-lg focus-visible:ring-0 focus-visible:ring-offset-0"
+                    />
+                    <Pencil className="w-3.5 h-3.5 text-muted-foreground/50 group-hover:text-cyan-400 transition-colors absolute right-0" />
+                  </div>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
                     <span>{new Date(selectedShoot.date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}</span>
                     <span>·</span>
