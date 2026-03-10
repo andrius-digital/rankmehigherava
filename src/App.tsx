@@ -111,12 +111,12 @@ const App = () => (
                 </ProtectedRoute>
               } />
               <Route path="/agency-dashboard" element={
-                <ProtectedRoute>
+                <ProtectedRoute requireAdmin>
                   <AgencyDashboard />
                 </ProtectedRoute>
               } />
               <Route path="/avaadminpanel" element={
-                <ProtectedRoute>
+                <ProtectedRoute requireAdmin>
                   <AgencyDashboard />
                 </ProtectedRoute>
               } />

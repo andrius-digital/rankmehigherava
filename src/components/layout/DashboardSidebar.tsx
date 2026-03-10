@@ -159,10 +159,10 @@ const DashboardSidebar: React.FC = () => {
       <SidebarFooter className="p-4">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild tooltip="AVA Admin Panel">
-              <Link to="/avaadminpanel">
+            <SidebarMenuButton asChild tooltip={sessionStorage.getItem("rmh_team_session") ? "Team Portal" : "AVA Admin Panel"}>
+              <Link to={sessionStorage.getItem("rmh_team_session") ? "/team" : "/avaadminpanel"}>
                 <ChevronLeft className="h-4 w-4" />
-                <span>AVA Admin Panel</span>
+                <span>{sessionStorage.getItem("rmh_team_session") ? "Team Portal" : "AVA Admin Panel"}</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

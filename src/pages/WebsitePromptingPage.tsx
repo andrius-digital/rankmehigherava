@@ -26,10 +26,10 @@ const WebsitePromptingPage = () => {
                     <div className="container mx-auto px-4 py-4">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
-                                <Link to="/avaadminpanel">
+                                <Link to={sessionStorage.getItem("rmh_team_session") ? "/team" : "/avaadminpanel"}>
                                     <Button variant="ghost" size="sm" className="gap-2">
                                         <ArrowLeft className="w-4 h-4" />
-                                        Back to AVA Admin Panel
+                                        {sessionStorage.getItem("rmh_team_session") ? "Back to Team Portal" : "Back to AVA Admin Panel"}
                                     </Button>
                                 </Link>
                                 <div className="h-6 w-px bg-border/50" />
@@ -58,8 +58,8 @@ const WebsitePromptingPage = () => {
                     <div className="container mx-auto px-4">
                         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
                             <p>© {new Date().getFullYear()} AVA Admin Panel. Internal Tool.</p>
-                            <Link to="/avaadminpanel" className="hover:text-primary transition-colors">
-                                Return to AVA Admin Panel
+                            <Link to={sessionStorage.getItem("rmh_team_session") ? "/team" : "/avaadminpanel"} className="hover:text-primary transition-colors">
+                                {sessionStorage.getItem("rmh_team_session") ? "Return to Team Portal" : "Return to AVA Admin Panel"}
                             </Link>
                         </div>
                     </div>

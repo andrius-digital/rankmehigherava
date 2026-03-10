@@ -189,7 +189,7 @@ const ApplicantTracker: React.FC = () => {
         <header className={`border-b border-cyan-500/20 bg-card/30 backdrop-blur-xl sticky top-0 z-20 ${isMobile ? 'py-2' : 'py-4'}`}>
           <div className={`container mx-auto ${isMobile ? 'px-3' : 'px-4'}`}>
             <div className="flex items-center gap-3">
-              <Link to="/avaadminpanel" className="p-1.5 rounded-lg hover:bg-white/5 transition-colors">
+              <Link to={sessionStorage.getItem("rmh_team_session") ? "/team" : "/avaadminpanel"} className="p-1.5 rounded-lg hover:bg-white/5 transition-colors">
                 <ArrowLeft className="w-5 h-5 text-muted-foreground" />
               </Link>
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/30 flex items-center justify-center">

@@ -241,10 +241,10 @@ Deploy in under 60 minutes. Keep it clean, conversion-focused, and premium.`;
                     <div className="container mx-auto px-4 py-4">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
-                                <Link to="/avaadminpanel">
+                                <Link to={sessionStorage.getItem("rmh_team_session") ? "/team" : "/avaadminpanel"}>
                                     <Button variant="ghost" size="sm" className="gap-2">
                                         <ArrowLeft className="w-4 h-4" />
-                                        AVA Admin Panel
+                                        {sessionStorage.getItem("rmh_team_session") ? "Team Portal" : "AVA Admin Panel"}
                                     </Button>
                                 </Link>
                                 <div className="h-6 w-px bg-border/50" />

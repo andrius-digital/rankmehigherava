@@ -26,6 +26,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireAdmin 
     if (user && teamSession && teamSession.permissions?.includes(teamPermission)) {
       return <>{children}</>;
     }
+    if (user && isAdmin) {
+      return <>{children}</>;
+    }
   }
 
   if (isLoading) {
@@ -41,6 +44,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireAdmin 
   }
 
   if (requireAdmin && !isAdmin) {
+    const teamSession = getTeamSession();
+    if (teamSession) {
+      return <Navigate to="/team" replace />;
+    }
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">

@@ -97,7 +97,7 @@ export default function AvaVoiceCallsDashboard() {
           {/* Back Button */}
           <div className="mb-6">
             <Link
-              to="/avaadminpanel"
+              to={sessionStorage.getItem("rmh_team_session") ? "/team" : "/avaadminpanel"}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-500/10 backdrop-blur-md border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20 hover:border-cyan-500/40 transition-all font-orbitron text-sm"
             >
               <ArrowLeft className="w-4 h-4" />

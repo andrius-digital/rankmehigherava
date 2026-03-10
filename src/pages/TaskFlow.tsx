@@ -989,7 +989,7 @@ const TaskFlow: React.FC = () => {
                 </div>
                 {/* Back to AVA Admin Button */}
                 <Link 
-                    to="/avaadminpanel" 
+                    to={sessionStorage.getItem("rmh_team_session") ? "/team" : "/avaadminpanel"} 
                     className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg bg-gradient-to-r from-cyan-500/20 to-blue-600/20 border border-cyan-500/30 hover:border-cyan-400 hover:from-cyan-500/30 hover:to-blue-600/30 transition-all text-cyan-400 text-xs font-medium"
                 >
                     <Home className="w-3.5 h-3.5" />
@@ -1382,7 +1382,7 @@ const TaskFlow: React.FC = () => {
                             )}
                             {/* Back to AVA Admin Button */}
                             <Link 
-                                to="/avaadminpanel" 
+                                to={sessionStorage.getItem("rmh_team_session") ? "/team" : "/avaadminpanel"} 
                                 className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-card/50 border border-border/50 hover:border-cyan-500/50 hover:bg-cyan-500/10 transition-colors text-muted-foreground hover:text-cyan-400"
                             >
                                 <Home className="w-3.5 h-3.5" />

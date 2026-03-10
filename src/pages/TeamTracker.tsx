@@ -17,7 +17,7 @@ const TeamTracker: React.FC = () => {
                 <div className="container mx-auto px-4 py-4">
                     <div className="flex items-center gap-4">
                         <Button variant="ghost" size="icon" asChild>
-                            <Link to="/avaadminpanel">
+                            <Link to={sessionStorage.getItem("rmh_team_session") ? "/team" : "/avaadminpanel"}>
                                 <ArrowLeft className="w-5 h-5" />
                             </Link>
                         </Button>

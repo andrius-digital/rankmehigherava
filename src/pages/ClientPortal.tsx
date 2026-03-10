@@ -1319,7 +1319,7 @@ const ClientPortal: React.FC = () => {
                                 </button>
                                 {!isResellerUser && (
                                 <Link
-                                    to="/avaadminpanel"
+                                    to={sessionStorage.getItem("rmh_team_session") ? "/team" : "/avaadminpanel"}
                                     className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.07] hover:border-white/[0.15] transition-all font-orbitron text-[8px] uppercase tracking-widest text-slate-400 hover:text-white"
                                 >
                                     <Layout className="w-2.5 h-2.5" />

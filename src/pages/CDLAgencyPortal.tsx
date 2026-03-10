@@ -42,7 +42,7 @@ const CDLAgencyPortal: React.FC = () => {
                     <div className="container mx-auto px-4 py-4">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                             <div className="flex items-center gap-4">
-                                <Link to="/avaadminpanel">
+                                <Link to={sessionStorage.getItem("rmh_team_session") ? "/team" : "/avaadminpanel"}>
                                     <Button variant="ghost" size="icon" className="mr-2 border border-white/20 bg-white/5 backdrop-blur-sm hover:bg-white/10">
                                         <ArrowLeft className="w-5 h-5 text-white" />
                                     </Button>
