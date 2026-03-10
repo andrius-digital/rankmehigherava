@@ -732,7 +732,7 @@ const ContentPortal = () => {
                       <Input placeholder="Industry (e.g. Trucking, Restaurant, HVAC)" value={newClient.industry} onChange={e => setNewClient(p => ({ ...p, industry: e.target.value }))} className="bg-white/5 border-white/10" />
                       <Input placeholder="Email" value={newClient.email} onChange={e => setNewClient(p => ({ ...p, email: e.target.value }))} className="bg-white/5 border-white/10" />
                       <Input placeholder="Phone" value={newClient.phone} onChange={e => setNewClient(p => ({ ...p, phone: e.target.value }))} className="bg-white/5 border-white/10" />
-                      <Input placeholder="Lucky World Dropbox folder link" value={newClient.dropboxFolder} onChange={e => setNewClient(p => ({ ...p, dropboxFolder: e.target.value }))} className="bg-white/5 border-white/10" />
+                      <Input placeholder="Client Dropbox folder link" value={newClient.dropboxFolder} onChange={e => setNewClient(p => ({ ...p, dropboxFolder: e.target.value }))} className="bg-white/5 border-white/10" />
                       <button onClick={addClient} className="w-full py-2.5 rounded-lg bg-red-500/20 border border-red-500/30 text-red-400 font-bold text-sm hover:bg-red-500/30 transition-all">
                         Onboard Client
                       </button>
