@@ -4,7 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import { 
   Briefcase, Code2, TrendingUp, Video, Users, 
   ArrowRight, X, Send, CheckCircle2, MapPin, Clock,
-  BarChart3, Mail, Zap, ChevronLeft, ChevronRight, Calculator, Link2, Check
+  BarChart3, Mail, Zap, ChevronLeft, ChevronRight, Calculator, Link2, Check, Phone
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -31,6 +31,43 @@ interface Position {
 }
 
 const positions: Position[] = [
+  {
+    id: "sales-agent-warm-leads",
+    title: "Sales Agent Warm Leads",
+    department: "Sales",
+    type: "Part-time",
+    location: "Remote",
+    icon: Phone,
+    color: "cyan",
+    shortDescription: "Call warm leads from our database — flat rate + commission on every sale.",
+    salary: "$3/hr + 1% Comm · 25 hrs/wk",
+    hourlyMin: 3,
+    hourlyMax: 3,
+    description: "We're looking for a sales agent to call warm leads from our existing database. These are recurring clients of home service businesses (window washing, deck maintenance, etc.) who have already worked with the company — so it's an easy, warm conversation. You just need to get the lead interested and patch them through to the manager who will close and schedule. No cold prospecting, no finding your own leads.",
+    responsibilities: [
+      "Call warm leads using our provided list",
+      "Follow a simple calling script",
+      "Speak clearly and politely on the phone",
+      "Take notes and update call results",
+      "Patch interested leads to the manager for closing",
+      "Handle multiple tasks while calling",
+    ],
+    requirements: [
+      "Good English communication skills",
+      "Able to multitask",
+      "Comfortable making phone calls",
+      "Stable internet connection and headset",
+      "Reliable and willing to work night shift (10 PM – 3 AM PH time)",
+      "Previous call center or cold calling experience is a plus",
+    ],
+    perks: [
+      "$3/hr flat + 1% commission on every sale closed",
+      "25 hours per week — part-time",
+      "Work from home — fully remote",
+      "Warm leads only — no cold prospecting",
+      "Schedule: 10:00 PM – 3:00 AM PH time",
+    ],
+  },
   {
     id: "media-buyer",
     title: "Media Buyer (Meta)",
@@ -282,7 +319,7 @@ const Careers = () => {
   const [mobileCardIndex, setMobileCardIndex] = useState(0);
   const [calcHours, setCalcHours] = useState(30);
   const [calcRate, setCalcRate] = useState(5);
-  const [calcCurrency, setCalcCurrency] = useState<'USD' | 'PKR' | 'INR'>('USD');
+  const [calcCurrency, setCalcCurrency] = useState<'USD' | 'PHP' | 'PKR' | 'INR'>('USD');
   const [linkCopied, setLinkCopied] = useState(false);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
@@ -686,6 +723,7 @@ const Careers = () => {
                   <div className="flex items-center gap-1.5 mb-2.5">
                     {([
                       { key: 'USD' as const, label: '$ USD' },
+                      { key: 'PHP' as const, label: '₱ PHP' },
                       { key: 'PKR' as const, label: '₨ PKR' },
                       { key: 'INR' as const, label: '₹ INR' },
                     ]).map((c) => (
@@ -704,8 +742,8 @@ const Careers = () => {
                   </div>
 
                   {(() => {
-                    const multiplier = calcCurrency === 'PKR' ? 278 : calcCurrency === 'INR' ? 84 : 1;
-                    const symbol = calcCurrency === 'PKR' ? '₨' : calcCurrency === 'INR' ? '₹' : '$';
+                    const multiplier = calcCurrency === 'PHP' ? 56 : calcCurrency === 'PKR' ? 278 : calcCurrency === 'INR' ? 84 : 1;
+                    const symbol = calcCurrency === 'PHP' ? '₱' : calcCurrency === 'PKR' ? '₨' : calcCurrency === 'INR' ? '₹' : '$';
                     const minHr = selectedPosition.hourlyMin * multiplier;
                     const maxHr = selectedPosition.hourlyMax * multiplier;
                     const minWeekly = minHr * calcHours;

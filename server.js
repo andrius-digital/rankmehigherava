@@ -253,6 +253,7 @@ ${evaluation.concerns?.length ? `⚠️ <b>Concerns:</b> ${evaluation.concerns.m
 ${answersText}`;
 
     const TELEGRAM_CHANNELS = {
+      'Sales': '-1003705919643',
       'Creative': '-1003863683808',
       'Marketing': '-1003516103565',
       'Software Engineers': '-1003711003707',
