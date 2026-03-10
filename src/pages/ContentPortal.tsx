@@ -745,112 +745,177 @@ const ContentPortal = () => {
 
           {view === "client-detail" && selectedClient && (
             <>
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  {editingClientName ? (
-                    <Input
-                      autoFocus
-                      value={selectedClient.name}
-                      onChange={e => updateClient("name", e.target.value)}
-                      onBlur={() => setEditingClientName(false)}
-                      onKeyDown={e => { if (e.key === "Enter") setEditingClientName(false); }}
-                      className="bg-transparent border-white/20 p-0 px-1 h-auto font-orbitron font-bold text-xl focus-visible:ring-0 focus-visible:ring-offset-0 mb-1"
-                    />
-                  ) : (
-                    <h2 className="font-orbitron font-bold text-xl flex items-center gap-2 group cursor-pointer" onClick={() => setEditingClientName(true)}>
-                      {selectedClient.name}
-                      <Pencil className="w-3.5 h-3.5 text-muted-foreground/50 group-hover:text-cyan-400 transition-colors" />
-                    </h2>
-                  )}
-                  <p className="text-xs text-muted-foreground mt-1">{selectedClient.business}{selectedClient.industry && ` · ${selectedClient.industry}`} · Onboarded {new Date(selectedClient.onboardedAt).toLocaleDateString()}
-                    {selectedClient.dropboxFolder && (
-                      <> · <a href={selectedClient.dropboxFolder} target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 inline-flex items-center gap-1">Lucky World Dropbox <ExternalLink className="w-3 h-3 inline" /></a></>
-                    )}
-                  </p>
+              {/* Client Header */}
+              <div className="rounded-2xl bg-gradient-to-r from-white/[0.04] to-white/[0.02] border border-white/10 p-6 mb-6">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start gap-4">
+                    <div className="w-14 h-14 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center flex-shrink-0">
+                      <Building2 className="w-7 h-7 text-red-400" />
+                    </div>
+                    <div>
+                      {editingClientName ? (
+                        <Input
+                          autoFocus
+                          value={selectedClient.name}
+                          onChange={e => updateClient("name", e.target.value)}
+                          onBlur={() => setEditingClientName(false)}
+                          onKeyDown={e => { if (e.key === "Enter") setEditingClientName(false); }}
+                          className="bg-transparent border-white/20 p-0 px-1 h-auto font-orbitron font-bold text-xl focus-visible:ring-0 focus-visible:ring-offset-0 mb-1"
+                        />
+                      ) : (
+                        <h2 className="font-orbitron font-bold text-xl flex items-center gap-2 group cursor-pointer" onClick={() => setEditingClientName(true)}>
+                          {selectedClient.name}
+                          <Pencil className="w-3.5 h-3.5 text-muted-foreground/50 group-hover:text-cyan-400 transition-colors" />
+                        </h2>
+                      )}
+                      <p className="text-sm text-muted-foreground mt-0.5">{selectedClient.business}{selectedClient.industry && ` · ${selectedClient.industry}`}</p>
+                      <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground flex-wrap">
+                        <span>Onboarded {new Date(selectedClient.onboardedAt).toLocaleDateString()}</span>
+                        {selectedClient.email && <span className="flex items-center gap-1">· {selectedClient.email}</span>}
+                        {selectedClient.phone && <span className="flex items-center gap-1">· {selectedClient.phone}</span>}
+                        {selectedClient.dropboxFolder && (
+                          <a href={selectedClient.dropboxFolder} target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 inline-flex items-center gap-1">· Lucky World Dropbox <ExternalLink className="w-3 h-3 inline" /></a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => setShowAddShoot(true)} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-sm font-bold hover:bg-cyan-500/20 transition-all">
+                      <Plus className="w-4 h-4" /> New Shoot
+                    </button>
+                    <button onClick={() => deleteClient(selectedClient.id)} className="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center hover:bg-red-500/20 hover:border-red-500/30 transition-all">
+                      <Trash2 className="w-4 h-4 text-muted-foreground hover:text-red-400" />
+                    </button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <button onClick={() => setShowAddShoot(true)} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm font-bold hover:bg-red-500/20 transition-all">
-                    <Plus className="w-4 h-4" /> New Shoot
-                  </button>
-                  <button onClick={() => deleteClient(selectedClient.id)} className="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center hover:bg-red-500/20 hover:border-red-500/30 transition-all">
-                    <Trash2 className="w-4 h-4 text-muted-foreground hover:text-red-400" />
-                  </button>
-                </div>
+
+                {/* Client summary stats */}
+                {(() => {
+                  const t = calcClientTotals(selectedClient);
+                  return (
+                    <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mt-5 pt-5 border-t border-white/5">
+                      {[
+                        { label: "Total Revenue", value: `$${t.totalRevenue.toLocaleString()}`, color: "text-green-400" },
+                        { label: "Total Cost", value: `$${t.totalCost.toLocaleString()}`, color: "text-red-400" },
+                        { label: "Net Profit", value: `$${t.profit.toLocaleString()}`, color: "text-cyan-400" },
+                        { label: "Videos", value: t.totalVideos, color: "text-yellow-400" },
+                        { label: "Shoots", value: t.totalShoots, color: "text-blue-400" },
+                      ].map(s => (
+                        <div key={s.label} className="text-center">
+                          <p className="text-[10px] text-muted-foreground uppercase font-orbitron">{s.label}</p>
+                          <p className={`text-lg font-black font-orbitron ${s.color}`}>{s.value}</p>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
               </div>
 
-              {/* Client summary cards */}
-              {(() => {
-                const t = calcClientTotals(selectedClient);
-                return (
-                  <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
-                    {[
-                      { label: "Revenue", value: `$${t.totalRevenue.toLocaleString()}`, color: "text-green-400" },
-                      { label: "Cost", value: `$${t.totalCost.toLocaleString()}`, color: "text-red-400" },
-                      { label: "Profit", value: `$${t.profit.toLocaleString()}`, color: "text-cyan-400" },
-                      { label: "Videos", value: t.totalVideos, color: "text-yellow-400" },
-                      { label: "Shoots", value: t.totalShoots, color: "text-blue-400" },
-                    ].map(s => (
-                      <div key={s.label} className="p-3 rounded-xl bg-white/5 border border-white/10 text-center">
-                        <p className="text-[10px] text-muted-foreground uppercase font-orbitron">{s.label}</p>
-                        <p className={`text-lg font-black font-orbitron ${s.color}`}>{s.value}</p>
-                      </div>
-                    ))}
-                  </div>
-                );
-              })()}
+              {/* Shoots Section */}
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-orbitron font-bold text-sm flex items-center gap-2">
+                  <Camera className="w-4 h-4 text-cyan-400" />
+                  Shoots ({selectedClient.shoots.length})
+                </h3>
+              </div>
 
-              {selectedClient.email && (
-                <div className="flex items-center gap-4 text-xs text-muted-foreground mb-4">
-                  {selectedClient.email && <span>{selectedClient.email}</span>}
-                  {selectedClient.phone && <span>{selectedClient.phone}</span>}
-                </div>
-              )}
-
-              <h3 className="font-orbitron font-bold text-sm mb-3">Shoots</h3>
-              <div className="grid gap-3">
-                {selectedClient.shoots.map(shoot => {
+              <div className="grid gap-4">
+                {selectedClient.shoots.map((shoot, index) => {
                   const fin = calcShootFinancials(shoot);
                   const doneCount = shoot.videos.filter(v => v.editStatus === "done").length;
+                  const totalVids = shoot.videos.length;
+                  const progressPct = totalVids > 0 ? Math.round((doneCount / totalVids) * 100) : 0;
                   return (
                     <button
                       key={shoot.id}
                       onClick={() => { setSelectedShootId(shoot.id); setView("shoot-detail"); }}
-                      className="w-full text-left p-4 rounded-xl bg-white/5 border border-white/10 hover:border-cyan-500/30 hover:bg-white/[0.07] transition-all group"
+                      className="w-full text-left rounded-xl bg-white/[0.03] border border-white/10 hover:border-cyan-500/30 hover:bg-white/[0.06] transition-all group overflow-hidden"
                     >
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
-                            <Camera className="w-4 h-4 text-cyan-400" />
+                      <div className="flex">
+                        {/* Shoot Number Sidebar */}
+                        <div className="w-16 flex-shrink-0 flex flex-col items-center justify-center bg-white/[0.03] border-r border-white/10">
+                          <span className="text-[10px] text-muted-foreground uppercase font-orbitron">Shoot</span>
+                          <span className="text-2xl font-black font-orbitron text-cyan-400">{index + 1}</span>
+                        </div>
+
+                        {/* Shoot Content */}
+                        <div className="flex-1 p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <p className="font-bold text-sm">{shoot.name || new Date(shoot.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}</p>
+                                <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border ${shootStatusColor[shoot.status]}`}>
+                                  {shoot.status.replace("-", " ").toUpperCase()}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                                <Calendar className="w-3 h-3" />
+                                <span>{new Date(shoot.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}</span>
+                                <span>·</span>
+                                <MapPin className="w-3 h-3" />
+                                <span>{shoot.location}</span>
+                                {shoot.managerName && (
+                                  <>
+                                    <span>·</span>
+                                    <User className="w-3 h-3" />
+                                    <span>{shoot.managerName}</span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                            <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-cyan-400 transition-colors flex-shrink-0" />
                           </div>
-                          <div>
-                            <p className="font-bold text-sm">{shoot.name || new Date(shoot.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}</p>
-                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                              <span>{new Date(shoot.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}</span>
-                              <span>·</span>
-                              <MapPin className="w-3 h-3" /> {shoot.location}
+
+                          {/* Stats Row */}
+                          <div className="flex items-center gap-4 text-xs mt-3">
+                            <div className="flex items-center gap-1.5">
+                              <Video className="w-3.5 h-3.5 text-yellow-400" />
+                              <span className="text-muted-foreground">{fin.totalVideoCount} video{fin.totalVideoCount !== 1 ? "s" : ""}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <Clock className="w-3.5 h-3.5 text-blue-400" />
+                              <span className="text-muted-foreground">{shoot.actorMinutes + shoot.filmerMinutes}min on site</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <DollarSign className="w-3.5 h-3.5 text-green-400" />
+                              <span className="text-green-400 font-bold">${fin.totalRevenue.toFixed(0)}</span>
+                              <span className="text-muted-foreground">rev</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <DollarSign className="w-3.5 h-3.5 text-cyan-400" />
+                              <span className={`font-bold ${fin.profit >= 0 ? "text-cyan-400" : "text-red-400"}`}>${fin.profit.toFixed(0)}</span>
+                              <span className="text-muted-foreground">profit</span>
                             </div>
                           </div>
+
+                          {/* Edit Progress Bar */}
+                          {totalVids > 0 && (
+                            <div className="mt-3">
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="text-[10px] text-muted-foreground">Edit Progress</span>
+                                <span className="text-[10px] font-bold text-muted-foreground">{doneCount}/{totalVids} done</span>
+                              </div>
+                              <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
+                                <div
+                                  className={`h-full rounded-full transition-all ${progressPct === 100 ? "bg-green-400" : "bg-cyan-400"}`}
+                                  style={{ width: `${progressPct}%` }}
+                                />
+                              </div>
+                            </div>
+                          )}
                         </div>
-                        <div className="flex items-center gap-3">
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${shootStatusColor[shoot.status]}`}>
-                            {shoot.status.replace("-", " ").toUpperCase()}
-                          </span>
-                          <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-cyan-400 transition-colors" />
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1"><Video className="w-3 h-3" /> {fin.totalVideoCount} video{fin.totalVideoCount !== 1 ? "s" : ""} shot</span>
-                        <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-green-400" /> {doneCount}/{shoot.videos.length} edited</span>
-                        <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {shoot.actorMinutes + shoot.filmerMinutes}min on site</span>
-                        <span className="flex items-center gap-1 text-green-400 font-bold"><DollarSign className="w-3 h-3" /> ${fin.totalRevenue.toFixed(2)}</span>
                       </div>
                     </button>
                   );
                 })}
                 {selectedClient.shoots.length === 0 && (
-                  <div className="text-center py-12 text-muted-foreground">
-                    <Camera className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">No shoots yet. Schedule your first shoot.</p>
+                  <div className="text-center py-16 text-muted-foreground rounded-xl bg-white/[0.02] border border-dashed border-white/10">
+                    <Camera className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                    <p className="text-sm font-medium mb-1">No shoots yet</p>
+                    <p className="text-xs text-muted-foreground mb-4">Schedule your first shoot to get started</p>
+                    <button onClick={() => setShowAddShoot(true)} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-sm font-bold hover:bg-cyan-500/20 transition-all">
+                      <Plus className="w-4 h-4" /> Schedule First Shoot
+                    </button>
                   </div>
                 )}
               </div>
