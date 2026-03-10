@@ -28,6 +28,9 @@ interface Position {
   minHours?: number;
   maxHours?: number;
   commission?: string;
+  commissionRate?: number;
+  salesRangeMin?: number;
+  salesRangeMax?: number;
   responsibilities: string[];
   requirements: string[];
   perks: string[];
@@ -49,6 +52,9 @@ const positions: Position[] = [
     minHours: 25,
     maxHours: 25,
     commission: "1% commission on every sale closed",
+    commissionRate: 0.01,
+    salesRangeMin: 10000,
+    salesRangeMax: 30000,
     description: "We're looking for a sales agent to call warm leads from our existing database. These are recurring clients of home service businesses (window washing, deck maintenance, etc.) who have already worked with the company — so it's an easy, warm conversation. You just need to get the lead interested and patch them through to the manager who will close and schedule. No cold prospecting, no finding your own leads.",
     responsibilities: [
       "Call warm leads using our provided list",
@@ -805,6 +811,33 @@ const Careers = () => {
                             + {selectedPosition.commission} (not included above)
                           </div>
                         )}
+                        {selectedPosition.commissionRate && selectedPosition.salesRangeMin && selectedPosition.salesRangeMax && (() => {
+                          const rate = selectedPosition.commissionRate;
+                          const commMin = selectedPosition.salesRangeMin * rate * multiplier;
+                          const commMax = selectedPosition.salesRangeMax * rate * multiplier;
+                          return (
+                            <div className="mt-2 rounded-md bg-yellow-500/5 border border-yellow-500/20 p-2">
+                              <div className="text-[9px] font-bold text-yellow-400 uppercase font-orbitron tracking-wider mb-1.5 text-center">Commission Earnings Estimate</div>
+                              <div className="text-[9px] text-muted-foreground text-center mb-1.5">
+                                Based on {symbol}{fmt(selectedPosition.salesRangeMin * multiplier)}–{symbol}{fmt(selectedPosition.salesRangeMax * multiplier)}/mo in sales at {(rate * 100)}%
+                              </div>
+                              <div className="grid grid-cols-3 gap-2">
+                                <div className="rounded-md bg-white/5 border border-white/10 p-1.5 text-center">
+                                  <div className="text-[7px] text-muted-foreground mb-0.5 uppercase">Monthly</div>
+                                  <div className="text-[10px] font-bold text-yellow-400 font-orbitron">{symbol}{fmt(commMin)}–{symbol}{fmt(commMax)}</div>
+                                </div>
+                                <div className="rounded-md bg-white/5 border border-white/10 p-1.5 text-center">
+                                  <div className="text-[7px] text-muted-foreground mb-0.5 uppercase">Yearly</div>
+                                  <div className="text-[10px] font-bold text-yellow-400 font-orbitron">{symbol}{fmt(commMin * 12)}–{symbol}{fmt(commMax * 12)}</div>
+                                </div>
+                                <div className="rounded-md bg-green-500/5 border border-green-500/20 p-1.5 text-center">
+                                  <div className="text-[7px] text-muted-foreground mb-0.5 uppercase">Total /mo</div>
+                                  <div className="text-[10px] font-bold text-green-400 font-orbitron">{symbol}{fmt(minMonthly + commMin)}–{symbol}{fmt(maxMonthly + commMax)}</div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </>
                     );
                   })()}
