@@ -25,6 +25,9 @@ interface Position {
   salary?: string;
   hourlyMin: number;
   hourlyMax: number;
+  minHours?: number;
+  maxHours?: number;
+  commission?: string;
   responsibilities: string[];
   requirements: string[];
   perks: string[];
@@ -43,6 +46,9 @@ const positions: Position[] = [
     salary: "$3/hr + 1% Comm · 25 hrs/wk",
     hourlyMin: 3,
     hourlyMax: 3,
+    minHours: 25,
+    maxHours: 25,
+    commission: "1% commission on every sale closed",
     description: "We're looking for a sales agent to call warm leads from our existing database. These are recurring clients of home service businesses (window washing, deck maintenance, etc.) who have already worked with the company — so it's an easy, warm conversation. You just need to get the lead interested and patch them through to the manager who will close and schedule. No cold prospecting, no finding your own leads.",
     responsibilities: [
       "Call warm leads using our provided list",
@@ -717,7 +723,7 @@ const Careers = () => {
                   <div className="flex items-center gap-1.5 mb-2.5">
                     <Calculator className="w-3.5 h-3.5 text-green-400" />
                     <span className="text-[10px] font-bold text-green-400 uppercase font-orbitron tracking-wider">Salary Calculator</span>
-                    <span className="ml-auto text-[9px] text-muted-foreground">${selectedPosition.hourlyMin}–${selectedPosition.hourlyMax}/hr · 20–40 hrs/wk</span>
+                    <span className="ml-auto text-[9px] text-muted-foreground">${selectedPosition.hourlyMin}{selectedPosition.hourlyMin !== selectedPosition.hourlyMax ? `–${selectedPosition.hourlyMax}` : ''}/hr · {(selectedPosition.minHours || 20) === (selectedPosition.maxHours || 40) ? `${selectedPosition.minHours}` : `${selectedPosition.minHours || 20}–${selectedPosition.maxHours || 40}`} hrs/wk</span>
                   </div>
 
                   <div className="flex items-center gap-1.5 mb-2.5">
@@ -746,8 +752,9 @@ const Careers = () => {
                     const symbol = calcCurrency === 'PHP' ? '₱' : calcCurrency === 'PKR' ? '₨' : calcCurrency === 'INR' ? '₹' : '$';
                     const minHr = selectedPosition.hourlyMin * multiplier;
                     const maxHr = selectedPosition.hourlyMax * multiplier;
-                    const minWeekly = minHr * calcHours;
-                    const maxWeekly = maxHr * calcHours;
+                    const effectiveHours = (selectedPosition.minHours && selectedPosition.minHours === selectedPosition.maxHours) ? selectedPosition.minHours : calcHours;
+                    const minWeekly = minHr * effectiveHours;
+                    const maxWeekly = maxHr * effectiveHours;
                     const minMonthly = minWeekly * 4.33;
                     const maxMonthly = maxWeekly * 4.33;
                     const fmt = (n: number) => Math.round(n).toLocaleString();
@@ -756,21 +763,27 @@ const Careers = () => {
                         <div className="mb-2">
                           <div className="flex items-center justify-between mb-1">
                             <span className="text-[10px] text-muted-foreground">Hours per week</span>
-                            <span className="text-xs font-bold text-foreground font-orbitron">{calcHours} hrs</span>
+                            <span className="text-xs font-bold text-foreground font-orbitron">{effectiveHours} hrs</span>
                           </div>
-                          <input
-                            type="range"
-                            min={20}
-                            max={40}
-                            value={calcHours}
-                            onChange={(e) => setCalcHours(Number(e.target.value))}
-                            className="w-full h-1.5 rounded-full appearance-none cursor-pointer accent-green-400"
-                            style={{ accentColor: '#4ade80', background: 'rgba(255,255,255,0.08)' }}
-                          />
-                          <div className="flex justify-between text-[9px] text-muted-foreground mt-0.5">
-                            <span>20 hrs</span>
-                            <span>40 hrs</span>
-                          </div>
+                          {(selectedPosition.minHours || 20) === (selectedPosition.maxHours || 40) ? (
+                            <div className="text-[10px] text-muted-foreground mt-1">Fixed {selectedPosition.minHours} hrs/week</div>
+                          ) : (
+                            <>
+                              <input
+                                type="range"
+                                min={selectedPosition.minHours || 20}
+                                max={selectedPosition.maxHours || 40}
+                                value={calcHours}
+                                onChange={(e) => setCalcHours(Number(e.target.value))}
+                                className="w-full h-1.5 rounded-full appearance-none cursor-pointer accent-green-400"
+                                style={{ accentColor: '#4ade80', background: 'rgba(255,255,255,0.08)' }}
+                              />
+                              <div className="flex justify-between text-[9px] text-muted-foreground mt-0.5">
+                                <span>{selectedPosition.minHours || 20} hrs</span>
+                                <span>{selectedPosition.maxHours || 40} hrs</span>
+                              </div>
+                            </>
+                          )}
                         </div>
 
                         <div className="grid grid-cols-3 gap-2">
@@ -787,6 +800,11 @@ const Careers = () => {
                             <div className="text-[11px] font-bold text-green-400 font-orbitron">{symbol}{fmt(minMonthly * 12)}–{fmt(maxMonthly * 12)}</div>
                           </div>
                         </div>
+                        {selectedPosition.commission && (
+                          <div className="mt-2 text-[9px] text-green-400/70 text-center">
+                            + {selectedPosition.commission} (not included above)
+                          </div>
+                        )}
                       </>
                     );
                   })()}

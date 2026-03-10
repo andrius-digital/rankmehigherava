@@ -14,7 +14,10 @@ The app is built as a React SPA using Vite, TypeScript, Tailwind CSS, and shadcn
 - **Flow**: Basic info → Chat-style AI conversation with AVA (5 questions, text or voice notes) → Required Loom video → AI evaluation with scores → Submit to Telegram
 - **Component**: `src/components/AIScreeningQuiz.tsx` - chat-style conversation UI with voice recording
 - **Endpoints**: `/api/screening/questions`, `/api/screening/evaluate`, `/api/screening/submit`, `/api/screening/transcribe` (Whisper voice-to-text)
-- **Telegram Notifications**: Direct Telegram Bot API calls routed by department (Creative, Marketing, Software Engineers → separate channels)
+- **Telegram Notifications**: Direct Telegram Bot API calls routed by department (Sales → `-1003705919643`, Creative → `-1003863683808`, Marketing → `-1003516103565`, Software Engineers → `-1003711003707`)
+- **Salary Calculator Currencies**: USD, PHP (₱, ×56), PKR (₨, ×278), INR (₹, ×84) — order: USD, PHP, PKR, INR
+- **Position-specific hours**: Positions can define `minHours`/`maxHours` (default 20–40); fixed-hour positions (min===max) show "Fixed X hrs/week" instead of slider
+- **Commission roles**: Positions with `commission` field show "+ commission (not included above)" note below calculator
 - **Voice Notes**: Browser MediaRecorder captures audio → sent to `/api/screening/transcribe` → OpenAI Whisper transcription → pre-filled as text answer
 - **Shareable Position Links**: `/careers?position=<id>` auto-opens the position popup, with copy-link button in modal
 - **Dependencies**: `multer` for file upload handling on transcription endpoint
