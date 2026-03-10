@@ -759,7 +759,7 @@ const ContentPortal = () => {
                   ) : (
                     <h2 className="font-orbitron font-bold text-xl flex items-center gap-2 group cursor-pointer" onClick={() => setEditingClientName(true)}>
                       {selectedClient.name}
-                      <Pencil className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <Pencil className="w-3.5 h-3.5 text-muted-foreground/50 group-hover:text-cyan-400 transition-colors" />
                     </h2>
                   )}
                   <p className="text-xs text-muted-foreground mt-1">{selectedClient.business}{selectedClient.industry && ` · ${selectedClient.industry}`} · Onboarded {new Date(selectedClient.onboardedAt).toLocaleDateString()}
@@ -905,12 +905,15 @@ const ContentPortal = () => {
                     <span>{new Date(selectedShoot.date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}</span>
                     <span>·</span>
                     <MapPin className="w-3 h-3" />
-                    <Input
-                      value={selectedShoot.location || ""}
-                      onChange={e => updateShoot("location", e.target.value)}
-                      placeholder="Location..."
-                      className="bg-transparent border-none p-0 h-auto text-xs text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0 w-auto inline-flex max-w-[300px] hover:text-foreground"
-                    />
+                    <div className="relative inline-flex items-center group">
+                      <Input
+                        value={selectedShoot.location || ""}
+                        onChange={e => updateShoot("location", e.target.value)}
+                        placeholder="Location..."
+                        className="bg-transparent border-none p-0 pr-5 h-auto text-xs text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0 w-auto inline-flex max-w-[300px] hover:text-foreground"
+                      />
+                      <Pencil className="w-2.5 h-2.5 text-muted-foreground/50 group-hover:text-cyan-400 transition-colors absolute right-0" />
+                    </div>
                     {selectedShoot.managerName && (
                       <>
                         <span>·</span>
