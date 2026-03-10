@@ -774,7 +774,7 @@ const ContentPortal = () => {
                         {selectedClient.email && <span className="flex items-center gap-1">· {selectedClient.email}</span>}
                         {selectedClient.phone && <span className="flex items-center gap-1">· {selectedClient.phone}</span>}
                         {selectedClient.dropboxFolder && (
-                          <a href={selectedClient.dropboxFolder} target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 inline-flex items-center gap-1">· Lucky World Dropbox <ExternalLink className="w-3 h-3 inline" /></a>
+                          <a href={selectedClient.dropboxFolder} target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 inline-flex items-center gap-1">· {selectedClient.business} Dropbox <ExternalLink className="w-3 h-3 inline" /></a>
                         )}
                       </div>
                     </div>
@@ -1172,7 +1172,7 @@ const ContentPortal = () => {
                 </h3>
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                   <div>
-                    <label className="text-[10px] text-muted-foreground block mb-1">Lucky World Dropbox</label>
+                    <label className="text-[10px] text-muted-foreground block mb-1">{selectedClient?.business || "Client"} Dropbox</label>
                     <div className="flex items-center gap-2">
                       <Input
                         placeholder="Client Dropbox folder link..."
