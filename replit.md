@@ -32,7 +32,10 @@ The app is built as a React SPA using Vite, TypeScript, Tailwind CSS, and shadcn
 - **Industry Memory**: Scripts tagged by client industry (Trucking, HVAC, etc.) — AI pulls same-industry approved scripts as examples when generating
 - **Training Materials**: Upload script frameworks, style guides, examples — AI references all training docs when generating
 - **Script Status**: `draft` → `ai-generated` → `approved` (tracked per video)
-- **Content Portal Pricing**: ACTOR_COST=$75/hr, FILMER_COST=$75/hr, ACTOR_CHARGE=$150/hr, FILMER_CHARGE=$150/hr, SHORT_FORM_PRICE=$30, VSL_PRICE=$150, VALUE_ADDED_PRICE=$30, EDITOR_COST_PER_VIDEO=$7, EDITOR_COST_PER_VSL=$30, MANAGER_FEE=10% of gross profit
+- **Content Portal Pricing**: ACTOR_COST=$75/hr, FILMER_COST=$75/hr, ACTOR_CHARGE=$150/hr, FILMER_CHARGE=$150/hr, SHORT_FORM_PRICE=$30, VSL_PRICE=$150, YOUTUBE_PRICE=$150, VALUE_ADDED_PRICE=$30, EDITOR_COST_PER_VIDEO=$7, EDITOR_COST_PER_VSL=$30, EDITOR_COST_PER_YOUTUBE=$150, MANAGER_FEE=10% of gross profit
+- **Content Types**: short-form, vsl, value-added, youtube — each with distinct pricing and editor costs
+- **Discount**: Per-shoot `discountPercent` field applied to subtotal revenue before profit calculation
+- **Editable Fields**: Client name (click-to-edit in client detail), shoot location (inline editable in shoot detail)
 - **Shoot Pipeline**: 3-column Kanban (Scheduled/In Progress/Completed) on clients view; shoot cannot be marked Completed until all videos are Done
 - **Data Storage**: Content Portal data (clients, shoots, videos, managers) stored in Supabase `content_portal_data` table as JSONB (single row, id=1); auto-migrates from localStorage on first load; RLS allows authenticated users full access and anonymous users read-only (for Manager Portal)
 - **Video Managers**: Manager profiles stored in Supabase (`content_portal_data.managers` JSONB) with name, email, access code; assigned per shoot via `managerName` field

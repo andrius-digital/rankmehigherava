@@ -6,13 +6,13 @@ import {
   Clock, DollarSign, ExternalLink, ChevronRight,
   Trash2, CheckCircle2, Clapperboard,
   Building2, Link2, Search, Calendar, Sparkles, ThumbsUp, BookOpen, Loader2, Brain,
-  User, KeyRound, Copy
+  User, KeyRound, Copy, Pencil, Percent
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
-type ContentType = "short-form" | "vsl" | "value-added";
+type ContentType = "short-form" | "vsl" | "value-added" | "youtube";
 type EditStatus = "not-started" | "editing" | "review" | "done";
 type ShootStatus = "scheduled" | "in-progress" | "completed" | "cancelled";
 
@@ -42,10 +42,12 @@ interface Shoot {
   shortFormCount: number;
   vslCount: number;
   valueAddedCount: number;
+  youtubeCount: number;
   videos: ShootVideo[];
   dropboxFootage: string;
   dropboxDeliverables: string;
   notes: string;
+  discountPercent?: number;
 }
 
 interface VideoManager {
@@ -76,20 +78,24 @@ const ACTOR_CHARGE = 150;
 const FILMER_CHARGE = 150;
 const SHORT_FORM_PRICE = 30;
 const VSL_PRICE = 150;
+const YOUTUBE_PRICE = 150;
 const EDITOR_COST_PER_VIDEO = 7;
 const EDITOR_COST_PER_VSL = 30;
+const EDITOR_COST_PER_YOUTUBE = 150;
 const MANAGER_FEE_PERCENT = 0.10;
 
 const contentTypeLabel: Record<ContentType, string> = {
   "short-form": "Short Form Ad",
   "vsl": "VSL",
   "value-added": "Value Added Content",
+  "youtube": "Youtube Video",
 };
 
 const contentTypeColor: Record<ContentType, string> = {
   "short-form": "text-cyan-400 bg-cyan-500/10 border-cyan-500/20",
   "vsl": "text-red-400 bg-red-500/10 border-red-500/20",
   "value-added": "text-green-400 bg-green-500/10 border-green-500/20",
+  "youtube": "text-purple-400 bg-purple-500/10 border-purple-500/20",
 };
 
 const editStatusLabel: Record<EditStatus, string> = {
@@ -115,7 +121,7 @@ const shootStatusColor: Record<ShootStatus, string> = {
 
 const VALUE_ADDED_PRICE = 30;
 
-const getVideoPrice = (type: ContentType) => type === "vsl" ? VSL_PRICE : type === "short-form" ? SHORT_FORM_PRICE : VALUE_ADDED_PRICE;
+const getVideoPrice = (type: ContentType) => type === "vsl" ? VSL_PRICE : type === "youtube" ? YOUTUBE_PRICE : type === "short-form" ? SHORT_FORM_PRICE : VALUE_ADDED_PRICE;
 
 const generateId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 
@@ -179,6 +185,7 @@ const ContentPortal = () => {
   const [managers, setManagers] = useState<VideoManager[]>([]);
   const [showManagerSetup, setShowManagerSetup] = useState(false);
   const [newManager, setNewManager] = useState({ name: "", email: "" });
+  const [editingClientName, setEditingClientName] = useState(false);
 
 
   const persistManagers = (updated: VideoManager[]) => {
@@ -231,10 +238,12 @@ const ContentPortal = () => {
       shortFormCount: 0,
       vslCount: 0,
       valueAddedCount: 0,
+      youtubeCount: 0,
       videos: [],
       dropboxFootage: "",
       dropboxDeliverables: "",
       notes: newShoot.notes,
+      discountPercent: 0,
     };
     const updated = clients.map(c =>
       c.id === selectedClientId ? { ...c, shoots: [shoot, ...c.shoots] } : c
@@ -436,16 +445,17 @@ const ContentPortal = () => {
     const filmerCost = (shoot.filmerMinutes / 60) * FILMER_COST;
     const actorRevenue = (shoot.actorMinutes / 60) * ACTOR_CHARGE;
     const filmerRevenue = (shoot.filmerMinutes / 60) * FILMER_CHARGE;
-    const videoRevenue = shoot.videos.reduce((sum, v) => sum + v.price, 0);
-    const totalVideoCount = (shoot.shortFormCount || 0) + (shoot.vslCount || 0) + (shoot.valueAddedCount || 0);
-    const shootVideoRevenue = (shoot.shortFormCount || 0) * SHORT_FORM_PRICE + (shoot.vslCount || 0) * VSL_PRICE + (shoot.valueAddedCount || 0) * VALUE_ADDED_PRICE;
-    const editorCost = ((shoot.shortFormCount || 0) + (shoot.valueAddedCount || 0)) * EDITOR_COST_PER_VIDEO + (shoot.vslCount || 0) * EDITOR_COST_PER_VSL;
-    const totalRevenue = actorRevenue + filmerRevenue + shootVideoRevenue;
+    const totalVideoCount = (shoot.shortFormCount || 0) + (shoot.vslCount || 0) + (shoot.valueAddedCount || 0) + (shoot.youtubeCount || 0);
+    const shootVideoRevenue = (shoot.shortFormCount || 0) * SHORT_FORM_PRICE + (shoot.vslCount || 0) * VSL_PRICE + (shoot.valueAddedCount || 0) * VALUE_ADDED_PRICE + (shoot.youtubeCount || 0) * YOUTUBE_PRICE;
+    const editorCost = ((shoot.shortFormCount || 0) + (shoot.valueAddedCount || 0)) * EDITOR_COST_PER_VIDEO + (shoot.vslCount || 0) * EDITOR_COST_PER_VSL + (shoot.youtubeCount || 0) * EDITOR_COST_PER_YOUTUBE;
+    const subtotalRevenue = actorRevenue + filmerRevenue + shootVideoRevenue;
+    const discount = shoot.discountPercent ? subtotalRevenue * (shoot.discountPercent / 100) : 0;
+    const totalRevenue = subtotalRevenue - discount;
     const grossProfit = totalRevenue - actorCost - filmerCost - editorCost;
     const managerFee = Math.max(0, grossProfit * MANAGER_FEE_PERCENT);
     const totalCost = actorCost + filmerCost + editorCost + managerFee;
     const profit = totalRevenue - totalCost;
-    return { actorCost, filmerCost, editorCost, managerFee, grossProfit, actorRevenue, filmerRevenue, videoRevenue: shootVideoRevenue, totalVideoCount, totalCost, totalRevenue, profit };
+    return { actorCost, filmerCost, editorCost, managerFee, grossProfit, actorRevenue, filmerRevenue, videoRevenue: shootVideoRevenue, totalVideoCount, totalCost, totalRevenue, profit, discount, subtotalRevenue };
   };
 
   const calcClientTotals = (client: Client) => {
@@ -737,7 +747,21 @@ const ContentPortal = () => {
             <>
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h2 className="font-orbitron font-bold text-xl">{selectedClient.name}</h2>
+                  {editingClientName ? (
+                    <Input
+                      autoFocus
+                      value={selectedClient.name}
+                      onChange={e => updateClient("name", e.target.value)}
+                      onBlur={() => setEditingClientName(false)}
+                      onKeyDown={e => { if (e.key === "Enter") setEditingClientName(false); }}
+                      className="bg-transparent border-white/20 p-0 px-1 h-auto font-orbitron font-bold text-xl focus-visible:ring-0 focus-visible:ring-offset-0 mb-1"
+                    />
+                  ) : (
+                    <h2 className="font-orbitron font-bold text-xl flex items-center gap-2 group cursor-pointer" onClick={() => setEditingClientName(true)}>
+                      {selectedClient.name}
+                      <Pencil className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </h2>
+                  )}
                   <p className="text-xs text-muted-foreground mt-1">{selectedClient.business}{selectedClient.industry && ` · ${selectedClient.industry}`} · Onboarded {new Date(selectedClient.onboardedAt).toLocaleDateString()}
                     {selectedClient.dropboxFolder && (
                       <> · <a href={selectedClient.dropboxFolder} target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 inline-flex items-center gap-1">Lucky World Dropbox <ExternalLink className="w-3 h-3 inline" /></a></>
@@ -880,7 +904,13 @@ const ContentPortal = () => {
                   <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
                     <span>{new Date(selectedShoot.date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}</span>
                     <span>·</span>
-                    <MapPin className="w-3 h-3" /> {selectedShoot.location}
+                    <MapPin className="w-3 h-3" />
+                    <Input
+                      value={selectedShoot.location || ""}
+                      onChange={e => updateShoot("location", e.target.value)}
+                      placeholder="Location..."
+                      className="bg-transparent border-none p-0 h-auto text-xs text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0 w-auto inline-flex max-w-[300px] hover:text-foreground"
+                    />
                     {selectedShoot.managerName && (
                       <>
                         <span>·</span>
@@ -934,7 +964,7 @@ const ContentPortal = () => {
                     <h3 className="text-xs font-bold text-muted-foreground uppercase font-orbitron mb-3 flex items-center gap-1.5">
                       <DollarSign className="w-3.5 h-3.5 text-green-400" /> Financials
                     </h3>
-                    <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-3">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-3 mb-3">
                       <div>
                         <label className="text-[10px] text-muted-foreground block mb-1">Actor Minutes on Site</label>
                         <Input
@@ -995,6 +1025,30 @@ const ContentPortal = () => {
                         />
                         <p className="text-[10px] mt-0.5"><span className="text-green-400">${VALUE_ADDED_PRICE} each · Rev: ${((selectedShoot.valueAddedCount || 0) * VALUE_ADDED_PRICE).toFixed(2)}</span> · <span className="text-red-400">Edit: ${EDITOR_COST_PER_VIDEO}/vid</span></p>
                       </div>
+                      <div>
+                        <label className="text-[10px] text-muted-foreground block mb-1">Youtube Videos Shot</label>
+                        <Input
+                          type="number" min="0" step="1"
+                          value={selectedShoot.youtubeCount || ""}
+                          onChange={e => updateShoot("youtubeCount", parseInt(e.target.value) || 0)}
+                          onBlur={e => { if (e.target.value === "") updateShoot("youtubeCount", 0); }}
+                          placeholder="0"
+                          className="bg-white/5 border-white/10 h-8 text-sm"
+                        />
+                        <p className="text-[10px] mt-0.5"><span className="text-green-400">${YOUTUBE_PRICE} each · Rev: ${((selectedShoot.youtubeCount || 0) * YOUTUBE_PRICE).toFixed(2)}</span> · <span className="text-red-400">Edit: ${EDITOR_COST_PER_YOUTUBE}/vid</span></p>
+                      </div>
+                      <div>
+                        <label className="text-[10px] text-muted-foreground block mb-1 flex items-center gap-1"><Percent className="w-3 h-3 text-orange-400" /> Discount %</label>
+                        <Input
+                          type="number" min="0" max="100" step="1"
+                          value={selectedShoot.discountPercent || ""}
+                          onChange={e => updateShoot("discountPercent", Math.min(100, Math.max(0, parseFloat(e.target.value) || 0)))}
+                          onBlur={e => { if (e.target.value === "") updateShoot("discountPercent", 0); }}
+                          placeholder="0"
+                          className="bg-white/5 border-white/10 h-8 text-sm"
+                        />
+                        <p className="text-[10px] mt-0.5 text-orange-400">{selectedShoot.discountPercent ? `−$${fin.discount.toFixed(2)} off revenue` : "No discount"}</p>
+                      </div>
                     </div>
                     <div className="pt-2 border-t border-white/5">
                       <div className="grid grid-cols-2 gap-4 text-xs">
@@ -1004,6 +1058,9 @@ const ContentPortal = () => {
                             <div className="flex justify-between"><span className="text-muted-foreground">Actor charge ({selectedShoot.actorMinutes || 0}min × ${ACTOR_CHARGE}/hr)</span><span className="text-green-400 font-bold">${fin.actorRevenue.toFixed(2)}</span></div>
                             <div className="flex justify-between"><span className="text-muted-foreground">Filmer charge ({selectedShoot.filmerMinutes || 0}min × ${FILMER_CHARGE}/hr)</span><span className="text-green-400 font-bold">${fin.filmerRevenue.toFixed(2)}</span></div>
                             <div className="flex justify-between"><span className="text-muted-foreground">Video revenue ({fin.totalVideoCount} videos)</span><span className="text-green-400 font-bold">${fin.videoRevenue.toFixed(2)}</span></div>
+                            {fin.discount > 0 && (
+                              <div className="flex justify-between"><span className="text-orange-400">Discount ({selectedShoot.discountPercent}%)</span><span className="text-orange-400 font-bold">−${fin.discount.toFixed(2)}</span></div>
+                            )}
                             <div className="flex justify-between border-t border-white/5 pt-1 mt-1"><span className="font-bold">Total Revenue</span><span className="text-green-400 font-black">${fin.totalRevenue.toFixed(2)}</span></div>
                           </div>
                         </div>
@@ -1017,6 +1074,9 @@ const ContentPortal = () => {
                             )}
                             {(selectedShoot.vslCount || 0) > 0 && (
                               <div className="flex justify-between"><span className="text-muted-foreground">Editor cost — VSL ({selectedShoot.vslCount} × ${EDITOR_COST_PER_VSL})</span><span className="text-red-400 font-bold">${((selectedShoot.vslCount || 0) * EDITOR_COST_PER_VSL).toFixed(2)}</span></div>
+                            )}
+                            {(selectedShoot.youtubeCount || 0) > 0 && (
+                              <div className="flex justify-between"><span className="text-muted-foreground">Editor cost — Youtube ({selectedShoot.youtubeCount} × ${EDITOR_COST_PER_YOUTUBE})</span><span className="text-red-400 font-bold">${((selectedShoot.youtubeCount || 0) * EDITOR_COST_PER_YOUTUBE).toFixed(2)}</span></div>
                             )}
                             <div className="flex justify-between"><span className="text-muted-foreground">Manager's fee (10% of profit)</span><span className="text-orange-400 font-bold">${fin.managerFee.toFixed(2)}</span></div>
                             <div className="flex justify-between border-t border-white/5 pt-1 mt-1"><span className="font-bold">Total Cost</span><span className="text-red-400 font-black">${fin.totalCost.toFixed(2)}</span></div>
@@ -1170,7 +1230,7 @@ const ContentPortal = () => {
                       <div>
                         <label className="text-xs text-muted-foreground mb-1 block">Content Type</label>
                         <div className="flex gap-2">
-                          {(["short-form", "vsl", "value-added"] as ContentType[]).map(ct => (
+                          {(["short-form", "vsl", "value-added", "youtube"] as ContentType[]).map(ct => (
                             <button
                               key={ct}
                               onClick={() => setNewVideo(p => ({ ...p, contentType: ct }))}

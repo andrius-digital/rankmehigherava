@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 type ShootStatus = "scheduled" | "in-progress" | "completed" | "cancelled";
 type EditStatus = "not-started" | "editing" | "review" | "done";
-type ContentType = "short-form" | "vsl" | "value-added";
+type ContentType = "short-form" | "vsl" | "value-added" | "youtube";
 type ScriptStatus = "draft" | "ai-generated" | "approved";
 
 interface ShootVideo {
@@ -71,7 +71,7 @@ const editStatusColor: Record<EditStatus, string> = {
   "review": "text-blue-400 bg-blue-500/10 border-blue-500/20",
   "done": "text-green-400 bg-green-500/10 border-green-500/20",
 };
-const contentTypeLabel: Record<ContentType, string> = { "short-form": "Short Form Ad", "vsl": "VSL", "value-added": "Value Added" };
+const contentTypeLabel: Record<ContentType, string> = { "short-form": "Short Form Ad", "vsl": "VSL", "value-added": "Value Added", "youtube": "Youtube Video" };
 
 const ManagerPortal = () => {
   const [loggedInManager, setLoggedInManager] = useState<VideoManager | null>(null);
