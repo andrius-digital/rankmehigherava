@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
@@ -18,7 +18,7 @@ function getTeamSession() {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireAdmin = false, allowReseller = false, teamPermission }) => {
-  const { user, isLoading, isAdmin, isReseller } = useAuth();
+  const { user, isLoading, isAdmin, isReseller, signOut } = useAuth();
   const location = useLocation();
 
   if (teamPermission) {
@@ -48,7 +48,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireAdmin 
     if (teamSession) {
       return <Navigate to="/team" replace />;
     }
-    return <Navigate to="/auth" state={{ from: location }} replace />;
+    return <AdminSignOutRedirect signOut={signOut} from={location} />;
   }
 
   if (allowReseller) {
@@ -69,6 +69,14 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireAdmin 
   }
 
   return <>{children}</>;
+};
+
+const AdminSignOutRedirect: React.FC<{ signOut: () => Promise<void>; from: ReturnType<typeof useLocation> }> = ({ signOut, from }) => {
+  useEffect(() => {
+    signOut();
+  }, [signOut]);
+
+  return <Navigate to="/auth" state={{ from }} replace />;
 };
 
 export default ProtectedRoute;
