@@ -13,6 +13,15 @@ const ContentAds = () => {
           name="description"
           content="Short-form video ads and Meta ad campaigns that convert. Coming soon from Rank Me Higher."
         />
+        <meta property="og:title" content="Content & Ads | Rank Me Higher" />
+        <meta property="og:description" content="Short-form video ads and Meta ad campaigns that convert. Coming soon." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://rankmehigher.com/services/content-ads" />
+        <meta property="og:image" content="https://rankmehigher.com/assets/logo.png" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Content & Ads | Rank Me Higher" />
+        <meta name="twitter:description" content="Short-form video ads and Meta ad campaigns that convert." />
+        <link rel="canonical" href="https://rankmehigher.com/services/content-ads" />
       </Helmet>
 
       <div className="min-h-screen bg-background text-foreground relative overflow-hidden">

@@ -25,7 +25,7 @@ const BlogPost = () => {
   const firstHalf = contentParts.slice(0, midPoint).join("\n\n");
   const secondHalf = contentParts.slice(midPoint).join("\n\n");
 
-  const shareUrl = `https://rankmehigher.io/blog/${post.slug}`;
+  const shareUrl = `https://rankmehigher.com/blog/${post.slug}`;
 
   const handleShare = async () => {
     if (navigator.share) {

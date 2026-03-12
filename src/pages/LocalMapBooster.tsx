@@ -22,6 +22,26 @@ const LocalMapBooster = () => {
           name="description" 
           content="Local Map Booster optimizes your Google Business Profile and drives real human activity. 7 day free trial with no hidden fees. See Week 1 results before you pay." 
         />
+        <meta property="og:title" content="Local Map Booster | Hit Top 3 On Google Maps" />
+        <meta property="og:description" content="Optimize your Google Business Profile and drive real human activity. 7 day free trial. See results before you pay." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://rankmehigher.com/localmapbooster" />
+        <meta property="og:image" content="https://rankmehigher.com/assets/logo.png" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Local Map Booster | Rank Me Higher" />
+        <meta name="twitter:description" content="Hit Top 3 on Google Maps without ads. 7-day free trial." />
+        <link rel="canonical" href="https://rankmehigher.com/localmapbooster" />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Service",
+          "name": "Local Map Booster",
+          "provider": { "@type": "Organization", "name": "Rank Me Higher", "url": "https://rankmehigher.com" },
+          "description": "Google Maps optimization service that drives real human activity to your Google Business Profile. Hit the Top 3 without paying for ads.",
+          "url": "https://rankmehigher.com/localmapbooster",
+          "areaServed": "United States",
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD", "description": "7-day free trial" },
+          "serviceType": "Google Maps Optimization"
+        })}</script>
       </Helmet>
       
       <main className="min-h-screen bg-background relative overflow-hidden">

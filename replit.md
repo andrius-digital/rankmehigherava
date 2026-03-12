@@ -108,6 +108,16 @@ The app has multiple portals and dashboards:
 - **Admin tools**: Task pipeline, team tracker, website builder dashboard, AVA training dashboard, voice calls dashboard, SEO spider tools
 - **Auth**: `/auth` page for login/signup
 
+### SEO & Crawling
+
+- **Google Search Console**: Verification meta tag in `index.html`
+- **robots.txt**: `public/robots.txt` — allows public pages, blocks internal/admin routes; AI crawlers (GPTBot, ClaudeBot, ChatGPT-User, Google-Extended, anthropic-ai, PerplexityBot, Applebot-Extended, cohere-ai, Bytespider) explicitly allowed; social bots (Twitterbot, facebookexternalhit, LinkedInBot) allowed
+- **sitemap.xml**: `public/sitemap.xml` — 10 public pages (home, services/websites, services/seo, services/outbound, services/content-ads, services/ads-content, localmapbooster, contact, careers, blog)
+- **JSON-LD Schemas**: Organization + WebSite + LocalBusiness on homepage; Service + BreadcrumbList on each service page; JobPosting ItemList on Careers; Blog schema on Blog; Article schema on BlogPost
+- **OG/Twitter Meta**: All public pages have og:title, og:description, og:type, og:url, og:image, twitter:card, twitter:title, twitter:description
+- **Canonical URLs**: All public pages have `<link rel="canonical">` pointing to `https://rankmehigher.com/...`
+- **Domain**: `rankmehigher.com` (not `.io`)
+
 ### Production Deployment
 
 - `server.js` — Express server that serves the built `dist/` folder and handles SPA routing

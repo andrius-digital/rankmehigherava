@@ -123,6 +123,33 @@ const SEO = () => {
           name="description" 
           content="Long-term SEO strategy for growth on Google Maps and Google Search. Dominate local search results and get more calls from customers actively searching for your services." 
         />
+        <meta property="og:title" content="SEO Services for Local Businesses | Google Maps & Organic Rankings" />
+        <meta property="og:description" content="Dominate local search results and get more calls from customers actively searching for your services." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://rankmehigher.com/services/seo" />
+        <meta property="og:image" content="https://rankmehigher.com/assets/logo.png" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="SEO Services for Local Businesses | Rank Me Higher" />
+        <meta name="twitter:description" content="Dominate Google Maps and organic search. Get more calls from local customers." />
+        <link rel="canonical" href="https://rankmehigher.com/services/seo" />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Service",
+          "name": "Local SEO Services",
+          "provider": { "@type": "Organization", "name": "Rank Me Higher", "url": "https://rankmehigher.com" },
+          "description": "Long-term SEO strategy for Google Maps and organic search dominance. Targeted local SEO for service-area businesses.",
+          "url": "https://rankmehigher.com/services/seo",
+          "areaServed": "United States",
+          "serviceType": "Search Engine Optimization"
+        })}</script>
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://rankmehigher.com/" },
+            { "@type": "ListItem", "position": 2, "name": "SEO", "item": "https://rankmehigher.com/services/seo" }
+          ]
+        })}</script>
       </Helmet>
       
       <main className="min-h-screen bg-background relative overflow-hidden">

@@ -124,6 +124,34 @@ const Websites = () => {
           name="description"
           content="Get a custom-built website with AI receptionist, automated follow-ups, and full CRM integration. From scratch to live in 2 weeks. Book your free consultation."
         />
+        <meta property="og:title" content="Custom Websites with AI Receptionist | 2 Week Delivery" />
+        <meta property="og:description" content="Get a custom-built website with AI receptionist, automated follow-ups, and full CRM integration. From scratch to live in 2 weeks." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://rankmehigher.com/services/websites" />
+        <meta property="og:image" content="https://rankmehigher.com/assets/logo.png" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Custom Websites with AI Receptionist | Rank Me Higher" />
+        <meta name="twitter:description" content="Custom-built websites with AI receptionist, automated follow-ups, and CRM integration. Live in 2 weeks." />
+        <link rel="canonical" href="https://rankmehigher.com/services/websites" />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Service",
+          "name": "Custom Website Development",
+          "provider": { "@type": "Organization", "name": "Rank Me Higher", "url": "https://rankmehigher.com" },
+          "description": "Custom-coded websites with AI receptionist, automated follow-ups, CRM integration, and full SEO optimization. Delivered in 2 weeks.",
+          "url": "https://rankmehigher.com/services/websites",
+          "areaServed": "United States",
+          "offers": { "@type": "Offer", "price": "2000", "priceCurrency": "USD", "description": "$2,000 setup + $99/mo" },
+          "serviceType": "Web Development"
+        })}</script>
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://rankmehigher.com/" },
+            { "@type": "ListItem", "position": 2, "name": "Websites", "item": "https://rankmehigher.com/services/websites" }
+          ]
+        })}</script>
       </Helmet>
 
       <main className="min-h-screen bg-background relative overflow-hidden">

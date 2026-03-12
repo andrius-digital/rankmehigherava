@@ -123,6 +123,33 @@ const AdsContent = () => {
           name="description" 
           content="Professional content shoots, Meta ad campaigns, and sales funnels that deliver qualified leads. We come to you, create the content, and run the ads. Book your strategy session." 
         />
+        <meta property="og:title" content="Ads & Content for Local Businesses | Rank Me Higher" />
+        <meta property="og:description" content="Professional content shoots, Meta ad campaigns, and sales funnels that deliver qualified leads." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://rankmehigher.com/services/ads-content" />
+        <meta property="og:image" content="https://rankmehigher.com/assets/logo.png" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Ads & Content | Rank Me Higher" />
+        <meta name="twitter:description" content="Content shoots, Meta ads, and sales funnels for local businesses." />
+        <link rel="canonical" href="https://rankmehigher.com/services/ads-content" />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Service",
+          "name": "Ads & Content Production",
+          "provider": { "@type": "Organization", "name": "Rank Me Higher", "url": "https://rankmehigher.com" },
+          "description": "Professional content shoots, Meta ad campaigns, and sales funnels that deliver qualified leads for local businesses.",
+          "url": "https://rankmehigher.com/services/ads-content",
+          "areaServed": "United States",
+          "serviceType": "Content Marketing & Advertising"
+        })}</script>
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://rankmehigher.com/" },
+            { "@type": "ListItem", "position": 2, "name": "Ads & Content", "item": "https://rankmehigher.com/services/ads-content" }
+          ]
+        })}</script>
       </Helmet>
       
       <main className="min-h-screen bg-background relative overflow-hidden">

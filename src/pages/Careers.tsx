@@ -405,6 +405,34 @@ const Careers = () => {
       <Helmet>
         <title>Careers | Rank Me Higher</title>
         <meta name="description" content="Join the Rank Me Higher team. We're hiring talented people in automation, marketing, design, and development. Remote positions available." />
+        <meta property="og:title" content="Careers | Rank Me Higher" />
+        <meta property="og:description" content="Join the Rank Me Higher team. We're hiring in automation, marketing, design, and development. Remote positions available." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://rankmehigher.com/careers" />
+        <meta property="og:image" content="https://rankmehigher.com/assets/logo.png" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Careers | Rank Me Higher" />
+        <meta name="twitter:description" content="Join our team. Remote positions in automation, marketing, design, and development." />
+        <link rel="canonical" href="https://rankmehigher.com/careers" />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          "name": "Open Positions at Rank Me Higher",
+          "itemListElement": positions.map((pos, i) => ({
+            "@type": "ListItem",
+            "position": i + 1,
+            "item": {
+              "@type": "JobPosting",
+              "title": pos.title,
+              "description": pos.description,
+              "datePosted": "2025-01-01",
+              "employmentType": "CONTRACTOR",
+              "jobLocationType": "TELECOMMUTE",
+              "hiringOrganization": { "@type": "Organization", "name": "Rank Me Higher", "sameAs": "https://rankmehigher.com" },
+              "applicantLocationRequirements": { "@type": "Country", "name": "Worldwide" }
+            }
+          }))
+        })}</script>
       </Helmet>
 
       <div className="min-h-screen bg-background text-foreground overflow-x-hidden">

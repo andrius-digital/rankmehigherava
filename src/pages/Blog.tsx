@@ -26,6 +26,23 @@ const Blog = () => {
       <Helmet>
         <title>SEO Insights & Local Marketing Tips | Rank Me Higher Blog</title>
         <meta name="description" content="Get the latest SEO strategies, local marketing tips, and Google Maps ranking secrets. Free insights from Chicago's top local SEO experts." />
+        <meta property="og:title" content="SEO Insights & Local Marketing Tips | Rank Me Higher Blog" />
+        <meta property="og:description" content="Get the latest SEO strategies, local marketing tips, and Google Maps ranking secrets from Chicago's top local SEO experts." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://rankmehigher.com/blog" />
+        <meta property="og:image" content="https://rankmehigher.com/assets/logo.png" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="SEO Blog | Rank Me Higher" />
+        <meta name="twitter:description" content="SEO strategies, local marketing tips, and Google Maps ranking secrets." />
+        <link rel="canonical" href="https://rankmehigher.com/blog" />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Blog",
+          "name": "Rank Me Higher Blog",
+          "url": "https://rankmehigher.com/blog",
+          "description": "SEO strategies, local marketing tips, and Google Maps ranking secrets from Chicago's top local SEO experts.",
+          "publisher": { "@type": "Organization", "name": "Rank Me Higher", "url": "https://rankmehigher.com" }
+        })}</script>
       </Helmet>
 
       <div className="min-h-screen bg-background relative overflow-hidden">

@@ -133,6 +133,33 @@ const Outbound = () => {
           name="description" 
           content="Reactivate your existing customer database with live human agents. We call your past clients, book them for service again, and guarantee ROI. Deploy in 2 days." 
         />
+        <meta property="og:title" content="Live Outbound Sales Agents | Database Reactivation | Guaranteed ROI" />
+        <meta property="og:description" content="Reactivate your existing customer database with live human agents. Guaranteed ROI. Deploy in 2 days." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://rankmehigher.com/services/outbound" />
+        <meta property="og:image" content="https://rankmehigher.com/assets/logo.png" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Live Outbound Sales Agents | Rank Me Higher" />
+        <meta name="twitter:description" content="Reactivate your customer database with live agents. Guaranteed ROI." />
+        <link rel="canonical" href="https://rankmehigher.com/services/outbound" />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Service",
+          "name": "Outbound Sales & Database Reactivation",
+          "provider": { "@type": "Organization", "name": "Rank Me Higher", "url": "https://rankmehigher.com" },
+          "description": "Live human agents call your past customers and book them for service. Guaranteed ROI with CRM integration.",
+          "url": "https://rankmehigher.com/services/outbound",
+          "areaServed": "United States",
+          "serviceType": "Outbound Sales"
+        })}</script>
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://rankmehigher.com/" },
+            { "@type": "ListItem", "position": 2, "name": "Outbound Sales", "item": "https://rankmehigher.com/services/outbound" }
+          ]
+        })}</script>
       </Helmet>
       
       <main className="min-h-screen bg-background relative overflow-hidden">

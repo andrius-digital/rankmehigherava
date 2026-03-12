@@ -193,6 +193,51 @@ const Index = () => {
           name="description"
           content="Stop wasting money on digital paperweights. We build SEO-machines that dominate Google rankings and automate your business. Complete business revamp in 10 days."
         />
+        <meta property="og:title" content="Chicago AI Website Agency | Rank Page 1 On Google Guaranteed" />
+        <meta property="og:description" content="We build SEO-machines that dominate Google rankings and automate your business. Complete business revamp in 10 days." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://rankmehigher.com/" />
+        <meta property="og:image" content="https://rankmehigher.com/assets/logo.png" />
+        <meta property="og:site_name" content="Rank Me Higher" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Chicago AI Website Agency | Rank Page 1 On Google Guaranteed" />
+        <meta name="twitter:description" content="We build SEO-machines that dominate Google rankings and automate your business." />
+        <meta name="twitter:image" content="https://rankmehigher.com/assets/logo.png" />
+        <link rel="canonical" href="https://rankmehigher.com/" />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          "name": "Rank Me Higher",
+          "url": "https://rankmehigher.com",
+          "logo": "https://rankmehigher.com/assets/logo.png",
+          "description": "Chicago-based AI website agency specializing in custom-coded SEO websites, Google Maps optimization, and AI-powered business automation.",
+          "address": { "@type": "PostalAddress", "addressLocality": "Chicago", "addressRegion": "IL", "addressCountry": "US" },
+          "telephone": "+17735724686",
+          "sameAs": [],
+          "foundingDate": "2015",
+          "numberOfEmployees": { "@type": "QuantitativeValue", "value": "10-50" },
+          "serviceArea": { "@type": "Place", "name": "United States" }
+        })}</script>
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          "name": "Rank Me Higher",
+          "url": "https://rankmehigher.com",
+          "description": "Custom-coded SEO websites, AI automation, and Google Maps optimization for local businesses.",
+          "publisher": { "@type": "Organization", "name": "Rank Me Higher" }
+        })}</script>
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "LocalBusiness",
+          "name": "Rank Me Higher",
+          "image": "https://rankmehigher.com/assets/logo.png",
+          "telephone": "+17735724686",
+          "address": { "@type": "PostalAddress", "addressLocality": "Chicago", "addressRegion": "IL", "addressCountry": "US" },
+          "url": "https://rankmehigher.com",
+          "priceRange": "$$",
+          "openingHours": "Mo-Fr 09:00-17:00",
+          "aggregateRating": { "@type": "AggregateRating", "ratingValue": "5", "reviewCount": "54" }
+        })}</script>
       </Helmet>
 
       <main className="min-h-screen bg-background relative overflow-hidden">
