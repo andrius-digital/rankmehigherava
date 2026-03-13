@@ -44,13 +44,21 @@ try {
     throw new Error("Root element not found");
   }
 
-  createRoot(rootElement).render(
+  const app = (
     <React.StrictMode>
       <ErrorBoundary>
         <App />
       </ErrorBoundary>
     </React.StrictMode>
   );
+
+  // If prerendered HTML exists, hydrate instead of full render for faster interactivity
+  if (rootElement.hasChildNodes()) {
+    const { hydrateRoot } = await import("react-dom/client");
+    hydrateRoot(rootElement, app);
+  } else {
+    createRoot(rootElement).render(app);
+  }
 } catch (error) {
   console.error("Failed to render app:", error);
   document.body.innerHTML = `
