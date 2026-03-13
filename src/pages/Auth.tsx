@@ -33,28 +33,20 @@ const Auth: React.FC = () => {
   const { toast } = useToast();
 
   const from = (location.state as { from?: Location })?.from?.pathname;
-  const needsAdmin = (location.state as { needsAdmin?: boolean })?.needsAdmin;
-  const [didSignOut, setDidSignOut] = useState(false);
 
   useEffect(() => {
-    if (authLoading) return;
+    if (authLoading || !user) return;
 
-    if (needsAdmin && user && !isAdmin && !didSignOut) {
-      setDidSignOut(true);
-      signOut();
-      return;
+    if (isAdmin) {
+      navigate(from && from !== '/' ? from : '/avaadminpanel', { replace: true });
+    } else if (isReseller) {
+      navigate('/client-portal', { replace: true });
+    } else if (from && from !== '/') {
+      navigate(from, { replace: true });
+    } else {
+      navigate('/avaadminpanel', { replace: true });
     }
-
-    if (user) {
-      if (isAdmin) {
-        navigate(from && from !== '/' ? from : '/avaadminpanel', { replace: true });
-      } else if (isReseller) {
-        navigate('/client-portal', { replace: true });
-      } else if (from && from !== '/' && !needsAdmin) {
-        navigate(from, { replace: true });
-      }
-    }
-  }, [user, authLoading, isReseller, isAdmin, navigate, from, needsAdmin, didSignOut, signOut]);
+  }, [user, authLoading, isReseller, isAdmin, navigate, from]);
 
   const validateForm = (isSignUp: boolean = false) => {
     try {

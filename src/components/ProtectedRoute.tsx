@@ -48,7 +48,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireAdmin 
     if (teamSession) {
       return <Navigate to="/team" replace />;
     }
-    return <Navigate to="/auth" state={{ from: location, needsAdmin: true }} replace />;
+    return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
   if (allowReseller) {
