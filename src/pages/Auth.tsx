@@ -41,10 +41,10 @@ const Auth: React.FC = () => {
       navigate(from && from !== '/' ? from : '/avaadminpanel', { replace: true });
     } else if (isReseller) {
       navigate('/client-portal', { replace: true });
-    } else if (from && from !== '/') {
+    } else if (from && from !== '/' && from !== '/avaadminpanel') {
       navigate(from, { replace: true });
     } else {
-      navigate('/avaadminpanel', { replace: true });
+      navigate('/', { replace: true });
     }
   }, [user, authLoading, isReseller, isAdmin, navigate, from]);
 

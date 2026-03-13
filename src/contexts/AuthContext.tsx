@@ -62,7 +62,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.error('Error checking admin role:', error);
         return false;
       }
-      console.log('[AuthContext] checkAdminRole for', userId, '→ data:', data, 'isAdmin:', !!data);
       return !!data;
     } catch (err) {
       console.error('Error in checkAdminRole:', err);
@@ -155,7 +154,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [user?.id, fetchProfile]);
 
-  const loadUserRoles = useCallback(async (userId: string, userEmail?: string) => {
+  const loadUserRoles = useCallback(async (userId: string) => {
     const [adminResult, modResult, resellerResult, resellerIdResult, profileResult] = await Promise.all([
       checkAdminRole(userId),
       checkAdminOrModeratorRole(userId),
@@ -163,9 +162,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       fetchResellerId(userId),
       fetchProfile(userId),
     ]);
-    const isOwner = userEmail === 'andrius@cdlagency.com';
-    setIsAdmin(adminResult || isOwner);
-    setIsAdminOrModerator(modResult || isOwner);
+    setIsAdmin(adminResult);
+    setIsAdminOrModerator(modResult);
     setIsReseller(resellerResult);
     setResellerId(resellerIdResult);
     setProfile(profileResult);
@@ -178,7 +176,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
 
         if (session?.user) {
-          loadUserRoles(session.user.id, session.user.email).then(() => setIsLoading(false));
+          loadUserRoles(session.user.id).then(() => setIsLoading(false));
         } else {
           setIsAdmin(false);
           setIsAdminOrModerator(false);
@@ -196,7 +194,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
 
       if (session?.user) {
-        loadUserRoles(session.user.id, session.user.email).then(() => setIsLoading(false));
+        loadUserRoles(session.user.id).then(() => setIsLoading(false));
       } else {
         setIsLoading(false);
       }

@@ -17,19 +17,18 @@ function getTeamSession() {
   } catch { return null; }
 }
 
+const AccessDenied = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="text-center">
+      <h1 className="text-2xl font-bold text-destructive mb-2">Access Denied</h1>
+      <p className="text-muted-foreground">You don't have permission to access this page.</p>
+    </div>
+  </div>
+);
+
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireAdmin = false, allowReseller = false, teamPermission }) => {
   const { user, isLoading, isAdmin, isReseller } = useAuth();
   const location = useLocation();
-
-  if (teamPermission) {
-    const teamSession = getTeamSession();
-    if (user && teamSession && teamSession.permissions?.includes(teamPermission)) {
-      return <>{children}</>;
-    }
-    if (user && isAdmin) {
-      return <>{children}</>;
-    }
-  }
 
   if (isLoading) {
     return (
@@ -43,24 +42,24 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireAdmin 
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
-  if (requireAdmin && !isAdmin) {
+  if (teamPermission) {
     const teamSession = getTeamSession();
-    if (teamSession) {
-      return <Navigate to="/team" replace />;
+    if (teamSession && teamSession.permissions?.includes(teamPermission)) {
+      return <>{children}</>;
     }
-    return <Navigate to="/auth" state={{ from: location }} replace />;
+    if (isAdmin) {
+      return <>{children}</>;
+    }
+    return <AccessDenied />;
+  }
+
+  if (requireAdmin && !isAdmin) {
+    return <AccessDenied />;
   }
 
   if (allowReseller) {
     if (!isAdmin && !isReseller) {
-      return (
-        <div className="min-h-screen flex items-center justify-center bg-background">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-destructive mb-2">Access Denied</h1>
-            <p className="text-muted-foreground">You don't have permission to access this page.</p>
-          </div>
-        </div>
-      );
+      return <AccessDenied />;
     }
   }
 

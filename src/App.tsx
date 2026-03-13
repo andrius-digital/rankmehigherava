@@ -122,22 +122,22 @@ const App = () => (
               } />
               <Route path="/team" element={<TeamPortal />} />
               <Route path="/cdl-agency-portal" element={
-                <ProtectedRoute>
+                <ProtectedRoute requireAdmin>
                   <CDLAgencyPortal />
                 </ProtectedRoute>
               } />
               <Route path="/cdl-recruiters" element={
-                <ProtectedRoute>
+                <ProtectedRoute requireAdmin>
                   <CDLAgencyPortal />
                 </ProtectedRoute>
               } />
               <Route path="/cdl-carriers" element={
-                <ProtectedRoute>
+                <ProtectedRoute requireAdmin>
                   <CDLAgencyPortal />
                 </ProtectedRoute>
               } />
               <Route path="/agency/client/:id" element={
-                <ProtectedRoute>
+                <ProtectedRoute requireAdmin>
                   <IndividualClientProfile />
                 </ProtectedRoute>
               } />
@@ -152,12 +152,12 @@ const App = () => (
                 </ProtectedRoute>
               } />
               <Route path="/website-builder" element={
-                <ProtectedRoute>
+                <ProtectedRoute requireAdmin>
                   <WebsiteBuilderDashboard />
                 </ProtectedRoute>
               } />
               <Route path="/website-command-center" element={
-                <ProtectedRoute>
+                <ProtectedRoute requireAdmin>
                   <WebsiteCommandCenter />
                 </ProtectedRoute>
               } />
@@ -180,17 +180,17 @@ const App = () => (
                 </ProtectedRoute>
               } />
               <Route path="/ava-voice-calls" element={
-                <ProtectedRoute>
+                <ProtectedRoute requireAdmin>
                   <AvaVoiceCallsDashboard />
                 </ProtectedRoute>
               } />
               <Route path="/ava-training" element={
-                <ProtectedRoute>
+                <ProtectedRoute requireAdmin>
                   <AvaTrainingDashboard />
                 </ProtectedRoute>
               } />
               <Route path="/task-flow" element={
-                <ProtectedRoute>
+                <ProtectedRoute requireAdmin>
                   <TaskFlow />
                 </ProtectedRoute>
               } />
@@ -228,7 +228,7 @@ const App = () => (
 
               {/* Task Management Routes */}
               <Route path="/task-pipeline" element={
-                <ProtectedRoute>
+                <ProtectedRoute requireAdmin>
                   <TaskPipeline />
                 </ProtectedRoute>
               } />
@@ -238,7 +238,7 @@ const App = () => (
                 </ProtectedRoute>
               } />
               <Route path="/client-sites-tracker" element={
-                <ProtectedRoute>
+                <ProtectedRoute requireAdmin>
                   <ClientSitesTracker />
                 </ProtectedRoute>
               } />
