@@ -27,32 +27,34 @@ const Auth: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
 
-  const { signIn, signUp, signOut, user, isReseller, isAdmin } = useAuth();
+  const { signIn, signUp, signOut, user, isLoading: authLoading, isReseller, isAdmin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
 
   const from = (location.state as { from?: Location })?.from?.pathname;
   const needsAdmin = (location.state as { needsAdmin?: boolean })?.needsAdmin;
-  const [signingOut, setSigningOut] = useState(false);
+  const [didSignOut, setDidSignOut] = useState(false);
 
   useEffect(() => {
-    if (needsAdmin && user && !isAdmin && !signingOut) {
-      setSigningOut(true);
-      signOut().then(() => setSigningOut(false));
+    if (authLoading) return;
+
+    if (needsAdmin && user && !isAdmin && !didSignOut) {
+      setDidSignOut(true);
+      signOut();
       return;
     }
 
-    if (user && !signingOut) {
-      if (from && from !== '/' && !needsAdmin) {
-        navigate(from, { replace: true });
-      } else if (isReseller && !isAdmin) {
+    if (user) {
+      if (isAdmin) {
+        navigate(from && from !== '/' ? from : '/avaadminpanel', { replace: true });
+      } else if (isReseller) {
         navigate('/client-portal', { replace: true });
-      } else if (isAdmin) {
-        navigate('/avaadminpanel', { replace: true });
+      } else if (from && from !== '/' && !needsAdmin) {
+        navigate(from, { replace: true });
       }
     }
-  }, [user, isReseller, isAdmin, navigate, from, needsAdmin, signingOut, signOut]);
+  }, [user, authLoading, isReseller, isAdmin, navigate, from, needsAdmin, didSignOut, signOut]);
 
   const validateForm = (isSignUp: boolean = false) => {
     try {
