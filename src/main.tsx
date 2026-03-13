@@ -1,5 +1,5 @@
 import React from "react";
-import { createRoot } from "react-dom/client";
+import { createRoot, hydrateRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 
@@ -54,7 +54,6 @@ try {
 
   // If prerendered HTML exists, hydrate instead of full render for faster interactivity
   if (rootElement.hasChildNodes()) {
-    const { hydrateRoot } = await import("react-dom/client");
     hydrateRoot(rootElement, app);
   } else {
     createRoot(rootElement).render(app);

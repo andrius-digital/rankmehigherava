@@ -492,7 +492,11 @@ app.post('/api/script/approve', (req, res) => {
 app.use(express.static(join(__dirname, 'dist')));
 
 app.use((req, res) => {
-  res.sendFile(join(__dirname, 'dist', 'index.html'));
+  // For prerendered routes, Express static already served the index.html.
+  // For non-prerendered routes (admin, etc.), fall back to the SPA shell.
+  const spaFallback = join(__dirname, 'dist', '200.html');
+  const defaultFallback = join(__dirname, 'dist', 'index.html');
+  res.sendFile(fs.existsSync(spaFallback) ? spaFallback : defaultFallback);
 });
 
 app.listen(PORT, '0.0.0.0', () => {
