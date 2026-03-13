@@ -3,9 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- Calendly widget -->
-    <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
-    <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
+    <!-- Calendly widget - loaded on demand to avoid render blocking -->
+    <link rel="preconnect" href="https://assets.calendly.com">
+    <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet" media="print" onload="this.media='all'">
+    <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" defer></script>
     <title>Rank Me Higher - SEO & Website Solutions</title>
     <meta name="google-site-verification" content="QAvYmuLDx02rtMrPnrKIZ7x2d6dcjju0kXq318DaU6w" />
     <meta name="description" content="Professional SEO and website creation services to help your business rank higher" />
@@ -14,11 +15,48 @@
     <meta property="og:title" content="Rank Me Higher - SEO & Website Solutions" />
     <meta property="og:description" content="Professional SEO and website creation services to help your business rank higher" />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="/assets/logo.png" />
+    <meta property="og:image" content="https://rankmehigher.com/assets/logo.png" />
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@RankMeHigher" />
-    <meta name="twitter:image" content="/assets/logo.png" />
+    <meta name="twitter:image" content="https://rankmehigher.com/assets/logo.png" />
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ProfessionalService",
+      "name": "Rank Me Higher",
+      "url": "https://rankmehigher.com",
+      "logo": "https://rankmehigher.com/assets/logo.png",
+      "description": "Professional SEO and website creation services to help your business rank higher. Digital marketing agency specializing in Google Maps dominance, organic SEO, high-conversion websites, and AI-powered lead generation.",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Chicago",
+        "addressRegion": "IL",
+        "addressCountry": "US"
+      },
+      "sameAs": [
+        "https://twitter.com/RankMeHigher"
+      ],
+      "serviceType": ["SEO", "Web Design", "Digital Marketing", "Google Maps Optimization", "Content Marketing", "Outbound Sales"],
+      "areaServed": {
+        "@type": "Country",
+        "name": "United States"
+      }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Rank Me Higher",
+      "url": "https://rankmehigher.com",
+      "publisher": {
+        "@type": "Organization",
+        "name": "Rank Me Higher"
+      }
+    }
+    </script>
   </head>
 
   <body>

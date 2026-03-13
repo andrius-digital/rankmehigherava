@@ -14,6 +14,16 @@ const PORT = process.env.PORT || 5000;
 
 app.use(express.json({ limit: '1mb' }));
 
+// Security headers
+app.disable('x-powered-by');
+app.use((req, res, next) => {
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  next();
+});
+
 const APPLICANTS_FILE = path.join(process.cwd(), 'data', 'applicants.json');
 
 function ensureDataDir() {
