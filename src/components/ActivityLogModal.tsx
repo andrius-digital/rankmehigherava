@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { X, Search, Activity, Building2, MapPin, ClipboardList, BookOpen, User } from 'lucide-react';
+import { X, Search, Activity, Building2, MapPin, ClipboardList, BookOpen } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { fetchActivityLog, formatRelativeTime, type ActivityLogEntry, type EntityType } from '@/utils/activityLog';
 
@@ -126,16 +126,17 @@ const ActivityLogModal: React.FC<Props> = ({ open, onClose }) => {
                     key={entry.id}
                     className="flex items-start gap-3 py-2.5 px-2 rounded-lg hover:bg-white/[0.03] transition-colors"
                   >
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${iconColor}`}>
-                      <Icon className="w-4 h-4" />
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center shrink-0 mt-0.5">
+                      <span className="text-[10px] font-bold text-cyan-400">{getInitials(entry.user_name)}</span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-gray-200 leading-snug">{entry.description}</p>
                       <div className="flex items-center gap-2 mt-1">
-                        <div className="flex items-center gap-1 text-[11px] text-gray-500">
-                          <User className="w-3 h-3" />
-                          <span>{entry.user_name}</span>
+                        <div className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium ${iconColor}`}>
+                          <Icon className="w-3 h-3" />
+                          <span className="capitalize">{entry.entity_type}</span>
                         </div>
+                        <span className="text-[11px] text-gray-500">{entry.user_name}</span>
                         <span className="text-[11px] text-gray-600">·</span>
                         <span className="text-[11px] text-gray-500">{formatRelativeTime(entry.created_at)}</span>
                       </div>

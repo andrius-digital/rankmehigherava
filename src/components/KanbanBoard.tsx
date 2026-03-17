@@ -445,6 +445,7 @@ const KanbanBoard: React.FC = () => {
           if (archiveErr) throw archiveErr;
           const { error: delErr } = await supabase.from('seo_tasks').delete().in('id', toArchive.map(t => t.id));
           if (delErr) throw delErr;
+          logActivity('status_change', 'task', `${toArchive.length} task(s)`, `Auto-archived ${toArchive.length} completed task(s) from previous week(s)`, { count: toArchive.length, titles: toArchive.map(t => t.title) });
         }
 
         if (toCarry.length > 0) {
@@ -453,6 +454,7 @@ const KanbanBoard: React.FC = () => {
             .update({ week_of: currentWeek })
             .in('id', toCarry.map(t => t.id));
           if (carryErr) throw carryErr;
+          logActivity('move', 'task', `${toCarry.length} task(s)`, `Carried over ${toCarry.length} unfinished task(s) to current week`, { count: toCarry.length, titles: toCarry.map(t => t.title) });
         }
 
         if (toKeep.length > 0) {
