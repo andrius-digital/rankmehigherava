@@ -1167,7 +1167,7 @@ const KanbanBoard: React.FC = () => {
               <select
                 value={selectedArchiveWeek}
                 onChange={e => setSelectedArchiveWeek(e.target.value)}
-                className="compact-select bg-[#1a1a24] border border-white/10 rounded-lg px-2 py-1 text-xs text-white focus:border-[#00e5cc]/50 focus:ring-1 focus:ring-[#00e5cc]/20 focus:outline-none transition-colors [&>option]:bg-[#1a1a24] [&>option]:text-white"
+                className="compact-select bg-[#1a1a24] border border-white/10 px-2 py-1 text-xs text-white focus:border-[#00e5cc]/50 focus:ring-1 focus:ring-[#00e5cc]/20 focus:outline-none transition-colors [&>option]:bg-[#1a1a24] [&>option]:text-white"
               >
                 <option value="all">All Weeks</option>
                 {archiveWeeks.map(w => (
