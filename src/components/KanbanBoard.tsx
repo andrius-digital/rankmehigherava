@@ -1049,25 +1049,25 @@ const KanbanBoard: React.FC = () => {
                                     {task.col !== 'finished' && (
                                       <Button
                                         variant="ghost" size="icon"
-                                        className="h-5 w-5 text-gray-400 hover:text-green-400 hover:bg-green-500/10"
+                                        className="h-8 w-8 sm:h-5 sm:w-5 text-gray-400 hover:text-green-400 hover:bg-green-500/10"
                                         onClick={() => handleMarkDone(task.id)}
                                         title="Mark as done"
                                       >
-                                        <CheckCircle2 className="w-3 h-3" />
+                                        <CheckCircle2 className="w-4 h-4 sm:w-3 sm:h-3" />
                                       </Button>
                                     )}
                                     {task.col === 'finished' && (
                                       <Button
                                         variant="ghost" size="icon"
-                                        className="h-5 w-5 text-green-400 hover:text-amber-400 hover:bg-amber-500/10"
+                                        className="h-8 w-8 sm:h-5 sm:w-5 text-green-400 hover:text-amber-400 hover:bg-amber-500/10"
                                         onClick={() => handleUnmarkDone(task.id)}
                                         title="Undo — move back"
                                       >
-                                        <CheckCircle2 className="w-3.5 h-3.5" />
+                                        <CheckCircle2 className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
                                       </Button>
                                     )}
-                                    <Button variant="ghost" size="icon" className="h-5 w-5 text-gray-400 hover:text-red-400" onClick={() => handleDelete(task.id, task.title)}>
-                                      <Trash2 className="w-2.5 h-2.5" />
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-5 sm:w-5 text-gray-400 hover:text-red-400" onClick={() => handleDelete(task.id, task.title)}>
+                                      <Trash2 className="w-3.5 h-3.5 sm:w-2.5 sm:h-2.5" />
                                     </Button>
                                   </div>
                                 </div>
@@ -1208,8 +1208,8 @@ const KanbanBoard: React.FC = () => {
       )}
 
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-[#0a0a0f] border border-white/10 rounded-2xl w-full max-w-lg p-6 relative max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-mobile-full-wrapper bg-black/80 backdrop-blur-sm">
+          <div className="modal-mobile-full bg-[#0a0a0f] border border-white/10 rounded-2xl w-full max-w-lg p-5 sm:p-6 relative max-h-[90vh] overflow-y-auto">
             <button onClick={() => setModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white">
               <X className="w-5 h-5" />
             </button>
@@ -1353,14 +1353,14 @@ const KanbanBoard: React.FC = () => {
 
       {historyModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-mobile-full-wrapper bg-black/80 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
           aria-labelledby="history-modal-title"
           onClick={() => setHistoryModalOpen(false)}
           onKeyDown={e => { if (e.key === 'Escape') setHistoryModalOpen(false); }}
         >
-          <div className="bg-[#0a0a0f] border border-white/10 rounded-2xl w-full max-w-xl p-6 relative max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+          <div className="modal-mobile-full bg-[#0a0a0f] border border-white/10 rounded-2xl w-full max-w-xl p-5 sm:p-6 relative max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
             <button onClick={() => setHistoryModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white">
               <X className="w-5 h-5" />
             </button>

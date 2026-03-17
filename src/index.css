@@ -861,3 +861,50 @@ select.modal-select {
   border: 1px solid rgba(251, 191, 36, 0.2) !important;
   font-weight: 600;
 }
+
+/* Mobile-responsive modal: full-screen on small viewports */
+@media (max-width: 639px) {
+  .modal-mobile-full {
+    max-width: 100% !important;
+    max-height: 100dvh !important;
+    height: 100dvh;
+    border-radius: 0 !important;
+    margin: 0;
+  }
+  .modal-mobile-full-wrapper {
+    padding: 0 !important;
+    align-items: stretch !important;
+  }
+
+  .mobile-card-table td {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0 !important;
+    border: none !important;
+  }
+  .mobile-card-table td::before {
+    content: attr(data-label);
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.35);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    min-width: 60px;
+    font-weight: 500;
+  }
+
+  .modal-mobile-full > button[class*="absolute"] {
+    min-height: 44px;
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .sop-content pre {
+    font-size: 0.75rem !important;
+    padding: 0.75em 0.8em !important;
+  }
+  .sop-content h2 { font-size: 1rem !important; }
+  .sop-content h3 { font-size: 0.9rem !important; }
+}

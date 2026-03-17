@@ -408,7 +408,7 @@ const GBPManagement: React.FC = () => {
   return (
     <>
       <Helmet><title>GBP Management | Rank Me Higher</title></Helmet>
-      <div className="min-h-screen bg-[#0a0a0f] text-white">
+      <div className="min-h-screen bg-[#0a0a0f] text-white overflow-x-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
           <div className="flex items-center gap-3 mb-6">
             <Link
@@ -426,10 +426,10 @@ const GBPManagement: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex gap-1 mb-6 border-b border-white/10">
+          <div className="flex gap-1 mb-6 border-b border-white/10 overflow-x-auto">
             <button
               onClick={() => { setActiveTab('gbp'); fetchSeoTasks(); }}
-              className={`px-4 py-2.5 text-sm font-medium transition-colors relative ${activeTab === 'gbp' ? 'text-cyan-400' : 'text-gray-400 hover:text-white'}`}
+              className={`px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-medium transition-colors relative whitespace-nowrap min-h-[44px] ${activeTab === 'gbp' ? 'text-cyan-400' : 'text-gray-400 hover:text-white'}`}
             >
               <div className="flex items-center gap-2">
                 <Building2 className="w-4 h-4" />
@@ -439,7 +439,7 @@ const GBPManagement: React.FC = () => {
             </button>
             <button
               onClick={() => setActiveTab('seo-hub')}
-              className={`px-4 py-2.5 text-sm font-medium transition-colors relative ${activeTab === 'seo-hub' ? 'text-cyan-400' : 'text-gray-400 hover:text-white'}`}
+              className={`px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-medium transition-colors relative whitespace-nowrap min-h-[44px] ${activeTab === 'seo-hub' ? 'text-cyan-400' : 'text-gray-400 hover:text-white'}`}
             >
               <div className="flex items-center gap-2">
                 <Compass className="w-4 h-4" />
@@ -463,7 +463,7 @@ const GBPManagement: React.FC = () => {
                   key={s.label}
                   type="button"
                   onClick={() => setActionRequiredModalOpen(true)}
-                  className="bg-[#1a1a24] border border-white/5 rounded-xl p-4 transition-all cursor-pointer hover:border-orange-400/50 hover:shadow-lg hover:shadow-orange-400/10 text-left"
+                  className="bg-[#1a1a24] border border-white/5 rounded-xl p-3 sm:p-4 transition-all cursor-pointer hover:border-orange-400/50 hover:shadow-lg hover:shadow-orange-400/10 text-left"
                 >
                   <div className="flex items-center gap-3">
                     <div className={`w-10 h-10 rounded-lg bg-gradient-to-br from-[#00e5cc]/10 to-[#6366f1]/10 flex items-center justify-center ${s.accent}`}>
@@ -476,7 +476,7 @@ const GBPManagement: React.FC = () => {
                   </div>
                 </button>
               ) : (
-                <div key={s.label} className="bg-[#1a1a24] border border-white/5 rounded-xl p-4 transition-all hover:border-[#00e5cc]/30">
+                <div key={s.label} className="bg-[#1a1a24] border border-white/5 rounded-xl p-3 sm:p-4 transition-all hover:border-[#00e5cc]/30">
                   <div className="flex items-center gap-3">
                     <div className={`w-10 h-10 rounded-lg bg-gradient-to-br from-[#00e5cc]/10 to-[#6366f1]/10 flex items-center justify-center ${s.accent}`}>
                       <s.icon className="w-5 h-5" />
@@ -545,10 +545,10 @@ const GBPManagement: React.FC = () => {
                       <span className="text-xs text-gray-500 hidden sm:inline">{company.locations.length} location{company.locations.length !== 1 ? 's' : ''}</span>
                       <span className={`text-xs font-medium ${summary.color}`}>{summary.label}</span>
                       <div className="flex items-center gap-1 ml-2" onClick={e => e.stopPropagation()}>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-400 hover:text-white" onClick={() => openEditCompany(company)}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-7 sm:w-7 text-gray-400 hover:text-white" onClick={() => openEditCompany(company)}>
                           <Pencil className="w-3.5 h-3.5" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-400 hover:text-red-400" onClick={() => handleDeleteCompany(company.id, company.name)}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-7 sm:w-7 text-gray-400 hover:text-red-400" onClick={() => handleDeleteCompany(company.id, company.name)}>
                           <Trash2 className="w-3.5 h-3.5" />
                         </Button>
                       </div>
@@ -556,7 +556,8 @@ const GBPManagement: React.FC = () => {
 
                     {isExpanded && (
                       <div className="border-t border-white/5 bg-[#0a0a0f]/50">
-                        <div className="overflow-x-auto">
+                        {/* Desktop table */}
+                        <div className="hidden sm:block overflow-x-auto">
                           <table className="w-full text-sm">
                             <thead>
                               <tr className="border-b border-white/5">
@@ -576,17 +577,12 @@ const GBPManagement: React.FC = () => {
                                     <div className="flex items-center gap-2">
                                       <MapPin className="w-3.5 h-3.5 text-gray-500 shrink-0" />
                                       {loc.googleProfileUrl ? (
-                                        <a
-                                          href={loc.googleProfileUrl}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="text-cyan-400 hover:text-cyan-300 text-xs sm:text-sm flex items-center gap-1 hover:underline"
-                                        >
+                                        <a href={loc.googleProfileUrl} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 text-sm flex items-center gap-1 hover:underline">
                                           {loc.address || '—'}
                                           <LinkIcon className="w-3 h-3 shrink-0 opacity-60" />
                                         </a>
                                       ) : (
-                                        <span className="text-gray-300 text-xs sm:text-sm">{loc.address || '—'}</span>
+                                        <span className="text-gray-300 text-sm">{loc.address || '—'}</span>
                                       )}
                                     </div>
                                   </td>
@@ -601,39 +597,24 @@ const GBPManagement: React.FC = () => {
                                   <td className="px-4 py-2.5">
                                     <div className="flex items-center gap-2">
                                       <Phone className="w-3.5 h-3.5 text-gray-500 shrink-0" />
-                                      <span className="text-gray-300 text-xs sm:text-sm">{loc.phone}</span>
+                                      <span className="text-gray-300 text-sm">{loc.phone}</span>
                                     </div>
                                   </td>
+                                  <td className="px-4 py-2.5"><StatusBadge status={loc.status} /></td>
                                   <td className="px-4 py-2.5">
-                                    <StatusBadge status={loc.status} />
-                                  </td>
-                                  <td className="px-4 py-2.5">
-                                    <button
-                                      onClick={() => openTasksSummary(loc)}
-                                      className="hover:opacity-80 transition-opacity"
-                                    >
-                                      <TasksIndicator loc={loc} />
-                                    </button>
+                                    <button onClick={() => openTasksSummary(loc)} className="hover:opacity-80 transition-opacity"><TasksIndicator loc={loc} /></button>
                                   </td>
                                   <td className="px-4 py-2.5 hidden sm:table-cell">
-                                    <button
-                                      onClick={() => openNotesModal(loc)}
-                                      className="text-left hover:opacity-80 transition-opacity group max-w-[200px]"
-                                    >
+                                    <button onClick={() => openNotesModal(loc)} className="text-left hover:opacity-80 transition-opacity group max-w-[200px]">
                                       {loc.notes ? (
                                         <span className="text-xs text-amber-400/80 italic truncate block group-hover:text-amber-300">{loc.notes}</span>
                                       ) : (
-                                        <span className="text-gray-600 text-xs group-hover:text-gray-400 flex items-center gap-1">
-                                          <StickyNote className="w-3 h-3" /> Add note
-                                        </span>
+                                        <span className="text-gray-600 text-xs group-hover:text-gray-400 flex items-center gap-1"><StickyNote className="w-3 h-3" /> Add note</span>
                                       )}
                                     </button>
                                   </td>
                                   <td className="px-4 py-2.5">
                                     <div className="flex items-center gap-1">
-                                      <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-400 hover:text-amber-400 sm:hidden" onClick={() => openNotesModal(loc)} title="Notes">
-                                        <StickyNote className="w-3.5 h-3.5" />
-                                      </Button>
                                       <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-400 hover:text-white" onClick={() => openEditLocation(company.id, loc)}>
                                         <Pencil className="w-3.5 h-3.5" />
                                       </Button>
@@ -646,6 +627,50 @@ const GBPManagement: React.FC = () => {
                               ))}
                             </tbody>
                           </table>
+                        </div>
+                        {/* Mobile card layout */}
+                        <div className="sm:hidden divide-y divide-white/5">
+                          {company.locations.map(loc => (
+                            <div key={loc.id} className="px-4 py-3 space-y-2">
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="flex items-center gap-2 min-w-0 flex-1">
+                                  <MapPin className="w-4 h-4 text-cyan-400 shrink-0" />
+                                  {loc.googleProfileUrl ? (
+                                    <a href={loc.googleProfileUrl} target="_blank" rel="noopener noreferrer" className="text-cyan-400 text-sm font-medium truncate hover:underline flex items-center gap-1">
+                                      {loc.address || '—'} <LinkIcon className="w-3 h-3 shrink-0 opacity-60" />
+                                    </a>
+                                  ) : (
+                                    <span className="text-white text-sm font-medium truncate">{loc.address || '—'}</span>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-1 shrink-0" onClick={e => e.stopPropagation()}>
+                                  <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-amber-400" onClick={() => openNotesModal(loc)} title="Notes">
+                                    <StickyNote className="w-4 h-4" />
+                                  </Button>
+                                  <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-white" onClick={() => openEditLocation(company.id, loc)}>
+                                    <Pencil className="w-4 h-4" />
+                                  </Button>
+                                  <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-red-400" onClick={() => handleDeleteLocation(company.id, loc.id)}>
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                              <div className="flex items-center flex-wrap gap-2 pl-6">
+                                <StatusBadge status={loc.status} />
+                                <button onClick={() => openTasksSummary(loc)} className="hover:opacity-80 transition-opacity"><TasksIndicator loc={loc} /></button>
+                                {loc.phone && (
+                                  <span className="inline-flex items-center gap-1 text-xs text-gray-400">
+                                    <Phone className="w-3 h-3" /> {loc.phone}
+                                  </span>
+                                )}
+                              </div>
+                              {loc.notes && (
+                                <div className="pl-6">
+                                  <span className="text-xs text-amber-400/80 italic">{loc.notes}</span>
+                                </div>
+                              )}
+                            </div>
+                          ))}
                         </div>
                         <div className="px-4 py-2 border-t border-white/5">
                           <Button variant="ghost" size="sm" className="text-[#00e5cc] hover:text-[#00e5cc]/80 hover:bg-[#00e5cc]/10 gap-1.5 text-xs" onClick={() => openAddLocation(company.id)}>
@@ -674,14 +699,14 @@ const GBPManagement: React.FC = () => {
 
       {actionRequiredModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-mobile-full-wrapper bg-black/80 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
           aria-labelledby="action-required-title"
           onClick={() => setActionRequiredModalOpen(false)}
           onKeyDown={e => { if (e.key === 'Escape') setActionRequiredModalOpen(false); }}
         >
-          <div className="bg-[#0a0a0f] border border-white/10 rounded-2xl w-full max-w-lg p-6 relative max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+          <div className="modal-mobile-full bg-[#0a0a0f] border border-white/10 rounded-2xl w-full max-w-lg p-5 sm:p-6 relative max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
             <button onClick={() => setActionRequiredModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white">
               <X className="w-5 h-5" />
             </button>
@@ -736,8 +761,8 @@ const GBPManagement: React.FC = () => {
       )}
 
       {companyModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-[#0a0a0f] border border-white/10 rounded-2xl w-full max-w-md p-6 relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-mobile-full-wrapper bg-black/80 backdrop-blur-sm">
+          <div className="modal-mobile-full bg-[#0a0a0f] border border-white/10 rounded-2xl w-full max-w-md p-5 sm:p-6 relative">
             <button onClick={() => setCompanyModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white">
               <X className="w-5 h-5" />
             </button>
@@ -757,8 +782,8 @@ const GBPManagement: React.FC = () => {
       )}
 
       {locationModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-[#0a0a0f] border border-white/10 rounded-2xl w-full max-w-lg p-6 relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-mobile-full-wrapper bg-black/80 backdrop-blur-sm">
+          <div className="modal-mobile-full bg-[#0a0a0f] border border-white/10 rounded-2xl w-full max-w-lg p-5 sm:p-6 relative overflow-y-auto">
             <button onClick={() => setLocationModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white">
               <X className="w-5 h-5" />
             </button>
@@ -768,7 +793,7 @@ const GBPManagement: React.FC = () => {
                 <label className="block text-xs text-gray-400 mb-1 font-semibold">Address</label>
                 <Input value={locationForm.address} onChange={e => setLocationForm(f => ({ ...f, address: e.target.value }))} className="bg-[#1a1a24] border-white/5 text-white focus:border-[#00e5cc]" />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs text-gray-400 mb-1 font-semibold">Email</label>
                   <Input value={locationForm.email} onChange={e => setLocationForm(f => ({ ...f, email: e.target.value }))} className="bg-[#1a1a24] border-white/5 text-white focus:border-[#00e5cc]" />
@@ -778,7 +803,7 @@ const GBPManagement: React.FC = () => {
                   <Input value={locationForm.phone} onChange={e => setLocationForm(f => ({ ...f, phone: e.target.value }))} className="bg-[#1a1a24] border-white/5 text-white focus:border-[#00e5cc]" />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs text-gray-400 mb-1 font-semibold">Status</label>
                   <select
@@ -822,8 +847,8 @@ const GBPManagement: React.FC = () => {
         const tasks = tasksModalLocationId ? (seoTasksByLocation.get(tasksModalLocationId) || []) : [];
         const currentWeek = getMonday();
         return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-            <div className="bg-[#0a0a0f] border border-white/10 rounded-2xl w-full max-w-md p-6 relative">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-mobile-full-wrapper bg-black/80 backdrop-blur-sm">
+            <div className="modal-mobile-full bg-[#0a0a0f] border border-white/10 rounded-2xl w-full max-w-md p-5 sm:p-6 relative overflow-y-auto">
               <button onClick={() => setTasksModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white">
                 <X className="w-5 h-5" />
               </button>
@@ -890,8 +915,8 @@ const GBPManagement: React.FC = () => {
         const targetLabel = config?.targetMin ? `${config.targetMin}-${config.target}` : `${config?.target || '?'}`;
 
         return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-            <div className="bg-[#0a0a0f] border border-white/10 rounded-2xl w-full max-w-md p-6 relative max-h-[90vh] overflow-y-auto">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-mobile-full-wrapper bg-black/80 backdrop-blur-sm">
+            <div className="modal-mobile-full bg-[#0a0a0f] border border-white/10 rounded-2xl w-full max-w-md p-5 sm:p-6 relative max-h-[90vh] overflow-y-auto">
               <button onClick={() => { setTaskDetailOpen(null); }} className="absolute top-4 right-4 text-gray-400 hover:text-white">
                 <X className="w-5 h-5" />
               </button>
@@ -970,8 +995,8 @@ const GBPManagement: React.FC = () => {
       })()}
 
       {notesModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-[#0a0a0f] border border-white/10 rounded-2xl w-full max-w-md p-6 relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-mobile-full-wrapper bg-black/80 backdrop-blur-sm">
+          <div className="modal-mobile-full bg-[#0a0a0f] border border-white/10 rounded-2xl w-full max-w-md p-5 sm:p-6 relative">
             <button onClick={() => setNotesModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white">
               <X className="w-5 h-5" />
             </button>

@@ -159,16 +159,16 @@ const SOPLibrary: React.FC = () => {
                     <p className="text-xs text-gray-400 line-clamp-2">{sop.description}</p>
                   </div>
                   <div className="flex items-center gap-1 shrink-0" onClick={e => e.stopPropagation()}>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-400 hover:text-white" onClick={() => openEdit(sop)}>
-                      <Pencil className="w-3 h-3" />
+                    <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-7 sm:w-7 text-gray-400 hover:text-white" onClick={() => openEdit(sop)}>
+                      <Pencil className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-400 hover:text-red-400" onClick={() => handleDelete(sop.id, sop.title)}>
-                      <Trash2 className="w-3 h-3" />
+                    <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-7 sm:w-7 text-gray-400 hover:text-red-400" onClick={() => handleDelete(sop.id, sop.title)}>
+                      <Trash2 className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
                     </Button>
                   </div>
                 </div>
                 {isExpanded && (
-                  <div className="border-t border-white/10 px-5 py-5 bg-white/[0.01]">
+                  <div className="border-t border-white/10 px-3 py-4 sm:px-5 sm:py-5 bg-white/[0.01]">
                     <div
                       className="sop-content prose prose-invert prose-sm max-w-none prose-headings:text-cyan-400 prose-a:text-cyan-400 prose-strong:text-white prose-li:text-gray-300 prose-p:text-gray-300 prose-blockquote:border-cyan-500/30 prose-blockquote:text-gray-400"
                       dangerouslySetInnerHTML={{ __html: renderMarkdown(sop.content) }}
@@ -182,8 +182,8 @@ const SOPLibrary: React.FC = () => {
       )}
 
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="bg-gray-900 border border-white/10 rounded-2xl w-full max-w-2xl p-6 relative max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-mobile-full-wrapper bg-black/70 backdrop-blur-sm">
+          <div className="modal-mobile-full bg-gray-900 border border-white/10 rounded-2xl w-full max-w-2xl p-5 sm:p-6 relative max-h-[90vh] overflow-y-auto">
             <button onClick={() => setModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white">
               <X className="w-5 h-5" />
             </button>
