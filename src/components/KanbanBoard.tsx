@@ -47,13 +47,13 @@ interface TaskData {
 }
 
 const COLUMNS: { key: TaskCol; label: string; color: string }[] = [
-  { key: 'new', label: 'New Task', color: 'border-red-500/60' },
+  { key: 'new', label: 'New Task', color: 'border-[#00e5cc]/60' },
   { key: 'in_progress', label: 'In Progress', color: 'border-amber-500/60' },
   { key: 'finished', label: 'Finished', color: 'border-green-500/60' },
 ];
 
 const CARD_GLOW: Record<TaskCol, string> = {
-  new: 'border-red-500/40 shadow-[0_0_8px_rgba(239,68,68,0.15)]',
+  new: 'border-[#00e5cc]/40 shadow-[0_0_8px_rgba(0,229,204,0.15)]',
   in_progress: 'border-amber-500/40 shadow-[0_0_8px_rgba(245,158,11,0.15)]',
   finished: 'border-green-500/40 shadow-[0_0_8px_rgba(34,197,94,0.2)]',
 };
@@ -868,7 +868,7 @@ const KanbanBoard: React.FC = () => {
             <Archive className="w-3.5 h-3.5" /> {showArchive ? 'Hide Archive' : 'View Archive'}
           </Button>
           {selectedCompanyId && (
-            <Button onClick={() => openAdd('new')} className="bg-gradient-to-r from-[#00e5cc] to-[#00b8a8] text-black font-semibold hover:shadow-lg hover:shadow-[#00e5cc]/30 gap-2 text-xs">
+            <Button onClick={() => openAdd('new')} className="bg-[#00e5cc]/10 border border-[#00e5cc]/30 text-[#00e5cc] hover:bg-[#00e5cc]/20 hover:shadow-[0_0_15px_rgba(0,229,204,0.15)] gap-2 text-xs font-semibold transition-all">
               <Plus className="w-3.5 h-3.5" /> Add Task
             </Button>
           )}
@@ -888,7 +888,7 @@ const KanbanBoard: React.FC = () => {
               }}
               aria-haspopup="listbox"
               aria-expanded={companyDropdownOpen}
-              className="w-full flex items-center justify-between gap-2 bg-[#1a1a24] border border-white/5 rounded-md px-3 py-1.5 text-sm text-white text-left hover:border-[#00e5cc]/30 transition-colors"
+              className="w-full flex items-center justify-between gap-2 bg-[#1a1a24] border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white text-left hover:border-[#00e5cc]/30 focus:border-[#00e5cc]/50 focus:ring-1 focus:ring-[#00e5cc]/20 transition-all"
             >
               <span className="truncate flex items-center gap-1.5">
                 {selectedCompany?.name || 'Select company'}
@@ -908,7 +908,7 @@ const KanbanBoard: React.FC = () => {
             {companyDropdownOpen && (
               <div
                 role="listbox"
-                className="absolute z-50 mt-1 w-full max-h-64 overflow-y-auto bg-[#1a1a24] border border-white/10 rounded-md shadow-xl"
+                className="absolute z-50 mt-1 w-full max-h-64 overflow-y-auto bg-[#1a1a24] border border-white/10 rounded-lg shadow-xl shadow-black/40"
                 onKeyDown={e => { if (e.key === 'Escape') setCompanyDropdownOpen(false); }}
               >
                 {companies.length === 0 && (
@@ -1167,7 +1167,7 @@ const KanbanBoard: React.FC = () => {
               <select
                 value={selectedArchiveWeek}
                 onChange={e => setSelectedArchiveWeek(e.target.value)}
-                className="bg-[#1a1a24] border border-white/5 rounded-md px-2 py-1 text-xs text-white focus:border-[#00e5cc] [&>option]:bg-[#1a1a24] [&>option]:text-white"
+                className="bg-[#1a1a24] border border-white/10 rounded-lg px-2 py-1 text-xs text-white focus:border-[#00e5cc]/50 focus:ring-1 focus:ring-[#00e5cc]/20 focus:outline-none transition-colors [&>option]:bg-[#1a1a24] [&>option]:text-white"
               >
                 <option value="all">All Weeks</option>
                 {archiveWeeks.map(w => (
@@ -1188,13 +1188,13 @@ const KanbanBoard: React.FC = () => {
                     ? 'border-green-500/30 bg-green-500/[0.03]'
                     : task.col === 'in_progress'
                     ? 'border-amber-500/30 bg-amber-500/[0.03]'
-                    : 'border-red-500/30 bg-red-500/[0.03]';
+                    : 'border-[#00e5cc]/30 bg-[#00e5cc]/[0.03]';
                   return (
                     <div key={task.id} className={`flex items-center gap-3 px-3 py-2 rounded-lg border ${archiveGlow}`}>
-                      <span className={`w-2 h-2 rounded-full shrink-0 ${task.col === 'finished' ? 'bg-green-500' : task.col === 'in_progress' ? 'bg-amber-500' : 'bg-red-500'}`} />
+                      <span className={`w-2 h-2 rounded-full shrink-0 ${task.col === 'finished' ? 'bg-green-500' : task.col === 'in_progress' ? 'bg-amber-500' : 'bg-[#00e5cc]'}`} />
                       <span className="text-xs text-white truncate flex-1">{task.title}</span>
                       <span className="text-[10px] text-gray-500 truncate max-w-[100px]">{task.client}</span>
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded border ${task.col === 'finished' ? 'bg-green-500/10 text-green-400 border-green-500/20' : task.col === 'in_progress' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded border ${task.col === 'finished' ? 'bg-green-500/10 text-green-400 border-green-500/20' : task.col === 'in_progress' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-[#00e5cc]/10 text-[#00e5cc] border-[#00e5cc]/20'}`}>
                         {task.col === 'finished' ? 'Done' : task.col === 'in_progress' ? 'Incomplete' : 'Not started'}
                       </span>
                       <span className="text-[10px] text-gray-600 shrink-0">{formatWeekLabel(task.week_of)}</span>
@@ -1224,7 +1224,7 @@ const KanbanBoard: React.FC = () => {
                 <select
                   value={form.location_id}
                   onChange={e => setForm(f => ({ ...f, location_id: e.target.value }))}
-                  className="w-full bg-[#1a1a24] border border-white/5 rounded-md px-3 py-2 text-sm text-white focus:border-[#00e5cc] [&>option]:bg-[#1a1a24] [&>option]:text-white"
+                  className="w-full bg-[#1a1a24] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-[#00e5cc]/50 focus:ring-1 focus:ring-[#00e5cc]/20 focus:outline-none transition-colors [&>option]:bg-[#1a1a24] [&>option]:text-white"
                 >
                   {locations.length === 0 && <option value="">No locations available</option>}
                   {locations.map(l => (
@@ -1238,7 +1238,7 @@ const KanbanBoard: React.FC = () => {
               </div>
               <div>
                 <label className="block text-xs text-gray-400 mb-1 font-semibold">Column</label>
-                <select value={form.col} onChange={e => setForm(f => ({ ...f, col: e.target.value as TaskCol }))} className="w-full bg-[#1a1a24] border border-white/5 rounded-md px-3 py-2 text-sm text-white focus:border-[#00e5cc] [&>option]:bg-[#1a1a24] [&>option]:text-white">
+                <select value={form.col} onChange={e => setForm(f => ({ ...f, col: e.target.value as TaskCol }))} className="w-full bg-[#1a1a24] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-[#00e5cc]/50 focus:ring-1 focus:ring-[#00e5cc]/20 focus:outline-none transition-colors [&>option]:bg-[#1a1a24] [&>option]:text-white">
                   {COLUMNS.map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
                 </select>
               </div>
@@ -1344,7 +1344,7 @@ const KanbanBoard: React.FC = () => {
 
               <div className="flex gap-3 justify-end">
                 <Button type="button" variant="ghost" onClick={() => setModalOpen(false)}>Cancel</Button>
-                <Button type="submit" className="bg-gradient-to-r from-[#00e5cc] to-[#00b8a8] text-black font-semibold hover:shadow-lg hover:shadow-[#00e5cc]/30">{editingId ? 'Update' : 'Add'}</Button>
+                <Button type="submit" className="bg-[#00e5cc]/10 border border-[#00e5cc]/30 text-[#00e5cc] hover:bg-[#00e5cc]/20 hover:shadow-[0_0_15px_rgba(0,229,204,0.15)] font-semibold transition-all">{editingId ? 'Update' : 'Add'}</Button>
               </div>
             </form>
           </div>

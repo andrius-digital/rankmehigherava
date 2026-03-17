@@ -137,7 +137,7 @@ const SOPLibrary: React.FC = () => {
           <h2 className="text-lg font-bold text-white">SOP Library</h2>
           <span className="text-xs text-gray-500">({sops.length} procedures)</span>
         </div>
-        <Button onClick={openAdd} className="bg-red-600 hover:bg-red-700 text-white gap-2 text-xs">
+        <Button onClick={openAdd} className="bg-[#00e5cc]/10 border border-[#00e5cc]/30 text-[#00e5cc] hover:bg-[#00e5cc]/20 hover:shadow-[0_0_15px_rgba(0,229,204,0.15)] gap-2 text-xs transition-all">
           <Plus className="w-3.5 h-3.5" /> Add SOP
         </Button>
       </div>
@@ -155,7 +155,7 @@ const SOPLibrary: React.FC = () => {
         <select
           value={categoryFilter}
           onChange={e => setCategoryFilter(e.target.value)}
-          className="bg-white/5 border border-white/10 rounded-md px-3 py-1.5 text-sm text-white"
+          className="bg-[#1a1a24] border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:border-[#00e5cc]/50 focus:ring-1 focus:ring-[#00e5cc]/20 focus:outline-none transition-colors [&>option]:bg-[#1a1a24] [&>option]:text-white"
         >
           <option value="all">All Categories</option>
           {CATEGORIES.map(c => (
@@ -233,7 +233,7 @@ const SOPLibrary: React.FC = () => {
                   <select
                     value={form.category}
                     onChange={e => setForm(f => ({ ...f, category: e.target.value as SOP['category'] }))}
-                    className="w-full bg-white/5 border border-white/10 rounded-md px-3 py-2 text-sm text-white"
+                    className="w-full bg-[#1a1a24] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-[#00e5cc]/50 focus:ring-1 focus:ring-[#00e5cc]/20 focus:outline-none transition-colors [&>option]:bg-[#1a1a24] [&>option]:text-white"
                   >
                     {CATEGORIES.map(c => (
                       <option key={c} value={c}>{CATEGORY_CONFIG[c].label}</option>
@@ -257,7 +257,7 @@ const SOPLibrary: React.FC = () => {
               </div>
               <div className="flex gap-3 justify-end">
                 <Button type="button" variant="ghost" onClick={() => setModalOpen(false)}>Cancel</Button>
-                <Button type="submit" className="bg-red-600 hover:bg-red-700">{editingId ? 'Update' : 'Add'}</Button>
+                <Button type="submit" className="bg-[#00e5cc]/10 border border-[#00e5cc]/30 text-[#00e5cc] hover:bg-[#00e5cc]/20 hover:shadow-[0_0_15px_rgba(0,229,204,0.15)] transition-all">{editingId ? 'Update' : 'Add'}</Button>
               </div>
             </form>
           </div>

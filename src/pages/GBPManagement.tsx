@@ -498,13 +498,13 @@ const GBPManagement: React.FC = () => {
                 placeholder="Search companies or addresses..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="pl-10 bg-[#1a1a24] border-white/5 text-white placeholder:text-gray-500 focus:border-[#00e5cc] focus:ring-[#00e5cc]/20"
+                className="pl-10 bg-[#1a1a24] border-white/10 text-white placeholder:text-gray-500 focus:border-[#00e5cc]/50 focus:ring-1 focus:ring-[#00e5cc]/20"
               />
             </div>
             <select
               value={statusFilter}
               onChange={e => setStatusFilter(e.target.value)}
-              className="bg-[#1a1a24] border border-white/5 rounded-md px-3 py-2 text-sm text-white focus:border-[#00e5cc] [&>option]:bg-[#1a1a24] [&>option]:text-white"
+              className="bg-[#1a1a24] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-[#00e5cc]/50 focus:ring-1 focus:ring-[#00e5cc]/20 focus:outline-none transition-colors [&>option]:bg-[#1a1a24] [&>option]:text-white"
             >
               <option value="all">All Statuses</option>
               <option value="verified">Verified</option>
@@ -512,7 +512,7 @@ const GBPManagement: React.FC = () => {
               <option value="processing">Processing</option>
               <option value="not_started">Not Started</option>
             </select>
-            <Button onClick={openAddCompany} className="bg-gradient-to-r from-[#00e5cc] to-[#00b8a8] text-black font-semibold hover:shadow-lg hover:shadow-[#00e5cc]/30 gap-2">
+            <Button onClick={openAddCompany} className="bg-[#00e5cc]/10 border border-[#00e5cc]/30 text-[#00e5cc] hover:bg-[#00e5cc]/20 hover:shadow-[0_0_15px_rgba(0,229,204,0.15)] font-semibold gap-2 transition-all">
               <Plus className="w-4 h-4" /> Add Company
             </Button>
           </div>
@@ -749,7 +749,7 @@ const GBPManagement: React.FC = () => {
               </div>
               <div className="flex gap-3 justify-end">
                 <Button type="button" variant="ghost" onClick={() => setCompanyModalOpen(false)}>Cancel</Button>
-                <Button type="submit" className="bg-gradient-to-r from-[#00e5cc] to-[#00b8a8] text-black font-semibold hover:shadow-lg hover:shadow-[#00e5cc]/30">{editingCompanyId ? 'Update' : 'Add'}</Button>
+                <Button type="submit" className="bg-[#00e5cc]/10 border border-[#00e5cc]/30 text-[#00e5cc] hover:bg-[#00e5cc]/20 hover:shadow-[0_0_15px_rgba(0,229,204,0.15)] font-semibold transition-all">{editingCompanyId ? 'Update' : 'Add'}</Button>
               </div>
             </form>
           </div>
@@ -784,7 +784,7 @@ const GBPManagement: React.FC = () => {
                   <select
                     value={locationForm.status}
                     onChange={e => setLocationForm(f => ({ ...f, status: e.target.value as GBPLocation['status'] }))}
-                    className="w-full bg-[#1a1a24] border border-white/5 rounded-md px-3 py-2 text-sm text-white focus:border-[#00e5cc] [&>option]:bg-[#1a1a24] [&>option]:text-white"
+                    className="w-full bg-[#1a1a24] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-[#00e5cc]/50 focus:ring-1 focus:ring-[#00e5cc]/20 focus:outline-none transition-colors [&>option]:bg-[#1a1a24] [&>option]:text-white"
                   >
                     <option value="verified">Verified</option>
                     <option value="pending">Pending</option>
@@ -811,7 +811,7 @@ const GBPManagement: React.FC = () => {
               </div>
               <div className="flex gap-3 justify-end">
                 <Button type="button" variant="ghost" onClick={() => setLocationModalOpen(false)}>Cancel</Button>
-                <Button type="submit" className="bg-gradient-to-r from-[#00e5cc] to-[#00b8a8] text-black font-semibold hover:shadow-lg hover:shadow-[#00e5cc]/30">{editingLocationId ? 'Update' : 'Add'}</Button>
+                <Button type="submit" className="bg-[#00e5cc]/10 border border-[#00e5cc]/30 text-[#00e5cc] hover:bg-[#00e5cc]/20 hover:shadow-[0_0_15px_rgba(0,229,204,0.15)] font-semibold transition-all">{editingLocationId ? 'Update' : 'Add'}</Button>
               </div>
             </form>
           </div>
@@ -989,7 +989,7 @@ const GBPManagement: React.FC = () => {
             />
             <div className="flex gap-3 justify-end mt-4">
               <Button type="button" variant="ghost" onClick={() => setNotesModalOpen(false)}>Cancel</Button>
-              <Button onClick={handleNotesSave} className="bg-gradient-to-r from-[#00e5cc] to-[#00b8a8] text-black font-semibold hover:shadow-lg hover:shadow-[#00e5cc]/30">Save</Button>
+              <Button onClick={handleNotesSave} className="bg-[#00e5cc]/10 border border-[#00e5cc]/30 text-[#00e5cc] hover:bg-[#00e5cc]/20 hover:shadow-[0_0_15px_rgba(0,229,204,0.15)] font-semibold transition-all">Save</Button>
             </div>
           </div>
         </div>
