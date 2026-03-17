@@ -753,15 +753,9 @@ const KanbanBoard: React.FC = () => {
             className="bg-[#141414] border border-white/10 rounded-md px-3 py-1.5 text-sm text-white flex-1 min-w-0 [&>option]:bg-[#141414] [&>option]:text-white"
           >
             {companies.length === 0 && <option value="">No companies</option>}
-            {companies.map(c => {
-              const alert = companyAlerts.get(c.id);
-              const hasOverdue = alert && alert.overdue > 0;
-              const hasApproaching = alert && alert.approaching > 0;
-              const marker = hasOverdue ? ' ⚠ OVERDUE' : hasApproaching ? ' ⚠ Deadline soon' : '';
-              return (
-                <option key={c.id} value={c.id}>{c.name}{marker}</option>
-              );
-            })}
+            {companies.map(c => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
           </select>
           {(() => {
             const alert = selectedCompanyId ? companyAlerts.get(selectedCompanyId) : null;
