@@ -567,30 +567,13 @@ const KanbanBoard: React.FC = () => {
   const currentTypeConfig = TASK_TYPE_MAP[form.title.trim()] || null;
 
   const nextMonday = getNextMonday(currentWeek);
-  const nextWeekLabel = formatWeekLabel(nextMonday);
   const nextMondayDate = (() => {
     const p = nextMonday.split('-').map(Number);
     const d = new Date(p[0], p[1] - 1, p[2]);
     return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
   })();
 
-  const upcomingTasks: { title: string; locationName: string; locationId: string }[] = [];
   const defaultTitles = new Set(DEFAULT_WEEKLY_TASKS.map(t => t.title));
-  const seenUpcoming = new Set<string>();
-
-  for (const t of tasks) {
-    if (t.col === 'finished' && defaultTitles.has(t.title) && t.location_id) {
-      const dedupKey = `${t.location_id}::${t.title}`;
-      if (seenUpcoming.has(dedupKey)) continue;
-      seenUpcoming.add(dedupKey);
-      const loc = locationMap.get(t.location_id);
-      upcomingTasks.push({
-        title: t.title,
-        locationName: loc ? shortAddress(loc.address) : 'Unknown',
-        locationId: t.location_id,
-      });
-    }
-  }
 
   return (
     <div>
@@ -753,6 +736,35 @@ const KanbanBoard: React.FC = () => {
                     );
                   })}
                 </div>
+                {(() => {
+                  const locUpcoming = locTasks.filter(t => t.col === 'finished' && defaultTitles.has(t.title));
+                  const seen = new Set<string>();
+                  const deduped = locUpcoming.filter(t => {
+                    if (seen.has(t.title)) return false;
+                    seen.add(t.title);
+                    return true;
+                  });
+                  if (deduped.length === 0) return null;
+                  return (
+                    <div className="mt-2 border border-cyan-500/15 rounded-lg bg-cyan-500/[0.02]">
+                      <div className="px-3 py-1.5 border-b border-cyan-500/10 flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          <CalendarClock className="w-3 h-3 text-cyan-400" />
+                          <span className="text-[10px] font-semibold text-cyan-400">Upcoming Next Week</span>
+                        </div>
+                        <span className="text-[10px] text-cyan-400/60">{nextMondayDate}</span>
+                      </div>
+                      <div className="p-1.5 space-y-1">
+                        {deduped.map(t => (
+                          <div key={t.id} className="flex items-center gap-2 px-2 py-1 rounded bg-white/[0.02] border border-cyan-500/10">
+                            <Clock className="w-2.5 h-2.5 text-cyan-400/60 shrink-0" />
+                            <span className="text-[10px] text-gray-300 truncate">{t.title}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             );
           })}
@@ -764,34 +776,6 @@ const KanbanBoard: React.FC = () => {
         </div>
       ) : null}
 
-      {upcomingTasks.length > 0 && (
-        <div className="mt-6 border border-cyan-500/20 rounded-xl bg-cyan-500/[0.03] backdrop-blur-sm">
-          <div className="px-4 py-3 border-b border-cyan-500/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <CalendarClock className="w-4 h-4 text-cyan-400" />
-              <span className="text-sm font-semibold text-white">Upcoming Tasks</span>
-            </div>
-            <span className="text-xs text-cyan-400 font-medium bg-cyan-500/10 border border-cyan-500/20 px-2 py-1 rounded">
-              Starting {nextMondayDate} ({nextWeekLabel})
-            </span>
-          </div>
-          <div className="p-3">
-            <div className="space-y-1.5">
-              {upcomingTasks.map((ut, idx) => (
-                <div key={`${ut.locationId}::${ut.title}::${idx}`} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/[0.02] border border-cyan-500/10">
-                  <Clock className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                  <span className="text-xs text-white truncate flex-1">{ut.title}</span>
-                  <span className="text-[10px] text-gray-400 flex items-center gap-1 shrink-0">
-                    <MapPin className="w-2.5 h-2.5" />
-                    {ut.locationName}
-                  </span>
-                  <span className="text-[10px] text-cyan-400/70 shrink-0">{nextMondayDate}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
 
       {showArchive && selectedCompanyId && (
         <div className="mt-6 border border-white/10 rounded-xl bg-white/[0.02] backdrop-blur-sm">
