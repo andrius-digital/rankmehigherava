@@ -574,7 +574,7 @@ const KanbanBoard: React.FC = () => {
     return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
   })();
 
-  const upcomingTasks: { title: string; locationName: string; locationId: string; priority: TaskPriority; category: TaskCategory }[] = [];
+  const upcomingTasks: { title: string; locationName: string; locationId: string }[] = [];
   const defaultTitles = new Set(DEFAULT_WEEKLY_TASKS.map(t => t.title));
   const seenUpcoming = new Set<string>();
 
@@ -584,16 +584,11 @@ const KanbanBoard: React.FC = () => {
       if (seenUpcoming.has(dedupKey)) continue;
       seenUpcoming.add(dedupKey);
       const loc = locationMap.get(t.location_id);
-      const tmpl = DEFAULT_WEEKLY_TASKS.find(dt => dt.title === t.title);
-      if (tmpl) {
-        upcomingTasks.push({
-          title: t.title,
-          locationName: loc ? shortAddress(loc.address) : 'Unknown',
-          locationId: t.location_id,
-          priority: tmpl.priority,
-          category: tmpl.category,
-        });
-      }
+      upcomingTasks.push({
+        title: t.title,
+        locationName: loc ? shortAddress(loc.address) : 'Unknown',
+        locationId: t.location_id,
+      });
     }
   }
 
@@ -733,12 +728,6 @@ const KanbanBoard: React.FC = () => {
                                   </div>
                                 )}
                                 <div className="flex items-center gap-1 flex-wrap">
-                                  <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border ${PRIORITY_CONFIG[task.priority]?.color || ''}`}>
-                                    {PRIORITY_CONFIG[task.priority]?.label || task.priority}
-                                  </span>
-                                  <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border ${CATEGORY_CONFIG[task.category]?.color || ''}`}>
-                                    {CATEGORY_CONFIG[task.category]?.label || task.category}
-                                  </span>
                                   {task.due_date && (
                                     <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium border ${isOverdue(task.due_date, task.col) ? 'bg-red-500/20 text-red-400 border-red-500/30' : 'bg-white/5 text-gray-400 border-white/10'}`}>
                                       <Calendar className="w-2.5 h-2.5" />
@@ -796,12 +785,6 @@ const KanbanBoard: React.FC = () => {
                     <MapPin className="w-2.5 h-2.5" />
                     {ut.locationName}
                   </span>
-                  <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border ${PRIORITY_CONFIG[ut.priority]?.color || ''}`}>
-                    {PRIORITY_CONFIG[ut.priority]?.label || ut.priority}
-                  </span>
-                  <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border ${CATEGORY_CONFIG[ut.category]?.color || ''}`}>
-                    {CATEGORY_CONFIG[ut.category]?.label || ut.category}
-                  </span>
                   <span className="text-[10px] text-cyan-400/70 shrink-0">{nextMondayDate}</span>
                 </div>
               ))}
@@ -849,9 +832,6 @@ const KanbanBoard: React.FC = () => {
                       <span className={`w-2 h-2 rounded-full shrink-0 ${task.col === 'finished' ? 'bg-green-500' : task.col === 'in_progress' ? 'bg-amber-500' : 'bg-red-500'}`} />
                       <span className="text-xs text-white truncate flex-1">{task.title}</span>
                       <span className="text-[10px] text-gray-500 truncate max-w-[100px]">{task.client}</span>
-                      <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border ${CATEGORY_CONFIG[task.category]?.color || 'bg-white/5 text-gray-400 border-white/10'}`}>
-                        {CATEGORY_CONFIG[task.category]?.label || task.category}
-                      </span>
                       <span className={`text-[10px] px-1.5 py-0.5 rounded border ${task.col === 'finished' ? 'bg-green-500/10 text-green-400 border-green-500/20' : task.col === 'in_progress' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>
                         {task.col === 'finished' ? 'Done' : task.col === 'in_progress' ? 'Incomplete' : 'Not started'}
                       </span>
@@ -875,7 +855,7 @@ const KanbanBoard: React.FC = () => {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs text-gray-400 mb-1">Task Title</label>
-                <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} className="bg-white/5 border-white/10 text-white" />
+                <Input value={form.title} onChange={e => !currentTypeConfig && setForm(f => ({ ...f, title: e.target.value }))} readOnly={!!currentTypeConfig} className={`bg-white/5 border-white/10 text-white ${currentTypeConfig ? 'opacity-60 cursor-not-allowed' : ''}`} />
               </div>
               <div>
                 <label className="block text-xs text-gray-400 mb-1">Location</label>
@@ -892,27 +872,13 @@ const KanbanBoard: React.FC = () => {
               </div>
               <div>
                 <label className="block text-xs text-gray-400 mb-1">Due Date</label>
-                <Input type="date" value={form.due_date} onChange={e => setForm(f => ({ ...f, due_date: e.target.value }))} className="bg-white/5 border-white/10 text-white" />
+                <Input type="date" value={form.due_date} readOnly={!!currentTypeConfig} className={`bg-white/5 border-white/10 text-white ${currentTypeConfig ? 'opacity-60 cursor-not-allowed' : ''}`} onChange={e => !currentTypeConfig && setForm(f => ({ ...f, due_date: e.target.value }))} />
               </div>
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-xs text-gray-400 mb-1">Priority</label>
-                  <select value={form.priority} onChange={e => setForm(f => ({ ...f, priority: e.target.value as TaskPriority }))} className="w-full bg-white/5 border border-white/10 rounded-md px-3 py-2 text-sm text-white">
-                    {PRIORITIES.map(p => <option key={p} value={p}>{PRIORITY_CONFIG[p].label}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-400 mb-1">Category</label>
-                  <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value as TaskCategory }))} className="w-full bg-white/5 border border-white/10 rounded-md px-3 py-2 text-sm text-white">
-                    {CATEGORIES.map(c => <option key={c} value={c}>{CATEGORY_CONFIG[c].label}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-400 mb-1">Column</label>
-                  <select value={form.col} onChange={e => setForm(f => ({ ...f, col: e.target.value as TaskCol }))} className="w-full bg-white/5 border border-white/10 rounded-md px-3 py-2 text-sm text-white">
-                    {COLUMNS.map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
-                  </select>
-                </div>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">Column</label>
+                <select value={form.col} onChange={e => setForm(f => ({ ...f, col: e.target.value as TaskCol }))} className="w-full bg-white/5 border border-white/10 rounded-md px-3 py-2 text-sm text-white">
+                  {COLUMNS.map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
+                </select>
               </div>
 
               {currentTypeConfig && (
