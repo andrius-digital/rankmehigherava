@@ -627,9 +627,9 @@ const GBPManagement: React.FC = () => {
                                     <button onClick={() => openTasksSummary(loc)} className="hover:opacity-80 transition-opacity"><TasksIndicator loc={loc} /></button>
                                   </td>
                                   <td className="px-4 py-2.5 whitespace-nowrap hidden sm:table-cell">
-                                    <button onClick={() => openNotesModal(loc)} className="text-left hover:opacity-80 transition-opacity group max-w-[200px]">
+                                    <button onClick={() => openNotesModal(loc)} className="text-left hover:opacity-80 transition-opacity group">
                                       {loc.notes ? (
-                                        <span className="text-xs text-amber-400/80 italic truncate block group-hover:text-amber-300">{loc.notes}</span>
+                                        <span className="text-xs text-amber-400/80 italic group-hover:text-amber-300">{loc.notes}</span>
                                       ) : (
                                         <span className="text-gray-600 text-xs group-hover:text-gray-400 flex items-center gap-1"><StickyNote className="w-3 h-3" /> Add note</span>
                                       )}
