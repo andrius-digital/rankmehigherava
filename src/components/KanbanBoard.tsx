@@ -737,13 +737,13 @@ const KanbanBoard: React.FC = () => {
           <select
             value={selectedCompanyId || ''}
             onChange={e => setSelectedCompanyId(e.target.value || null)}
-            className="bg-white/5 border border-white/10 rounded-md px-3 py-1.5 text-sm text-white flex-1 min-w-0"
+            className="bg-[#141414] border border-white/10 rounded-md px-3 py-1.5 text-sm text-white flex-1 min-w-0 [&>option]:bg-[#141414] [&>option]:text-white"
           >
             {companies.length === 0 && <option value="">No companies</option>}
             {companies.map(c => {
               const alert = companyAlerts.get(c.id);
               const hasOverdue = alert && alert.overdue > 0;
-              const hasUnfinished = isFriday && alert && alert.unfinished > 0;
+              const hasUnfinished = alert && alert.unfinished > 0;
               const marker = hasOverdue ? ' ⚠ OVERDUE' : hasUnfinished ? ' ⚠ Unfinished' : '';
               return (
                 <option key={c.id} value={c.id}>{c.name}{marker}</option>
@@ -753,7 +753,7 @@ const KanbanBoard: React.FC = () => {
           {(() => {
             const alert = selectedCompanyId ? companyAlerts.get(selectedCompanyId) : null;
             const hasOverdue = alert && alert.overdue > 0;
-            const hasUnfinished = isFriday && alert && alert.unfinished > 0;
+            const hasUnfinished = alert && alert.unfinished > 0;
             if (!hasOverdue && !hasUnfinished) return null;
             return (
               <span className="flex items-center gap-1 shrink-0" title={hasOverdue ? `${alert!.overdue} overdue task(s)` : `${alert!.unfinished} unfinished task(s)`}>
@@ -788,7 +788,7 @@ const KanbanBoard: React.FC = () => {
             const locOverdue = locTasks.filter(t => t.col !== 'finished' && t.due_date && (() => { const p = t.due_date!.split('-').map(Number); return new Date(p[0], p[1] - 1, p[2], 23, 59, 59) < now; })()).length;
             const locUnfinished = locTasks.filter(t => t.col !== 'finished').length;
             const locHasOverdue = locOverdue > 0;
-            const locShowUnfinished = isFriday && locUnfinished > 0 && !locHasOverdue;
+            const locShowUnfinished = locUnfinished > 0 && !locHasOverdue;
             return (
               <div key={locId} className="border border-white/5 rounded-xl overflow-hidden">
                 <button
@@ -982,7 +982,7 @@ const KanbanBoard: React.FC = () => {
               <select
                 value={selectedArchiveWeek}
                 onChange={e => setSelectedArchiveWeek(e.target.value)}
-                className="bg-white/5 border border-white/10 rounded-md px-2 py-1 text-xs text-white"
+                className="bg-[#141414] border border-white/10 rounded-md px-2 py-1 text-xs text-white [&>option]:bg-[#141414] [&>option]:text-white"
               >
                 <option value="all">All Weeks</option>
                 {archiveWeeks.map(w => (
@@ -1039,7 +1039,7 @@ const KanbanBoard: React.FC = () => {
                 <select
                   value={form.location_id}
                   onChange={e => setForm(f => ({ ...f, location_id: e.target.value }))}
-                  className="w-full bg-white/5 border border-white/10 rounded-md px-3 py-2 text-sm text-white"
+                  className="w-full bg-[#141414] border border-white/10 rounded-md px-3 py-2 text-sm text-white [&>option]:bg-[#141414] [&>option]:text-white"
                 >
                   {locations.length === 0 && <option value="">No locations available</option>}
                   {locations.map(l => (
@@ -1053,7 +1053,7 @@ const KanbanBoard: React.FC = () => {
               </div>
               <div>
                 <label className="block text-xs text-gray-400 mb-1">Column</label>
-                <select value={form.col} onChange={e => setForm(f => ({ ...f, col: e.target.value as TaskCol }))} className="w-full bg-white/5 border border-white/10 rounded-md px-3 py-2 text-sm text-white">
+                <select value={form.col} onChange={e => setForm(f => ({ ...f, col: e.target.value as TaskCol }))} className="w-full bg-[#141414] border border-white/10 rounded-md px-3 py-2 text-sm text-white [&>option]:bg-[#141414] [&>option]:text-white">
                   {COLUMNS.map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
                 </select>
               </div>

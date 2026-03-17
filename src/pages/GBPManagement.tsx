@@ -467,7 +467,7 @@ const GBPManagement: React.FC = () => {
             <select
               value={statusFilter}
               onChange={e => setStatusFilter(e.target.value)}
-              className="bg-white/5 border border-white/10 rounded-md px-3 py-2 text-sm text-white"
+              className="bg-[#141414] border border-white/10 rounded-md px-3 py-2 text-sm text-white [&>option]:bg-[#141414] [&>option]:text-white"
             >
               <option value="all">All Statuses</option>
               <option value="verified">Verified</option>
@@ -681,7 +681,7 @@ const GBPManagement: React.FC = () => {
                   <select
                     value={locationForm.status}
                     onChange={e => setLocationForm(f => ({ ...f, status: e.target.value as GBPLocation['status'] }))}
-                    className="w-full bg-white/5 border border-white/10 rounded-md px-3 py-2 text-sm text-white"
+                    className="w-full bg-[#141414] border border-white/10 rounded-md px-3 py-2 text-sm text-white [&>option]:bg-[#141414] [&>option]:text-white"
                   >
                     <option value="verified">Verified</option>
                     <option value="pending">Pending</option>
