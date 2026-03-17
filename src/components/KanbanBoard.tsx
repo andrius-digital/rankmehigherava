@@ -857,6 +857,7 @@ const KanbanBoard: React.FC = () => {
   const tasksByLocation = new Map<string, SEOTask[]>();
   for (const t of tasks) {
     if (!t.location_id) continue;
+    if (!locationMap.has(t.location_id)) continue;
     if (!tasksByLocation.has(t.location_id)) tasksByLocation.set(t.location_id, []);
     tasksByLocation.get(t.location_id)!.push(t);
   }
