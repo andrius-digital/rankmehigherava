@@ -673,6 +673,32 @@ const KanbanBoard: React.FC = () => {
     } catch { toast.error('Failed to delete task'); }
   };
 
+  const handleManualArchive = async (task: SEOTask) => {
+    if (!window.confirm(`Archive "${task.title}"? It will be moved to the archive.`)) return;
+    try {
+      const { error: archiveErr } = await supabase.from('seo_tasks_archive').insert({
+        original_task_id: task.id,
+        title: task.title,
+        client: task.client,
+        company_id: task.company_id,
+        location_id: task.location_id,
+        week_of: task.week_of,
+        due_date: task.due_date,
+        priority: task.priority,
+        category: task.category,
+        notes: task.notes,
+        col: task.col,
+      });
+      if (archiveErr) throw archiveErr;
+      const { error: delErr } = await supabase.from('seo_tasks').delete().eq('id', task.id);
+      if (delErr) throw delErr;
+      toast.success('Task archived');
+      logActivity('status_change', 'task', task.title, `Manually archived task "${task.title}"`);
+      fetchTasks();
+      refreshAlerts();
+    } catch { toast.error('Failed to archive task'); }
+  };
+
   const prevColMap = useRef<Map<string, TaskCol>>(new Map());
 
   const handleMarkDone = async (taskId: string) => {
@@ -1079,6 +1105,14 @@ const KanbanBoard: React.FC = () => {
                                         <CheckCircle2 className="w-5 h-5 sm:w-3.5 sm:h-3.5" />
                                       </Button>
                                     )}
+                                    <Button
+                                      variant="ghost" size="icon"
+                                      className="h-11 w-11 sm:h-5 sm:w-5 text-gray-400 hover:text-amber-400 hover:bg-amber-500/10"
+                                      onClick={() => handleManualArchive(task)}
+                                      title="Archive task"
+                                    >
+                                      <Archive className="w-4 h-4 sm:w-2.5 sm:h-2.5" />
+                                    </Button>
                                     <Button variant="ghost" size="icon" className="h-11 w-11 sm:h-5 sm:w-5 text-gray-400 hover:text-red-400" onClick={() => handleDelete(task.id, task.title)}>
                                       <Trash2 className="w-4 h-4 sm:w-2.5 sm:h-2.5" />
                                     </Button>
