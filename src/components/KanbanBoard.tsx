@@ -861,8 +861,8 @@ const KanbanBoard: React.FC = () => {
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <Button
-            variant="outline" size="sm"
-            className={`gap-1.5 text-xs ${showArchive ? 'bg-amber-500/10 text-amber-400 border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.15)]' : 'border-white/10 text-gray-400 hover:text-amber-400 hover:border-amber-500/30 hover:bg-amber-500/5'}`}
+            variant="ghost" size="sm"
+            className={`gap-1.5 text-xs ${showArchive ? '!bg-amber-500/10 !text-amber-400 !border-amber-500/30 border shadow-[0_0_10px_rgba(245,158,11,0.15)]' : '!border-white/10 border !text-gray-400 hover:!text-amber-400 hover:!border-amber-500/30 hover:!bg-amber-500/5'}`}
             onClick={() => setShowArchive(!showArchive)}
           >
             <Archive className="w-3.5 h-3.5" /> {showArchive ? 'Hide Archive' : 'View Archive'}
