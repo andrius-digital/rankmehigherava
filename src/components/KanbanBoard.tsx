@@ -220,6 +220,8 @@ const KanbanBoard: React.FC = () => {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
+  const [companyDropdownOpen, setCompanyDropdownOpen] = useState(false);
+  const companyDropdownRef = useRef<HTMLDivElement>(null);
   const [tasks, setTasks] = useState<SEOTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -469,6 +471,16 @@ const KanbanBoard: React.FC = () => {
       fetchCompanyAlerts(companies.map(c => c.id));
     }
   }, [companies, fetchCompanyAlerts]);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (companyDropdownRef.current && !companyDropdownRef.current.contains(e.target as Node)) {
+        setCompanyDropdownOpen(false);
+      }
+    };
+    if (companyDropdownOpen) document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [companyDropdownOpen]);
 
   useEffect(() => {
     if (!selectedCompanyId) return;
@@ -747,30 +759,65 @@ const KanbanBoard: React.FC = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4">
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <Building2 className="w-4 h-4 text-gray-500 shrink-0" />
-          <select
-            value={selectedCompanyId || ''}
-            onChange={e => setSelectedCompanyId(e.target.value || null)}
-            className="bg-[#141414] border border-white/10 rounded-md px-3 py-1.5 text-sm text-white flex-1 min-w-0 [&>option]:bg-[#141414] [&>option]:text-white"
-          >
-            {companies.length === 0 && <option value="">No companies</option>}
-            {companies.map(c => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
-          </select>
-          {(() => {
-            const alert = selectedCompanyId ? companyAlerts.get(selectedCompanyId) : null;
-            const hasOverdue = alert && alert.overdue > 0;
-            const hasApproaching = alert && alert.approaching > 0;
-            if (!hasOverdue && !hasApproaching) return null;
-            return (
-              <span className="flex items-center gap-1 shrink-0" title={hasOverdue ? `${alert!.overdue} overdue task(s)` : `${alert!.approaching} task(s) due within 3 days`}>
-                <AlertTriangle className={`w-4 h-4 ${hasOverdue ? 'text-red-500 animate-blink' : 'text-amber-500 animate-blink'}`} />
-                <span className={`text-[10px] font-medium ${hasOverdue ? 'text-red-400' : 'text-amber-400'}`}>
-                  {hasOverdue ? `${alert!.overdue} overdue` : `${alert!.approaching} due soon`}
-                </span>
+          <div className="relative flex-1 min-w-0" ref={companyDropdownRef}>
+            <button
+              type="button"
+              onClick={() => setCompanyDropdownOpen(v => !v)}
+              onKeyDown={e => {
+                if (e.key === 'Escape') setCompanyDropdownOpen(false);
+                if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && !companyDropdownOpen) setCompanyDropdownOpen(true);
+              }}
+              aria-haspopup="listbox"
+              aria-expanded={companyDropdownOpen}
+              className="w-full flex items-center justify-between gap-2 bg-[#141414] border border-white/10 rounded-md px-3 py-1.5 text-sm text-white text-left"
+            >
+              <span className="truncate flex items-center gap-1.5">
+                {selectedCompany?.name || 'Select company'}
+                {(() => {
+                  const al = selectedCompanyId ? companyAlerts.get(selectedCompanyId) : null;
+                  if (!al) return null;
+                  return (
+                    <>
+                      {al.overdue > 0 && <AlertTriangle className="w-3.5 h-3.5 text-red-500 animate-blink shrink-0" />}
+                      {al.approaching > 0 && <AlertTriangle className="w-3.5 h-3.5 text-amber-500 animate-blink shrink-0" />}
+                    </>
+                  );
+                })()}
               </span>
-            );
-          })()}
+              <ChevronDown className={`w-3.5 h-3.5 text-gray-400 shrink-0 transition-transform ${companyDropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {companyDropdownOpen && (
+              <div
+                role="listbox"
+                className="absolute z-50 mt-1 w-full max-h-64 overflow-y-auto bg-[#141414] border border-white/10 rounded-md shadow-xl"
+                onKeyDown={e => { if (e.key === 'Escape') setCompanyDropdownOpen(false); }}
+              >
+                {companies.length === 0 && (
+                  <div className="px-3 py-2 text-sm text-gray-500">No companies</div>
+                )}
+                {companies.map(c => {
+                  const al = companyAlerts.get(c.id);
+                  const isSelected = c.id === selectedCompanyId;
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      role="option"
+                      aria-selected={isSelected}
+                      onClick={() => { setSelectedCompanyId(c.id); setCompanyDropdownOpen(false); }}
+                      className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left transition-colors ${isSelected ? 'bg-white/10 text-white' : 'text-gray-300 hover:bg-white/5 hover:text-white'}`}
+                    >
+                      <span className="truncate">{c.name}</span>
+                      <span className="flex items-center gap-1 ml-auto shrink-0">
+                        {al && al.overdue > 0 && <AlertTriangle className="w-3.5 h-3.5 text-red-500 animate-blink" />}
+                        {al && al.approaching > 0 && <AlertTriangle className="w-3.5 h-3.5 text-amber-500 animate-blink" />}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
