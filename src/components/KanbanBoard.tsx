@@ -465,12 +465,31 @@ const KanbanBoard: React.FC = () => {
     } catch { toast.error('Failed to delete task'); }
   };
 
+  const prevColMap = useRef<Map<string, TaskCol>>(new Map());
+
   const handleMarkDone = async (taskId: string) => {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+    prevColMap.current.set(taskId, task.col);
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, col: 'finished' as TaskCol } : t));
     try {
       const { error } = await supabase.from('seo_tasks').update({ col: 'finished' }).eq('id', taskId);
       if (error) throw error;
       toast.success('Task marked as done!');
+    } catch {
+      toast.error('Failed to update task');
+      fetchTasks();
+    }
+  };
+
+  const handleUnmarkDone = async (taskId: string) => {
+    const prevCol = prevColMap.current.get(taskId) || 'in_progress';
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, col: prevCol } : t));
+    try {
+      const { error } = await supabase.from('seo_tasks').update({ col: prevCol }).eq('id', taskId);
+      if (error) throw error;
+      toast.success(`Task moved back to ${COLUMNS.find(c => c.key === prevCol)?.label || prevCol}`);
+      prevColMap.current.delete(taskId);
     } catch {
       toast.error('Failed to update task');
       fetchTasks();
@@ -722,7 +741,14 @@ const KanbanBoard: React.FC = () => {
                                       </Button>
                                     )}
                                     {task.col === 'finished' && (
-                                      <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
+                                      <Button
+                                        variant="ghost" size="icon"
+                                        className="h-5 w-5 text-green-400 hover:text-amber-400 hover:bg-amber-500/10"
+                                        onClick={() => handleUnmarkDone(task.id)}
+                                        title="Undo — move back"
+                                      >
+                                        <CheckCircle2 className="w-3.5 h-3.5" />
+                                      </Button>
                                     )}
                                     <Button variant="ghost" size="icon" className="h-5 w-5 text-gray-400 hover:text-red-400" onClick={() => handleDelete(task.id, task.title)}>
                                       <Trash2 className="w-2.5 h-2.5" />
