@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Plus, Pencil, Trash2, X, Calendar, GripVertical,
   Building2, Archive, LayoutDashboard, MapPin, CheckCircle2,
-  Hash, MessageSquare, Image, Star, LinkIcon
+  Hash, MessageSquare, Image, Star, LinkIcon, Clock, CalendarClock, StickyNote
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,6 +42,7 @@ interface ArchivedTask {
 interface TaskData {
   count: number;
   entries: string[];
+  freeNotes: string;
 }
 
 const COLUMNS: { key: TaskCol; label: string; color: string }[] = [
@@ -120,18 +121,27 @@ const TASK_TYPE_MAP: Record<string, TaskTypeConfig> = {
 };
 
 function parseTaskData(notes: string): TaskData {
-  if (!notes) return { count: 0, entries: [] };
+  if (!notes) return { count: 0, entries: [], freeNotes: '' };
   try {
     const parsed = JSON.parse(notes);
     if (parsed && typeof parsed === 'object' && 'count' in parsed) {
-      return { count: parsed.count || 0, entries: Array.isArray(parsed.entries) ? parsed.entries : [] };
+      return {
+        count: parsed.count || 0,
+        entries: Array.isArray(parsed.entries) ? parsed.entries : [],
+        freeNotes: typeof parsed.freeNotes === 'string' ? parsed.freeNotes : '',
+      };
     }
   } catch {}
-  return { count: 0, entries: [] };
+  return { count: 0, entries: [], freeNotes: notes };
 }
 
 function serializeTaskData(data: TaskData): string {
-  return JSON.stringify({ count: data.count, entries: data.entries });
+  return JSON.stringify({ count: data.count, entries: data.entries, freeNotes: data.freeNotes });
+}
+
+function getNextMonday(currentWeekStart: string): string {
+  const p = currentWeekStart.split('-').map(Number);
+  return toDateStr(new Date(p[0], p[1] - 1, p[2] + 7));
 }
 
 function getProgressColor(value: number, target: number, targetMin?: number): string {
@@ -188,7 +198,7 @@ const KanbanBoard: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ title: '', client: '', due_date: '', priority: 'medium' as TaskPriority, category: 'gbp' as TaskCategory, notes: '', col: 'new' as TaskCol, location_id: '' });
-  const [taskData, setTaskData] = useState<TaskData>({ count: 0, entries: [] });
+  const [taskData, setTaskData] = useState<TaskData>({ count: 0, entries: [], freeNotes: '' });
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverCol, setDragOverCol] = useState<string | null>(null);
   const [showArchive, setShowArchive] = useState(false);
@@ -388,17 +398,19 @@ const KanbanBoard: React.FC = () => {
   const openAdd = (col: TaskCol = 'new') => {
     setEditingId(null);
     setForm({ title: '', client: '', due_date: '', priority: 'medium', category: 'gbp', notes: '', col, location_id: locations.length > 0 ? locations[0].id : '' });
-    setTaskData({ count: 0, entries: [] });
+    setTaskData({ count: 0, entries: [], freeNotes: '' });
     setModalOpen(true);
   };
 
   const openEdit = (t: SEOTask) => {
     setEditingId(t.id);
     const typeConfig = TASK_TYPE_MAP[t.title];
-    const parsed = typeConfig ? parseTaskData(t.notes) : { count: 0, entries: [] };
+    const parsed = typeConfig ? parseTaskData(t.notes) : { count: 0, entries: [], freeNotes: '' };
     setForm({
       title: t.title, client: t.client, due_date: t.due_date || '',
-      priority: t.priority, category: t.category, notes: typeConfig ? '' : t.notes, col: t.col,
+      priority: t.priority, category: t.category,
+      notes: typeConfig ? parsed.freeNotes : t.notes,
+      col: t.col,
       location_id: t.location_id || '',
     });
     setTaskData(parsed);
@@ -412,7 +424,9 @@ const KanbanBoard: React.FC = () => {
     try {
       const loc = locations.find(l => l.id === form.location_id);
       const typeConfig = TASK_TYPE_MAP[form.title.trim()];
-      const notesValue = typeConfig ? serializeTaskData(taskData) : form.notes.trim();
+      const notesValue = typeConfig
+        ? serializeTaskData({ ...taskData, freeNotes: form.notes.trim() })
+        : form.notes.trim();
       const row = {
         title: form.title.trim(),
         client: loc ? shortAddress(loc.address) : form.client.trim(),
@@ -546,11 +560,38 @@ const KanbanBoard: React.FC = () => {
     setTaskData(prev => {
       const entries = [...prev.entries];
       while (entries.length < newCount) entries.push('');
-      return { count: newCount, entries: entries.slice(0, Math.max(newCount, 0)) };
+      return { ...prev, count: newCount, entries: entries.slice(0, Math.max(newCount, 0)) };
     });
   };
 
   const currentTypeConfig = TASK_TYPE_MAP[form.title.trim()] || null;
+
+  const nextMonday = getNextMonday(currentWeek);
+  const nextWeekLabel = formatWeekLabel(nextMonday);
+  const nextMondayDate = (() => {
+    const p = nextMonday.split('-').map(Number);
+    const d = new Date(p[0], p[1] - 1, p[2]);
+    return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  })();
+
+  const upcomingTasks: { title: string; locationName: string; locationId: string; priority: TaskPriority; category: TaskCategory }[] = [];
+  const defaultTitles = new Set(DEFAULT_WEEKLY_TASKS.map(t => t.title));
+
+  for (const t of tasks) {
+    if (t.col === 'finished' && defaultTitles.has(t.title) && t.location_id) {
+      const loc = locationMap.get(t.location_id);
+      const tmpl = DEFAULT_WEEKLY_TASKS.find(dt => dt.title === t.title);
+      if (tmpl) {
+        upcomingTasks.push({
+          title: t.title,
+          locationName: loc ? shortAddress(loc.address) : 'Unknown',
+          locationId: t.location_id,
+          priority: tmpl.priority,
+          category: tmpl.category,
+        });
+      }
+    }
+  }
 
   return (
     <div>
@@ -730,6 +771,41 @@ const KanbanBoard: React.FC = () => {
         </div>
       ) : null}
 
+      {upcomingTasks.length > 0 && (
+        <div className="mt-6 border border-cyan-500/20 rounded-xl bg-cyan-500/[0.03] backdrop-blur-sm">
+          <div className="px-4 py-3 border-b border-cyan-500/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <CalendarClock className="w-4 h-4 text-cyan-400" />
+              <span className="text-sm font-semibold text-white">Upcoming Tasks</span>
+            </div>
+            <span className="text-xs text-cyan-400 font-medium bg-cyan-500/10 border border-cyan-500/20 px-2 py-1 rounded">
+              Starting {nextMondayDate} ({nextWeekLabel})
+            </span>
+          </div>
+          <div className="p-3">
+            <div className="space-y-1.5">
+              {upcomingTasks.map((ut, idx) => (
+                <div key={`${ut.locationId}::${ut.title}::${idx}`} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/[0.02] border border-cyan-500/10">
+                  <Clock className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                  <span className="text-xs text-white truncate flex-1">{ut.title}</span>
+                  <span className="text-[10px] text-gray-400 flex items-center gap-1 shrink-0">
+                    <MapPin className="w-2.5 h-2.5" />
+                    {ut.locationName}
+                  </span>
+                  <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border ${PRIORITY_CONFIG[ut.priority]?.color || ''}`}>
+                    {PRIORITY_CONFIG[ut.priority]?.label || ut.priority}
+                  </span>
+                  <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border ${CATEGORY_CONFIG[ut.category]?.color || ''}`}>
+                    {CATEGORY_CONFIG[ut.category]?.label || ut.category}
+                  </span>
+                  <span className="text-[10px] text-cyan-400/70 shrink-0">{nextMondayDate}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {showArchive && selectedCompanyId && (
         <div className="mt-6 border border-white/10 rounded-xl bg-white/[0.02] backdrop-blur-sm">
           <div className="px-4 py-3 border-b border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
@@ -835,7 +911,7 @@ const KanbanBoard: React.FC = () => {
                 </div>
               </div>
 
-              {currentTypeConfig ? (
+              {currentTypeConfig && (
                 <div className="space-y-3">
                   <div className={`border rounded-lg p-3 ${
                     taskData.count >= (currentTypeConfig.targetMin ?? currentTypeConfig.target)
@@ -919,18 +995,20 @@ const KanbanBoard: React.FC = () => {
                     )}
                   </div>
                 </div>
-              ) : (
-                <div>
-                  <label className="block text-xs text-gray-400 mb-1">Notes</label>
-                  <textarea
-                    value={form.notes}
-                    onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-                    rows={3}
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:border-cyan-500/50 focus:outline-none resize-none"
-                    placeholder="Optional notes..."
-                  />
-                </div>
               )}
+
+              <div>
+                <label className="block text-xs text-gray-400 mb-1 flex items-center gap-1">
+                  <StickyNote className="w-3 h-3" /> Notes & Links
+                </label>
+                <textarea
+                  value={form.notes}
+                  onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+                  rows={3}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:border-cyan-500/50 focus:outline-none resize-none"
+                  placeholder="Add notes, links, or any extra info..."
+                />
+              </div>
 
               <div className="flex gap-3 justify-end">
                 <Button type="button" variant="ghost" onClick={() => setModalOpen(false)}>Cancel</Button>
