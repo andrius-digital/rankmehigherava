@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Plus, Pencil, Trash2, X, Calendar, GripVertical,
   Building2, Archive, LayoutDashboard, MapPin, CheckCircle2,
-  Hash, MessageSquare, Image, Star, LinkIcon, Clock, CalendarClock, StickyNote
+  Hash, MessageSquare, Image, Star, LinkIcon, Clock, CalendarClock, StickyNote,
+  ChevronDown, ChevronRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -202,6 +203,7 @@ const KanbanBoard: React.FC = () => {
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverCol, setDragOverCol] = useState<string | null>(null);
   const [showArchive, setShowArchive] = useState(false);
+  const [collapsedLocations, setCollapsedLocations] = useState<Set<string>>(new Set());
   const [archivedTasks, setArchivedTasks] = useState<ArchivedTask[]>([]);
   const [archiveLoading, setArchiveLoading] = useState(false);
   const [archiveWeeks, setArchiveWeeks] = useState<string[]>([]);
@@ -514,8 +516,22 @@ const KanbanBoard: React.FC = () => {
     }
   };
 
-  const handleCardClick = (task: SEOTask) => {
-    if (didDrag.current) return;
+  const clickStartPos = useRef<{ x: number; y: number } | null>(null);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    clickStartPos.current = { x: e.clientX, y: e.clientY };
+  };
+
+  const handleCardClick = (task: SEOTask, e: React.MouseEvent) => {
+    if (clickStartPos.current) {
+      const dx = Math.abs(e.clientX - clickStartPos.current.x);
+      const dy = Math.abs(e.clientY - clickStartPos.current.y);
+      if (dx > 5 || dy > 5) {
+        clickStartPos.current = null;
+        return;
+      }
+    }
+    clickStartPos.current = null;
     openEdit(task);
   };
 
@@ -632,16 +648,33 @@ const KanbanBoard: React.FC = () => {
           {Array.from(tasksByLocation.entries()).map(([locId, locTasks]) => {
             const loc = locationMap.get(locId);
             return (
-              <div key={locId}>
-                <div className="flex items-center gap-2 mb-3 px-1">
-                  <MapPin className="w-4 h-4 text-cyan-400 shrink-0" />
+              <div key={locId} className="border border-white/5 rounded-xl overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setCollapsedLocations(prev => {
+                    const next = new Set(prev);
+                    if (next.has(locId)) next.delete(locId); else next.add(locId);
+                    return next;
+                  })}
+                  className="w-full flex items-center gap-2 px-3 py-2.5 bg-white/[0.03] hover:bg-white/[0.06] transition-colors text-left"
+                >
+                  {collapsedLocations.has(locId)
+                    ? <ChevronRight className="w-4 h-4 text-gray-500 shrink-0" />
+                    : <ChevronDown className="w-4 h-4 text-gray-500 shrink-0" />
+                  }
+                  <MapPin className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
                   <span className="text-sm font-semibold text-white">
                     {loc ? shortAddress(loc.address) : 'Unknown Location'}
                   </span>
                   {loc && (
                     <span className="text-[10px] text-gray-500 truncate">{loc.address}</span>
                   )}
-                </div>
+                  <span className="ml-auto text-[10px] text-gray-500 bg-white/5 px-1.5 py-0.5 rounded-full shrink-0">
+                    {locTasks.length} task{locTasks.length !== 1 ? 's' : ''}
+                  </span>
+                </button>
+                {!collapsedLocations.has(locId) && (
+                <div className="p-2">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                   {COLUMNS.map(column => {
                     const colTasks = locTasks.filter(t => t.col === column.key);
@@ -667,8 +700,9 @@ const KanbanBoard: React.FC = () => {
                                 draggable
                                 onDragStart={e => handleDragStart(e, task.id)}
                                 onDrag={handleDrag}
-                                onDragEnd={() => { setDraggedId(null); setDragOverCol(null); dragStartPos.current = null; didDrag.current = false; }}
-                                onClick={() => handleCardClick(task)}
+                                onDragEnd={() => { setDraggedId(null); setDragOverCol(null); dragStartPos.current = null; }}
+                                onMouseDown={handleMouseDown}
+                                onClick={e => handleCardClick(task, e)}
                                 className={`border rounded-lg p-2.5 bg-white/[0.03] hover:bg-white/[0.06] transition-all cursor-pointer active:cursor-grabbing ${CARD_GLOW[task.col]} ${draggedId === task.id ? 'opacity-40' : ''}`}
                               >
                                 <div className="flex items-start justify-between gap-2 mb-1.5">
@@ -765,6 +799,8 @@ const KanbanBoard: React.FC = () => {
                     </div>
                   );
                 })()}
+                </div>
+                )}
               </div>
             );
           })}
