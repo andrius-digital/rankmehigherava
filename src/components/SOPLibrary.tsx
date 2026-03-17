@@ -98,7 +98,12 @@ const SOPLibrary: React.FC = () => {
 
   const renderMarkdown = (md: string) => {
     const html = marked.parse(md, { breaks: true }) as string;
-    return DOMPurify.sanitize(html);
+    let processed = DOMPurify.sanitize(html);
+    processed = processed.replace(
+      /\[([A-Z][A-Z\s\/\-"]+)\]/g,
+      '<code class="sop-variable">[$1]</code>'
+    );
+    return processed;
   };
 
   return (
@@ -163,9 +168,9 @@ const SOPLibrary: React.FC = () => {
                   </div>
                 </div>
                 {isExpanded && (
-                  <div className="border-t border-white/10 px-4 py-4 bg-white/[0.01]">
+                  <div className="border-t border-white/10 px-5 py-5 bg-white/[0.01]">
                     <div
-                      className="prose prose-invert prose-sm max-w-none prose-headings:text-cyan-400 prose-a:text-cyan-400 prose-strong:text-white prose-li:text-gray-300 prose-p:text-gray-300 prose-blockquote:border-cyan-500/30 prose-blockquote:text-gray-400"
+                      className="sop-content prose prose-invert prose-sm max-w-none prose-headings:text-cyan-400 prose-a:text-cyan-400 prose-strong:text-white prose-li:text-gray-300 prose-p:text-gray-300 prose-blockquote:border-cyan-500/30 prose-blockquote:text-gray-400"
                       dangerouslySetInnerHTML={{ __html: renderMarkdown(sop.content) }}
                     />
                   </div>

@@ -759,3 +759,105 @@ select.modal-select {
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 229, 204, 0.2) rgba(255, 255, 255, 0.02);
 }
+
+/* SOP Content Styling */
+.sop-content h2,
+.sop-content h3,
+.sop-content h4 {
+  margin-top: 1.8em !important;
+  margin-bottom: 0.6em !important;
+  padding-bottom: 0.4em;
+  border-bottom: 1px solid rgba(0, 229, 204, 0.1);
+}
+
+.sop-content h2:first-child,
+.sop-content h3:first-child,
+.sop-content h4:first-child {
+  margin-top: 0 !important;
+}
+
+.sop-content h2 {
+  font-size: 1.15rem !important;
+  color: #00e5cc !important;
+}
+
+.sop-content h3 {
+  font-size: 1rem !important;
+  color: #67e8f9 !important;
+  border-bottom: none;
+}
+
+.sop-content h4 {
+  font-size: 0.9rem !important;
+  color: #a78bfa !important;
+  border-bottom: none;
+}
+
+.sop-content strong {
+  color: #f0f0f0 !important;
+}
+
+.sop-content code {
+  background: rgba(0, 229, 204, 0.08) !important;
+  color: #5eead4 !important;
+  padding: 0.15em 0.4em !important;
+  border-radius: 4px !important;
+  font-size: 0.85em !important;
+  border: 1px solid rgba(0, 229, 204, 0.15);
+}
+
+.sop-content pre {
+  background: rgba(0, 229, 204, 0.05) !important;
+  border: 1px solid rgba(0, 229, 204, 0.15) !important;
+  border-radius: 10px !important;
+  padding: 1em 1.2em !important;
+  margin: 1em 0 !important;
+}
+
+.sop-content pre code {
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+  color: #a5b4fc !important;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.sop-content blockquote {
+  background: rgba(167, 139, 250, 0.06) !important;
+  border-left: 3px solid rgba(167, 139, 250, 0.4) !important;
+  border-radius: 0 8px 8px 0 !important;
+  padding: 0.8em 1em !important;
+  margin: 1em 0 !important;
+  color: #c4b5fd !important;
+}
+
+.sop-content ul,
+.sop-content ol {
+  margin: 0.6em 0 !important;
+}
+
+.sop-content li {
+  margin: 0.35em 0 !important;
+}
+
+.sop-content li::marker {
+  color: rgba(0, 229, 204, 0.5);
+}
+
+.sop-content p {
+  margin: 0.6em 0 !important;
+  line-height: 1.7 !important;
+}
+
+.sop-content hr {
+  border-color: rgba(0, 229, 204, 0.1) !important;
+  margin: 1.5em 0 !important;
+}
+
+.sop-content code.sop-variable {
+  background: rgba(251, 191, 36, 0.1) !important;
+  color: #fbbf24 !important;
+  border: 1px solid rgba(251, 191, 36, 0.2) !important;
+  font-weight: 600;
+}
