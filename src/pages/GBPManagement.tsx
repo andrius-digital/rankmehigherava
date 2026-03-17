@@ -595,7 +595,7 @@ const GBPManagement: React.FC = () => {
                             <tbody>
                               {company.locations.map(loc => (
                                 <tr key={loc.id} className="border-b border-white/5 hover:bg-white/[0.03] transition-colors">
-                                  <td className="px-4 py-2.5">
+                                  <td className="px-4 py-2.5 whitespace-nowrap">
                                     <div className="flex items-center gap-2">
                                       <MapPin className="w-3.5 h-3.5 text-gray-500 shrink-0" />
                                       {loc.googleProfileUrl ? (
@@ -608,7 +608,7 @@ const GBPManagement: React.FC = () => {
                                       )}
                                     </div>
                                   </td>
-                                  <td className="px-4 py-2.5 hidden md:table-cell">
+                                  <td className="px-4 py-2.5 whitespace-nowrap hidden md:table-cell">
                                     {loc.email ? (
                                       <div className="flex items-center gap-2">
                                         <Mail className="w-3.5 h-3.5 text-gray-500 shrink-0" />
@@ -616,17 +616,17 @@ const GBPManagement: React.FC = () => {
                                       </div>
                                     ) : <span className="text-gray-600">—</span>}
                                   </td>
-                                  <td className="px-4 py-2.5">
+                                  <td className="px-4 py-2.5 whitespace-nowrap">
                                     <div className="flex items-center gap-2">
                                       <Phone className="w-3.5 h-3.5 text-gray-500 shrink-0" />
                                       <span className="text-gray-300 text-sm">{loc.phone}</span>
                                     </div>
                                   </td>
-                                  <td className="px-4 py-2.5"><StatusBadge status={loc.status} /></td>
-                                  <td className="px-4 py-2.5">
+                                  <td className="px-4 py-2.5 whitespace-nowrap"><StatusBadge status={loc.status} /></td>
+                                  <td className="px-4 py-2.5 whitespace-nowrap">
                                     <button onClick={() => openTasksSummary(loc)} className="hover:opacity-80 transition-opacity"><TasksIndicator loc={loc} /></button>
                                   </td>
-                                  <td className="px-4 py-2.5 hidden sm:table-cell">
+                                  <td className="px-4 py-2.5 whitespace-nowrap hidden sm:table-cell">
                                     <button onClick={() => openNotesModal(loc)} className="text-left hover:opacity-80 transition-opacity group max-w-[200px]">
                                       {loc.notes ? (
                                         <span className="text-xs text-amber-400/80 italic truncate block group-hover:text-amber-300">{loc.notes}</span>
@@ -635,7 +635,7 @@ const GBPManagement: React.FC = () => {
                                       )}
                                     </button>
                                   </td>
-                                  <td className="px-4 py-2.5">
+                                  <td className="px-4 py-2.5 whitespace-nowrap">
                                     <div className="flex items-center gap-1">
                                       <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-400 hover:text-white" onClick={() => openEditLocation(company.id, loc)}>
                                         <Pencil className="w-3.5 h-3.5" />
