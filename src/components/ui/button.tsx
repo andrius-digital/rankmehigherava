@@ -9,14 +9,14 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_rgba(239,68,68,0.4)] hover:shadow-[0_0_25px_rgba(239,68,68,0.6)] hover:scale-105 border border-white/10",
+        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_rgba(0,229,204,0.3)] hover:shadow-[0_0_25px_rgba(0,229,204,0.5)] hover:scale-105 border border-white/10",
         destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 hover:shadow-[0_0_15px_rgba(239,68,68,0.4)]",
-        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground hover:border-primary/50 hover:shadow-[0_0_15px_rgba(239,68,68,0.2)]",
+        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground hover:border-[#00e5cc]/50 hover:shadow-[0_0_15px_rgba(0,229,204,0.15)]",
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         hero: "bg-primary text-primary-foreground font-semibold uppercase tracking-wider hover:bg-primary/90 shadow-lg hover:shadow-xl hover:scale-105 rounded-full animate-pulse-glow",
-        heroOutline: "border-2 border-primary bg-transparent text-primary-foreground font-semibold uppercase tracking-wider hover:bg-primary/10 rounded-full hover:shadow-[0_0_15px_rgba(239,68,68,0.3)]",
+        heroOutline: "border-2 border-primary bg-transparent text-primary-foreground font-semibold uppercase tracking-wider hover:bg-primary/10 rounded-full hover:shadow-[0_0_15px_rgba(0,229,204,0.3)]",
         nav: "bg-transparent text-foreground hover:text-primary font-medium hover:scale-105 transition-transform",
         // AVA SEO variants
         success: "bg-green-600 text-white hover:bg-green-700",
