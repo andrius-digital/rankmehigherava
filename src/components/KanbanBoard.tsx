@@ -888,7 +888,7 @@ const KanbanBoard: React.FC = () => {
               }}
               aria-haspopup="listbox"
               aria-expanded={companyDropdownOpen}
-              className="w-full flex items-center justify-between gap-2 bg-[#1a1a24] border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white text-left hover:border-[#00e5cc]/30 focus:border-[#00e5cc]/50 focus:ring-1 focus:ring-[#00e5cc]/20 transition-all"
+              className="w-full flex items-center justify-between gap-2 bg-[#1a1a24] border border-white/10 rounded-full px-4 py-1.5 text-sm text-white text-left hover:border-[#00e5cc]/30 focus:border-[#00e5cc]/50 focus:ring-1 focus:ring-[#00e5cc]/20 transition-all"
             >
               <span className="truncate flex items-center gap-1.5">
                 {selectedCompany?.name || 'Select company'}
@@ -908,7 +908,7 @@ const KanbanBoard: React.FC = () => {
             {companyDropdownOpen && (
               <div
                 role="listbox"
-                className="absolute z-50 mt-1 w-full max-h-64 overflow-y-auto bg-[#1a1a24] border border-white/10 rounded-lg shadow-xl shadow-black/40"
+                className="absolute z-50 mt-1 w-full max-h-64 overflow-y-auto bg-[#1a1a24] border border-white/10 rounded-2xl shadow-xl shadow-black/40"
                 onKeyDown={e => { if (e.key === 'Escape') setCompanyDropdownOpen(false); }}
               >
                 {companies.length === 0 && (
@@ -1224,7 +1224,7 @@ const KanbanBoard: React.FC = () => {
                 <select
                   value={form.location_id}
                   onChange={e => setForm(f => ({ ...f, location_id: e.target.value }))}
-                  className="w-full bg-[#1a1a24] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-[#00e5cc]/50 focus:ring-1 focus:ring-[#00e5cc]/20 focus:outline-none transition-colors [&>option]:bg-[#1a1a24] [&>option]:text-white"
+                  className="modal-select w-full bg-[#1a1a24] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-[#00e5cc]/50 focus:ring-1 focus:ring-[#00e5cc]/20 focus:outline-none transition-colors [&>option]:bg-[#1a1a24] [&>option]:text-white"
                 >
                   {locations.length === 0 && <option value="">No locations available</option>}
                   {locations.map(l => (
@@ -1238,7 +1238,7 @@ const KanbanBoard: React.FC = () => {
               </div>
               <div>
                 <label className="block text-xs text-gray-400 mb-1 font-semibold">Column</label>
-                <select value={form.col} onChange={e => setForm(f => ({ ...f, col: e.target.value as TaskCol }))} className="w-full bg-[#1a1a24] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-[#00e5cc]/50 focus:ring-1 focus:ring-[#00e5cc]/20 focus:outline-none transition-colors [&>option]:bg-[#1a1a24] [&>option]:text-white">
+                <select value={form.col} onChange={e => setForm(f => ({ ...f, col: e.target.value as TaskCol }))} className="modal-select w-full bg-[#1a1a24] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-[#00e5cc]/50 focus:ring-1 focus:ring-[#00e5cc]/20 focus:outline-none transition-colors [&>option]:bg-[#1a1a24] [&>option]:text-white">
                   {COLUMNS.map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
                 </select>
               </div>
