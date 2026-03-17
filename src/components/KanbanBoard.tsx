@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Plus, Pencil, Trash2, X, Calendar, GripVertical,
-  Building2, Archive, LayoutDashboard, MapPin
+  Building2, Archive, LayoutDashboard, MapPin, CheckCircle2,
+  Hash, MessageSquare, Image, Star, LinkIcon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,11 +39,22 @@ interface ArchivedTask {
   archived_at: string;
 }
 
+interface TaskData {
+  count: number;
+  entries: string[];
+}
+
 const COLUMNS: { key: TaskCol; label: string; color: string }[] = [
-  { key: 'new', label: 'New Task', color: 'border-blue-500/40' },
-  { key: 'in_progress', label: 'In Progress', color: 'border-amber-500/40' },
-  { key: 'finished', label: 'Finished', color: 'border-green-500/40' },
+  { key: 'new', label: 'New Task', color: 'border-red-500/60' },
+  { key: 'in_progress', label: 'In Progress', color: 'border-amber-500/60' },
+  { key: 'finished', label: 'Finished', color: 'border-green-500/60' },
 ];
+
+const CARD_GLOW: Record<TaskCol, string> = {
+  new: 'border-red-500/40 shadow-[0_0_8px_rgba(239,68,68,0.15)]',
+  in_progress: 'border-amber-500/40 shadow-[0_0_8px_rgba(245,158,11,0.15)]',
+  finished: 'border-green-500/40 shadow-[0_0_8px_rgba(34,197,94,0.2)]',
+};
 
 const PRIORITY_CONFIG: Record<string, { label: string; color: string }> = {
   high: { label: 'High', color: 'bg-red-500/20 text-red-400 border-red-500/30' },
@@ -67,6 +79,74 @@ const DEFAULT_WEEKLY_TASKS: { title: string; category: TaskCategory; priority: T
   { title: 'Upload New Photos', category: 'gbp', priority: 'medium', hasWeekDeadline: true },
   { title: 'Write New Reviews', category: 'reviews', priority: 'high', hasWeekDeadline: false },
 ];
+
+interface TaskTypeConfig {
+  key: string;
+  label: string;
+  target: number;
+  targetMin?: number;
+  icon: React.FC<{ className?: string }>;
+  description: string;
+  entryLabel: string;
+  entryPlaceholder: string;
+  entryType: 'text' | 'url';
+}
+
+const TASK_TYPE_MAP: Record<string, TaskTypeConfig> = {
+  'Add Keywords to GBP': {
+    key: 'keywords', label: 'Services List Keywords', target: 10,
+    icon: Hash, description: '10 keywords with descriptions per week',
+    entryLabel: 'Keyword Details', entryPlaceholder: 'Enter keyword added...',
+    entryType: 'text',
+  },
+  'Create GBP Posts': {
+    key: 'posts', label: 'Posts', target: 4, targetMin: 3,
+    icon: MessageSquare, description: '3-4 posts per week',
+    entryLabel: 'Post URLs', entryPlaceholder: 'Paste post URL...',
+    entryType: 'url',
+  },
+  'Upload New Photos': {
+    key: 'photos', label: 'Images Added', target: 2, targetMin: 1,
+    icon: Image, description: '1-2 new images per week',
+    entryLabel: 'Photo Details', entryPlaceholder: 'Photo description or URL...',
+    entryType: 'text',
+  },
+  'Write New Reviews': {
+    key: 'reviews', label: 'Reviews Added', target: 2,
+    icon: Star, description: '2 reviews per month',
+    entryLabel: 'Review URLs', entryPlaceholder: 'Paste review URL...',
+    entryType: 'url',
+  },
+};
+
+function parseTaskData(notes: string): TaskData {
+  if (!notes) return { count: 0, entries: [] };
+  try {
+    const parsed = JSON.parse(notes);
+    if (parsed && typeof parsed === 'object' && 'count' in parsed) {
+      return { count: parsed.count || 0, entries: Array.isArray(parsed.entries) ? parsed.entries : [] };
+    }
+  } catch {}
+  return { count: 0, entries: [] };
+}
+
+function serializeTaskData(data: TaskData): string {
+  return JSON.stringify({ count: data.count, entries: data.entries });
+}
+
+function getProgressColor(value: number, target: number, targetMin?: number): string {
+  const min = targetMin ?? target;
+  if (value >= min) return 'text-green-400';
+  if (value > 0) return 'text-amber-400';
+  return 'text-red-400';
+}
+
+function getProgressBarColor(value: number, target: number, targetMin?: number): string {
+  const min = targetMin ?? target;
+  if (value >= min) return 'bg-green-500';
+  if (value > 0) return 'bg-amber-500';
+  return 'bg-red-500';
+}
 
 function pad(n: number) { return n < 10 ? '0' + n : '' + n; }
 function toDateStr(d: Date): string {
@@ -108,6 +188,7 @@ const KanbanBoard: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ title: '', client: '', due_date: '', priority: 'medium' as TaskPriority, category: 'gbp' as TaskCategory, notes: '', col: 'new' as TaskCol, location_id: '' });
+  const [taskData, setTaskData] = useState<TaskData>({ count: 0, entries: [] });
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverCol, setDragOverCol] = useState<string | null>(null);
   const [showArchive, setShowArchive] = useState(false);
@@ -115,6 +196,8 @@ const KanbanBoard: React.FC = () => {
   const [archiveLoading, setArchiveLoading] = useState(false);
   const [archiveWeeks, setArchiveWeeks] = useState<string[]>([]);
   const [selectedArchiveWeek, setSelectedArchiveWeek] = useState<string>('all');
+  const dragStartPos = useRef<{ x: number; y: number } | null>(null);
+  const didDrag = useRef(false);
 
   const currentWeek = getWeekStart();
 
@@ -305,16 +388,20 @@ const KanbanBoard: React.FC = () => {
   const openAdd = (col: TaskCol = 'new') => {
     setEditingId(null);
     setForm({ title: '', client: '', due_date: '', priority: 'medium', category: 'gbp', notes: '', col, location_id: locations.length > 0 ? locations[0].id : '' });
+    setTaskData({ count: 0, entries: [] });
     setModalOpen(true);
   };
 
   const openEdit = (t: SEOTask) => {
     setEditingId(t.id);
+    const typeConfig = TASK_TYPE_MAP[t.title];
+    const parsed = typeConfig ? parseTaskData(t.notes) : { count: 0, entries: [] };
     setForm({
       title: t.title, client: t.client, due_date: t.due_date || '',
-      priority: t.priority, category: t.category, notes: t.notes, col: t.col,
+      priority: t.priority, category: t.category, notes: typeConfig ? '' : t.notes, col: t.col,
       location_id: t.location_id || '',
     });
+    setTaskData(parsed);
     setModalOpen(true);
   };
 
@@ -324,6 +411,8 @@ const KanbanBoard: React.FC = () => {
     if (!form.location_id) { toast.error('Please select a location'); return; }
     try {
       const loc = locations.find(l => l.id === form.location_id);
+      const typeConfig = TASK_TYPE_MAP[form.title.trim()];
+      const notesValue = typeConfig ? serializeTaskData(taskData) : form.notes.trim();
       const row = {
         title: form.title.trim(),
         client: loc ? shortAddress(loc.address) : form.client.trim(),
@@ -333,7 +422,7 @@ const KanbanBoard: React.FC = () => {
         due_date: form.due_date || null,
         priority: form.priority,
         category: form.category,
-        notes: form.notes.trim(),
+        notes: notesValue,
         col: form.col,
       };
       if (editingId) {
@@ -360,10 +449,31 @@ const KanbanBoard: React.FC = () => {
     } catch { toast.error('Failed to delete task'); }
   };
 
+  const handleMarkDone = async (taskId: string) => {
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, col: 'finished' as TaskCol } : t));
+    try {
+      const { error } = await supabase.from('seo_tasks').update({ col: 'finished' }).eq('id', taskId);
+      if (error) throw error;
+      toast.success('Task marked as done!');
+    } catch {
+      toast.error('Failed to update task');
+      fetchTasks();
+    }
+  };
+
   const handleDragStart = (e: React.DragEvent, taskId: string) => {
     setDraggedId(taskId);
+    didDrag.current = false;
+    dragStartPos.current = { x: e.clientX, y: e.clientY };
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', taskId);
+  };
+
+  const handleDrag = (e: React.DragEvent) => {
+    if (!dragStartPos.current) return;
+    const dx = Math.abs(e.clientX - dragStartPos.current.x);
+    const dy = Math.abs(e.clientY - dragStartPos.current.y);
+    if (dx > 5 || dy > 5) didDrag.current = true;
   };
 
   const handleDragOver = (e: React.DragEvent, col: string) => {
@@ -388,6 +498,11 @@ const KanbanBoard: React.FC = () => {
       toast.error('Failed to move task');
       fetchTasks();
     }
+  };
+
+  const handleCardClick = (task: SEOTask) => {
+    if (didDrag.current) return;
+    openEdit(task);
   };
 
   const formatDate = (d: string | null) => {
@@ -419,6 +534,23 @@ const KanbanBoard: React.FC = () => {
     if (!tasksByLocation.has(t.location_id)) tasksByLocation.set(t.location_id, []);
     tasksByLocation.get(t.location_id)!.push(t);
   }
+
+  const getTaskProgress = (task: SEOTask): { count: number; target: number; targetMin?: number } | null => {
+    const typeConfig = TASK_TYPE_MAP[task.title];
+    if (!typeConfig) return null;
+    const data = parseTaskData(task.notes);
+    return { count: data.count, target: typeConfig.target, targetMin: typeConfig.targetMin };
+  };
+
+  const syncEntries = (newCount: number) => {
+    setTaskData(prev => {
+      const entries = [...prev.entries];
+      while (entries.length < newCount) entries.push('');
+      return { count: newCount, entries: entries.slice(0, Math.max(newCount, 0)) };
+    });
+  };
+
+  const currentTypeConfig = TASK_TYPE_MAP[form.title.trim()] || null;
 
   return (
     <div>
@@ -504,52 +636,79 @@ const KanbanBoard: React.FC = () => {
                           <span className="text-[10px] text-gray-500 bg-white/5 px-1.5 py-0.5 rounded-full">{colTasks.length}</span>
                         </div>
                         <div className="p-1.5 space-y-1.5 min-h-[80px]">
-                          {colTasks.map(task => (
-                            <div
-                              key={task.id}
-                              draggable
-                              onDragStart={e => handleDragStart(e, task.id)}
-                              onDragEnd={() => { setDraggedId(null); setDragOverCol(null); }}
-                              className={`border border-white/10 rounded-lg p-2.5 bg-white/[0.03] hover:bg-white/[0.06] transition-all cursor-grab active:cursor-grabbing ${draggedId === task.id ? 'opacity-40' : ''}`}
-                            >
-                              <div className="flex items-start justify-between gap-2 mb-1.5">
-                                <div className="flex items-center gap-1 min-w-0">
-                                  <GripVertical className="w-3 h-3 text-gray-600 shrink-0" />
-                                  <span className="text-xs font-medium text-white truncate">{task.title}</span>
+                          {colTasks.map(task => {
+                            const progress = getTaskProgress(task);
+                            return (
+                              <div
+                                key={task.id}
+                                draggable
+                                onDragStart={e => handleDragStart(e, task.id)}
+                                onDrag={handleDrag}
+                                onDragEnd={() => { setDraggedId(null); setDragOverCol(null); dragStartPos.current = null; didDrag.current = false; }}
+                                onClick={() => handleCardClick(task)}
+                                className={`border rounded-lg p-2.5 bg-white/[0.03] hover:bg-white/[0.06] transition-all cursor-pointer active:cursor-grabbing ${CARD_GLOW[task.col]} ${draggedId === task.id ? 'opacity-40' : ''}`}
+                              >
+                                <div className="flex items-start justify-between gap-2 mb-1.5">
+                                  <div className="flex items-center gap-1 min-w-0">
+                                    <GripVertical className="w-3 h-3 text-gray-600 shrink-0 cursor-grab" />
+                                    <span className="text-xs font-medium text-white truncate">{task.title}</span>
+                                  </div>
+                                  <div className="flex items-center gap-0.5 shrink-0" onClick={e => e.stopPropagation()}>
+                                    {task.col !== 'finished' && (
+                                      <Button
+                                        variant="ghost" size="icon"
+                                        className="h-5 w-5 text-gray-400 hover:text-green-400 hover:bg-green-500/10"
+                                        onClick={() => handleMarkDone(task.id)}
+                                        title="Mark as done"
+                                      >
+                                        <CheckCircle2 className="w-3 h-3" />
+                                      </Button>
+                                    )}
+                                    {task.col === 'finished' && (
+                                      <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
+                                    )}
+                                    <Button variant="ghost" size="icon" className="h-5 w-5 text-gray-400 hover:text-red-400" onClick={() => handleDelete(task.id, task.title)}>
+                                      <Trash2 className="w-2.5 h-2.5" />
+                                    </Button>
+                                  </div>
                                 </div>
-                                <div className="flex items-center gap-0.5 shrink-0" onClick={e => e.stopPropagation()}>
-                                  <Button variant="ghost" size="icon" className="h-5 w-5 text-gray-400 hover:text-white" onClick={() => openEdit(task)}>
-                                    <Pencil className="w-2.5 h-2.5" />
-                                  </Button>
-                                  <Button variant="ghost" size="icon" className="h-5 w-5 text-gray-400 hover:text-red-400" onClick={() => handleDelete(task.id, task.title)}>
-                                    <Trash2 className="w-2.5 h-2.5" />
-                                  </Button>
+                                {progress && (
+                                  <div className="mb-1.5">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className={`text-[10px] font-bold ${getProgressColor(progress.count, progress.target, progress.targetMin)}`}>
+                                        {progress.count}/{progress.targetMin ? `${progress.targetMin}-${progress.target}` : progress.target}
+                                      </span>
+                                      <div className="flex-1 bg-white/5 rounded-full h-1">
+                                        <div
+                                          className={`h-1 rounded-full transition-all ${getProgressBarColor(progress.count, progress.target, progress.targetMin)}`}
+                                          style={{ width: `${Math.min(100, (progress.count / progress.target) * 100)}%` }}
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+                                <div className="flex items-center gap-1 flex-wrap">
+                                  <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border ${PRIORITY_CONFIG[task.priority]?.color || ''}`}>
+                                    {PRIORITY_CONFIG[task.priority]?.label || task.priority}
+                                  </span>
+                                  <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border ${CATEGORY_CONFIG[task.category]?.color || ''}`}>
+                                    {CATEGORY_CONFIG[task.category]?.label || task.category}
+                                  </span>
+                                  {task.due_date && (
+                                    <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium border ${isOverdue(task.due_date, task.col) ? 'bg-red-500/20 text-red-400 border-red-500/30' : 'bg-white/5 text-gray-400 border-white/10'}`}>
+                                      <Calendar className="w-2.5 h-2.5" />
+                                      {formatDate(task.due_date)}
+                                    </span>
+                                  )}
+                                  {!task.due_date && task.category === 'reviews' && (
+                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border bg-white/5 text-gray-500 border-white/10">
+                                      No deadline
+                                    </span>
+                                  )}
                                 </div>
                               </div>
-                              <div className="flex items-center gap-1 flex-wrap">
-                                <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border ${PRIORITY_CONFIG[task.priority]?.color || ''}`}>
-                                  {PRIORITY_CONFIG[task.priority]?.label || task.priority}
-                                </span>
-                                <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border ${CATEGORY_CONFIG[task.category]?.color || ''}`}>
-                                  {CATEGORY_CONFIG[task.category]?.label || task.category}
-                                </span>
-                                {task.due_date && (
-                                  <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium border ${isOverdue(task.due_date, task.col) ? 'bg-red-500/20 text-red-400 border-red-500/30' : 'bg-white/5 text-gray-400 border-white/10'}`}>
-                                    <Calendar className="w-2.5 h-2.5" />
-                                    {formatDate(task.due_date)}
-                                  </span>
-                                )}
-                                {!task.due_date && task.category === 'reviews' && (
-                                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border bg-white/5 text-gray-500 border-white/10">
-                                    No deadline
-                                  </span>
-                                )}
-                              </div>
-                              {task.notes && (
-                                <p className="text-[10px] text-gray-500 mt-1 line-clamp-2 italic">{task.notes}</p>
-                              )}
-                            </div>
-                          ))}
+                            );
+                          })}
                           {colTasks.length === 0 && (
                             <div className="text-center py-4 text-gray-600 text-[10px]">
                               {isDragOver ? 'Drop here' : 'Empty'}
@@ -599,20 +758,27 @@ const KanbanBoard: React.FC = () => {
               <div className="text-center py-6 text-gray-500 text-xs">No archived tasks</div>
             ) : (
               <div className="space-y-1.5">
-                {filteredArchive.map(task => (
-                  <div key={task.id} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/[0.02] border border-white/5">
-                    <span className={`w-2 h-2 rounded-full shrink-0 ${task.col === 'finished' ? 'bg-green-500' : task.col === 'in_progress' ? 'bg-amber-500' : 'bg-blue-500'}`} />
-                    <span className="text-xs text-white truncate flex-1">{task.title}</span>
-                    <span className="text-[10px] text-gray-500 truncate max-w-[100px]">{task.client}</span>
-                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border ${CATEGORY_CONFIG[task.category]?.color || 'bg-white/5 text-gray-400 border-white/10'}`}>
-                      {CATEGORY_CONFIG[task.category]?.label || task.category}
-                    </span>
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded border ${task.col === 'finished' ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>
-                      {task.col === 'finished' ? 'Done' : task.col === 'in_progress' ? 'Incomplete' : 'Not started'}
-                    </span>
-                    <span className="text-[10px] text-gray-600 shrink-0">{formatWeekLabel(task.week_of)}</span>
-                  </div>
-                ))}
+                {filteredArchive.map(task => {
+                  const archiveGlow = task.col === 'finished'
+                    ? 'border-green-500/30 bg-green-500/[0.03]'
+                    : task.col === 'in_progress'
+                    ? 'border-amber-500/30 bg-amber-500/[0.03]'
+                    : 'border-red-500/30 bg-red-500/[0.03]';
+                  return (
+                    <div key={task.id} className={`flex items-center gap-3 px-3 py-2 rounded-lg border ${archiveGlow}`}>
+                      <span className={`w-2 h-2 rounded-full shrink-0 ${task.col === 'finished' ? 'bg-green-500' : task.col === 'in_progress' ? 'bg-amber-500' : 'bg-red-500'}`} />
+                      <span className="text-xs text-white truncate flex-1">{task.title}</span>
+                      <span className="text-[10px] text-gray-500 truncate max-w-[100px]">{task.client}</span>
+                      <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border ${CATEGORY_CONFIG[task.category]?.color || 'bg-white/5 text-gray-400 border-white/10'}`}>
+                        {CATEGORY_CONFIG[task.category]?.label || task.category}
+                      </span>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded border ${task.col === 'finished' ? 'bg-green-500/10 text-green-400 border-green-500/20' : task.col === 'in_progress' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>
+                        {task.col === 'finished' ? 'Done' : task.col === 'in_progress' ? 'Incomplete' : 'Not started'}
+                      </span>
+                      <span className="text-[10px] text-gray-600 shrink-0">{formatWeekLabel(task.week_of)}</span>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -668,16 +834,104 @@ const KanbanBoard: React.FC = () => {
                   </select>
                 </div>
               </div>
-              <div>
-                <label className="block text-xs text-gray-400 mb-1">Notes</label>
-                <textarea
-                  value={form.notes}
-                  onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-                  rows={3}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:border-cyan-500/50 focus:outline-none resize-none"
-                  placeholder="Optional notes..."
-                />
-              </div>
+
+              {currentTypeConfig ? (
+                <div className="space-y-3">
+                  <div className={`border rounded-lg p-3 ${
+                    taskData.count >= (currentTypeConfig.targetMin ?? currentTypeConfig.target)
+                      ? 'bg-green-500/20 border-green-500/30'
+                      : taskData.count > 0
+                      ? 'bg-amber-500/20 border-amber-500/30'
+                      : 'bg-red-500/20 border-red-500/30'
+                  }`}>
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-2">
+                        <currentTypeConfig.icon className={`w-4 h-4 ${getProgressColor(taskData.count, currentTypeConfig.target, currentTypeConfig.targetMin)}`} />
+                        <span className="text-sm font-medium text-white">{currentTypeConfig.label}</span>
+                      </div>
+                      <span className={`text-xs font-bold ${getProgressColor(taskData.count, currentTypeConfig.target, currentTypeConfig.targetMin)}`}>
+                        {taskData.count}/{currentTypeConfig.targetMin ? `${currentTypeConfig.targetMin}-${currentTypeConfig.target}` : currentTypeConfig.target}
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-gray-500 mb-2">{currentTypeConfig.description}</p>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => syncEntries(Math.max(0, taskData.count - 1))}
+                        className="w-7 h-7 rounded bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-sm font-bold transition-colors"
+                      >
+                        -
+                      </button>
+                      <input
+                        type="number"
+                        min="0"
+                        value={taskData.count}
+                        onChange={e => syncEntries(Math.max(0, parseInt(e.target.value) || 0))}
+                        className="w-14 text-center bg-white/10 border border-white/10 rounded px-2 py-1 text-sm text-white"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => syncEntries(taskData.count + 1)}
+                        className="w-7 h-7 rounded bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-sm font-bold transition-colors"
+                      >
+                        +
+                      </button>
+                      <div className="flex-1 bg-white/5 rounded-full h-1.5 ml-2">
+                        <div
+                          className={`h-1.5 rounded-full transition-all ${getProgressBarColor(taskData.count, currentTypeConfig.target, currentTypeConfig.targetMin)}`}
+                          style={{ width: `${Math.min(100, (taskData.count / currentTypeConfig.target) * 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                    {taskData.count > 0 && (
+                      <div className="mt-2 space-y-1.5">
+                        <div className="flex items-center gap-1 mb-1">
+                          {currentTypeConfig.entryType === 'url' ? (
+                            <LinkIcon className="w-3 h-3 text-gray-500" />
+                          ) : (
+                            <Hash className="w-3 h-3 text-gray-500" />
+                          )}
+                          <span className="text-[10px] text-gray-500 uppercase tracking-wide">{currentTypeConfig.entryLabel}</span>
+                        </div>
+                        {Array.from({ length: taskData.count }, (_, i) => (
+                          <div key={i} className="flex items-center gap-2">
+                            <span className="text-[10px] text-gray-600 w-4 text-right shrink-0">{i + 1}.</span>
+                            <input
+                              type={currentTypeConfig.entryType}
+                              placeholder={currentTypeConfig.entryPlaceholder}
+                              value={taskData.entries[i] || ''}
+                              onChange={e => {
+                                const newEntries = [...taskData.entries];
+                                while (newEntries.length <= i) newEntries.push('');
+                                newEntries[i] = e.target.value;
+                                setTaskData(prev => ({ ...prev, entries: newEntries }));
+                              }}
+                              className="flex-1 bg-white/5 border border-white/10 rounded px-2 py-1 text-xs text-white placeholder:text-gray-600 focus:border-cyan-500/50 focus:outline-none"
+                            />
+                            {currentTypeConfig.entryType === 'url' && taskData.entries[i] && (
+                              <a href={taskData.entries[i]} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 shrink-0">
+                                <LinkIcon className="w-3 h-3" />
+                              </a>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-xs text-gray-400 mb-1">Notes</label>
+                  <textarea
+                    value={form.notes}
+                    onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+                    rows={3}
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:border-cyan-500/50 focus:outline-none resize-none"
+                    placeholder="Optional notes..."
+                  />
+                </div>
+              )}
+
               <div className="flex gap-3 justify-end">
                 <Button type="button" variant="ghost" onClick={() => setModalOpen(false)}>Cancel</Button>
                 <Button type="submit" className="bg-red-600 hover:bg-red-700">{editingId ? 'Update' : 'Add'}</Button>
