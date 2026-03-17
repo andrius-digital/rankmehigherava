@@ -159,11 +159,11 @@ const SOPLibrary: React.FC = () => {
                     <p className="text-xs text-gray-400 line-clamp-2">{sop.description}</p>
                   </div>
                   <div className="flex items-center gap-1 shrink-0" onClick={e => e.stopPropagation()}>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-7 sm:w-7 text-gray-400 hover:text-white" onClick={() => openEdit(sop)}>
-                      <Pencil className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
+                    <Button variant="ghost" size="icon" className="h-11 w-11 sm:h-7 sm:w-7 text-gray-400 hover:text-white" onClick={() => openEdit(sop)}>
+                      <Pencil className="w-4 h-4 sm:w-3 sm:h-3" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-7 sm:w-7 text-gray-400 hover:text-red-400" onClick={() => handleDelete(sop.id, sop.title)}>
-                      <Trash2 className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
+                    <Button variant="ghost" size="icon" className="h-11 w-11 sm:h-7 sm:w-7 text-gray-400 hover:text-red-400" onClick={() => handleDelete(sop.id, sop.title)}>
+                      <Trash2 className="w-4 h-4 sm:w-3 sm:h-3" />
                     </Button>
                   </div>
                 </div>

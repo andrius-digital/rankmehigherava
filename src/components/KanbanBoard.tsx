@@ -1049,25 +1049,25 @@ const KanbanBoard: React.FC = () => {
                                     {task.col !== 'finished' && (
                                       <Button
                                         variant="ghost" size="icon"
-                                        className="h-8 w-8 sm:h-5 sm:w-5 text-gray-400 hover:text-green-400 hover:bg-green-500/10"
+                                        className="h-11 w-11 sm:h-5 sm:w-5 text-gray-400 hover:text-green-400 hover:bg-green-500/10"
                                         onClick={() => handleMarkDone(task.id)}
                                         title="Mark as done"
                                       >
-                                        <CheckCircle2 className="w-4 h-4 sm:w-3 sm:h-3" />
+                                        <CheckCircle2 className="w-5 h-5 sm:w-3 sm:h-3" />
                                       </Button>
                                     )}
                                     {task.col === 'finished' && (
                                       <Button
                                         variant="ghost" size="icon"
-                                        className="h-8 w-8 sm:h-5 sm:w-5 text-green-400 hover:text-amber-400 hover:bg-amber-500/10"
+                                        className="h-11 w-11 sm:h-5 sm:w-5 text-green-400 hover:text-amber-400 hover:bg-amber-500/10"
                                         onClick={() => handleUnmarkDone(task.id)}
                                         title="Undo — move back"
                                       >
-                                        <CheckCircle2 className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+                                        <CheckCircle2 className="w-5 h-5 sm:w-3.5 sm:h-3.5" />
                                       </Button>
                                     )}
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-5 sm:w-5 text-gray-400 hover:text-red-400" onClick={() => handleDelete(task.id, task.title)}>
-                                      <Trash2 className="w-3.5 h-3.5 sm:w-2.5 sm:h-2.5" />
+                                    <Button variant="ghost" size="icon" className="h-11 w-11 sm:h-5 sm:w-5 text-gray-400 hover:text-red-400" onClick={() => handleDelete(task.id, task.title)}>
+                                      <Trash2 className="w-4 h-4 sm:w-2.5 sm:h-2.5" />
                                     </Button>
                                   </div>
                                 </div>

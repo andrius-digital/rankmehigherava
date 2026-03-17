@@ -719,9 +719,11 @@ select.compact-select {
   background-repeat: no-repeat;
   background-position: right 10px center;
   padding-right: 28px !important;
-  width: auto;
   border-radius: 9999px !important;
   padding-left: 14px !important;
+}
+@media (min-width: 640px) {
+  select.compact-select { width: auto; }
 }
 
 select.modal-select {

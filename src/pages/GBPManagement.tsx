@@ -450,7 +450,7 @@ const GBPManagement: React.FC = () => {
           </div>
 
           {activeTab === 'gbp' && (<>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
             {[
               { label: 'Companies', value: stats.companies, icon: Building2, accent: 'text-cyan-400' },
               { label: 'Locations', value: stats.locations, icon: MapPin, accent: 'text-purple-400' },
@@ -498,13 +498,13 @@ const GBPManagement: React.FC = () => {
                 placeholder="Search companies or addresses..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="pl-10 bg-[#1a1a24] border-white/10 text-white placeholder:text-gray-500 focus:border-[#00e5cc]/50 focus:ring-1 focus:ring-[#00e5cc]/20"
+                className="pl-10 min-h-[44px] bg-[#1a1a24] border-white/10 text-white placeholder:text-gray-500 focus:border-[#00e5cc]/50 focus:ring-1 focus:ring-[#00e5cc]/20"
               />
             </div>
             <select
               value={statusFilter}
               onChange={e => setStatusFilter(e.target.value)}
-              className="compact-select rounded-full bg-[#1a1a24] border border-white/10 px-4 py-2 text-sm text-white focus:border-[#00e5cc]/50 focus:ring-1 focus:ring-[#00e5cc]/20 focus:outline-none transition-colors [&>option]:bg-[#1a1a24] [&>option]:text-white"
+              className="compact-select w-full sm:w-auto rounded-full bg-[#1a1a24] border border-white/10 px-4 py-2 min-h-[44px] text-sm text-white focus:border-[#00e5cc]/50 focus:ring-1 focus:ring-[#00e5cc]/20 focus:outline-none transition-colors [&>option]:bg-[#1a1a24] [&>option]:text-white"
             >
               <option value="all">All Statuses</option>
               <option value="verified">Verified</option>
@@ -512,7 +512,7 @@ const GBPManagement: React.FC = () => {
               <option value="processing">Processing</option>
               <option value="not_started">Not Started</option>
             </select>
-            <Button onClick={openAddCompany} className="bg-[#00e5cc]/10 border border-[#00e5cc]/30 text-[#00e5cc] hover:bg-[#00e5cc]/20 hover:shadow-[0_0_15px_rgba(0,229,204,0.15)] font-semibold gap-2 transition-all">
+            <Button onClick={openAddCompany} className="w-full sm:w-auto min-h-[44px] bg-[#00e5cc]/10 border border-[#00e5cc]/30 text-[#00e5cc] hover:bg-[#00e5cc]/20 hover:shadow-[0_0_15px_rgba(0,229,204,0.15)] font-semibold gap-2 transition-all">
               <Plus className="w-4 h-4" /> Add Company
             </Button>
           </div>
@@ -545,11 +545,11 @@ const GBPManagement: React.FC = () => {
                       <span className="text-xs text-gray-500 hidden sm:inline">{company.locations.length} location{company.locations.length !== 1 ? 's' : ''}</span>
                       <span className={`text-xs font-medium ${summary.color}`}>{summary.label}</span>
                       <div className="flex items-center gap-1 ml-2" onClick={e => e.stopPropagation()}>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-7 sm:w-7 text-gray-400 hover:text-white" onClick={() => openEditCompany(company)}>
-                          <Pencil className="w-3.5 h-3.5" />
+                        <Button variant="ghost" size="icon" className="h-11 w-11 sm:h-7 sm:w-7 text-gray-400 hover:text-white" onClick={() => openEditCompany(company)}>
+                          <Pencil className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-7 sm:w-7 text-gray-400 hover:text-red-400" onClick={() => handleDeleteCompany(company.id, company.name)}>
-                          <Trash2 className="w-3.5 h-3.5" />
+                        <Button variant="ghost" size="icon" className="h-11 w-11 sm:h-7 sm:w-7 text-gray-400 hover:text-red-400" onClick={() => handleDeleteCompany(company.id, company.name)}>
+                          <Trash2 className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
                         </Button>
                       </div>
                     </div>
@@ -643,14 +643,14 @@ const GBPManagement: React.FC = () => {
                                     <span className="text-white text-sm font-medium truncate">{loc.address || '—'}</span>
                                   )}
                                 </div>
-                                <div className="flex items-center gap-1 shrink-0" onClick={e => e.stopPropagation()}>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-amber-400" onClick={() => openNotesModal(loc)} title="Notes">
+                                <div className="flex items-center gap-0.5 shrink-0" onClick={e => e.stopPropagation()}>
+                                  <Button variant="ghost" size="icon" className="h-11 w-11 text-gray-400 hover:text-amber-400" onClick={() => openNotesModal(loc)} title="Notes">
                                     <StickyNote className="w-4 h-4" />
                                   </Button>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-white" onClick={() => openEditLocation(company.id, loc)}>
+                                  <Button variant="ghost" size="icon" className="h-11 w-11 text-gray-400 hover:text-white" onClick={() => openEditLocation(company.id, loc)}>
                                     <Pencil className="w-4 h-4" />
                                   </Button>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-red-400" onClick={() => handleDeleteLocation(company.id, loc.id)}>
+                                  <Button variant="ghost" size="icon" className="h-11 w-11 text-gray-400 hover:text-red-400" onClick={() => handleDeleteLocation(company.id, loc.id)}>
                                     <Trash2 className="w-4 h-4" />
                                   </Button>
                                 </div>
