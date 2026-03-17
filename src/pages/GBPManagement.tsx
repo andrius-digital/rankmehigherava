@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import {
   MapPin, Search, Plus, Pencil, Trash2,
-  CheckCircle2, Clock, FileWarning, Circle,
+  CheckCircle2, Clock, FileWarning, Circle, AlertTriangle,
   ChevronLeft, ChevronDown, ChevronRight, X, Phone, Mail, Building2, Loader2,
   ClipboardList, Hash, Image, MessageSquare, Star, LinkIcon, StickyNote, Compass
 } from 'lucide-react';
@@ -355,6 +355,17 @@ const GBPManagement: React.FC = () => {
     );
   };
 
+  const isFriday = new Date().getDay() === 5;
+
+  const locationHasIncomplete = useCallback((locId: string): boolean => {
+    const tasks = seoTasksByLocation.get(locId) || [];
+    return DEFAULT_TASK_TITLES.some(title => !tasks.some(t => t.title === title && t.col === 'finished'));
+  }, [seoTasksByLocation]);
+
+  const companyHasIncomplete = useCallback((company: GBPCompany): boolean => {
+    return company.locations.some(loc => locationHasIncomplete(loc.id));
+  }, [locationHasIncomplete]);
+
   const TasksIndicator = ({ loc }: { loc: GBPLocation }) => {
     const tasks = seoTasksByLocation.get(loc.id) || [];
     const doneCount = DEFAULT_TASK_TITLES.filter(title => tasks.some(t => t.title === title && t.col === 'finished')).length;
@@ -364,6 +375,7 @@ const GBPManagement: React.FC = () => {
       : 'text-amber-400 border-amber-500/30 bg-amber-500/10';
     return (
       <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium border ${color}`}>
+        {isFriday && doneCount < total && <AlertTriangle className="w-3 h-3 text-red-400 animate-blink" />}
         <ClipboardList className="w-3 h-3" />
         {doneCount}/{total}
       </span>
@@ -476,6 +488,7 @@ const GBPManagement: React.FC = () => {
                         : <ChevronRight className="w-5 h-5 text-gray-400 shrink-0" />
                       }
                       <Building2 className="w-5 h-5 text-cyan-400 shrink-0" />
+                      {isFriday && companyHasIncomplete(company) && <AlertTriangle className="w-4 h-4 text-red-400 animate-blink shrink-0" />}
                       <span className="font-semibold text-white flex-1 truncate">{company.name}</span>
                       <span className="text-xs text-gray-500 hidden sm:inline">{company.locations.length} location{company.locations.length !== 1 ? 's' : ''}</span>
                       <span className={`text-xs font-medium ${summary.color}`}>{summary.label}</span>
@@ -735,6 +748,7 @@ const GBPManagement: React.FC = () => {
                           {parsed && parsed.count > 0 && (
                             <span className="text-[10px] text-gray-400">{parsed.count}/{config?.targetMin ? `${config.targetMin}-` : ''}{config?.target || '?'}</span>
                           )}
+                          {isFriday && !isDone && <AlertTriangle className="w-3 h-3 text-red-400 animate-blink" />}
                           <span className="text-[10px] font-medium">{statusLabel}</span>
                           {task && <ChevronRight className="w-3 h-3 text-gray-500" />}
                         </div>

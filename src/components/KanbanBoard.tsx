@@ -384,6 +384,7 @@ const KanbanBoard: React.FC = () => {
         if (error) throw error;
         const locs = (data || []) as Location[];
         setLocations(locs);
+        setCollapsedLocations(new Set(locs.map(l => l.id)));
         await autoProcessWeekTransition(selectedCompanyId, locs);
         await fetchTasks();
       } catch {
