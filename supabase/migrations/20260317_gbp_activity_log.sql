@@ -15,16 +15,26 @@ CREATE INDEX IF NOT EXISTS idx_gbp_activity_log_entity_type ON gbp_activity_log 
 
 ALTER TABLE gbp_activity_log ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Authenticated users full access to activity log"
+CREATE POLICY "Authenticated users can read activity log"
   ON gbp_activity_log
-  FOR ALL
+  FOR SELECT
   TO authenticated
-  USING (true)
+  USING (true);
+
+CREATE POLICY "Authenticated users can insert activity log"
+  ON gbp_activity_log
+  FOR INSERT
+  TO authenticated
   WITH CHECK (true);
 
-CREATE POLICY "Anon users can read and insert activity log"
+CREATE POLICY "Anon users can read activity log"
   ON gbp_activity_log
-  FOR ALL
+  FOR SELECT
   TO anon
-  USING (true)
+  USING (true);
+
+CREATE POLICY "Anon users can insert activity log"
+  ON gbp_activity_log
+  FOR INSERT
+  TO anon
   WITH CHECK (true);
