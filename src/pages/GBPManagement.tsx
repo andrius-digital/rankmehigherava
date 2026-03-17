@@ -391,7 +391,7 @@ const GBPManagement: React.FC = () => {
 
           <div className="flex gap-1 mb-6 border-b border-white/10">
             <button
-              onClick={() => setActiveTab('gbp')}
+              onClick={() => { setActiveTab('gbp'); fetchSeoTasks(); }}
               className={`px-4 py-2.5 text-sm font-medium transition-colors relative ${activeTab === 'gbp' ? 'text-cyan-400' : 'text-gray-400 hover:text-white'}`}
             >
               <div className="flex items-center gap-2">
