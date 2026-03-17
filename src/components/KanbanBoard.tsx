@@ -234,7 +234,7 @@ const KanbanBoard: React.FC = () => {
   const [archiveLoading, setArchiveLoading] = useState(false);
   const [archiveWeeks, setArchiveWeeks] = useState<string[]>([]);
   const [selectedArchiveWeek, setSelectedArchiveWeek] = useState<string>('all');
-  const [companyAlerts, setCompanyAlerts] = useState<Map<string, { overdue: number; unfinished: number }>>(new Map());
+  const [companyAlerts, setCompanyAlerts] = useState<Map<string, { overdue: number; approaching: number }>>(new Map());
   const dragStartPos = useRef<{ x: number; y: number } | null>(null);
   const didDrag = useRef(false);
 
@@ -264,17 +264,19 @@ const KanbanBoard: React.FC = () => {
         .in('company_id', companyIds)
         .or(`week_of.eq.${currentWeek},week_of.eq.${monthStart}`);
       if (error) throw error;
-      const alerts = new Map<string, { overdue: number; unfinished: number }>();
+      const alerts = new Map<string, { overdue: number; approaching: number }>();
       const now = new Date();
       for (const t of (data || [])) {
-        if (!alerts.has(t.company_id)) alerts.set(t.company_id, { overdue: 0, unfinished: 0 });
+        if (!alerts.has(t.company_id)) alerts.set(t.company_id, { overdue: 0, approaching: 0 });
         const a = alerts.get(t.company_id)!;
-        if (t.col !== 'finished') {
-          a.unfinished++;
-          if (t.due_date) {
-            const p = t.due_date.split('-').map(Number);
-            const due = new Date(p[0], p[1] - 1, p[2], 23, 59, 59);
-            if (due < now) a.overdue++;
+        if (t.col !== 'finished' && t.due_date) {
+          const p = t.due_date.split('-').map(Number);
+          const due = new Date(p[0], p[1] - 1, p[2], 23, 59, 59);
+          if (due < now) {
+            a.overdue++;
+          } else if (t.col === 'new') {
+            const diffDays = (due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+            if (diffDays <= 3) a.approaching++;
           }
         }
       }
@@ -668,6 +670,17 @@ const KanbanBoard: React.FC = () => {
     return due < new Date();
   };
 
+  const isApproachingDeadline = (d: string | null, col: string) => {
+    if (!d || col !== 'new') return false;
+    const parts = d.split('-').map(Number);
+    const due = new Date(parts[0], parts[1] - 1, parts[2], 23, 59, 59);
+    const now = new Date();
+    if (due < now) return false;
+    const diffMs = due.getTime() - now.getTime();
+    const diffDays = diffMs / (1000 * 60 * 60 * 24);
+    return diffDays <= 3;
+  };
+
   const selectedCompany = companies.find(c => c.id === selectedCompanyId);
   const filteredArchive = selectedArchiveWeek === 'all'
     ? archivedTasks
@@ -743,8 +756,8 @@ const KanbanBoard: React.FC = () => {
             {companies.map(c => {
               const alert = companyAlerts.get(c.id);
               const hasOverdue = alert && alert.overdue > 0;
-              const hasUnfinished = alert && alert.unfinished > 0;
-              const marker = hasOverdue ? ' ⚠ OVERDUE' : hasUnfinished ? ' ⚠ Unfinished' : '';
+              const hasApproaching = alert && alert.approaching > 0;
+              const marker = hasOverdue ? ' ⚠ OVERDUE' : hasApproaching ? ' ⚠ Deadline soon' : '';
               return (
                 <option key={c.id} value={c.id}>{c.name}{marker}</option>
               );
@@ -753,13 +766,13 @@ const KanbanBoard: React.FC = () => {
           {(() => {
             const alert = selectedCompanyId ? companyAlerts.get(selectedCompanyId) : null;
             const hasOverdue = alert && alert.overdue > 0;
-            const hasUnfinished = alert && alert.unfinished > 0;
-            if (!hasOverdue && !hasUnfinished) return null;
+            const hasApproaching = alert && alert.approaching > 0;
+            if (!hasOverdue && !hasApproaching) return null;
             return (
-              <span className="flex items-center gap-1 shrink-0" title={hasOverdue ? `${alert!.overdue} overdue task(s)` : `${alert!.unfinished} unfinished task(s)`}>
+              <span className="flex items-center gap-1 shrink-0" title={hasOverdue ? `${alert!.overdue} overdue task(s)` : `${alert!.approaching} task(s) due within 3 days`}>
                 <AlertTriangle className={`w-4 h-4 ${hasOverdue ? 'text-red-500 animate-blink' : 'text-amber-500 animate-blink'}`} />
                 <span className={`text-[10px] font-medium ${hasOverdue ? 'text-red-400' : 'text-amber-400'}`}>
-                  {hasOverdue ? `${alert!.overdue} overdue` : `${alert!.unfinished} unfinished`}
+                  {hasOverdue ? `${alert!.overdue} overdue` : `${alert!.approaching} due soon`}
                 </span>
               </span>
             );
@@ -784,11 +797,10 @@ const KanbanBoard: React.FC = () => {
         <div className="space-y-6">
           {Array.from(tasksByLocation.entries()).map(([locId, locTasks]) => {
             const loc = locationMap.get(locId);
-            const now = new Date();
-            const locOverdue = locTasks.filter(t => t.col !== 'finished' && t.due_date && (() => { const p = t.due_date!.split('-').map(Number); return new Date(p[0], p[1] - 1, p[2], 23, 59, 59) < now; })()).length;
-            const locUnfinished = locTasks.filter(t => t.col !== 'finished').length;
+            const locOverdue = locTasks.filter(t => isOverdue(t.due_date, t.col)).length;
+            const locApproaching = locTasks.filter(t => isApproachingDeadline(t.due_date, t.col)).length;
             const locHasOverdue = locOverdue > 0;
-            const locShowUnfinished = locUnfinished > 0 && !locHasOverdue;
+            const locShowApproaching = locApproaching > 0 && !locHasOverdue;
             return (
               <div key={locId} className="border border-white/5 rounded-xl overflow-hidden">
                 <button
@@ -811,11 +823,11 @@ const KanbanBoard: React.FC = () => {
                   {loc && (
                     <span className="text-[10px] text-gray-500 truncate">{loc.address}</span>
                   )}
-                  {(locHasOverdue || locShowUnfinished) && (
+                  {(locHasOverdue || locShowApproaching) && (
                     <span className="flex items-center gap-1 shrink-0">
                       <AlertTriangle className={`w-3.5 h-3.5 animate-blink ${locHasOverdue ? 'text-red-500' : 'text-amber-500'}`} />
                       <span className={`text-[10px] font-medium ${locHasOverdue ? 'text-red-400' : 'text-amber-400'}`}>
-                        {locHasOverdue ? `${locOverdue} overdue` : `${locUnfinished} unfinished`}
+                        {locHasOverdue ? `${locOverdue} overdue` : `${locApproaching} due soon`}
                       </span>
                     </span>
                   )}
@@ -853,7 +865,7 @@ const KanbanBoard: React.FC = () => {
                                 onDragEnd={() => { setDraggedId(null); setDragOverCol(null); dragStartPos.current = null; }}
                                 onMouseDown={handleMouseDown}
                                 onClick={e => handleCardClick(task, e)}
-                                className={`border rounded-lg p-2.5 bg-white/[0.03] hover:bg-white/[0.06] transition-all cursor-pointer active:cursor-grabbing ${isOverdue(task.due_date, task.col) ? 'card-overdue' : CARD_GLOW[task.col]} ${draggedId === task.id ? 'opacity-40' : ''}`}
+                                className={`border rounded-lg p-2.5 bg-white/[0.03] hover:bg-white/[0.06] transition-all cursor-pointer active:cursor-grabbing ${isOverdue(task.due_date, task.col) ? 'card-overdue' : isApproachingDeadline(task.due_date, task.col) ? 'card-approaching' : CARD_GLOW[task.col]} ${draggedId === task.id ? 'opacity-40' : ''}`}
                               >
                                 <div className="flex items-start justify-between gap-2 mb-1.5">
                                   <div className="flex items-center gap-1 min-w-0">
@@ -903,9 +915,9 @@ const KanbanBoard: React.FC = () => {
                                 )}
                                 <div className="flex items-center gap-1 flex-wrap">
                                   {task.due_date && (
-                                    <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium border ${isOverdue(task.due_date, task.col) ? 'bg-red-500/20 text-red-400 border-red-500/30' : 'bg-white/5 text-gray-400 border-white/10'}`}>
-                                      {isOverdue(task.due_date, task.col) ? <AlertTriangle className="w-2.5 h-2.5" /> : <Calendar className="w-2.5 h-2.5" />}
-                                      {isOverdue(task.due_date, task.col) ? 'OVERDUE' : formatDate(task.due_date)}
+                                    <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium border ${isOverdue(task.due_date, task.col) ? 'bg-red-500/20 text-red-400 border-red-500/30' : isApproachingDeadline(task.due_date, task.col) ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-white/5 text-gray-400 border-white/10'}`}>
+                                      {isOverdue(task.due_date, task.col) ? <AlertTriangle className="w-2.5 h-2.5" /> : isApproachingDeadline(task.due_date, task.col) ? <AlertTriangle className="w-2.5 h-2.5" /> : <Calendar className="w-2.5 h-2.5" />}
+                                      {isOverdue(task.due_date, task.col) ? 'OVERDUE' : isApproachingDeadline(task.due_date, task.col) ? `DUE SOON · ${formatDate(task.due_date)}` : formatDate(task.due_date)}
                                     </span>
                                   )}
                                   {!task.due_date && (

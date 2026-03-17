@@ -689,6 +689,20 @@
   animation: overdue-pulse 2s ease-in-out infinite;
 }
 
+.card-approaching {
+  border-color: rgba(245, 158, 11, 0.5) !important;
+  animation: approaching-pulse 2s ease-in-out infinite;
+}
+
+@keyframes approaching-pulse {
+  0%, 100% {
+    box-shadow: 0 0 3px rgba(245, 158, 11, 0.2), inset 0 0 2px rgba(245, 158, 11, 0.05);
+  }
+  50% {
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.35), inset 0 0 4px rgba(245, 158, 11, 0.1);
+  }
+}
+
 @keyframes marquee {
   0% {
     transform: translateX(0);
