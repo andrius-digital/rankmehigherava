@@ -710,8 +710,16 @@ const KanbanBoard: React.FC = () => {
     if (!task) return;
     if (!isTaskComplete(task)) {
       const typeConfig = TASK_TYPE_MAP[task.title];
-      const minRequired = typeConfig ? (typeConfig.targetMin ?? typeConfig.target) : 0;
-      toast.error(`Fill out "${task.title}" first (need at least ${minRequired} ${typeConfig?.label?.toLowerCase() || 'items'})`);
+      if (typeConfig) {
+        const minRequired = typeConfig.targetMin ?? typeConfig.target;
+        const data = parseTaskData(task.notes);
+        const filledEntries = data.entries.filter(e => e.trim().length > 0).length;
+        if (data.count < minRequired) {
+          toast.error(`Need at least ${minRequired} ${typeConfig.label.toLowerCase()} before finishing`);
+        } else if (filledEntries < minRequired) {
+          toast.error(`Fill in the ${typeConfig.entryLabel.toLowerCase()} details — ${filledEntries}/${minRequired} entries completed`);
+        }
+      }
       return;
     }
     const now = new Date().toISOString();
@@ -776,8 +784,16 @@ const KanbanBoard: React.FC = () => {
     if (!task || task.col === targetCol) { setDraggedId(null); return; }
     if (targetCol === 'finished' && !isTaskComplete(task)) {
       const typeConfig = TASK_TYPE_MAP[task.title];
-      const minRequired = typeConfig ? (typeConfig.targetMin ?? typeConfig.target) : 0;
-      toast.error(`Fill out "${task.title}" first (need at least ${minRequired} ${typeConfig?.label?.toLowerCase() || 'items'})`);
+      if (typeConfig) {
+        const minRequired = typeConfig.targetMin ?? typeConfig.target;
+        const data = parseTaskData(task.notes);
+        const filledEntries = data.entries.filter(e => e.trim().length > 0).length;
+        if (data.count < minRequired) {
+          toast.error(`Need at least ${minRequired} ${typeConfig.label.toLowerCase()} before finishing`);
+        } else if (filledEntries < minRequired) {
+          toast.error(`Fill in the ${typeConfig.entryLabel.toLowerCase()} details — ${filledEntries}/${minRequired} entries completed`);
+        }
+      }
       setDraggedId(null);
       return;
     }
@@ -874,7 +890,10 @@ const KanbanBoard: React.FC = () => {
     if (!typeConfig) return true;
     const data = parseTaskData(task.notes);
     const minRequired = typeConfig.targetMin ?? typeConfig.target;
-    return data.count >= minRequired;
+    if (data.count < minRequired) return false;
+    const filledEntries = data.entries.filter(e => e.trim().length > 0).length;
+    if (filledEntries < minRequired) return false;
+    return true;
   };
 
   const syncEntries = (newCount: number) => {
