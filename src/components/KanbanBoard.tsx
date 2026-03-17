@@ -3,7 +3,7 @@ import {
   Plus, Pencil, Trash2, X, Calendar, GripVertical,
   Building2, Archive, LayoutDashboard, MapPin, CheckCircle2,
   Hash, MessageSquare, Image, Star, LinkIcon, Clock, CalendarClock, StickyNote,
-  ChevronDown, ChevronRight, AlertTriangle
+  ChevronDown, ChevronRight, AlertTriangle, History
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -237,6 +237,11 @@ const KanbanBoard: React.FC = () => {
   const [archiveWeeks, setArchiveWeeks] = useState<string[]>([]);
   const [selectedArchiveWeek, setSelectedArchiveWeek] = useState<string>('all');
   const [companyAlerts, setCompanyAlerts] = useState<Map<string, { overdue: number; approaching: number }>>(new Map());
+  const [historyModalOpen, setHistoryModalOpen] = useState(false);
+  const [historyLocationId, setHistoryLocationId] = useState<string | null>(null);
+  const [historyLocationAddress, setHistoryLocationAddress] = useState('');
+  const [historyTasks, setHistoryTasks] = useState<Array<{ id: string; title: string; week_of: string; due_date: string | null; priority: string; category: string; notes: string; completed_at: string | null; source: 'current' | 'archive' }>>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
   const dragStartPos = useRef<{ x: number; y: number } | null>(null);
   const didDrag = useRef(false);
 
@@ -330,6 +335,63 @@ const KanbanBoard: React.FC = () => {
       setArchiveLoading(false);
     }
   }, [selectedCompanyId]);
+
+  const historyRequestRef = useRef<string | null>(null);
+
+  const openLocationHistory = useCallback(async (locationId: string, address: string) => {
+    historyRequestRef.current = locationId;
+    setHistoryLocationId(locationId);
+    setHistoryLocationAddress(address);
+    setHistoryTasks([]);
+    setHistoryModalOpen(true);
+    setHistoryLoading(true);
+    try {
+      const [currentRes, archiveRes] = await Promise.all([
+        supabase.from('seo_tasks').select('*').eq('location_id', locationId).eq('col', 'finished').order('completed_at', { ascending: false }),
+        supabase.from('seo_tasks_archive').select('*').eq('location_id', locationId).order('archived_at', { ascending: false }),
+      ]);
+      if (historyRequestRef.current !== locationId) return;
+      if (currentRes.error) throw currentRes.error;
+      if (archiveRes.error) throw archiveRes.error;
+      const currentTasks = ((currentRes.data || []) as SEOTask[]).map(t => ({
+        id: t.id,
+        title: t.title,
+        week_of: t.week_of,
+        due_date: t.due_date,
+        priority: t.priority,
+        category: t.category,
+        notes: t.notes || '',
+        completed_at: t.completed_at || null,
+        source: 'current' as const,
+      }));
+      const archiveTasks = ((archiveRes.data || []) as ArchivedTask[]).map(t => ({
+        id: t.id,
+        title: t.title,
+        week_of: t.week_of,
+        due_date: t.due_date,
+        priority: t.priority,
+        category: t.category,
+        notes: t.notes || '',
+        completed_at: t.archived_at || null,
+        source: 'archive' as const,
+      }));
+      const seen = new Set<string>();
+      const merged = [...currentTasks, ...archiveTasks].filter(t => {
+        if (seen.has(t.id)) return false;
+        seen.add(t.id);
+        return true;
+      });
+      if (historyRequestRef.current !== locationId) return;
+      setHistoryTasks(merged);
+    } catch {
+      if (historyRequestRef.current === locationId) {
+        toast.error('Failed to load history');
+        setHistoryTasks([]);
+      }
+    } finally {
+      if (historyRequestRef.current === locationId) setHistoryLoading(false);
+    }
+  }, []);
 
   const autoProcessingRef = useRef<string | null>(null);
 
@@ -545,6 +607,10 @@ const KanbanBoard: React.FC = () => {
       const notesValue = typeConfig
         ? serializeTaskData({ ...taskData, freeNotes: form.notes.trim() })
         : form.notes.trim();
+      const existingTask = editingId ? tasks.find(t => t.id === editingId) : null;
+      const completedAtValue = form.col === 'finished'
+        ? (existingTask?.col === 'finished' ? existingTask.completed_at : new Date().toISOString())
+        : null;
       const row = {
         title: form.title.trim(),
         client: loc ? shortAddress(loc.address) : form.client.trim(),
@@ -556,6 +622,7 @@ const KanbanBoard: React.FC = () => {
         category: form.category,
         notes: notesValue,
         col: form.col,
+        completed_at: completedAtValue,
       };
       if (editingId) {
         const { error } = await supabase.from('seo_tasks').update(row).eq('id', editingId);
@@ -588,10 +655,11 @@ const KanbanBoard: React.FC = () => {
   const handleMarkDone = async (taskId: string) => {
     const task = tasks.find(t => t.id === taskId);
     if (!task) return;
+    const now = new Date().toISOString();
     prevColMap.current.set(taskId, task.col);
-    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, col: 'finished' as TaskCol } : t));
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, col: 'finished' as TaskCol, completed_at: now } : t));
     try {
-      const { error } = await supabase.from('seo_tasks').update({ col: 'finished' }).eq('id', taskId);
+      const { error } = await supabase.from('seo_tasks').update({ col: 'finished', completed_at: now }).eq('id', taskId);
       if (error) throw error;
       toast.success('Task marked as done!');
       refreshAlerts();
@@ -603,9 +671,9 @@ const KanbanBoard: React.FC = () => {
 
   const handleUnmarkDone = async (taskId: string) => {
     const prevCol = prevColMap.current.get(taskId) || 'in_progress';
-    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, col: prevCol } : t));
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, col: prevCol, completed_at: null } : t));
     try {
-      const { error } = await supabase.from('seo_tasks').update({ col: prevCol }).eq('id', taskId);
+      const { error } = await supabase.from('seo_tasks').update({ col: prevCol, completed_at: null }).eq('id', taskId);
       if (error) throw error;
       toast.success(`Task moved back to ${COLUMNS.find(c => c.key === prevCol)?.label || prevCol}`);
       prevColMap.current.delete(taskId);
@@ -644,10 +712,15 @@ const KanbanBoard: React.FC = () => {
     if (!taskId) return;
     const task = tasks.find(t => t.id === taskId);
     if (!task || task.col === targetCol) { setDraggedId(null); return; }
-    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, col: targetCol } : t));
+    const now = new Date().toISOString();
+    const completedAt = targetCol === 'finished' ? now : (task.col === 'finished' ? null : task.completed_at);
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, col: targetCol, completed_at: completedAt } : t));
     setDraggedId(null);
     try {
-      const { error } = await supabase.from('seo_tasks').update({ col: targetCol }).eq('id', taskId);
+      const updatePayload: Record<string, unknown> = { col: targetCol };
+      if (targetCol === 'finished') updatePayload.completed_at = now;
+      else if (task.col === 'finished') updatePayload.completed_at = null;
+      const { error } = await supabase.from('seo_tasks').update(updatePayload).eq('id', taskId);
       if (error) throw error;
       refreshAlerts();
     } catch {
@@ -884,8 +957,18 @@ const KanbanBoard: React.FC = () => {
                       </span>
                     </span>
                   )}
-                  <span className="ml-auto text-[10px] text-gray-500 bg-white/5 px-1.5 py-0.5 rounded-full shrink-0">
-                    {locTasks.length} task{locTasks.length !== 1 ? 's' : ''}
+                  <span className="ml-auto flex items-center gap-1.5 shrink-0">
+                    <button
+                      type="button"
+                      title="View task history"
+                      onClick={e => { e.stopPropagation(); if (loc) openLocationHistory(loc.id, loc.address); }}
+                      className="p-1 rounded hover:bg-cyan-500/10 text-gray-500 hover:text-cyan-400 transition-colors"
+                    >
+                      <History className="w-3.5 h-3.5" />
+                    </button>
+                    <span className="text-[10px] text-gray-500 bg-white/5 px-1.5 py-0.5 rounded-full">
+                      {locTasks.length} task{locTasks.length !== 1 ? 's' : ''}
+                    </span>
                   </span>
                 </button>
                 {!collapsedLocations.has(locId) && (
@@ -1227,6 +1310,117 @@ const KanbanBoard: React.FC = () => {
                 <Button type="submit" className="bg-gradient-to-r from-[#00e5cc] to-[#00b8a8] text-black font-semibold hover:shadow-lg hover:shadow-[#00e5cc]/30">{editingId ? 'Update' : 'Add'}</Button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {historyModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="history-modal-title"
+          onClick={() => setHistoryModalOpen(false)}
+          onKeyDown={e => { if (e.key === 'Escape') setHistoryModalOpen(false); }}
+        >
+          <div className="bg-[#0a0a0f] border border-white/10 rounded-2xl w-full max-w-xl p-6 relative max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setHistoryModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white">
+              <X className="w-5 h-5" />
+            </button>
+            <h2 id="history-modal-title" className="text-lg font-bold mb-1 font-orbitron flex items-center gap-2">
+              <History className="w-5 h-5 text-cyan-400" />
+              Task History
+            </h2>
+            <p className="text-xs text-gray-400 mb-4 truncate">{historyLocationAddress}</p>
+
+            {historyLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="w-6 h-6 border-2 border-[#00e5cc] border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : historyTasks.length === 0 ? (
+              <div className="text-center py-12 text-gray-500">
+                <Clock className="w-8 h-8 mx-auto mb-2 text-gray-600" />
+                <p className="text-sm">No completed tasks yet</p>
+                <p className="text-xs text-gray-600 mt-1">Tasks will appear here once marked as finished</p>
+              </div>
+            ) : (
+              <div className="overflow-y-auto flex-1 space-y-4 pr-1">
+                {(() => {
+                  const grouped = new Map<string, typeof historyTasks>();
+                  historyTasks.forEach(t => {
+                    const week = t.week_of || 'Unknown';
+                    if (!grouped.has(week)) grouped.set(week, []);
+                    grouped.get(week)!.push(t);
+                  });
+                  const sortedWeeks = [...grouped.keys()].sort((a, b) => b.localeCompare(a));
+                  return sortedWeeks.map(week => {
+                    const weekTasks = grouped.get(week)!;
+                    const weekDate = new Date(week + 'T00:00:00');
+                    const weekLabel = isNaN(weekDate.getTime()) ? week : weekDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    return (
+                      <div key={week}>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Calendar className="w-3.5 h-3.5 text-cyan-400" />
+                          <span className="text-xs font-semibold text-cyan-400 font-orbitron tracking-wide">Week of {weekLabel}</span>
+                          <span className="text-[10px] text-gray-600">{weekTasks.length} task{weekTasks.length !== 1 ? 's' : ''}</span>
+                        </div>
+                        <div className="space-y-1.5">
+                          {weekTasks.map(task => {
+                            const priorityColors: Record<string, string> = {
+                              high: 'bg-red-500/10 text-red-400 border-red-500/20',
+                              medium: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+                              low: 'bg-green-500/10 text-green-400 border-green-500/20',
+                            };
+                            const completedDate = task.completed_at ? new Date(task.completed_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }) : null;
+                            let parsedNotes = task.notes;
+                            try {
+                              const parsed = JSON.parse(task.notes);
+                              if (parsed && typeof parsed === 'object' && 'freeNotes' in parsed) {
+                                parsedNotes = parsed.freeNotes || '';
+                                if (parsed.count) parsedNotes = `${parsed.count} completed${parsedNotes ? ' — ' + parsedNotes : ''}`;
+                              }
+                            } catch { /* not JSON */ }
+                            return (
+                              <div key={task.id} className="bg-[#1a1a24] border border-white/5 rounded-lg p-3">
+                                <div className="flex items-start justify-between gap-2 mb-1">
+                                  <div className="flex items-center gap-2 min-w-0">
+                                    <CheckCircle2 className="w-3.5 h-3.5 text-green-400 shrink-0" />
+                                    <span className="text-sm font-medium text-white truncate">{task.title}</span>
+                                  </div>
+                                  <span className={`text-[10px] px-1.5 py-0.5 rounded border shrink-0 ${priorityColors[task.priority] || priorityColors.medium}`}>
+                                    {task.priority}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-3 text-[10px] text-gray-500 ml-5.5">
+                                  {completedDate && (
+                                    <span className="flex items-center gap-1">
+                                      {task.source === 'archive' ? (
+                                        <><Archive className="w-2.5 h-2.5 text-purple-400" /><span className="text-purple-400">Archived {completedDate}</span></>
+                                      ) : (
+                                        <><CheckCircle2 className="w-2.5 h-2.5 text-green-500" />Completed {completedDate}</>
+                                      )}
+                                    </span>
+                                  )}
+                                  {task.due_date && (
+                                    <span className="flex items-center gap-1">
+                                      <Calendar className="w-2.5 h-2.5" />
+                                      Due {new Date(task.due_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                    </span>
+                                  )}
+                                </div>
+                                {parsedNotes && (
+                                  <p className="text-[10px] text-gray-500 mt-1.5 ml-5.5 line-clamp-2">{parsedNotes}</p>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
+            )}
           </div>
         </div>
       )}
