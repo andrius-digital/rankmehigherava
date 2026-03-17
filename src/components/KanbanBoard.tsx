@@ -563,6 +563,7 @@ const KanbanBoard: React.FC = () => {
           .from('gbp_locations')
           .select('id, company_id, address')
           .eq('company_id', selectedCompanyId)
+          .eq('status', 'verified')
           .order('address');
         if (error) throw error;
         const locs = (data || []) as Location[];
