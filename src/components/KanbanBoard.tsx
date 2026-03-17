@@ -617,11 +617,18 @@ const KanbanBoard: React.FC = () => {
       const typeConfig = TASK_TYPE_MAP[form.title.trim()];
       if (typeConfig) {
         const minRequired = typeConfig.targetMin ?? typeConfig.target;
-        if (taskData.count < minRequired) {
+        const filledEntries = taskData.entries.filter(e => e.trim().length > 0).length;
+        if (taskData.count < minRequired || filledEntries < minRequired) {
           const existingTask = editingId ? tasks.find(t => t.id === editingId) : null;
           effectiveCol = existingTask?.col && existingTask.col !== 'finished' ? existingTask.col : 'in_progress';
-          toast.warning(`Task saved but kept in "${COLUMNS.find(c => c.key === effectiveCol)?.label || effectiveCol}" — need at least ${minRequired} ${typeConfig.label?.toLowerCase() || 'items'} to finish`);
+          toast.warning(`Task saved but kept in "${COLUMNS.find(c => c.key === effectiveCol)?.label || effectiveCol}" — need at least ${minRequired} ${typeConfig.label?.toLowerCase() || 'items'} with details to finish`);
         }
+      }
+    }
+    if (editingId && effectiveCol === 'new') {
+      const typeConfig = TASK_TYPE_MAP[form.title.trim()];
+      if (typeConfig && taskData.count > 0 && taskData.entries.some(e => e.trim().length > 0)) {
+        effectiveCol = 'in_progress';
       }
     }
     try {
