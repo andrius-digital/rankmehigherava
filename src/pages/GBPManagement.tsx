@@ -397,16 +397,18 @@ const GBPManagement: React.FC = () => {
   return (
     <>
       <Helmet><title>GBP Management | Rank Me Higher</title></Helmet>
-      <div className="min-h-screen bg-black text-white">
+      <div className="min-h-screen bg-[#0a0a0f] text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-          <div className="flex items-center gap-3 mb-4">
-            <Link to="/avaadminpanel">
-              <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
-                <ChevronLeft className="w-5 h-5" />
-              </Button>
+          <div className="flex items-center gap-3 mb-6">
+            <Link
+              to={sessionStorage.getItem("rmh_team_session") ? "/team" : "/avaadminpanel"}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-500/10 backdrop-blur-md border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20 hover:border-cyan-500/40 transition-all font-orbitron text-sm shrink-0"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Back
             </Link>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold font-orbitron bg-gradient-to-r from-red-500 to-cyan-400 bg-clip-text text-transparent">
+              <h1 className="text-2xl sm:text-3xl font-bold font-orbitron text-white">
                 GBP Management
               </h1>
               <p className="text-sm text-gray-400 mt-1">Google Business Profile verification tracker</p>
@@ -439,17 +441,21 @@ const GBPManagement: React.FC = () => {
           {activeTab === 'gbp' && (<>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
             {[
-              { label: 'Companies', value: stats.companies, icon: Building2, color: 'from-cyan-500/20 to-blue-500/20 border-cyan-500/30' },
-              { label: 'Locations', value: stats.locations, icon: MapPin, color: 'from-purple-500/20 to-pink-500/20 border-purple-500/30' },
-              { label: 'Verified', value: stats.verified, icon: CheckCircle2, color: 'from-green-500/20 to-emerald-500/20 border-green-500/30' },
-              { label: 'Action Required', value: stats.actionRequired, icon: FileWarning, color: 'from-orange-500/20 to-red-500/20 border-orange-500/30' },
+              { label: 'Companies', value: stats.companies, icon: Building2, accent: 'text-cyan-400' },
+              { label: 'Locations', value: stats.locations, icon: MapPin, accent: 'text-purple-400' },
+              { label: 'Verified', value: stats.verified, icon: CheckCircle2, accent: 'text-green-400' },
+              { label: 'Action Required', value: stats.actionRequired, icon: FileWarning, accent: 'text-orange-400' },
             ].map(s => (
-              <div key={s.label} className={`bg-gradient-to-br ${s.color} border rounded-xl p-4 backdrop-blur-sm`}>
-                <div className="flex items-center gap-2 mb-2">
-                  <s.icon className="w-4 h-4 text-gray-400" />
-                  <span className="text-xs text-gray-400 uppercase tracking-wider">{s.label}</span>
+              <div key={s.label} className="bg-[#1a1a24] border border-white/5 rounded-xl p-4 hover:border-[#00e5cc]/30 transition-all">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-lg bg-gradient-to-br from-[#00e5cc]/10 to-[#6366f1]/10 flex items-center justify-center ${s.accent}`}>
+                    <s.icon className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400 mb-0.5">{s.label}</p>
+                    <p className="text-2xl font-bold text-white">{s.value}</p>
+                  </div>
                 </div>
-                <p className="text-2xl sm:text-3xl font-bold">{s.value}</p>
               </div>
             ))}
           </div>
@@ -461,13 +467,13 @@ const GBPManagement: React.FC = () => {
                 placeholder="Search companies or addresses..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+                className="pl-10 bg-[#1a1a24] border-white/5 text-white placeholder:text-gray-500 focus:border-[#00e5cc] focus:ring-[#00e5cc]/20"
               />
             </div>
             <select
               value={statusFilter}
               onChange={e => setStatusFilter(e.target.value)}
-              className="bg-[#141414] border border-white/10 rounded-md px-3 py-2 text-sm text-white [&>option]:bg-[#141414] [&>option]:text-white"
+              className="bg-[#1a1a24] border border-white/5 rounded-md px-3 py-2 text-sm text-white focus:border-[#00e5cc] [&>option]:bg-[#1a1a24] [&>option]:text-white"
             >
               <option value="all">All Statuses</option>
               <option value="verified">Verified</option>
@@ -475,13 +481,16 @@ const GBPManagement: React.FC = () => {
               <option value="processing">Processing</option>
               <option value="not_started">Not Started</option>
             </select>
-            <Button onClick={openAddCompany} className="bg-red-600 hover:bg-red-700 text-white gap-2">
+            <Button onClick={openAddCompany} className="bg-gradient-to-r from-[#00e5cc] to-[#00b8a8] text-black font-semibold hover:shadow-lg hover:shadow-[#00e5cc]/30 gap-2">
               <Plus className="w-4 h-4" /> Add Company
             </Button>
           </div>
 
           {loading ? (
-            <div className="text-center py-20 text-gray-500">Loading...</div>
+            <div className="text-center py-20">
+              <div className="w-10 h-10 border-4 border-[#00e5cc] border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+              <p className="text-gray-400 text-sm">Loading companies...</p>
+            </div>
           ) : filteredCompanies.length === 0 ? (
             <div className="text-center py-20 text-gray-500">No companies found</div>
           ) : (
@@ -490,7 +499,7 @@ const GBPManagement: React.FC = () => {
                 const isExpanded = expandedIds.has(company.id);
                 const summary = getCompanyStatusSummary(company.locations);
                 return (
-                  <div key={company.id} className="border border-white/10 rounded-xl overflow-hidden bg-white/[0.02] backdrop-blur-sm">
+                  <div key={company.id} className="border border-white/5 rounded-xl overflow-hidden bg-[#1a1a24] hover:border-[#00e5cc]/30 transition-all">
                     <div
                       className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-white/5 transition-colors"
                       onClick={() => toggleExpand(company.id)}
@@ -515,11 +524,11 @@ const GBPManagement: React.FC = () => {
                     </div>
 
                     {isExpanded && (
-                      <div className="border-t border-white/10 bg-white/[0.01]">
+                      <div className="border-t border-white/5 bg-[#0a0a0f]/50">
                         <div className="overflow-x-auto">
                           <table className="w-full text-sm">
                             <thead>
-                              <tr className="border-b border-white/10">
+                              <tr className="border-b border-white/5">
                                 <th className="text-left px-4 py-2 text-gray-500 font-medium text-xs uppercase tracking-wider">Address</th>
                                 <th className="text-left px-4 py-2 text-gray-500 font-medium text-xs uppercase tracking-wider hidden md:table-cell">Email</th>
                                 <th className="text-left px-4 py-2 text-gray-500 font-medium text-xs uppercase tracking-wider">Phone</th>
@@ -608,7 +617,7 @@ const GBPManagement: React.FC = () => {
                           </table>
                         </div>
                         <div className="px-4 py-2 border-t border-white/5">
-                          <Button variant="ghost" size="sm" className="text-cyan-400 hover:text-cyan-300 gap-1.5 text-xs" onClick={() => openAddLocation(company.id)}>
+                          <Button variant="ghost" size="sm" className="text-[#00e5cc] hover:text-[#00e5cc]/80 hover:bg-[#00e5cc]/10 gap-1.5 text-xs" onClick={() => openAddLocation(company.id)}>
                             <Plus className="w-3.5 h-3.5" /> Add Location
                           </Button>
                         </div>
@@ -622,7 +631,7 @@ const GBPManagement: React.FC = () => {
           </>)}
 
           {activeTab === 'seo-hub' && (
-            <Suspense fallback={<div className="text-center py-10 text-gray-500">Loading...</div>}>
+            <Suspense fallback={<div className="text-center py-10"><div className="w-8 h-8 border-4 border-[#00e5cc] border-t-transparent rounded-full animate-spin mx-auto mb-2"></div><p className="text-gray-400 text-sm">Loading...</p></div>}>
               <div className="space-y-8">
                 <SOPLibrary />
                 <KanbanBoard />
@@ -633,20 +642,20 @@ const GBPManagement: React.FC = () => {
       </div>
 
       {companyModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="bg-gray-900 border border-white/10 rounded-2xl w-full max-w-md p-6 relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-[#0a0a0f] border border-white/10 rounded-2xl w-full max-w-md p-6 relative">
             <button onClick={() => setCompanyModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white">
               <X className="w-5 h-5" />
             </button>
-            <h2 className="text-lg font-bold mb-4">{editingCompanyId ? 'Edit Company' : 'Add Company'}</h2>
+            <h2 className="text-lg font-bold mb-4 font-orbitron">{editingCompanyId ? 'Edit Company' : 'Add Company'}</h2>
             <form onSubmit={handleCompanySubmit} className="space-y-4">
               <div>
-                <label className="block text-xs text-gray-400 mb-1">Company Name</label>
-                <Input value={companyName} onChange={e => setCompanyName(e.target.value)} className="bg-white/5 border-white/10 text-white" />
+                <label className="block text-xs text-gray-400 mb-1 font-semibold">Company Name</label>
+                <Input value={companyName} onChange={e => setCompanyName(e.target.value)} className="bg-[#1a1a24] border-white/5 text-white focus:border-[#00e5cc]" />
               </div>
               <div className="flex gap-3 justify-end">
                 <Button type="button" variant="ghost" onClick={() => setCompanyModalOpen(false)}>Cancel</Button>
-                <Button type="submit" className="bg-red-600 hover:bg-red-700">{editingCompanyId ? 'Update' : 'Add'}</Button>
+                <Button type="submit" className="bg-gradient-to-r from-[#00e5cc] to-[#00b8a8] text-black font-semibold hover:shadow-lg hover:shadow-[#00e5cc]/30">{editingCompanyId ? 'Update' : 'Add'}</Button>
               </div>
             </form>
           </div>
@@ -654,34 +663,34 @@ const GBPManagement: React.FC = () => {
       )}
 
       {locationModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="bg-gray-900 border border-white/10 rounded-2xl w-full max-w-lg p-6 relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-[#0a0a0f] border border-white/10 rounded-2xl w-full max-w-lg p-6 relative">
             <button onClick={() => setLocationModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white">
               <X className="w-5 h-5" />
             </button>
-            <h2 className="text-lg font-bold mb-4">{editingLocationId ? 'Edit Location' : 'Add Location'}</h2>
+            <h2 className="text-lg font-bold mb-4 font-orbitron">{editingLocationId ? 'Edit Location' : 'Add Location'}</h2>
             <form onSubmit={handleLocationSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs text-gray-400 mb-1">Address</label>
-                <Input value={locationForm.address} onChange={e => setLocationForm(f => ({ ...f, address: e.target.value }))} className="bg-white/5 border-white/10 text-white" />
+                <label className="block text-xs text-gray-400 mb-1 font-semibold">Address</label>
+                <Input value={locationForm.address} onChange={e => setLocationForm(f => ({ ...f, address: e.target.value }))} className="bg-[#1a1a24] border-white/5 text-white focus:border-[#00e5cc]" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs text-gray-400 mb-1">Email</label>
-                  <Input value={locationForm.email} onChange={e => setLocationForm(f => ({ ...f, email: e.target.value }))} className="bg-white/5 border-white/10 text-white" />
+                  <label className="block text-xs text-gray-400 mb-1 font-semibold">Email</label>
+                  <Input value={locationForm.email} onChange={e => setLocationForm(f => ({ ...f, email: e.target.value }))} className="bg-[#1a1a24] border-white/5 text-white focus:border-[#00e5cc]" />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-400 mb-1">Phone</label>
-                  <Input value={locationForm.phone} onChange={e => setLocationForm(f => ({ ...f, phone: e.target.value }))} className="bg-white/5 border-white/10 text-white" />
+                  <label className="block text-xs text-gray-400 mb-1 font-semibold">Phone</label>
+                  <Input value={locationForm.phone} onChange={e => setLocationForm(f => ({ ...f, phone: e.target.value }))} className="bg-[#1a1a24] border-white/5 text-white focus:border-[#00e5cc]" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs text-gray-400 mb-1">Status</label>
+                  <label className="block text-xs text-gray-400 mb-1 font-semibold">Status</label>
                   <select
                     value={locationForm.status}
                     onChange={e => setLocationForm(f => ({ ...f, status: e.target.value as GBPLocation['status'] }))}
-                    className="w-full bg-[#141414] border border-white/10 rounded-md px-3 py-2 text-sm text-white [&>option]:bg-[#141414] [&>option]:text-white"
+                    className="w-full bg-[#1a1a24] border border-white/5 rounded-md px-3 py-2 text-sm text-white focus:border-[#00e5cc] [&>option]:bg-[#1a1a24] [&>option]:text-white"
                   >
                     <option value="verified">Verified</option>
                     <option value="pending">Pending</option>
@@ -690,25 +699,25 @@ const GBPManagement: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-400 mb-1">Notes</label>
-                  <Input value={locationForm.notes} onChange={e => setLocationForm(f => ({ ...f, notes: e.target.value }))} className="bg-white/5 border-white/10 text-white" placeholder="e.g. Next office" />
+                  <label className="block text-xs text-gray-400 mb-1 font-semibold">Notes</label>
+                  <Input value={locationForm.notes} onChange={e => setLocationForm(f => ({ ...f, notes: e.target.value }))} className="bg-[#1a1a24] border-white/5 text-white focus:border-[#00e5cc]" placeholder="e.g. Next office" />
                 </div>
               </div>
               <div>
-                <label className="block text-xs text-gray-400 mb-1 flex items-center gap-1">
+                <label className="block text-xs text-gray-400 mb-1 font-semibold flex items-center gap-1">
                   <LinkIcon className="w-3 h-3" /> Google Profile URL
                 </label>
                 <Input
                   type="url"
                   value={locationForm.googleProfileUrl || ''}
                   onChange={e => setLocationForm(f => ({ ...f, googleProfileUrl: e.target.value }))}
-                  className="bg-white/5 border-white/10 text-white"
+                  className="bg-[#1a1a24] border-white/5 text-white focus:border-[#00e5cc]"
                   placeholder="https://business.google.com/..."
                 />
               </div>
               <div className="flex gap-3 justify-end">
                 <Button type="button" variant="ghost" onClick={() => setLocationModalOpen(false)}>Cancel</Button>
-                <Button type="submit" className="bg-red-600 hover:bg-red-700">{editingLocationId ? 'Update' : 'Add'}</Button>
+                <Button type="submit" className="bg-gradient-to-r from-[#00e5cc] to-[#00b8a8] text-black font-semibold hover:shadow-lg hover:shadow-[#00e5cc]/30">{editingLocationId ? 'Update' : 'Add'}</Button>
               </div>
             </form>
           </div>
@@ -719,14 +728,14 @@ const GBPManagement: React.FC = () => {
         const tasks = tasksModalLocationId ? (seoTasksByLocation.get(tasksModalLocationId) || []) : [];
         const currentWeek = getMonday();
         return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-            <div className="bg-gray-900 border border-white/10 rounded-2xl w-full max-w-md p-6 relative">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <div className="bg-[#0a0a0f] border border-white/10 rounded-2xl w-full max-w-md p-6 relative">
               <button onClick={() => setTasksModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white">
                 <X className="w-5 h-5" />
               </button>
               <div className="flex items-center gap-2 mb-1">
-                <ClipboardList className="w-5 h-5 text-cyan-400" />
-                <h2 className="text-lg font-bold">Weekly Tasks</h2>
+                <ClipboardList className="w-5 h-5 text-[#00e5cc]" />
+                <h2 className="text-lg font-bold font-orbitron">Weekly Tasks</h2>
               </div>
               <p className="text-xs text-gray-500 mb-1 truncate">{tasksModalAddress}</p>
               <p className="text-xs text-gray-400 mb-4">Week of {currentWeek}</p>
@@ -787,8 +796,8 @@ const GBPManagement: React.FC = () => {
         const targetLabel = config?.targetMin ? `${config.targetMin}-${config.target}` : `${config?.target || '?'}`;
 
         return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-            <div className="bg-gray-900 border border-white/10 rounded-2xl w-full max-w-md p-6 relative max-h-[90vh] overflow-y-auto">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <div className="bg-[#0a0a0f] border border-white/10 rounded-2xl w-full max-w-md p-6 relative max-h-[90vh] overflow-y-auto">
               <button onClick={() => { setTaskDetailOpen(null); }} className="absolute top-4 right-4 text-gray-400 hover:text-white">
                 <X className="w-5 h-5" />
               </button>
@@ -797,7 +806,7 @@ const GBPManagement: React.FC = () => {
               </button>
 
               <div className="flex items-center gap-2 mb-3">
-                <Icon className="w-5 h-5 text-cyan-400" />
+                <Icon className="w-5 h-5 text-[#00e5cc]" />
                 <h2 className="text-lg font-bold">{config?.label || task.title}</h2>
               </div>
 
@@ -867,14 +876,14 @@ const GBPManagement: React.FC = () => {
       })()}
 
       {notesModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="bg-gray-900 border border-white/10 rounded-2xl w-full max-w-md p-6 relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-[#0a0a0f] border border-white/10 rounded-2xl w-full max-w-md p-6 relative">
             <button onClick={() => setNotesModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white">
               <X className="w-5 h-5" />
             </button>
             <div className="flex items-center gap-2 mb-1">
               <StickyNote className="w-5 h-5 text-amber-400" />
-              <h2 className="text-lg font-bold">Location Notes</h2>
+              <h2 className="text-lg font-bold font-orbitron">Location Notes</h2>
             </div>
             <p className="text-xs text-gray-500 mb-4 truncate">{notesLocationAddress}</p>
             <textarea
@@ -882,11 +891,11 @@ const GBPManagement: React.FC = () => {
               onChange={e => setNotesText(e.target.value)}
               placeholder="Add notes about this location..."
               rows={6}
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:border-amber-500/50 focus:outline-none resize-none"
+              className="w-full bg-[#1a1a24] border border-white/5 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:border-[#00e5cc] focus:outline-none resize-none"
             />
             <div className="flex gap-3 justify-end mt-4">
               <Button type="button" variant="ghost" onClick={() => setNotesModalOpen(false)}>Cancel</Button>
-              <Button onClick={handleNotesSave} className="bg-red-600 hover:bg-red-700">Save</Button>
+              <Button onClick={handleNotesSave} className="bg-gradient-to-r from-[#00e5cc] to-[#00b8a8] text-black font-semibold hover:shadow-lg hover:shadow-[#00e5cc]/30">Save</Button>
             </div>
           </div>
         </div>
