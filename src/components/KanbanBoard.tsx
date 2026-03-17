@@ -248,6 +248,7 @@ const KanbanBoard: React.FC = () => {
   const [historyTasks, setHistoryTasks] = useState<Array<{ id: string; title: string; week_of: string; due_date: string | null; priority: string; category: string; notes: string; completed_at: string | null; source: 'current' | 'archive' }>>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [expandedHistoryId, setExpandedHistoryId] = useState<string | null>(null);
+  const [expandedArchiveId, setExpandedArchiveId] = useState<string | null>(null);
   const dragStartPos = useRef<{ x: number; y: number } | null>(null);
   const didDrag = useRef(false);
 
@@ -1238,15 +1239,77 @@ const KanbanBoard: React.FC = () => {
                     : task.col === 'in_progress'
                     ? 'border-amber-500/30 bg-amber-500/[0.03]'
                     : 'border-[#00e5cc]/30 bg-[#00e5cc]/[0.03]';
+                  const isExp = expandedArchiveId === task.id;
+                  let parsedNotes = task.notes;
+                  try {
+                    const parsed = JSON.parse(task.notes);
+                    if (parsed && typeof parsed === 'object' && 'freeNotes' in parsed) {
+                      parsedNotes = parsed.freeNotes || '';
+                      if (parsed.count) parsedNotes = `${parsed.count} completed${parsedNotes ? ' — ' + parsedNotes : ''}`;
+                    }
+                  } catch { /* not JSON */ }
+                  const categoryLabels: Record<string, string> = {
+                    'gbp-post': 'GBP Post', 'review-response': 'Review Response', 'citation-audit': 'Citation Audit',
+                    'photo-upload': 'Photo Upload', 'qa-posting': 'Q&A Posting', 'gbp-audit': 'GBP Audit', other: 'Other',
+                  };
+                  const priorityColors: Record<string, string> = {
+                    high: 'text-red-400', medium: 'text-amber-400', low: 'text-green-400',
+                  };
                   return (
-                    <div key={task.id} className={`flex items-center gap-3 px-3 py-2 rounded-lg border ${archiveGlow}`}>
-                      <span className={`w-2 h-2 rounded-full shrink-0 ${task.col === 'finished' ? 'bg-green-500' : task.col === 'in_progress' ? 'bg-amber-500' : 'bg-[#00e5cc]'}`} />
-                      <span className="text-xs text-white truncate flex-1">{task.title}</span>
-                      <span className="text-[10px] text-gray-500 truncate max-w-[100px]">{task.client}</span>
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded border ${task.col === 'finished' ? 'bg-green-500/10 text-green-400 border-green-500/20' : task.col === 'in_progress' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-[#00e5cc]/10 text-[#00e5cc] border-[#00e5cc]/20'}`}>
-                        {task.col === 'finished' ? 'Done' : task.col === 'in_progress' ? 'Incomplete' : 'Not started'}
-                      </span>
-                      <span className="text-[10px] text-gray-600 shrink-0">{formatWeekLabel(task.week_of)}</span>
+                    <div
+                      key={task.id}
+                      className={`rounded-lg border cursor-pointer transition-all hover:border-[#00e5cc]/30 hover:bg-white/[0.02] ${isExp ? 'border-[#00e5cc]/20' : archiveGlow}`}
+                      onClick={() => setExpandedArchiveId(isExp ? null : task.id)}
+                    >
+                      <div className="flex items-center gap-3 px-3 py-2">
+                        <ChevronRight className={`w-3.5 h-3.5 text-gray-500 shrink-0 transition-transform ${isExp ? 'rotate-90' : ''}`} />
+                        <span className={`w-2 h-2 rounded-full shrink-0 ${task.col === 'finished' ? 'bg-green-500' : task.col === 'in_progress' ? 'bg-amber-500' : 'bg-[#00e5cc]'}`} />
+                        <span className="text-xs text-white truncate flex-1">{task.title}</span>
+                        <span className="text-[10px] text-gray-500 truncate max-w-[100px]">{task.client}</span>
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded border ${task.col === 'finished' ? 'bg-green-500/10 text-green-400 border-green-500/20' : task.col === 'in_progress' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-[#00e5cc]/10 text-[#00e5cc] border-[#00e5cc]/20'}`}>
+                          {task.col === 'finished' ? 'Done' : task.col === 'in_progress' ? 'Incomplete' : 'Not started'}
+                        </span>
+                        <span className="text-[10px] text-gray-600 shrink-0">{formatWeekLabel(task.week_of)}</span>
+                      </div>
+                      {isExp && (
+                        <div className="px-3 pb-3 ml-9 space-y-2 border-t border-white/5 pt-2">
+                          {task.category && (
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] text-gray-500 w-16 shrink-0">Category</span>
+                              <span className="text-[11px] text-gray-300">{categoryLabels[task.category] || task.category}</span>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] text-gray-500 w-16 shrink-0">Priority</span>
+                            <span className={`text-[11px] ${priorityColors[task.priority] || 'text-amber-400'}`}>{task.priority}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] text-gray-500 w-16 shrink-0">Status</span>
+                            <span className="text-[11px] text-gray-300">{task.col === 'finished' ? 'Done' : task.col === 'in_progress' ? 'In Progress' : 'New'}</span>
+                          </div>
+                          {task.due_date && (
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] text-gray-500 w-16 shrink-0">Due date</span>
+                              <span className="text-[11px] text-gray-300">{new Date(task.due_date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                            </div>
+                          )}
+                          {task.archived_at && (
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] text-gray-500 w-16 shrink-0">Archived</span>
+                              <span className="text-[11px] text-gray-300">{new Date(task.archived_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}</span>
+                            </div>
+                          )}
+                          {parsedNotes && (
+                            <div>
+                              <span className="text-[10px] text-gray-500">Notes</span>
+                              <p className="text-[11px] text-gray-300 mt-0.5 whitespace-pre-wrap">{parsedNotes}</p>
+                            </div>
+                          )}
+                          {!parsedNotes && !task.category && (
+                            <p className="text-[10px] text-gray-600 italic">No additional details</p>
+                          )}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
