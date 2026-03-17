@@ -288,7 +288,7 @@ const KanbanBoard: React.FC = () => {
           const due = new Date(p[0], p[1] - 1, p[2], 23, 59, 59);
           if (due < now) {
             a.overdue++;
-          } else if (t.col === 'new') {
+          } else {
             const diffDays = (due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
             if (diffDays <= 3) a.approaching++;
           }
@@ -837,7 +837,7 @@ const KanbanBoard: React.FC = () => {
   };
 
   const isApproachingDeadline = (d: string | null, col: string) => {
-    if (!d || col !== 'new') return false;
+    if (!d || col === 'finished') return false;
     const parts = d.split('-').map(Number);
     const due = new Date(parts[0], parts[1] - 1, parts[2], 23, 59, 59);
     const now = new Date();
