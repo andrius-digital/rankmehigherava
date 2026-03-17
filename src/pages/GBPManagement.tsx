@@ -408,7 +408,7 @@ const GBPManagement: React.FC = () => {
   return (
     <>
       <Helmet><title>GBP Management | Rank Me Higher</title></Helmet>
-      <div className="min-h-screen bg-[#0a0a0f] text-white overflow-x-hidden">
+      <div className="min-h-screen bg-[#0a0a0f] text-white overflow-x-hidden mobile-touch-zone">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-6">
             <Link
@@ -673,7 +673,7 @@ const GBPManagement: React.FC = () => {
                           ))}
                         </div>
                         <div className="px-4 py-2 border-t border-white/5">
-                          <Button variant="ghost" size="sm" className="text-[#00e5cc] hover:text-[#00e5cc]/80 hover:bg-[#00e5cc]/10 gap-1.5 text-xs" onClick={() => openAddLocation(company.id)}>
+                          <Button variant="ghost" size="sm" className="min-h-[44px] text-[#00e5cc] hover:text-[#00e5cc]/80 hover:bg-[#00e5cc]/10 gap-1.5 text-xs" onClick={() => openAddLocation(company.id)}>
                             <Plus className="w-3.5 h-3.5" /> Add Location
                           </Button>
                         </div>

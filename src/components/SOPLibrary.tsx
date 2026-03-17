@@ -114,7 +114,7 @@ const SOPLibrary: React.FC = () => {
           <h2 className="text-lg font-bold text-white">SOP Library</h2>
           <span className="text-xs text-gray-500">({sops.length} procedures)</span>
         </div>
-        <Button onClick={openAdd} className="bg-[#00e5cc]/10 border border-[#00e5cc]/30 text-[#00e5cc] hover:bg-[#00e5cc]/20 hover:shadow-[0_0_15px_rgba(0,229,204,0.15)] gap-2 text-xs transition-all">
+        <Button onClick={openAdd} className="min-h-[44px] bg-[#00e5cc]/10 border border-[#00e5cc]/30 text-[#00e5cc] hover:bg-[#00e5cc]/20 hover:shadow-[0_0_15px_rgba(0,229,204,0.15)] gap-2 text-xs transition-all">
           <Plus className="w-3.5 h-3.5" /> Add SOP
         </Button>
       </div>

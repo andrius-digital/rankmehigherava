@@ -903,6 +903,13 @@ select.modal-select {
     justify-content: center;
   }
 
+  .mobile-touch-zone input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+  .mobile-touch-zone select,
+  .mobile-touch-zone textarea,
+  .mobile-touch-zone button {
+    min-height: 44px;
+  }
+
 
   .sop-content pre {
     font-size: 0.75rem !important;
