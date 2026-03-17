@@ -119,6 +119,7 @@ const GBPManagement: React.FC = () => {
   const [tasksModalAddress, setTasksModalAddress] = useState('');
   const [taskDetailOpen, setTaskDetailOpen] = useState<SEOTaskRow | null>(null);
 
+  const [actionRequiredModalOpen, setActionRequiredModalOpen] = useState(false);
   const [notesModalOpen, setNotesModalOpen] = useState(false);
   const [notesLocationId, setNotesLocationId] = useState<string | null>(null);
   const [notesLocationAddress, setNotesLocationAddress] = useState('');
@@ -210,6 +211,16 @@ const GBPManagement: React.FC = () => {
       verified: allLocs.filter(l => l.status === 'verified').length,
       actionRequired: allLocs.filter(l => l.status !== 'verified').length,
     };
+  }, [companies]);
+
+  const actionRequiredData = useMemo(() => {
+    return companies
+      .map(c => {
+        const locs = c.locations.filter(l => l.status !== 'verified');
+        if (locs.length === 0) return null;
+        return { companyId: c.id, companyName: c.name, locations: locs };
+      })
+      .filter(Boolean) as { companyId: string; companyName: string; locations: GBPLocation[] }[];
   }, [companies]);
 
   const filteredCompanies = useMemo(() => {
@@ -444,20 +455,40 @@ const GBPManagement: React.FC = () => {
               { label: 'Companies', value: stats.companies, icon: Building2, accent: 'text-cyan-400' },
               { label: 'Locations', value: stats.locations, icon: MapPin, accent: 'text-purple-400' },
               { label: 'Verified', value: stats.verified, icon: CheckCircle2, accent: 'text-green-400' },
-              { label: 'Action Required', value: stats.actionRequired, icon: FileWarning, accent: 'text-orange-400' },
-            ].map(s => (
-              <div key={s.label} className="bg-[#1a1a24] border border-white/5 rounded-xl p-4 hover:border-[#00e5cc]/30 transition-all">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-lg bg-gradient-to-br from-[#00e5cc]/10 to-[#6366f1]/10 flex items-center justify-center ${s.accent}`}>
-                    <s.icon className="w-5 h-5" />
+              { label: 'Action Required', value: stats.actionRequired, icon: FileWarning, accent: 'text-orange-400', clickable: true },
+            ].map(s => {
+              const isClickable = 'clickable' in s && s.clickable && stats.actionRequired > 0;
+              return isClickable ? (
+                <button
+                  key={s.label}
+                  type="button"
+                  onClick={() => setActionRequiredModalOpen(true)}
+                  className="bg-[#1a1a24] border border-white/5 rounded-xl p-4 transition-all cursor-pointer hover:border-orange-400/50 hover:shadow-lg hover:shadow-orange-400/10 text-left"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-lg bg-gradient-to-br from-[#00e5cc]/10 to-[#6366f1]/10 flex items-center justify-center ${s.accent}`}>
+                      <s.icon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-400 mb-0.5">{s.label}</p>
+                      <p className="text-2xl font-bold text-white">{s.value}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs text-gray-400 mb-0.5">{s.label}</p>
-                    <p className="text-2xl font-bold text-white">{s.value}</p>
+                </button>
+              ) : (
+                <div key={s.label} className="bg-[#1a1a24] border border-white/5 rounded-xl p-4 transition-all hover:border-[#00e5cc]/30">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-lg bg-gradient-to-br from-[#00e5cc]/10 to-[#6366f1]/10 flex items-center justify-center ${s.accent}`}>
+                      <s.icon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-400 mb-0.5">{s.label}</p>
+                      <p className="text-2xl font-bold text-white">{s.value}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 mb-6">
@@ -499,7 +530,7 @@ const GBPManagement: React.FC = () => {
                 const isExpanded = expandedIds.has(company.id);
                 const summary = getCompanyStatusSummary(company.locations);
                 return (
-                  <div key={company.id} className="border border-white/5 rounded-xl overflow-hidden bg-[#1a1a24] hover:border-[#00e5cc]/30 transition-all">
+                  <div key={company.id} id={`company-${company.id}`} className="border border-white/5 rounded-xl overflow-hidden bg-[#1a1a24] hover:border-[#00e5cc]/30 transition-all">
                     <div
                       className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-white/5 transition-colors"
                       onClick={() => toggleExpand(company.id)}
@@ -640,6 +671,69 @@ const GBPManagement: React.FC = () => {
           )}
         </div>
       </div>
+
+      {actionRequiredModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="action-required-title"
+          onClick={() => setActionRequiredModalOpen(false)}
+          onKeyDown={e => { if (e.key === 'Escape') setActionRequiredModalOpen(false); }}
+        >
+          <div className="bg-[#0a0a0f] border border-white/10 rounded-2xl w-full max-w-lg p-6 relative max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setActionRequiredModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white">
+              <X className="w-5 h-5" />
+            </button>
+            <h2 id="action-required-title" className="text-lg font-bold mb-1 font-orbitron flex items-center gap-2">
+              <FileWarning className="w-5 h-5 text-orange-400" />
+              Action Required
+            </h2>
+            <p className="text-xs text-gray-400 mb-4">{stats.actionRequired} location{stats.actionRequired !== 1 ? 's' : ''} need attention</p>
+            <div className="overflow-y-auto flex-1 space-y-3 pr-1">
+              {actionRequiredData.map(group => (
+                <div key={group.companyId} className="bg-[#1a1a24] border border-white/5 rounded-xl p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Building2 className="w-4 h-4 text-cyan-400" />
+                    <span className="text-sm font-semibold text-white">{group.companyName}</span>
+                    <span className="text-xs text-gray-500 ml-auto">{group.locations.length} location{group.locations.length !== 1 ? 's' : ''}</span>
+                  </div>
+                  <div className="space-y-2">
+                    {group.locations.map(loc => (
+                      <button
+                        key={loc.id}
+                        type="button"
+                        onClick={() => {
+                          setSearchQuery('');
+                          setStatusFilter('all');
+                          setExpandedIds(prev => { const next = new Set(prev); next.add(group.companyId); return next; });
+                          setActionRequiredModalOpen(false);
+                          setTimeout(() => {
+                            document.getElementById(`company-${group.companyId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                          }, 150);
+                        }}
+                        className="flex items-center justify-between gap-3 p-2.5 rounded-lg bg-white/[0.03] border border-white/[0.03] hover:border-orange-400/30 hover:bg-white/[0.06] cursor-pointer transition-all group w-full text-left"
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <MapPin className="w-3.5 h-3.5 text-gray-500 shrink-0" />
+                          <span className="text-sm text-gray-300 truncate group-hover:text-white transition-colors">{loc.address}</span>
+                        </div>
+                        <StatusBadge status={loc.status} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              {actionRequiredData.length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  <CheckCircle2 className="w-8 h-8 mx-auto mb-2 text-green-400" />
+                  <p className="text-sm">All locations are verified!</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {companyModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
