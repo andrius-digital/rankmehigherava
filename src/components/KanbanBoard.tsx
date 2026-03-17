@@ -576,9 +576,13 @@ const KanbanBoard: React.FC = () => {
 
   const upcomingTasks: { title: string; locationName: string; locationId: string; priority: TaskPriority; category: TaskCategory }[] = [];
   const defaultTitles = new Set(DEFAULT_WEEKLY_TASKS.map(t => t.title));
+  const seenUpcoming = new Set<string>();
 
   for (const t of tasks) {
     if (t.col === 'finished' && defaultTitles.has(t.title) && t.location_id) {
+      const dedupKey = `${t.location_id}::${t.title}`;
+      if (seenUpcoming.has(dedupKey)) continue;
+      seenUpcoming.add(dedupKey);
       const loc = locationMap.get(t.location_id);
       const tmpl = DEFAULT_WEEKLY_TASKS.find(dt => dt.title === t.title);
       if (tmpl) {
