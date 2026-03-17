@@ -357,7 +357,7 @@ const GBPManagement: React.FC = () => {
 
   const TasksIndicator = ({ loc }: { loc: GBPLocation }) => {
     const tasks = seoTasksByLocation.get(loc.id) || [];
-    const doneCount = tasks.filter(t => t.col === 'finished').length;
+    const doneCount = DEFAULT_TASK_TITLES.filter(title => tasks.some(t => t.title === title && t.col === 'finished')).length;
     const total = DEFAULT_TASK_TITLES.length;
     const color = tasks.length === 0 || doneCount === 0 ? 'text-red-400 border-red-500/30 bg-red-500/10'
       : doneCount >= total ? 'text-green-400 border-green-500/30 bg-green-500/10'
@@ -727,6 +727,7 @@ const GBPManagement: React.FC = () => {
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
+                          {isDone ? <CheckCircle2 className="w-4 h-4 text-green-400" /> : <Circle className="w-4 h-4 text-gray-500" />}
                           <Icon className="w-4 h-4" />
                           <span className="text-sm font-medium text-white">{config?.label || title}</span>
                         </div>
@@ -774,7 +775,7 @@ const GBPManagement: React.FC = () => {
                 <h2 className="text-lg font-bold">{config?.label || task.title}</h2>
               </div>
 
-              <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center gap-3 mb-2">
                 <span className={`text-xs font-medium ${statusColor}`}>{statusLabel}</span>
                 {config && (
                   <span className="text-xs text-gray-400">
@@ -790,6 +791,13 @@ const GBPManagement: React.FC = () => {
                   </div>
                 )}
               </div>
+
+              {task.due_date && (
+                <p className="text-xs text-gray-400 mb-4">
+                  <Clock className="w-3 h-3 inline mr-1" />
+                  Due: {new Date(task.due_date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                </p>
+              )}
 
               {parsed.entries.length > 0 && (
                 <div className="mb-4">
