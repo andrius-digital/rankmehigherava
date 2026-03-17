@@ -55,6 +55,7 @@ const ManagerPortal = lazy(() => import("./pages/ManagerPortal"));
 const TeamAccess = lazy(() => import("./pages/TeamAccess"));
 const TeamPortal = lazy(() => import("./pages/TeamPortal"));
 const ClientProfile = lazy(() => import("./pages/ClientProfile"));
+const GBPManagement = lazy(() => import("./pages/GBPManagement"));
 
 // AVA by Rank Me Higher Pages - lazy loaded
 const SEOSpiderDashboard = lazy(() => import("./pages/seo-spider/Dashboard"));
@@ -219,6 +220,7 @@ const App = () => (
                   </ProtectedRoute>
                 } />
                 <Route path="/manager-portal" element={<ManagerPortal />} />
+                <Route path="/gbpmanagement" element={<GBPManagement />} />
                 <Route path="/team-access" element={
                   <ProtectedRoute requireAdmin>
                     <TeamAccess />
