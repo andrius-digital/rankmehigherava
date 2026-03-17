@@ -15,17 +15,6 @@ import { supabase } from '@/integrations/supabase/client';
 const SOPLibrary = lazy(() => import('@/components/SOPLibrary'));
 const KanbanBoard = lazy(() => import('@/components/KanbanBoard'));
 
-interface WeeklyTasks {
-  weekOf: string;
-  keywords: number;
-  posts: number;
-  images: number;
-  reviews: number;
-  keywordEntries?: string[];
-  postUrls?: string[];
-  reviewUrls?: string[];
-}
-
 interface GBPLocation {
   id: string;
   address: string;
@@ -34,7 +23,50 @@ interface GBPLocation {
   status: 'verified' | 'pending' | 'processing' | 'not_started';
   notes: string;
   googleProfileUrl?: string;
-  weeklyTasks?: WeeklyTasks;
+}
+
+interface SEOTaskRow {
+  id: string;
+  title: string;
+  col: string;
+  notes: string;
+  due_date: string | null;
+  location_id: string | null;
+}
+
+interface ParsedTaskData {
+  count: number;
+  entries: string[];
+  freeNotes: string;
+}
+
+const DEFAULT_TASK_TITLES = [
+  'Add Keywords to GBP',
+  'Create GBP Posts',
+  'Upload New Photos',
+  'Write New Reviews',
+];
+
+const TASK_DETAIL_CONFIG: Record<string, { label: string; icon: React.FC<{ className?: string }>; target: number; targetMin?: number; entryLabel: string; entryType: 'text' | 'url'; description: string }> = {
+  'Add Keywords to GBP': { label: 'Services List Keywords', icon: Hash, target: 10, entryLabel: 'Keywords', entryType: 'text', description: '10 keywords with descriptions per week' },
+  'Create GBP Posts': { label: 'Posts', icon: MessageSquare, target: 4, targetMin: 3, entryLabel: 'Post URLs', entryType: 'url', description: '3-4 posts per week' },
+  'Upload New Photos': { label: 'Images Added', icon: Image, target: 2, targetMin: 1, entryLabel: 'Photo Details', entryType: 'text', description: '1-2 new images per week' },
+  'Write New Reviews': { label: 'Reviews Added', icon: Star, target: 2, entryLabel: 'Review URLs', entryType: 'url', description: '2 reviews per month' },
+};
+
+function parseTaskNotes(notes: string): ParsedTaskData {
+  if (!notes) return { count: 0, entries: [], freeNotes: '' };
+  try {
+    const parsed = JSON.parse(notes);
+    if (parsed && typeof parsed === 'object' && 'count' in parsed) {
+      return {
+        count: parsed.count || 0,
+        entries: Array.isArray(parsed.entries) ? parsed.entries : [],
+        freeNotes: typeof parsed.freeNotes === 'string' ? parsed.freeNotes : '',
+      };
+    }
+  } catch {}
+  return { count: 0, entries: [], freeNotes: notes };
 }
 
 interface GBPCompany {
@@ -54,43 +86,14 @@ const EMPTY_LOCATION: Omit<GBPLocation, 'id'> = {
   address: '', email: '', phone: '', status: 'not_started', notes: '', googleProfileUrl: '',
 };
 
-const TASK_DEFINITIONS = [
-  { key: 'keywords' as const, label: 'Services List Keywords', target: 10, period: 'week', icon: Hash, description: '10 keywords with descriptions per week' },
-  { key: 'posts' as const, label: 'Posts', target: 4, targetMin: 3, period: 'week', icon: MessageSquare, description: '3-4 posts per week' },
-  { key: 'images' as const, label: 'Images Added', target: 2, targetMin: 1, period: 'week', icon: Image, description: '1-2 new images per week' },
-  { key: 'reviews' as const, label: 'Reviews Added', target: 2, period: 'month', icon: Star, description: '2 reviews per month' },
-];
-
+function pad(n: number): string { return n < 10 ? `0${n}` : `${n}`; }
+function toDateStr(d: Date): string { return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; }
 function getMonday(): string {
   const d = new Date();
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-  const monday = new Date(d.setDate(diff));
-  return monday.toISOString().split('T')[0];
-}
-
-function getTaskColor(value: number, target: number, targetMin?: number): string {
-  const min = targetMin ?? target;
-  if (value >= min) return 'text-green-400';
-  if (value > 0) return 'text-amber-400';
-  return 'text-red-400';
-}
-
-function getTaskBgColor(value: number, target: number, targetMin?: number): string {
-  const min = targetMin ?? target;
-  if (value >= min) return 'bg-green-500/20 border-green-500/30';
-  if (value > 0) return 'bg-amber-500/20 border-amber-500/30';
-  return 'bg-red-500/20 border-red-500/30';
-}
-
-function countTasksDone(wt: WeeklyTasks | undefined): number {
-  if (!wt) return 0;
-  let done = 0;
-  if (wt.keywords >= 10) done++;
-  if (wt.posts >= 3) done++;
-  if (wt.images >= 1) done++;
-  if (wt.reviews >= 2) done++;
-  return done;
+  const now = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const day = now.getDay();
+  now.setDate(now.getDate() - day + (day === 0 ? -6 : 1));
+  return toDateStr(now);
 }
 
 const GBPManagement: React.FC = () => {
@@ -110,11 +113,11 @@ const GBPManagement: React.FC = () => {
   const [editingLocationId, setEditingLocationId] = useState<string | null>(null);
   const [locationForm, setLocationForm] = useState(EMPTY_LOCATION);
 
+  const [seoTasksByLocation, setSeoTasksByLocation] = useState<Map<string, SEOTaskRow[]>>(new Map());
   const [tasksModalOpen, setTasksModalOpen] = useState(false);
-  const [tasksCompanyId, setTasksCompanyId] = useState<string | null>(null);
-  const [tasksLocationId, setTasksLocationId] = useState<string | null>(null);
-  const [tasksLocationAddress, setTasksLocationAddress] = useState('');
-  const [tasksForm, setTasksForm] = useState<WeeklyTasks>({ weekOf: getMonday(), keywords: 0, posts: 0, images: 0, reviews: 0, keywordEntries: [], postUrls: [], reviewUrls: [] });
+  const [tasksModalLocationId, setTasksModalLocationId] = useState<string | null>(null);
+  const [tasksModalAddress, setTasksModalAddress] = useState('');
+  const [taskDetailOpen, setTaskDetailOpen] = useState<SEOTaskRow | null>(null);
 
   const [notesModalOpen, setNotesModalOpen] = useState(false);
   const [notesLocationId, setNotesLocationId] = useState<string | null>(null);
@@ -144,7 +147,6 @@ const GBPManagement: React.FC = () => {
           status: (loc.status as GBPLocation['status']) || 'not_started',
           notes: loc.notes || '',
           googleProfileUrl: loc.google_profile_url || '',
-          weeklyTasks: loc.weekly_tasks as WeeklyTasks | undefined,
         };
         const arr = locsByCompany.get(loc.company_id) || [];
         arr.push(mapped);
@@ -165,7 +167,28 @@ const GBPManagement: React.FC = () => {
     }
   }, []);
 
-  useEffect(() => { fetchCompanies(); }, [fetchCompanies]);
+  const fetchSeoTasks = useCallback(async () => {
+    try {
+      const currentWeek = getMonday();
+      const { data, error } = await supabase
+        .from('seo_tasks')
+        .select('id, title, col, notes, due_date, location_id')
+        .eq('week_of', currentWeek);
+      if (error) throw error;
+      const map = new Map<string, SEOTaskRow[]>();
+      for (const row of (data || [])) {
+        if (!row.location_id) continue;
+        const arr = map.get(row.location_id) || [];
+        arr.push(row as SEOTaskRow);
+        map.set(row.location_id, arr);
+      }
+      setSeoTasksByLocation(map);
+    } catch {
+      console.error('Failed to load SEO tasks');
+    }
+  }, []);
+
+  useEffect(() => { fetchCompanies(); fetchSeoTasks(); }, [fetchCompanies, fetchSeoTasks]);
 
   const stats = useMemo(() => {
     const allLocs = companies.flatMap(c => c.locations);
@@ -292,18 +315,12 @@ const GBPManagement: React.FC = () => {
     } catch { toast.error('Failed to delete location'); }
   };
 
-  const openWeeklyTasks = (companyId: string, loc: GBPLocation) => {
-    setTasksCompanyId(companyId);
-    setTasksLocationId(loc.id);
-    setTasksLocationAddress(loc.address || 'Location');
-    const currentWeek = getMonday();
-    const wt = loc.weeklyTasks;
-    if (wt && wt.weekOf === currentWeek) {
-      setTasksForm({ ...wt, keywordEntries: wt.keywordEntries || [], postUrls: wt.postUrls || [], reviewUrls: wt.reviewUrls || [] });
-    } else {
-      setTasksForm({ weekOf: currentWeek, keywords: 0, posts: 0, images: 0, reviews: wt?.reviews || 0, keywordEntries: [], postUrls: [], reviewUrls: wt?.reviewUrls || [] });
-    }
+  const openTasksSummary = (loc: GBPLocation) => {
+    setTasksModalLocationId(loc.id);
+    setTasksModalAddress(loc.address || 'Location');
+    setTaskDetailOpen(null);
     setTasksModalOpen(true);
+    fetchSeoTasks();
   };
 
   const openNotesModal = (loc: GBPLocation) => {
@@ -326,18 +343,6 @@ const GBPManagement: React.FC = () => {
     } catch { toast.error('Failed to save notes'); }
   };
 
-  const handleWeeklyTasksSave = async () => {
-    if (!tasksLocationId) return;
-    try {
-      const { error } = await supabase.from('gbp_locations').update({
-        weekly_tasks: tasksForm as unknown as Record<string, unknown>,
-      }).eq('id', tasksLocationId);
-      if (error) throw error;
-      toast.success('Weekly tasks updated');
-      setTasksModalOpen(false);
-      fetchCompanies();
-    } catch { toast.error('Failed to save weekly tasks'); }
-  };
 
   const StatusBadge = ({ status }: { status: string }) => {
     const cfg = STATUS_CONFIG[status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.not_started;
@@ -351,16 +356,16 @@ const GBPManagement: React.FC = () => {
   };
 
   const TasksIndicator = ({ loc }: { loc: GBPLocation }) => {
-    const done = countTasksDone(loc.weeklyTasks);
-    const currentWeek = getMonday();
-    const isCurrentWeek = loc.weeklyTasks?.weekOf === currentWeek;
-    const color = !isCurrentWeek || done === 0 ? 'text-red-400 border-red-500/30 bg-red-500/10'
-      : done === 4 ? 'text-green-400 border-green-500/30 bg-green-500/10'
+    const tasks = seoTasksByLocation.get(loc.id) || [];
+    const doneCount = tasks.filter(t => t.col === 'finished').length;
+    const total = DEFAULT_TASK_TITLES.length;
+    const color = tasks.length === 0 || doneCount === 0 ? 'text-red-400 border-red-500/30 bg-red-500/10'
+      : doneCount >= total ? 'text-green-400 border-green-500/30 bg-green-500/10'
       : 'text-amber-400 border-amber-500/30 bg-amber-500/10';
     return (
       <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium border ${color}`}>
         <ClipboardList className="w-3 h-3" />
-        {isCurrentWeek ? `${done}/4` : '0/4'}
+        {doneCount}/{total}
       </span>
     );
   };
@@ -539,7 +544,7 @@ const GBPManagement: React.FC = () => {
                                   </td>
                                   <td className="px-4 py-2.5">
                                     <button
-                                      onClick={() => openWeeklyTasks(company.id, loc)}
+                                      onClick={() => openTasksSummary(loc)}
                                       className="hover:opacity-80 transition-opacity"
                                     >
                                       <TasksIndicator loc={loc} />
@@ -685,153 +690,147 @@ const GBPManagement: React.FC = () => {
         </div>
       )}
 
-      {tasksModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="bg-gray-900 border border-white/10 rounded-2xl w-full max-w-md p-6 relative max-h-[90vh] overflow-y-auto">
-            <button onClick={() => setTasksModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white">
-              <X className="w-5 h-5" />
-            </button>
-            <div className="flex items-center gap-2 mb-1">
-              <ClipboardList className="w-5 h-5 text-cyan-400" />
-              <h2 className="text-lg font-bold">Weekly Tasks</h2>
-            </div>
-            <p className="text-xs text-gray-500 mb-4 truncate">{tasksLocationAddress}</p>
-            <p className="text-xs text-gray-400 mb-4">Week of {tasksForm.weekOf}</p>
+      {tasksModalOpen && !taskDetailOpen && (() => {
+        const tasks = tasksModalLocationId ? (seoTasksByLocation.get(tasksModalLocationId) || []) : [];
+        const currentWeek = getMonday();
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+            <div className="bg-gray-900 border border-white/10 rounded-2xl w-full max-w-md p-6 relative">
+              <button onClick={() => setTasksModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+              <div className="flex items-center gap-2 mb-1">
+                <ClipboardList className="w-5 h-5 text-cyan-400" />
+                <h2 className="text-lg font-bold">Weekly Tasks</h2>
+              </div>
+              <p className="text-xs text-gray-500 mb-1 truncate">{tasksModalAddress}</p>
+              <p className="text-xs text-gray-400 mb-4">Week of {currentWeek}</p>
 
-            <div className="space-y-3">
-              {TASK_DEFINITIONS.map(task => {
-                const value = tasksForm[task.key];
-                const colorClass = getTaskColor(value, task.target, task.targetMin);
-                const bgClass = getTaskBgColor(value, task.target, task.targetMin);
-                const Icon = task.icon;
-                const targetLabel = task.targetMin ? `${task.targetMin}-${task.target}` : `${task.target}`;
-                const hasUrls = task.key === 'posts' || task.key === 'reviews';
-                const hasKeywordEntries = task.key === 'keywords';
-                const urlKey = task.key === 'posts' ? 'postUrls' : 'reviewUrls';
-                const urls = hasUrls ? (tasksForm[urlKey] || []) : [];
-                const keywordEntries = hasKeywordEntries ? (tasksForm.keywordEntries || []) : [];
+              <div className="space-y-2">
+                {DEFAULT_TASK_TITLES.map(title => {
+                  const task = tasks.find(t => t.title === title);
+                  const isDone = task?.col === 'finished';
+                  const inProgress = task?.col === 'in_progress';
+                  const config = TASK_DETAIL_CONFIG[title];
+                  const Icon = config?.icon || ClipboardList;
+                  const parsed = task ? parseTaskNotes(task.notes || '') : null;
+                  const statusColor = isDone ? 'text-green-400 border-green-500/30 bg-green-500/10'
+                    : inProgress ? 'text-amber-400 border-amber-500/30 bg-amber-500/10'
+                    : 'text-red-400 border-red-500/30 bg-red-500/10';
+                  const statusLabel = isDone ? 'Done' : inProgress ? 'In Progress' : task ? 'To Do' : 'Not Started';
 
-                const syncUrls = (newCount: number, prev: WeeklyTasks): WeeklyTasks => {
-                  const updated: WeeklyTasks = { ...prev, [task.key]: newCount };
-                  if (hasUrls) {
-                    const currentUrls = [...(prev[urlKey] || [])];
-                    while (currentUrls.length < newCount) currentUrls.push('');
-                    updated[urlKey] = currentUrls.slice(0, newCount);
-                  }
-                  if (hasKeywordEntries) {
-                    const currentEntries = [...(prev.keywordEntries || [])];
-                    while (currentEntries.length < newCount) currentEntries.push('');
-                    updated.keywordEntries = currentEntries.slice(0, newCount);
-                  }
-                  return updated;
-                };
-
-                return (
-                  <div key={task.key} className={`border rounded-lg p-3 ${bgClass}`}>
-                    <div className="flex items-center justify-between mb-1">
-                      <div className="flex items-center gap-2">
-                        <Icon className={`w-4 h-4 ${colorClass}`} />
-                        <span className="text-sm font-medium text-white">{task.label}</span>
-                      </div>
-                      <span className={`text-xs font-bold ${colorClass}`}>{value}/{targetLabel}</span>
-                    </div>
-                    <p className="text-[10px] text-gray-500 mb-2">{task.description}</p>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setTasksForm(f => syncUrls(Math.max(0, f[task.key] - 1), f))}
-                        className="w-7 h-7 rounded bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-sm font-bold transition-colors"
-                      >
-                        −
-                      </button>
-                      <input
-                        type="number"
-                        min="0"
-                        value={value}
-                        onChange={e => setTasksForm(f => syncUrls(Math.max(0, parseInt(e.target.value) || 0), f))}
-                        className="w-14 text-center bg-white/10 border border-white/10 rounded px-2 py-1 text-sm text-white"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setTasksForm(f => syncUrls(f[task.key] + 1, f))}
-                        className="w-7 h-7 rounded bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-sm font-bold transition-colors"
-                      >
-                        +
-                      </button>
-                      <div className="flex-1 bg-white/5 rounded-full h-1.5 ml-2">
-                        <div
-                          className={`h-1.5 rounded-full transition-all ${value >= (task.targetMin ?? task.target) ? 'bg-green-500' : value > 0 ? 'bg-amber-500' : 'bg-red-500'}`}
-                          style={{ width: `${Math.min(100, (value / task.target) * 100)}%` }}
-                        />
-                      </div>
-                    </div>
-                    {hasKeywordEntries && value > 0 && (
-                      <div className="mt-2 space-y-1.5">
-                        <div className="flex items-center gap-1 mb-1">
-                          <Hash className="w-3 h-3 text-gray-500" />
-                          <span className="text-[10px] text-gray-500 uppercase tracking-wide">Keyword Details</span>
+                  return (
+                    <button
+                      key={title}
+                      onClick={() => task && setTaskDetailOpen(task)}
+                      className={`w-full border rounded-lg p-3 text-left transition-colors ${statusColor} ${task ? 'hover:bg-white/5 cursor-pointer' : 'opacity-60 cursor-default'}`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Icon className="w-4 h-4" />
+                          <span className="text-sm font-medium text-white">{config?.label || title}</span>
                         </div>
-                        {Array.from({ length: value }, (_, i) => (
-                          <div key={i} className="flex items-center gap-2">
-                            <span className="text-[10px] text-gray-600 w-4 text-right shrink-0">{i + 1}.</span>
-                            <input
-                              type="text"
-                              placeholder="Enter keyword added..."
-                              value={keywordEntries[i] || ''}
-                              onChange={e => {
-                                const newEntries = [...(tasksForm.keywordEntries || [])];
-                                while (newEntries.length <= i) newEntries.push('');
-                                newEntries[i] = e.target.value;
-                                setTasksForm(f => ({ ...f, keywordEntries: newEntries }));
-                              }}
-                              className="flex-1 bg-white/5 border border-white/10 rounded px-2 py-1 text-xs text-white placeholder:text-gray-600 focus:border-cyan-500/50 focus:outline-none"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    {hasUrls && value > 0 && (
-                      <div className="mt-2 space-y-1.5">
-                        <div className="flex items-center gap-1 mb-1">
-                          <LinkIcon className="w-3 h-3 text-gray-500" />
-                          <span className="text-[10px] text-gray-500 uppercase tracking-wide">{task.key === 'posts' ? 'Post' : 'Review'} URLs</span>
+                        <div className="flex items-center gap-2">
+                          {parsed && parsed.count > 0 && (
+                            <span className="text-[10px] text-gray-400">{parsed.count}/{config?.targetMin ? `${config.targetMin}-` : ''}{config?.target || '?'}</span>
+                          )}
+                          <span className="text-[10px] font-medium">{statusLabel}</span>
+                          {task && <ChevronRight className="w-3 h-3 text-gray-500" />}
                         </div>
-                        {Array.from({ length: value }, (_, i) => (
-                          <div key={i} className="flex items-center gap-2">
-                            <span className="text-[10px] text-gray-600 w-4 text-right shrink-0">{i + 1}.</span>
-                            <input
-                              type="url"
-                              placeholder={`Paste ${task.key === 'posts' ? 'post' : 'review'} URL...`}
-                              value={urls[i] || ''}
-                              onChange={e => {
-                                const newUrls = [...(tasksForm[urlKey] || [])];
-                                while (newUrls.length <= i) newUrls.push('');
-                                newUrls[i] = e.target.value;
-                                setTasksForm(f => ({ ...f, [urlKey]: newUrls }));
-                              }}
-                              className="flex-1 bg-white/5 border border-white/10 rounded px-2 py-1 text-xs text-white placeholder:text-gray-600 focus:border-cyan-500/50 focus:outline-none"
-                            />
-                            {urls[i] && (
-                              <a href={urls[i]} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 shrink-0">
-                                <LinkIcon className="w-3 h-3" />
-                              </a>
-                            )}
-                          </div>
-                        ))}
                       </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="flex gap-3 justify-end mt-5">
-              <Button type="button" variant="ghost" onClick={() => setTasksModalOpen(false)}>Cancel</Button>
-              <Button onClick={handleWeeklyTasksSave} className="bg-red-600 hover:bg-red-700">Save</Button>
+                      {config && <p className="text-[10px] text-gray-500 mt-1">{config.description}</p>}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
+
+      {taskDetailOpen && (() => {
+        const task = taskDetailOpen;
+        const config = TASK_DETAIL_CONFIG[task.title];
+        const Icon = config?.icon || ClipboardList;
+        const parsed = parseTaskNotes(task.notes || '');
+        const isDone = task.col === 'finished';
+        const inProgress = task.col === 'in_progress';
+        const statusLabel = isDone ? 'Done' : inProgress ? 'In Progress' : 'To Do';
+        const statusColor = isDone ? 'text-green-400' : inProgress ? 'text-amber-400' : 'text-red-400';
+        const targetLabel = config?.targetMin ? `${config.targetMin}-${config.target}` : `${config?.target || '?'}`;
+
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+            <div className="bg-gray-900 border border-white/10 rounded-2xl w-full max-w-md p-6 relative max-h-[90vh] overflow-y-auto">
+              <button onClick={() => { setTaskDetailOpen(null); }} className="absolute top-4 right-4 text-gray-400 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+              <button onClick={() => setTaskDetailOpen(null)} className="flex items-center gap-1 text-xs text-gray-400 hover:text-white mb-3">
+                <ChevronLeft className="w-3 h-3" /> Back to summary
+              </button>
+
+              <div className="flex items-center gap-2 mb-3">
+                <Icon className="w-5 h-5 text-cyan-400" />
+                <h2 className="text-lg font-bold">{config?.label || task.title}</h2>
+              </div>
+
+              <div className="flex items-center gap-3 mb-4">
+                <span className={`text-xs font-medium ${statusColor}`}>{statusLabel}</span>
+                {config && (
+                  <span className="text-xs text-gray-400">
+                    {parsed.count}/{targetLabel} completed
+                  </span>
+                )}
+                {config && (
+                  <div className="flex-1 bg-white/5 rounded-full h-1.5">
+                    <div
+                      className={`h-1.5 rounded-full transition-all ${isDone ? 'bg-green-500' : parsed.count > 0 ? 'bg-amber-500' : 'bg-red-500'}`}
+                      style={{ width: `${Math.min(100, (parsed.count / (config.target || 1)) * 100)}%` }}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {parsed.entries.length > 0 && (
+                <div className="mb-4">
+                  <div className="flex items-center gap-1 mb-2">
+                    {config?.entryType === 'url' ? <LinkIcon className="w-3 h-3 text-gray-500" /> : <Hash className="w-3 h-3 text-gray-500" />}
+                    <span className="text-[10px] text-gray-500 uppercase tracking-wide">{config?.entryLabel || 'Entries'}</span>
+                  </div>
+                  <div className="space-y-1.5">
+                    {parsed.entries.map((entry, i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <span className="text-[10px] text-gray-600 w-4 text-right shrink-0">{i + 1}.</span>
+                        {config?.entryType === 'url' && entry ? (
+                          <a href={entry} target="_blank" rel="noopener noreferrer" className="text-xs text-cyan-400 hover:text-cyan-300 truncate flex-1">
+                            {entry}
+                          </a>
+                        ) : (
+                          <span className="text-xs text-gray-300 flex-1">{entry || '—'}</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {parsed.freeNotes && (
+                <div className="mb-4">
+                  <div className="flex items-center gap-1 mb-2">
+                    <StickyNote className="w-3 h-3 text-gray-500" />
+                    <span className="text-[10px] text-gray-500 uppercase tracking-wide">Notes</span>
+                  </div>
+                  <p className="text-xs text-gray-300 bg-white/5 border border-white/10 rounded-lg p-3 whitespace-pre-wrap">{parsed.freeNotes}</p>
+                </div>
+              )}
+
+              {!parsed.entries.length && !parsed.freeNotes && parsed.count === 0 && (
+                <p className="text-sm text-gray-500 text-center py-4">No data recorded yet for this task.</p>
+              )}
+            </div>
+          </div>
+        );
+      })()}
 
       {notesModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
