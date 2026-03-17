@@ -601,13 +601,15 @@ const KanbanBoard: React.FC = () => {
     e.preventDefault();
     if (!form.title.trim()) { toast.error('Title is required'); return; }
     if (!form.location_id) { toast.error('Please select a location'); return; }
+    let effectiveCol = form.col;
     if (form.col === 'finished') {
       const typeConfig = TASK_TYPE_MAP[form.title.trim()];
       if (typeConfig) {
         const minRequired = typeConfig.targetMin ?? typeConfig.target;
         if (taskData.count < minRequired) {
-          toast.error(`Fill out the task first (need at least ${minRequired} ${typeConfig.label?.toLowerCase() || 'items'})`);
-          return;
+          const existingTask = editingId ? tasks.find(t => t.id === editingId) : null;
+          effectiveCol = existingTask?.col && existingTask.col !== 'finished' ? existingTask.col : 'in_progress';
+          toast.warning(`Task saved but kept in "${COLUMNS.find(c => c.key === effectiveCol)?.label || effectiveCol}" — need at least ${minRequired} ${typeConfig.label?.toLowerCase() || 'items'} to finish`);
         }
       }
     }
@@ -618,7 +620,7 @@ const KanbanBoard: React.FC = () => {
         ? serializeTaskData({ ...taskData, freeNotes: form.notes.trim() })
         : form.notes.trim();
       const existingTask = editingId ? tasks.find(t => t.id === editingId) : null;
-      const completedAtValue = form.col === 'finished'
+      const completedAtValue = effectiveCol === 'finished'
         ? (existingTask?.col === 'finished' ? existingTask.completed_at : new Date().toISOString())
         : null;
       const row = {
@@ -631,7 +633,7 @@ const KanbanBoard: React.FC = () => {
         priority: form.priority,
         category: form.category,
         notes: notesValue,
-        col: form.col,
+        col: effectiveCol,
         completed_at: completedAtValue,
       };
       if (editingId) {
