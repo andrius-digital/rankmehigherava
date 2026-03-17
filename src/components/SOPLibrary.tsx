@@ -12,29 +12,14 @@ import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 
 type SOPRow = Database['public']['Tables']['sops']['Row'];
-type SOPCategory = 'gbp' | 'citations' | 'reviews' | 'on-page' | 'reporting';
+type SOP = SOPRow;
 
-interface SOP extends Omit<SOPRow, 'category'> {
-  category: SOPCategory;
-}
-
-const CATEGORY_CONFIG: Record<string, { label: string; color: string }> = {
-  gbp: { label: 'GBP', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
-  citations: { label: 'Citations', color: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
-  reviews: { label: 'Reviews', color: 'bg-green-500/20 text-green-400 border-green-500/30' },
-  'on-page': { label: 'On-Page', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
-  reporting: { label: 'Reporting', color: 'bg-gray-500/20 text-gray-400 border-gray-500/30' },
-};
-
-const CATEGORIES = Object.keys(CATEGORY_CONFIG) as SOP['category'][];
-
-const EMPTY_SOP = { title: '', category: 'gbp' as SOP['category'], description: '', content: '' };
+const EMPTY_SOP = { title: '', category: 'gbp', description: '', content: '' };
 
 const SOPLibrary: React.FC = () => {
   const [sops, setSops] = useState<SOP[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -47,10 +32,7 @@ const SOPLibrary: React.FC = () => {
         .select('*')
         .order('created_at', { ascending: false });
       if (error) throw error;
-      setSops((data || []).map((row) => ({
-        ...row,
-        category: (CATEGORIES as readonly string[]).includes(row.category) ? row.category as SOPCategory : 'gbp',
-      })));
+      setSops(data || []);
     } catch {
       toast.error('Failed to load SOPs');
     } finally {
@@ -61,7 +43,6 @@ const SOPLibrary: React.FC = () => {
   useEffect(() => { fetchSops(); }, [fetchSops]);
 
   const filtered = sops.filter(s => {
-    if (categoryFilter !== 'all' && s.category !== categoryFilter) return false;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       return s.title.toLowerCase().includes(q) || s.description.toLowerCase().includes(q);
@@ -72,7 +53,7 @@ const SOPLibrary: React.FC = () => {
   const openAdd = () => { setEditingId(null); setForm(EMPTY_SOP); setModalOpen(true); };
   const openEdit = (s: SOP) => {
     setEditingId(s.id);
-    setForm({ title: s.title, category: s.category, description: s.description, content: s.content });
+    setForm({ title: s.title, category: s.category || 'gbp', description: s.description, content: s.content });
     setModalOpen(true);
   };
 
@@ -120,15 +101,6 @@ const SOPLibrary: React.FC = () => {
     return DOMPurify.sanitize(html);
   };
 
-  const CategoryBadge = ({ category }: { category: string }) => {
-    const cfg = CATEGORY_CONFIG[category] || CATEGORY_CONFIG.gbp;
-    return (
-      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${cfg.color}`}>
-        {cfg.label}
-      </span>
-    );
-  };
-
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
@@ -142,8 +114,8 @@ const SOPLibrary: React.FC = () => {
         </Button>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3 mb-4">
-        <div className="relative flex-1">
+      <div className="mb-4">
+        <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
           <Input
             placeholder="Search SOPs..."
@@ -152,16 +124,6 @@ const SOPLibrary: React.FC = () => {
             className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 h-9 text-sm"
           />
         </div>
-        <select
-          value={categoryFilter}
-          onChange={e => setCategoryFilter(e.target.value)}
-          className="compact-select bg-[#1a1a24] border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:border-[#00e5cc]/50 focus:ring-1 focus:ring-[#00e5cc]/20 focus:outline-none transition-colors [&>option]:bg-[#1a1a24] [&>option]:text-white"
-        >
-          <option value="all">All Categories</option>
-          {CATEGORIES.map(c => (
-            <option key={c} value={c}>{CATEGORY_CONFIG[c].label}</option>
-          ))}
-        </select>
       </div>
 
       {loading ? (
@@ -188,7 +150,6 @@ const SOPLibrary: React.FC = () => {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-semibold text-white text-sm truncate">{sop.title}</span>
-                      <CategoryBadge category={sop.category} />
                     </div>
                     <p className="text-xs text-gray-400 line-clamp-2">{sop.description}</p>
                   </div>
@@ -227,23 +188,9 @@ const SOPLibrary: React.FC = () => {
                 <label className="block text-xs text-gray-400 mb-1">Title</label>
                 <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} className="bg-white/5 border-white/10 text-white" />
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs text-gray-400 mb-1">Category</label>
-                  <select
-                    value={form.category}
-                    onChange={e => setForm(f => ({ ...f, category: e.target.value as SOP['category'] }))}
-                    className="modal-select w-full bg-[#1a1a24] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-[#00e5cc]/50 focus:ring-1 focus:ring-[#00e5cc]/20 focus:outline-none transition-colors [&>option]:bg-[#1a1a24] [&>option]:text-white"
-                  >
-                    {CATEGORIES.map(c => (
-                      <option key={c} value={c}>{CATEGORY_CONFIG[c].label}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-400 mb-1">Short Description</label>
-                  <Input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} className="bg-white/5 border-white/10 text-white" />
-                </div>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">Short Description</label>
+                <Input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} className="bg-white/5 border-white/10 text-white" />
               </div>
               <div>
                 <label className="block text-xs text-gray-400 mb-1">Full Content (Markdown supported)</label>
