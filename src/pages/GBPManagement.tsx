@@ -420,7 +420,7 @@ const GBPManagement: React.FC = () => {
 
   return (
     <>
-      <Helmet><title>GBP Management | Rank Me Higher</title></Helmet>
+      <Helmet><title>{activeTab === 'gbp' ? 'GBP Management' : 'Local SEO Specialist Hub'} | Rank Me Higher</title></Helmet>
       <div className="min-h-screen bg-[#0a0a0f] text-white overflow-x-hidden mobile-touch-zone">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-6">
@@ -433,9 +433,11 @@ const GBPManagement: React.FC = () => {
             </Link>
             <div className="flex-1">
               <h1 className="text-2xl sm:text-3xl font-bold font-orbitron text-white">
-                GBP Management
+                {activeTab === 'gbp' ? 'GBP Management' : 'Local SEO Specialist Hub'}
               </h1>
-              <p className="text-sm text-gray-400 mt-1">Google Business Profile verification tracker</p>
+              <p className="text-sm text-gray-400 mt-1">
+                {activeTab === 'gbp' ? 'Google Business Profile verification tracker' : 'SOPs, task boards & resources for local SEO'}
+              </p>
             </div>
             <Button
               onClick={() => setActivityLogOpen(true)}
