@@ -862,13 +862,13 @@ const KanbanBoard: React.FC = () => {
         <div className="flex items-center gap-2 flex-wrap">
           <Button
             variant="ghost" size="sm"
-            className={`gap-1.5 text-xs ${showArchive ? '!bg-amber-500/10 !text-amber-400 !border-amber-500/30 border shadow-[0_0_10px_rgba(245,158,11,0.15)]' : '!border-white/10 border !text-gray-400 hover:!text-amber-400 hover:!border-amber-500/30 hover:!bg-amber-500/5'}`}
+            className={`gap-1.5 text-xs min-h-[44px] ${showArchive ? '!bg-amber-500/10 !text-amber-400 !border-amber-500/30 border shadow-[0_0_10px_rgba(245,158,11,0.15)]' : '!border-white/10 border !text-gray-400 hover:!text-amber-400 hover:!border-amber-500/30 hover:!bg-amber-500/5'}`}
             onClick={() => setShowArchive(!showArchive)}
           >
             <Archive className="w-3.5 h-3.5" /> {showArchive ? 'Hide Archive' : 'View Archive'}
           </Button>
           {selectedCompanyId && (
-            <Button onClick={() => openAdd('new')} className="bg-[#00e5cc]/10 border border-[#00e5cc]/30 text-[#00e5cc] hover:bg-[#00e5cc]/20 hover:shadow-[0_0_15px_rgba(0,229,204,0.15)] gap-2 text-xs font-semibold transition-all">
+            <Button onClick={() => openAdd('new')} className="min-h-[44px] bg-[#00e5cc]/10 border border-[#00e5cc]/30 text-[#00e5cc] hover:bg-[#00e5cc]/20 hover:shadow-[0_0_15px_rgba(0,229,204,0.15)] gap-2 text-xs font-semibold transition-all">
               <Plus className="w-3.5 h-3.5" /> Add Task
             </Button>
           )}
@@ -888,7 +888,7 @@ const KanbanBoard: React.FC = () => {
               }}
               aria-haspopup="listbox"
               aria-expanded={companyDropdownOpen}
-              className="w-full flex items-center justify-between gap-2 bg-[#1a1a24] border border-white/10 rounded-full px-4 py-1.5 text-sm text-white text-left hover:border-[#00e5cc]/30 focus:border-[#00e5cc]/50 focus:ring-1 focus:ring-[#00e5cc]/20 transition-all"
+              className="w-full flex items-center justify-between gap-2 bg-[#1a1a24] border border-white/10 rounded-full px-4 py-1.5 min-h-[44px] text-sm text-white text-left hover:border-[#00e5cc]/30 focus:border-[#00e5cc]/50 focus:ring-1 focus:ring-[#00e5cc]/20 transition-all"
             >
               <span className="truncate flex items-center gap-1.5">
                 {selectedCompany?.name || 'Select company'}

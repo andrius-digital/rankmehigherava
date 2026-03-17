@@ -410,10 +410,10 @@ const GBPManagement: React.FC = () => {
       <Helmet><title>GBP Management | Rank Me Higher</title></Helmet>
       <div className="min-h-screen bg-[#0a0a0f] text-white overflow-x-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-          <div className="flex items-center gap-3 mb-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-6">
             <Link
               to={sessionStorage.getItem("rmh_team_session") ? "/team" : "/avaadminpanel"}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-500/10 backdrop-blur-md border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20 hover:border-cyan-500/40 transition-all font-orbitron text-sm shrink-0"
+              className="inline-flex items-center gap-2 px-4 py-2 min-h-[44px] rounded-xl bg-cyan-500/10 backdrop-blur-md border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20 hover:border-cyan-500/40 transition-all font-orbitron text-sm shrink-0"
             >
               <ChevronLeft className="w-4 h-4" />
               Back
@@ -450,7 +450,7 @@ const GBPManagement: React.FC = () => {
           </div>
 
           {activeTab === 'gbp' && (<>
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
             {[
               { label: 'Companies', value: stats.companies, icon: Building2, accent: 'text-cyan-400' },
               { label: 'Locations', value: stats.locations, icon: MapPin, accent: 'text-purple-400' },

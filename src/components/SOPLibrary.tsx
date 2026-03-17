@@ -126,7 +126,7 @@ const SOPLibrary: React.FC = () => {
             placeholder="Search SOPs..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 h-9 text-sm"
+            className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 min-h-[44px] sm:h-9 text-sm"
           />
         </div>
       </div>
