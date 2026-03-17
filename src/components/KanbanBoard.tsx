@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
+import { logActivity } from '@/utils/activityLog';
 
 type SEOTaskRow = Database['public']['Tables']['seo_tasks']['Row'];
 type TaskPriority = 'high' | 'medium' | 'low';
@@ -640,14 +641,17 @@ const KanbanBoard: React.FC = () => {
         col: effectiveCol,
         completed_at: completedAtValue,
       };
+      const locAddr = loc ? shortAddress(loc.address) : form.client.trim();
       if (editingId) {
         const { error } = await supabase.from('seo_tasks').update(row).eq('id', editingId);
         if (error) throw error;
         toast.success('Task updated');
+        logActivity('update', 'task', form.title.trim(), `Updated task "${form.title.trim()}" for ${locAddr}`);
       } else {
         const { error } = await supabase.from('seo_tasks').insert(row);
         if (error) throw error;
         toast.success('Task added');
+        logActivity('create', 'task', form.title.trim(), `Created task "${form.title.trim()}" for ${locAddr}`);
       }
       setModalOpen(false);
       fetchTasks();
@@ -661,6 +665,7 @@ const KanbanBoard: React.FC = () => {
       const { error } = await supabase.from('seo_tasks').delete().eq('id', id);
       if (error) throw error;
       toast.success('Task deleted');
+      logActivity('delete', 'task', title, `Deleted task "${title}"`);
       fetchTasks();
       refreshAlerts();
     } catch { toast.error('Failed to delete task'); }
@@ -684,6 +689,7 @@ const KanbanBoard: React.FC = () => {
       const { error } = await supabase.from('seo_tasks').update({ col: 'finished', completed_at: now }).eq('id', taskId);
       if (error) throw error;
       toast.success('Task marked as done!');
+      logActivity('status_change', 'task', task.title, `Marked task "${task.title}" as done`);
       refreshAlerts();
     } catch {
       toast.error('Failed to update task');
@@ -692,12 +698,14 @@ const KanbanBoard: React.FC = () => {
   };
 
   const handleUnmarkDone = async (taskId: string) => {
+    const task = tasks.find(t => t.id === taskId);
     const prevCol = prevColMap.current.get(taskId) || 'in_progress';
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, col: prevCol, completed_at: null } : t));
     try {
       const { error } = await supabase.from('seo_tasks').update({ col: prevCol, completed_at: null }).eq('id', taskId);
       if (error) throw error;
       toast.success(`Task moved back to ${COLUMNS.find(c => c.key === prevCol)?.label || prevCol}`);
+      if (task) logActivity('status_change', 'task', task.title, `Unmarked "${task.title}" as done, moved back to ${COLUMNS.find(c => c.key === prevCol)?.label || prevCol}`);
       prevColMap.current.delete(taskId);
       refreshAlerts();
     } catch {
@@ -751,6 +759,9 @@ const KanbanBoard: React.FC = () => {
       else if (task.col === 'finished') updatePayload.completed_at = null;
       const { error } = await supabase.from('seo_tasks').update(updatePayload).eq('id', taskId);
       if (error) throw error;
+      const fromLabel = COLUMNS.find(c => c.key === task.col)?.label || task.col;
+      const toLabel = COLUMNS.find(c => c.key === targetCol)?.label || targetCol;
+      logActivity('move', 'task', task.title, `Moved "${task.title}" from ${fromLabel} to ${toLabel}`);
       refreshAlerts();
     } catch {
       toast.error('Failed to move task');

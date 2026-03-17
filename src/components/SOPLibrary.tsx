@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
+import { logActivity } from '@/utils/activityLog';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 
@@ -70,6 +71,7 @@ const SOPLibrary: React.FC = () => {
         }).eq('id', editingId);
         if (error) throw error;
         toast.success('SOP updated');
+        logActivity('update', 'sop', form.title.trim(), `Updated SOP "${form.title.trim()}"`);
       } else {
         const { error } = await supabase.from('sops').insert({
           title: form.title.trim(),
@@ -79,6 +81,7 @@ const SOPLibrary: React.FC = () => {
         });
         if (error) throw error;
         toast.success('SOP added');
+        logActivity('create', 'sop', form.title.trim(), `Created SOP "${form.title.trim()}"`);
       }
       setModalOpen(false);
       fetchSops();
@@ -91,6 +94,7 @@ const SOPLibrary: React.FC = () => {
       const { error } = await supabase.from('sops').delete().eq('id', id);
       if (error) throw error;
       toast.success('SOP deleted');
+      logActivity('delete', 'sop', title, `Deleted SOP "${title}"`);
       if (expandedId === id) setExpandedId(null);
       fetchSops();
     } catch { toast.error('Failed to delete SOP'); }

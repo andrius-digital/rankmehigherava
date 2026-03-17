@@ -5,15 +5,17 @@ import {
   MapPin, Search, Plus, Pencil, Trash2,
   CheckCircle2, Clock, FileWarning, Circle, AlertTriangle,
   ChevronLeft, ChevronDown, ChevronRight, X, Phone, Mail, Building2, Loader2,
-  ClipboardList, Hash, Image, MessageSquare, Star, LinkIcon, StickyNote, Compass
+  ClipboardList, Hash, Image, MessageSquare, Star, LinkIcon, StickyNote, Compass, Activity
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { logActivity } from '@/utils/activityLog';
 
 const SOPLibrary = lazy(() => import('@/components/SOPLibrary'));
 const KanbanBoard = lazy(() => import('@/components/KanbanBoard'));
+const ActivityLogModal = lazy(() => import('@/components/ActivityLogModal'));
 
 interface GBPLocation {
   id: string;
@@ -124,6 +126,7 @@ const GBPManagement: React.FC = () => {
   const [notesLocationId, setNotesLocationId] = useState<string | null>(null);
   const [notesLocationAddress, setNotesLocationAddress] = useState('');
   const [notesText, setNotesText] = useState('');
+  const [activityLogOpen, setActivityLogOpen] = useState(false);
 
   const fetchCompanies = useCallback(async () => {
     try {
@@ -268,10 +271,12 @@ const GBPManagement: React.FC = () => {
         const { error } = await supabase.from('gbp_companies').update({ name: companyName.trim() }).eq('id', editingCompanyId);
         if (error) throw error;
         toast.success('Company updated');
+        logActivity('update', 'company', companyName.trim(), `Updated company "${companyName.trim()}"`);
       } else {
         const { error } = await supabase.from('gbp_companies').insert({ name: companyName.trim() });
         if (error) throw error;
         toast.success('Company added');
+        logActivity('create', 'company', companyName.trim(), `Added company "${companyName.trim()}"`);
       }
       setCompanyModalOpen(false);
       fetchCompanies();
@@ -284,6 +289,7 @@ const GBPManagement: React.FC = () => {
       const { error } = await supabase.from('gbp_companies').delete().eq('id', id);
       if (error) throw error;
       toast.success('Company deleted');
+      logActivity('delete', 'company', name, `Deleted company "${name}" and all its locations`);
       fetchCompanies();
     } catch { toast.error('Failed to delete company'); }
   };
@@ -314,26 +320,32 @@ const GBPManagement: React.FC = () => {
         notes: locationForm.notes,
         google_profile_url: locationForm.googleProfileUrl || '',
       };
+      const parentName = companies.find(c => c.id === locationParentId)?.name || 'Unknown';
       if (editingLocationId) {
         const { error } = await supabase.from('gbp_locations').update(row).eq('id', editingLocationId);
         if (error) throw error;
         toast.success('Location updated');
+        logActivity('update', 'location', locationForm.address, `Updated location "${locationForm.address}" in "${parentName}"`);
       } else {
         const { error } = await supabase.from('gbp_locations').insert({ ...row, company_id: locationParentId });
         if (error) throw error;
         toast.success('Location added');
+        logActivity('create', 'location', locationForm.address, `Added location "${locationForm.address}" to "${parentName}"`);
       }
       setLocationModalOpen(false);
       fetchCompanies();
     } catch { toast.error('Failed to save location'); }
   };
 
-  const handleDeleteLocation = async (_companyId: string, locationId: string) => {
+  const handleDeleteLocation = async (companyId: string, locationId: string) => {
     if (!window.confirm('Delete this location?')) return;
+    const company = companies.find(c => c.id === companyId);
+    const loc = company?.locations.find(l => l.id === locationId);
     try {
       const { error } = await supabase.from('gbp_locations').delete().eq('id', locationId);
       if (error) throw error;
       toast.success('Location deleted');
+      logActivity('delete', 'location', loc?.address || 'Unknown', `Deleted location "${loc?.address || 'Unknown'}" from "${company?.name || 'Unknown'}"`);
       fetchCompanies();
     } catch { toast.error('Failed to delete location'); }
   };
@@ -361,6 +373,7 @@ const GBPManagement: React.FC = () => {
       }).eq('id', notesLocationId);
       if (error) throw error;
       toast.success('Notes updated');
+      logActivity('update', 'location', notesLocationAddress, `Updated notes for location "${notesLocationAddress}"`);
       setNotesModalOpen(false);
       fetchCompanies();
     } catch { toast.error('Failed to save notes'); }
@@ -418,12 +431,19 @@ const GBPManagement: React.FC = () => {
               <ChevronLeft className="w-4 h-4" />
               Back
             </Link>
-            <div>
+            <div className="flex-1">
               <h1 className="text-2xl sm:text-3xl font-bold font-orbitron text-white">
                 GBP Management
               </h1>
               <p className="text-sm text-gray-400 mt-1">Google Business Profile verification tracker</p>
             </div>
+            <Button
+              onClick={() => setActivityLogOpen(true)}
+              className="min-h-[44px] bg-white/5 border border-white/10 text-gray-400 hover:text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/30 gap-2 text-xs transition-all shrink-0"
+            >
+              <Activity className="w-4 h-4" />
+              <span className="hidden sm:inline">Activity</span>
+            </Button>
           </div>
 
           <div className="flex gap-1 mb-6 border-b border-white/10 overflow-x-auto">
@@ -1019,6 +1039,10 @@ const GBPManagement: React.FC = () => {
           </div>
         </div>
       )}
+
+      <Suspense fallback={null}>
+        <ActivityLogModal open={activityLogOpen} onClose={() => setActivityLogOpen(false)} />
+      </Suspense>
     </>
   );
 };

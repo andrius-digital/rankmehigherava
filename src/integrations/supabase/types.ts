@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      gbp_activity_log: {
+        Row: {
+          id: string
+          user_name: string
+          user_email: string
+          action_type: string
+          entity_type: string
+          entity_name: string
+          description: string
+          metadata: Record<string, any> | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_name: string
+          user_email: string
+          action_type: string
+          entity_type: string
+          entity_name: string
+          description: string
+          metadata?: Record<string, any> | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_name?: string
+          user_email?: string
+          action_type?: string
+          entity_type?: string
+          entity_name?: string
+          description?: string
+          metadata?: Record<string, any> | null
+          created_at?: string
+        }
+        Relationships: []
+      }
       ava_knowledge: {
         Row: {
           id: string
