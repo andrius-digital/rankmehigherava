@@ -170,14 +170,26 @@ const GBPManagement: React.FC = () => {
   const fetchSeoTasks = useCallback(async () => {
     try {
       const currentWeek = getMonday();
+      const now = new Date();
+      const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const monthDay = firstOfMonth.getDay();
+      const monthDiff = monthDay === 0 ? 1 : monthDay === 1 ? 0 : 8 - monthDay;
+      firstOfMonth.setDate(firstOfMonth.getDate() + monthDiff);
+      const monthStart = toDateStr(firstOfMonth);
+
       const { data, error } = await supabase
         .from('seo_tasks')
-        .select('id, title, col, notes, due_date, location_id')
-        .eq('week_of', currentWeek);
+        .select('id, title, col, notes, due_date, location_id, week_of')
+        .or(`week_of.eq.${currentWeek},week_of.eq.${monthStart}`);
       if (error) throw error;
+
+      const seen = new Set<string>();
       const map = new Map<string, SEOTaskRow[]>();
       for (const row of (data || [])) {
         if (!row.location_id) continue;
+        const key = `${row.location_id}::${row.title}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
         const arr = map.get(row.location_id) || [];
         arr.push(row as SEOTaskRow);
         map.set(row.location_id, arr);

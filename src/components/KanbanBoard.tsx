@@ -3,7 +3,7 @@ import {
   Plus, Pencil, Trash2, X, Calendar, GripVertical,
   Building2, Archive, LayoutDashboard, MapPin, CheckCircle2,
   Hash, MessageSquare, Image, Star, LinkIcon, Clock, CalendarClock, StickyNote,
-  ChevronDown, ChevronRight
+  ChevronDown, ChevronRight, AlertTriangle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -75,11 +75,11 @@ const CATEGORY_CONFIG: Record<string, { label: string; color: string }> = {
 const PRIORITIES: TaskPriority[] = ['high', 'medium', 'low'];
 const CATEGORIES: TaskCategory[] = ['gbp', 'citations', 'reviews', 'on-page', 'reporting'];
 
-const DEFAULT_WEEKLY_TASKS: { title: string; category: TaskCategory; priority: TaskPriority; hasWeekDeadline: boolean }[] = [
-  { title: 'Add Keywords to GBP', category: 'gbp', priority: 'high', hasWeekDeadline: true },
-  { title: 'Create GBP Posts', category: 'gbp', priority: 'high', hasWeekDeadline: true },
-  { title: 'Upload New Photos', category: 'gbp', priority: 'medium', hasWeekDeadline: true },
-  { title: 'Write New Reviews', category: 'reviews', priority: 'high', hasWeekDeadline: false },
+const DEFAULT_WEEKLY_TASKS: { title: string; category: TaskCategory; priority: TaskPriority; hasWeekDeadline: boolean; cycle: 'weekly' | 'monthly' }[] = [
+  { title: 'Add Keywords to GBP', category: 'gbp', priority: 'high', hasWeekDeadline: true, cycle: 'weekly' },
+  { title: 'Create GBP Posts', category: 'gbp', priority: 'high', hasWeekDeadline: true, cycle: 'weekly' },
+  { title: 'Upload New Photos', category: 'gbp', priority: 'medium', hasWeekDeadline: true, cycle: 'weekly' },
+  { title: 'Write New Reviews', category: 'reviews', priority: 'high', hasWeekDeadline: false, cycle: 'monthly' },
 ];
 
 interface TaskTypeConfig {
@@ -174,6 +174,32 @@ function getWeekStart(date: Date = new Date()): string {
 function getWeekEnd(weekStart: string): string {
   const p = weekStart.split('-').map(Number);
   return toDateStr(new Date(p[0], p[1] - 1, p[2] + 6));
+}
+
+function getFirstMondayOfMonth(year: number, month: number): string {
+  const d = new Date(year, month, 1);
+  const day = d.getDay();
+  const diff = day === 0 ? 1 : day === 1 ? 0 : 8 - day;
+  d.setDate(d.getDate() + diff);
+  return toDateStr(d);
+}
+
+function getCurrentMonthStart(): string {
+  const now = new Date();
+  return getFirstMondayOfMonth(now.getFullYear(), now.getMonth());
+}
+
+function getNextMonthFirstMonday(): string {
+  const now = new Date();
+  const nextMonth = now.getMonth() + 1;
+  const year = nextMonth > 11 ? now.getFullYear() + 1 : now.getFullYear();
+  return getFirstMondayOfMonth(year, nextMonth % 12);
+}
+
+function getMonthStartForWeek(weekOf: string): string {
+  const p = weekOf.split('-').map(Number);
+  const d = new Date(p[0], p[1] - 1, p[2]);
+  return getFirstMondayOfMonth(d.getFullYear(), d.getMonth());
 }
 
 function formatWeekLabel(weekStart: string): string {
@@ -277,6 +303,10 @@ const KanbanBoard: React.FC = () => {
   const autoProcessWeekTransition = useCallback(async (companyId: string, locs: Location[]) => {
     if (autoProcessingRef.current === companyId) return;
     autoProcessingRef.current = companyId;
+    const monthlyTitles = new Set(DEFAULT_WEEKLY_TASKS.filter(t => t.cycle === 'monthly').map(t => t.title));
+    const currentMonthStart = getCurrentMonthStart();
+    const nextMonthStart = getNextMonthFirstMonday();
+
     try {
       const { data: oldTasks, error: oldErr } = await supabase
         .from('seo_tasks')
@@ -286,50 +316,72 @@ const KanbanBoard: React.FC = () => {
       if (oldErr) throw oldErr;
 
       if (oldTasks && oldTasks.length > 0) {
-        const finished = oldTasks.filter(t => t.col === 'finished');
-        const unfinished = oldTasks.filter(t => t.col !== 'finished');
+        const toArchive: typeof oldTasks = [];
+        const toCarry: typeof oldTasks = [];
+        const toKeep: typeof oldTasks = [];
 
-        if (finished.length > 0) {
-          const archiveRows = finished.map(t => ({
+        for (const t of oldTasks) {
+          if (monthlyTitles.has(t.title)) {
+            const taskMonthStart = getMonthStartForWeek(t.week_of);
+            if (taskMonthStart === currentMonthStart) {
+              toKeep.push(t);
+            } else {
+              toArchive.push(t);
+            }
+          } else {
+            if (t.col === 'finished') toArchive.push(t);
+            else toCarry.push(t);
+          }
+        }
+
+        if (toArchive.length > 0) {
+          const archiveRows = toArchive.map(t => ({
             original_task_id: t.id,
-            title: t.title,
-            client: t.client,
-            company_id: t.company_id,
-            location_id: t.location_id,
-            week_of: t.week_of,
-            due_date: t.due_date,
-            priority: t.priority,
-            category: t.category,
-            notes: t.notes,
-            col: t.col,
+            title: t.title, client: t.client, company_id: t.company_id,
+            location_id: t.location_id, week_of: t.week_of, due_date: t.due_date,
+            priority: t.priority, category: t.category, notes: t.notes, col: t.col,
           }));
           const { error: archiveErr } = await supabase.from('seo_tasks_archive').insert(archiveRows);
           if (archiveErr) throw archiveErr;
-          const finishedIds = finished.map(t => t.id);
-          const { error: delErr } = await supabase.from('seo_tasks').delete().in('id', finishedIds);
+          const { error: delErr } = await supabase.from('seo_tasks').delete().in('id', toArchive.map(t => t.id));
           if (delErr) throw delErr;
         }
 
-        if (unfinished.length > 0) {
-          const unfinishedIds = unfinished.map(t => t.id);
+        if (toCarry.length > 0) {
           const { error: carryErr } = await supabase
             .from('seo_tasks')
             .update({ week_of: currentWeek })
-            .in('id', unfinishedIds);
+            .in('id', toCarry.map(t => t.id));
           if (carryErr) throw carryErr;
+        }
+
+        if (toKeep.length > 0) {
+          const { error: keepErr } = await supabase
+            .from('seo_tasks')
+            .update({ week_of: currentWeek })
+            .in('id', toKeep.map(t => t.id));
+          if (keepErr) throw keepErr;
         }
       }
 
       if (locs.length === 0) return;
 
-      const { data: existing, error: checkErr } = await supabase
+      const { data: allExisting, error: checkErr } = await supabase
         .from('seo_tasks')
-        .select('title, location_id')
-        .eq('company_id', companyId)
-        .eq('week_of', currentWeek);
+        .select('title, location_id, week_of')
+        .eq('company_id', companyId);
       if (checkErr) throw checkErr;
 
-      const existingKeys = new Set((existing || []).map(t => `${t.location_id}::${t.title}`));
+      const existingWeeklyKeys = new Set(
+        (allExisting || []).filter(t => t.week_of === currentWeek).map(t => `${t.location_id}::${t.title}`)
+      );
+
+      const existingMonthlyKeys = new Set(
+        (allExisting || [])
+          .filter(t => monthlyTitles.has(t.title) && getMonthStartForWeek(t.week_of) === currentMonthStart)
+          .map(t => `${t.location_id}::${t.title}`)
+      );
+
       const weekEnd = getWeekEnd(currentWeek);
 
       const newTasks: Array<{
@@ -340,20 +392,28 @@ const KanbanBoard: React.FC = () => {
 
       for (const loc of locs) {
         for (const tmpl of DEFAULT_WEEKLY_TASKS) {
-          const key = `${loc.id}::${tmpl.title}`;
-          if (!existingKeys.has(key)) {
-            newTasks.push({
-              title: tmpl.title,
-              client: shortAddress(loc.address),
-              company_id: companyId,
-              location_id: loc.id,
-              week_of: currentWeek,
-              due_date: tmpl.hasWeekDeadline ? weekEnd : null,
-              priority: tmpl.priority,
-              category: tmpl.category,
-              notes: '',
-              col: 'new',
-            });
+          if (tmpl.cycle === 'monthly') {
+            const mKey = `${loc.id}::${tmpl.title}`;
+            if (!existingMonthlyKeys.has(mKey)) {
+              newTasks.push({
+                title: tmpl.title, client: shortAddress(loc.address),
+                company_id: companyId, location_id: loc.id,
+                week_of: currentMonthStart, due_date: nextMonthStart,
+                priority: tmpl.priority, category: tmpl.category,
+                notes: '', col: 'new',
+              });
+            }
+          } else {
+            const wKey = `${loc.id}::${tmpl.title}`;
+            if (!existingWeeklyKeys.has(wKey)) {
+              newTasks.push({
+                title: tmpl.title, client: shortAddress(loc.address),
+                company_id: companyId, location_id: loc.id,
+                week_of: currentWeek, due_date: tmpl.hasWeekDeadline ? weekEnd : null,
+                priority: tmpl.priority, category: tmpl.category,
+                notes: '', col: 'new',
+              });
+            }
           }
         }
       }
@@ -723,7 +783,7 @@ const KanbanBoard: React.FC = () => {
                                 onDragEnd={() => { setDraggedId(null); setDragOverCol(null); dragStartPos.current = null; }}
                                 onMouseDown={handleMouseDown}
                                 onClick={e => handleCardClick(task, e)}
-                                className={`border rounded-lg p-2.5 bg-white/[0.03] hover:bg-white/[0.06] transition-all cursor-pointer active:cursor-grabbing ${CARD_GLOW[task.col]} ${draggedId === task.id ? 'opacity-40' : ''}`}
+                                className={`border rounded-lg p-2.5 bg-white/[0.03] hover:bg-white/[0.06] transition-all cursor-pointer active:cursor-grabbing ${isOverdue(task.due_date, task.col) ? 'card-overdue' : CARD_GLOW[task.col]} ${draggedId === task.id ? 'opacity-40' : ''}`}
                               >
                                 <div className="flex items-start justify-between gap-2 mb-1.5">
                                   <div className="flex items-center gap-1 min-w-0">
@@ -774,11 +834,11 @@ const KanbanBoard: React.FC = () => {
                                 <div className="flex items-center gap-1 flex-wrap">
                                   {task.due_date && (
                                     <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium border ${isOverdue(task.due_date, task.col) ? 'bg-red-500/20 text-red-400 border-red-500/30' : 'bg-white/5 text-gray-400 border-white/10'}`}>
-                                      <Calendar className="w-2.5 h-2.5" />
-                                      {formatDate(task.due_date)}
+                                      {isOverdue(task.due_date, task.col) ? <AlertTriangle className="w-2.5 h-2.5" /> : <Calendar className="w-2.5 h-2.5" />}
+                                      {isOverdue(task.due_date, task.col) ? 'OVERDUE' : formatDate(task.due_date)}
                                     </span>
                                   )}
-                                  {!task.due_date && task.category === 'reviews' && (
+                                  {!task.due_date && (
                                     <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border bg-white/5 text-gray-500 border-white/10">
                                       No deadline
                                     </span>

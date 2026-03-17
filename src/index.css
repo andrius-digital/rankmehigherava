@@ -679,6 +679,16 @@
   animation: blink 1s ease-in-out infinite;
 }
 
+@keyframes overdue-pulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(239, 68, 68, 0.4), inset 0 0 0 1px rgba(239, 68, 68, 0.5); }
+  50% { box-shadow: 0 0 16px rgba(239, 68, 68, 0.6), inset 0 0 0 1px rgba(239, 68, 68, 0.7); }
+}
+
+.card-overdue {
+  border-color: rgba(239, 68, 68, 0.5) !important;
+  animation: overdue-pulse 2s ease-in-out infinite;
+}
+
 @keyframes marquee {
   0% {
     transform: translateX(0);
