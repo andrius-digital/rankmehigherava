@@ -133,6 +133,10 @@ function parseTaskData(notes: string): TaskData {
       };
     }
   } catch {}
+  if (notes.includes('|||')) {
+    const parts = notes.split('|||').filter(Boolean);
+    return { count: parts.length, entries: parts, freeNotes: '' };
+  }
   return { count: 0, entries: [], freeNotes: notes };
 }
 
