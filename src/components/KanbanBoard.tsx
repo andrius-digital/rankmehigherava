@@ -247,6 +247,7 @@ const KanbanBoard: React.FC = () => {
   const [historyLocationAddress, setHistoryLocationAddress] = useState('');
   const [historyTasks, setHistoryTasks] = useState<Array<{ id: string; title: string; week_of: string; due_date: string | null; priority: string; category: string; notes: string; completed_at: string | null; source: 'current' | 'archive' }>>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [expandedHistoryId, setExpandedHistoryId] = useState<string | null>(null);
   const dragStartPos = useRef<{ x: number; y: number } | null>(null);
   const didDrag = useRef(false);
 
@@ -348,6 +349,7 @@ const KanbanBoard: React.FC = () => {
     setHistoryLocationId(locationId);
     setHistoryLocationAddress(address);
     setHistoryTasks([]);
+    setExpandedHistoryId(null);
     setHistoryModalOpen(true);
     setHistoryLoading(true);
     try {
@@ -1464,11 +1466,20 @@ const KanbanBoard: React.FC = () => {
                                 if (parsed.count) parsedNotes = `${parsed.count} completed${parsedNotes ? ' — ' + parsedNotes : ''}`;
                               }
                             } catch { /* not JSON */ }
+                            const isExpanded = expandedHistoryId === task.id;
+                            const categoryLabels: Record<string, string> = {
+                              'gbp-post': 'GBP Post', 'review-response': 'Review Response', 'citation-audit': 'Citation Audit',
+                              'photo-upload': 'Photo Upload', 'qa-posting': 'Q&A Posting', 'gbp-audit': 'GBP Audit', other: 'Other',
+                            };
                             return (
-                              <div key={task.id} className="bg-[#1a1a24] border border-white/5 rounded-lg p-3">
+                              <div
+                                key={task.id}
+                                className={`bg-[#1a1a24] border rounded-lg p-3 cursor-pointer transition-all hover:border-[#00e5cc]/30 hover:bg-[#1a1a24]/80 ${isExpanded ? 'border-[#00e5cc]/20' : 'border-white/5'}`}
+                                onClick={() => setExpandedHistoryId(isExpanded ? null : task.id)}
+                              >
                                 <div className="flex items-start justify-between gap-2 mb-1">
                                   <div className="flex items-center gap-2 min-w-0">
-                                    <CheckCircle2 className="w-3.5 h-3.5 text-green-400 shrink-0" />
+                                    <ChevronRight className={`w-3.5 h-3.5 text-gray-500 shrink-0 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
                                     <span className="text-sm font-medium text-white truncate">{task.title}</span>
                                   </div>
                                   <span className={`text-[10px] px-1.5 py-0.5 rounded border shrink-0 ${priorityColors[task.priority] || priorityColors.medium}`}>
@@ -1492,8 +1503,43 @@ const KanbanBoard: React.FC = () => {
                                     </span>
                                   )}
                                 </div>
-                                {parsedNotes && (
-                                  <p className="text-[10px] text-gray-500 mt-1.5 ml-5.5 line-clamp-2">{parsedNotes}</p>
+                                {!isExpanded && parsedNotes && (
+                                  <p className="text-[10px] text-gray-500 mt-1.5 ml-5.5 line-clamp-1">{parsedNotes}</p>
+                                )}
+                                {isExpanded && (
+                                  <div className="mt-3 ml-5.5 space-y-2 border-t border-white/5 pt-2">
+                                    {task.category && (
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-[10px] text-gray-500 w-16 shrink-0">Category</span>
+                                        <span className="text-[11px] text-gray-300">{categoryLabels[task.category] || task.category}</span>
+                                      </div>
+                                    )}
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-[10px] text-gray-500 w-16 shrink-0">Priority</span>
+                                      <span className={`text-[11px] ${task.priority === 'high' ? 'text-red-400' : task.priority === 'low' ? 'text-green-400' : 'text-amber-400'}`}>{task.priority}</span>
+                                    </div>
+                                    {task.due_date && (
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-[10px] text-gray-500 w-16 shrink-0">Due date</span>
+                                        <span className="text-[11px] text-gray-300">{new Date(task.due_date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                                      </div>
+                                    )}
+                                    {completedDate && (
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-[10px] text-gray-500 w-16 shrink-0">{task.source === 'archive' ? 'Archived' : 'Done'}</span>
+                                        <span className="text-[11px] text-gray-300">{completedDate}</span>
+                                      </div>
+                                    )}
+                                    {parsedNotes && (
+                                      <div>
+                                        <span className="text-[10px] text-gray-500">Notes</span>
+                                        <p className="text-[11px] text-gray-300 mt-0.5 whitespace-pre-wrap">{parsedNotes}</p>
+                                      </div>
+                                    )}
+                                    {!parsedNotes && !task.category && (
+                                      <p className="text-[10px] text-gray-600 italic">No additional details</p>
+                                    )}
+                                  </div>
                                 )}
                               </div>
                             );
