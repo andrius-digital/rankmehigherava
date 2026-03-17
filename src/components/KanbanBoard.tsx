@@ -531,6 +531,10 @@ const KanbanBoard: React.FC = () => {
     setModalOpen(true);
   };
 
+  const refreshAlerts = useCallback(() => {
+    if (companies.length > 0) fetchCompanyAlerts(companies.map(c => c.id));
+  }, [companies, fetchCompanyAlerts]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title.trim()) { toast.error('Title is required'); return; }
@@ -564,6 +568,7 @@ const KanbanBoard: React.FC = () => {
       }
       setModalOpen(false);
       fetchTasks();
+      refreshAlerts();
     } catch { toast.error('Failed to save task'); }
   };
 
@@ -574,6 +579,7 @@ const KanbanBoard: React.FC = () => {
       if (error) throw error;
       toast.success('Task deleted');
       fetchTasks();
+      refreshAlerts();
     } catch { toast.error('Failed to delete task'); }
   };
 
@@ -588,6 +594,7 @@ const KanbanBoard: React.FC = () => {
       const { error } = await supabase.from('seo_tasks').update({ col: 'finished' }).eq('id', taskId);
       if (error) throw error;
       toast.success('Task marked as done!');
+      refreshAlerts();
     } catch {
       toast.error('Failed to update task');
       fetchTasks();
@@ -602,6 +609,7 @@ const KanbanBoard: React.FC = () => {
       if (error) throw error;
       toast.success(`Task moved back to ${COLUMNS.find(c => c.key === prevCol)?.label || prevCol}`);
       prevColMap.current.delete(taskId);
+      refreshAlerts();
     } catch {
       toast.error('Failed to update task');
       fetchTasks();
@@ -641,6 +649,7 @@ const KanbanBoard: React.FC = () => {
     try {
       const { error } = await supabase.from('seo_tasks').update({ col: targetCol }).eq('id', taskId);
       if (error) throw error;
+      refreshAlerts();
     } catch {
       toast.error('Failed to move task');
       fetchTasks();
