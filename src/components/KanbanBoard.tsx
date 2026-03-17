@@ -999,9 +999,9 @@ const KanbanBoard: React.FC = () => {
                       type="button"
                       title="View task history"
                       onClick={e => { e.stopPropagation(); if (loc) openLocationHistory(loc.id, loc.address); }}
-                      className="p-1 rounded hover:bg-cyan-500/10 text-gray-500 hover:text-cyan-400 transition-colors"
+                      className="p-1 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 inline-flex items-center justify-center rounded hover:bg-cyan-500/10 text-gray-500 hover:text-cyan-400 transition-colors"
                     >
-                      <History className="w-3.5 h-3.5" />
+                      <History className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
                     </button>
                     <span className="text-[10px] text-gray-500 bg-white/5 px-1.5 py-0.5 rounded-full">
                       {locTasks.length} task{locTasks.length !== 1 ? 's' : ''}
