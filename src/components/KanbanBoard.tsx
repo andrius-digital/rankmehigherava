@@ -234,10 +234,12 @@ const KanbanBoard: React.FC = () => {
   const [archiveLoading, setArchiveLoading] = useState(false);
   const [archiveWeeks, setArchiveWeeks] = useState<string[]>([]);
   const [selectedArchiveWeek, setSelectedArchiveWeek] = useState<string>('all');
+  const [companyAlerts, setCompanyAlerts] = useState<Map<string, { overdue: number; unfinished: number }>>(new Map());
   const dragStartPos = useRef<{ x: number; y: number } | null>(null);
   const didDrag = useRef(false);
 
   const currentWeek = getWeekStart();
+  const isFriday = new Date().getDay() === 5;
 
   const fetchCompanies = useCallback(async () => {
     try {
@@ -252,6 +254,33 @@ const KanbanBoard: React.FC = () => {
       toast.error('Failed to load companies');
     }
   }, []);
+
+  const fetchCompanyAlerts = useCallback(async (companyIds: string[]) => {
+    try {
+      const monthStart = getCurrentMonthStart();
+      const { data, error } = await supabase
+        .from('seo_tasks')
+        .select('company_id, due_date, col')
+        .in('company_id', companyIds)
+        .or(`week_of.eq.${currentWeek},week_of.eq.${monthStart}`);
+      if (error) throw error;
+      const alerts = new Map<string, { overdue: number; unfinished: number }>();
+      const now = new Date();
+      for (const t of (data || [])) {
+        if (!alerts.has(t.company_id)) alerts.set(t.company_id, { overdue: 0, unfinished: 0 });
+        const a = alerts.get(t.company_id)!;
+        if (t.col !== 'finished') {
+          a.unfinished++;
+          if (t.due_date) {
+            const p = t.due_date.split('-').map(Number);
+            const due = new Date(p[0], p[1] - 1, p[2], 23, 59, 59);
+            if (due < now) a.overdue++;
+          }
+        }
+      }
+      setCompanyAlerts(alerts);
+    } catch { /* silent */ }
+  }, [currentWeek]);
 
   const fetchTasks = useCallback(async () => {
     if (!selectedCompanyId) { setLoading(false); return; }
@@ -429,7 +458,15 @@ const KanbanBoard: React.FC = () => {
     }
   }, [currentWeek]);
 
-  useEffect(() => { fetchCompanies(); }, [fetchCompanies]);
+  useEffect(() => {
+    fetchCompanies().then(() => {});
+  }, [fetchCompanies]);
+
+  useEffect(() => {
+    if (companies.length > 0) {
+      fetchCompanyAlerts(companies.map(c => c.id));
+    }
+  }, [companies, fetchCompanyAlerts]);
 
   useEffect(() => {
     if (!selectedCompanyId) return;
@@ -703,10 +740,30 @@ const KanbanBoard: React.FC = () => {
             className="bg-white/5 border border-white/10 rounded-md px-3 py-1.5 text-sm text-white flex-1 min-w-0"
           >
             {companies.length === 0 && <option value="">No companies</option>}
-            {companies.map(c => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
+            {companies.map(c => {
+              const alert = companyAlerts.get(c.id);
+              const hasOverdue = alert && alert.overdue > 0;
+              const hasUnfinished = isFriday && alert && alert.unfinished > 0;
+              const marker = hasOverdue ? ' ⚠ OVERDUE' : hasUnfinished ? ' ⚠ Unfinished' : '';
+              return (
+                <option key={c.id} value={c.id}>{c.name}{marker}</option>
+              );
+            })}
           </select>
+          {(() => {
+            const alert = selectedCompanyId ? companyAlerts.get(selectedCompanyId) : null;
+            const hasOverdue = alert && alert.overdue > 0;
+            const hasUnfinished = isFriday && alert && alert.unfinished > 0;
+            if (!hasOverdue && !hasUnfinished) return null;
+            return (
+              <span className="flex items-center gap-1 shrink-0" title={hasOverdue ? `${alert!.overdue} overdue task(s)` : `${alert!.unfinished} unfinished task(s)`}>
+                <AlertTriangle className={`w-4 h-4 ${hasOverdue ? 'text-red-500 animate-blink' : 'text-amber-500 animate-blink'}`} />
+                <span className={`text-[10px] font-medium ${hasOverdue ? 'text-red-400' : 'text-amber-400'}`}>
+                  {hasOverdue ? `${alert!.overdue} overdue` : `${alert!.unfinished} unfinished`}
+                </span>
+              </span>
+            );
+          })()}
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
@@ -727,6 +784,11 @@ const KanbanBoard: React.FC = () => {
         <div className="space-y-6">
           {Array.from(tasksByLocation.entries()).map(([locId, locTasks]) => {
             const loc = locationMap.get(locId);
+            const now = new Date();
+            const locOverdue = locTasks.filter(t => t.col !== 'finished' && t.due_date && (() => { const p = t.due_date!.split('-').map(Number); return new Date(p[0], p[1] - 1, p[2], 23, 59, 59) < now; })()).length;
+            const locUnfinished = locTasks.filter(t => t.col !== 'finished').length;
+            const locHasOverdue = locOverdue > 0;
+            const locShowUnfinished = isFriday && locUnfinished > 0 && !locHasOverdue;
             return (
               <div key={locId} className="border border-white/5 rounded-xl overflow-hidden">
                 <button
@@ -748,6 +810,14 @@ const KanbanBoard: React.FC = () => {
                   </span>
                   {loc && (
                     <span className="text-[10px] text-gray-500 truncate">{loc.address}</span>
+                  )}
+                  {(locHasOverdue || locShowUnfinished) && (
+                    <span className="flex items-center gap-1 shrink-0">
+                      <AlertTriangle className={`w-3.5 h-3.5 animate-blink ${locHasOverdue ? 'text-red-500' : 'text-amber-500'}`} />
+                      <span className={`text-[10px] font-medium ${locHasOverdue ? 'text-red-400' : 'text-amber-400'}`}>
+                        {locHasOverdue ? `${locOverdue} overdue` : `${locUnfinished} unfinished`}
+                      </span>
+                    </span>
                   )}
                   <span className="ml-auto text-[10px] text-gray-500 bg-white/5 px-1.5 py-0.5 rounded-full shrink-0">
                     {locTasks.length} task{locTasks.length !== 1 ? 's' : ''}
