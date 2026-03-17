@@ -601,6 +601,16 @@ const KanbanBoard: React.FC = () => {
     e.preventDefault();
     if (!form.title.trim()) { toast.error('Title is required'); return; }
     if (!form.location_id) { toast.error('Please select a location'); return; }
+    if (form.col === 'finished') {
+      const typeConfig = TASK_TYPE_MAP[form.title.trim()];
+      if (typeConfig) {
+        const minRequired = typeConfig.targetMin ?? typeConfig.target;
+        if (taskData.count < minRequired) {
+          toast.error(`Fill out the task first (need at least ${minRequired} ${typeConfig.label?.toLowerCase() || 'items'})`);
+          return;
+        }
+      }
+    }
     try {
       const loc = locations.find(l => l.id === form.location_id);
       const typeConfig = TASK_TYPE_MAP[form.title.trim()];
@@ -655,6 +665,12 @@ const KanbanBoard: React.FC = () => {
   const handleMarkDone = async (taskId: string) => {
     const task = tasks.find(t => t.id === taskId);
     if (!task) return;
+    if (!isTaskComplete(task)) {
+      const typeConfig = TASK_TYPE_MAP[task.title];
+      const minRequired = typeConfig ? (typeConfig.targetMin ?? typeConfig.target) : 0;
+      toast.error(`Fill out "${task.title}" first (need at least ${minRequired} ${typeConfig?.label?.toLowerCase() || 'items'})`);
+      return;
+    }
     const now = new Date().toISOString();
     prevColMap.current.set(taskId, task.col);
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, col: 'finished' as TaskCol, completed_at: now } : t));
@@ -712,6 +728,13 @@ const KanbanBoard: React.FC = () => {
     if (!taskId) return;
     const task = tasks.find(t => t.id === taskId);
     if (!task || task.col === targetCol) { setDraggedId(null); return; }
+    if (targetCol === 'finished' && !isTaskComplete(task)) {
+      const typeConfig = TASK_TYPE_MAP[task.title];
+      const minRequired = typeConfig ? (typeConfig.targetMin ?? typeConfig.target) : 0;
+      toast.error(`Fill out "${task.title}" first (need at least ${minRequired} ${typeConfig?.label?.toLowerCase() || 'items'})`);
+      setDraggedId(null);
+      return;
+    }
     const now = new Date().toISOString();
     const completedAt = targetCol === 'finished' ? now : (task.col === 'finished' ? null : task.completed_at);
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, col: targetCol, completed_at: completedAt } : t));
@@ -794,6 +817,14 @@ const KanbanBoard: React.FC = () => {
     if (!typeConfig) return null;
     const data = parseTaskData(task.notes);
     return { count: data.count, target: typeConfig.target, targetMin: typeConfig.targetMin };
+  };
+
+  const isTaskComplete = (task: SEOTask): boolean => {
+    const typeConfig = TASK_TYPE_MAP[task.title];
+    if (!typeConfig) return true;
+    const data = parseTaskData(task.notes);
+    const minRequired = typeConfig.targetMin ?? typeConfig.target;
+    return data.count >= minRequired;
   };
 
   const syncEntries = (newCount: number) => {
