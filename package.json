@@ -63,6 +63,7 @@
     "input-otp": "^1.4.2",
     "lucide-react": "^0.462.0",
     "mapbox-gl": "^3.17.0",
+    "marked": "^17.0.4",
     "multer": "^2.0.2",
     "next-themes": "^0.3.0",
     "openai": "^6.22.0",
