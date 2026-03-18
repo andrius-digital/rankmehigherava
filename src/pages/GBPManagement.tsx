@@ -78,10 +78,10 @@ interface GBPCompany {
 }
 
 const STATUS_CONFIG = {
-  verified: { label: 'Verified', color: 'bg-green-500/20 text-green-400 border-green-500/30', icon: CheckCircle2 },
-  pending: { label: 'Pending', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30', icon: Clock },
-  processing: { label: 'Processing', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30', icon: Loader2 },
-  not_started: { label: 'Not Started', color: 'bg-gray-500/20 text-gray-400 border-gray-500/30', icon: Circle },
+  verified: { label: 'Verified', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20', icon: CheckCircle2 },
+  pending: { label: 'Pending', color: 'bg-amber-500/10 text-amber-400 border-amber-500/20', icon: Clock },
+  processing: { label: 'Processing', color: 'bg-blue-500/10 text-blue-400 border-blue-500/20', icon: Loader2 },
+  not_started: { label: 'Not Started', color: 'bg-white/[0.04] text-gray-500 border-white/[0.06]', icon: Circle },
 };
 
 const EMPTY_LOCATION: Omit<GBPLocation, 'id'> = {
@@ -212,6 +212,9 @@ const GBPManagement: React.FC = () => {
       companies: companies.length,
       locations: allLocs.length,
       verified: allLocs.filter(l => l.status === 'verified').length,
+      pending: allLocs.filter(l => l.status === 'pending').length,
+      processing: allLocs.filter(l => l.status === 'processing').length,
+      notStarted: allLocs.filter(l => l.status === 'not_started').length,
       actionRequired: allLocs.filter(l => l.status !== 'verified').length,
     };
   }, [companies]);
@@ -255,9 +258,24 @@ const GBPManagement: React.FC = () => {
   const getCompanyStatusSummary = (locs: GBPLocation[]) => {
     const v = locs.filter(l => l.status === 'verified').length;
     const total = locs.length;
-    if (v === total) return { label: 'All Verified', color: 'text-green-400' };
+    if (v === total) return { label: 'All Verified', color: 'text-emerald-400' };
     if (v === 0) return { label: 'None Verified', color: 'text-red-400' };
     return { label: `${v}/${total} Verified`, color: 'text-amber-400' };
+  };
+
+  const getCompanyStatusDots = (locs: GBPLocation[]) => {
+    const counts = {
+      verified: locs.filter(l => l.status === 'verified').length,
+      pending: locs.filter(l => l.status === 'pending').length,
+      processing: locs.filter(l => l.status === 'processing').length,
+      not_started: locs.filter(l => l.status === 'not_started').length,
+    };
+    return [
+      { key: 'verified', count: counts.verified, dot: 'bg-emerald-500' },
+      { key: 'pending', count: counts.pending, dot: 'bg-amber-500' },
+      { key: 'processing', count: counts.processing, dot: 'bg-blue-500' },
+      { key: 'not_started', count: counts.not_started, dot: 'bg-gray-600' },
+    ].filter(s => s.count > 0);
   };
 
   const openAddCompany = () => { setEditingCompanyId(null); setCompanyName(''); setCompanyModalOpen(true); };
@@ -420,113 +438,103 @@ const GBPManagement: React.FC = () => {
 
   return (
     <>
-      <Helmet><title>{activeTab === 'gbp' ? 'GBP Management' : 'Local SEO Specialist Hub'} | Rank Me Higher</title></Helmet>
+      <Helmet><title>{activeTab === 'gbp' ? 'GBP Management' : 'Local SEO Hub'} | Rank Me Higher</title></Helmet>
       <div className="min-h-screen bg-[#0a0a0f] text-white overflow-x-hidden mobile-touch-zone">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-6">
+          <div className="flex items-center gap-3 mb-6">
             <Link
               to={sessionStorage.getItem("rmh_team_session") ? "/team" : "/avaadminpanel"}
-              className="inline-flex items-center gap-2 px-4 py-2 min-h-[44px] rounded-xl bg-cyan-500/10 backdrop-blur-md border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20 hover:border-cyan-500/40 transition-all font-orbitron text-sm shrink-0"
+              className="w-9 h-9 min-h-[44px] min-w-[44px] rounded-lg bg-white/5 border border-white/[0.06] flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/10 transition-all shrink-0"
             >
               <ChevronLeft className="w-4 h-4" />
-              Back
             </Link>
-            <div className="flex-1">
-              <h1 className="text-2xl sm:text-3xl font-bold font-orbitron text-white">
-                {activeTab === 'gbp' ? 'GBP Management' : 'Local SEO Specialist Hub'}
+            <div className="flex-1 min-w-0">
+              <h1 className="text-lg sm:text-xl font-semibold tracking-tight text-white truncate">
+                {activeTab === 'gbp' ? 'GBP Management' : 'Local SEO Hub'}
               </h1>
-              <p className="text-sm text-gray-400 mt-1">
-                {activeTab === 'gbp' ? 'Google Business Profile verification tracker' : 'SOPs, task boards & resources for local SEO'}
-              </p>
             </div>
-            <Button
+            <button
               onClick={() => setActivityLogOpen(true)}
-              className="min-h-[44px] bg-white/5 border border-white/10 text-gray-400 hover:text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/30 gap-2 text-xs transition-all shrink-0"
+              className="w-9 h-9 min-h-[44px] min-w-[44px] rounded-lg bg-white/5 border border-white/[0.06] flex items-center justify-center text-gray-500 hover:text-[#00e5cc] hover:bg-[#00e5cc]/5 hover:border-[#00e5cc]/20 transition-all shrink-0"
             >
               <Activity className="w-4 h-4" />
-              <span className="hidden sm:inline">Activity</span>
-            </Button>
+            </button>
           </div>
 
-          <div className="flex gap-1 mb-6 border-b border-white/10 overflow-x-auto">
+          <div className="flex gap-0.5 mb-6 bg-white/[0.03] rounded-lg p-0.5 w-fit">
             <button
               onClick={() => { setActiveTab('gbp'); fetchSeoTasks(); }}
-              className={`px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-medium transition-colors relative whitespace-nowrap min-h-[44px] ${activeTab === 'gbp' ? 'text-cyan-400' : 'text-gray-400 hover:text-white'}`}
+              className={`px-4 py-2 text-xs font-medium transition-all rounded-md whitespace-nowrap min-h-[36px] ${activeTab === 'gbp' ? 'bg-white/[0.08] text-white shadow-sm' : 'text-gray-500 hover:text-gray-300'}`}
             >
-              <div className="flex items-center gap-2">
-                <Building2 className="w-4 h-4" />
-                GBP Management
-              </div>
-              {activeTab === 'gbp' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-cyan-400 rounded-t" />}
+              GBP Management
             </button>
             <button
               onClick={() => setActiveTab('seo-hub')}
-              className={`px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-medium transition-colors relative whitespace-nowrap min-h-[44px] ${activeTab === 'seo-hub' ? 'text-cyan-400' : 'text-gray-400 hover:text-white'}`}
+              className={`px-4 py-2 text-xs font-medium transition-all rounded-md whitespace-nowrap min-h-[36px] ${activeTab === 'seo-hub' ? 'bg-white/[0.08] text-white shadow-sm' : 'text-gray-500 hover:text-gray-300'}`}
             >
-              <div className="flex items-center gap-2">
-                <Compass className="w-4 h-4" />
-                Local SEO Hub
-              </div>
-              {activeTab === 'seo-hub' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-cyan-400 rounded-t" />}
+              Local SEO Hub
             </button>
           </div>
 
           {activeTab === 'gbp' && (<>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
-            {[
-              { label: 'Companies', value: stats.companies, icon: Building2, accent: 'text-cyan-400' },
-              { label: 'Locations', value: stats.locations, icon: MapPin, accent: 'text-purple-400' },
-              { label: 'Verified', value: stats.verified, icon: CheckCircle2, accent: 'text-green-400' },
-              { label: 'Action Required', value: stats.actionRequired, icon: FileWarning, accent: 'text-orange-400', clickable: true },
-            ].map(s => {
-              const isClickable = 'clickable' in s && s.clickable && stats.actionRequired > 0;
-              return isClickable ? (
+          <div className="bg-[#111118] border border-white/[0.04] rounded-xl p-4 sm:p-5 mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
+              <div className="flex items-baseline gap-3 flex-1">
+                <span className="text-3xl font-bold tabular-nums text-white">{stats.locations}</span>
+                <span className="text-xs text-gray-500 uppercase tracking-wider">Total Locations</span>
+                <span className="text-xs text-gray-600 ml-auto sm:ml-0">across {stats.companies} companies</span>
+              </div>
+              {stats.actionRequired > 0 && (
                 <button
-                  key={s.label}
-                  type="button"
                   onClick={() => setActionRequiredModalOpen(true)}
-                  className="bg-[#1a1a24] border border-white/5 rounded-xl p-3 sm:p-4 transition-all cursor-pointer hover:border-orange-400/50 hover:shadow-lg hover:shadow-orange-400/10 text-left"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-orange-500/8 border border-orange-500/20 text-orange-400 hover:bg-orange-500/15 transition-all text-xs font-medium shrink-0"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-lg bg-gradient-to-br from-[#00e5cc]/10 to-[#6366f1]/10 flex items-center justify-center ${s.accent}`}>
-                      <s.icon className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-400 mb-0.5">{s.label}</p>
-                      <p className="text-2xl font-bold text-white">{s.value}</p>
-                    </div>
-                  </div>
+                  <FileWarning className="w-3.5 h-3.5" />
+                  {stats.actionRequired} need attention
                 </button>
-              ) : (
-                <div key={s.label} className="bg-[#1a1a24] border border-white/5 rounded-xl p-3 sm:p-4 transition-all hover:border-[#00e5cc]/30">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-lg bg-gradient-to-br from-[#00e5cc]/10 to-[#6366f1]/10 flex items-center justify-center ${s.accent}`}>
-                      <s.icon className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-400 mb-0.5">{s.label}</p>
-                      <p className="text-2xl font-bold text-white">{s.value}</p>
-                    </div>
-                  </div>
+              )}
+            </div>
+
+            {stats.locations > 0 && (
+              <div className="space-y-3">
+                <div className="flex h-2 rounded-full overflow-hidden bg-white/[0.04]">
+                  {stats.verified > 0 && <div className="bg-emerald-500 transition-all" style={{ width: `${(stats.verified / stats.locations) * 100}%` }} />}
+                  {stats.pending > 0 && <div className="bg-amber-500 transition-all" style={{ width: `${(stats.pending / stats.locations) * 100}%` }} />}
+                  {stats.processing > 0 && <div className="bg-blue-500 transition-all" style={{ width: `${(stats.processing / stats.locations) * 100}%` }} />}
+                  {stats.notStarted > 0 && <div className="bg-gray-600 transition-all" style={{ width: `${(stats.notStarted / stats.locations) * 100}%` }} />}
                 </div>
-              );
-            })}
+                <div className="flex flex-wrap gap-x-5 gap-y-1">
+                  {[
+                    { label: 'Verified', count: stats.verified, dot: 'bg-emerald-500' },
+                    { label: 'Pending', count: stats.pending, dot: 'bg-amber-500' },
+                    { label: 'Processing', count: stats.processing, dot: 'bg-blue-500' },
+                    { label: 'Not Started', count: stats.notStarted, dot: 'bg-gray-600' },
+                  ].filter(s => s.count > 0).map(s => (
+                    <div key={s.label} className="flex items-center gap-1.5">
+                      <div className={`w-2 h-2 rounded-full ${s.dot}`} />
+                      <span className="text-[11px] text-gray-400">{s.label}</span>
+                      <span className="text-[11px] text-gray-300 font-medium tabular-nums">{s.count}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 mb-6">
+          <div className="flex flex-col sm:flex-row gap-2 mb-5">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-600" />
               <Input
                 placeholder="Search companies or addresses..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="pl-10 min-h-[44px] bg-[#1a1a24] border-white/10 text-white placeholder:text-gray-500 focus:border-[#00e5cc]/50 focus:ring-1 focus:ring-[#00e5cc]/20"
+                className="pl-9 h-9 min-h-[44px] bg-white/[0.03] border-white/[0.06] text-white text-sm placeholder:text-gray-600 focus:border-white/20 focus:ring-0 rounded-lg"
               />
             </div>
             <select
               value={statusFilter}
               onChange={e => setStatusFilter(e.target.value)}
-              className="compact-select w-full sm:w-auto rounded-full bg-[#1a1a24] border border-white/10 px-4 py-2 min-h-[44px] text-sm text-white focus:border-[#00e5cc]/50 focus:ring-1 focus:ring-[#00e5cc]/20 focus:outline-none transition-colors [&>option]:bg-[#1a1a24] [&>option]:text-white"
+              className="compact-select w-full sm:w-auto rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-2 min-h-[44px] text-sm text-gray-400 focus:border-white/20 focus:ring-0 focus:outline-none transition-colors [&>option]:bg-[#111118] [&>option]:text-white"
             >
               <option value="all">All Statuses</option>
               <option value="verified">Verified</option>
@@ -534,93 +542,86 @@ const GBPManagement: React.FC = () => {
               <option value="processing">Processing</option>
               <option value="not_started">Not Started</option>
             </select>
-            <Button onClick={openAddCompany} className="w-full sm:w-auto min-h-[44px] bg-[#00e5cc]/10 border border-[#00e5cc]/30 text-[#00e5cc] hover:bg-[#00e5cc]/20 hover:shadow-[0_0_15px_rgba(0,229,204,0.15)] font-semibold gap-2 transition-all">
-              <Plus className="w-4 h-4" /> Add Company
+            <Button onClick={openAddCompany} className="w-full sm:w-auto min-h-[44px] h-9 bg-white/[0.06] border border-white/[0.08] text-white hover:bg-white/10 text-sm gap-1.5 rounded-lg transition-all">
+              <Plus className="w-3.5 h-3.5" /> Add Company
             </Button>
           </div>
 
           {loading ? (
             <div className="text-center py-20">
-              <div className="w-10 h-10 border-4 border-[#00e5cc] border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-              <p className="text-gray-400 text-sm">Loading companies...</p>
+              <div className="w-6 h-6 border-2 border-white/20 border-t-white/60 rounded-full animate-spin mx-auto mb-3"></div>
+              <p className="text-gray-600 text-xs">Loading...</p>
             </div>
           ) : filteredCompanies.length === 0 ? (
             <div className="text-center py-20 text-gray-500">No companies found</div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-1">
               {filteredCompanies.map(company => {
                 const isExpanded = expandedIds.has(company.id);
                 const summary = getCompanyStatusSummary(company.locations);
+                const statusDots = getCompanyStatusDots(company.locations);
                 return (
-                  <div key={company.id} id={`company-${company.id}`} className="border border-white/5 rounded-xl overflow-hidden bg-[#1a1a24] hover:border-[#00e5cc]/30 transition-all">
+                  <div key={company.id} id={`company-${company.id}`} className={`border rounded-xl overflow-hidden transition-all ${isExpanded ? 'border-white/[0.08] bg-[#111118]' : 'border-white/[0.04] bg-[#111118]/60 hover:bg-[#111118]'}`}>
                     <div
-                      className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-white/5 transition-colors"
+                      className="flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors"
                       onClick={() => toggleExpand(company.id)}
                     >
-                      {isExpanded
-                        ? <ChevronDown className="w-5 h-5 text-gray-400 shrink-0" />
-                        : <ChevronRight className="w-5 h-5 text-gray-400 shrink-0" />
-                      }
-                      <Building2 className="w-5 h-5 text-cyan-400 shrink-0" />
-                      {isFriday && companyHasIncomplete(company) && <AlertTriangle className="w-4 h-4 text-red-400 animate-blink shrink-0" />}
-                      <span className="font-semibold text-white flex-1 truncate">{company.name}</span>
-                      <span className="text-xs text-gray-500 hidden sm:inline">{company.locations.length} location{company.locations.length !== 1 ? 's' : ''}</span>
-                      <span className={`text-xs font-medium ${summary.color}`}>{summary.label}</span>
-                      <div className="flex items-center gap-1 ml-2" onClick={e => e.stopPropagation()}>
-                        <Button variant="ghost" size="icon" className="h-11 w-11 sm:h-7 sm:w-7 text-gray-400 hover:text-white" onClick={() => openEditCompany(company)}>
-                          <Pencil className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+                      <ChevronRight className={`w-4 h-4 text-gray-600 shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`} />
+                      {isFriday && companyHasIncomplete(company) && <AlertTriangle className="w-3.5 h-3.5 text-red-400 animate-blink shrink-0" />}
+                      <span className="font-medium text-sm text-white flex-1 truncate">{company.name}</span>
+                      <div className="hidden sm:flex items-center gap-1.5 mr-2">
+                        {statusDots.map(s => (
+                          <div key={s.key} className="flex items-center gap-1">
+                            <div className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
+                            <span className="text-[10px] text-gray-500 tabular-nums">{s.count}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <span className="sm:hidden text-[10px] text-gray-500">{company.locations.length} loc</span>
+                      <span className={`text-[10px] font-medium ${summary.color} hidden sm:inline`}>{summary.label}</span>
+                      <div className="flex items-center gap-0.5 ml-1" onClick={e => e.stopPropagation()}>
+                        <Button variant="ghost" size="icon" className="h-11 w-11 sm:h-7 sm:w-7 text-gray-600 hover:text-white" onClick={() => openEditCompany(company)}>
+                          <Pencil className="w-3.5 h-3.5" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-11 w-11 sm:h-7 sm:w-7 text-gray-400 hover:text-red-400" onClick={() => handleDeleteCompany(company.id, company.name)}>
-                          <Trash2 className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+                        <Button variant="ghost" size="icon" className="h-11 w-11 sm:h-7 sm:w-7 text-gray-600 hover:text-red-400" onClick={() => handleDeleteCompany(company.id, company.name)}>
+                          <Trash2 className="w-3.5 h-3.5" />
                         </Button>
                       </div>
                     </div>
 
                     {isExpanded && (
-                      <div className="border-t border-white/5 bg-[#0a0a0f]/50">
-                        {/* Desktop table */}
+                      <div className="border-t border-white/[0.04]">
                         <div className="hidden sm:block overflow-x-auto">
                           <table className="w-full text-sm">
                             <thead>
-                              <tr className="border-b border-white/5">
-                                <th className="text-left px-4 py-2 text-gray-500 font-medium text-xs uppercase tracking-wider">Address</th>
-                                <th className="text-left px-4 py-2 text-gray-500 font-medium text-xs uppercase tracking-wider hidden md:table-cell">Email</th>
-                                <th className="text-left px-4 py-2 text-gray-500 font-medium text-xs uppercase tracking-wider">Phone</th>
-                                <th className="text-left px-4 py-2 text-gray-500 font-medium text-xs uppercase tracking-wider">Status</th>
-                                <th className="text-left px-4 py-2 text-gray-500 font-medium text-xs uppercase tracking-wider">Tasks</th>
-                                <th className="text-left px-4 py-2 text-gray-500 font-medium text-xs uppercase tracking-wider hidden sm:table-cell">Notes</th>
-                                <th className="px-4 py-2 w-20"></th>
+                              <tr className="border-b border-white/[0.04]">
+                                <th className="text-left px-4 py-2 text-gray-600 font-normal text-[10px] uppercase tracking-widest">Address</th>
+                                <th className="text-left px-4 py-2 text-gray-600 font-normal text-[10px] uppercase tracking-widest hidden md:table-cell">Email</th>
+                                <th className="text-left px-4 py-2 text-gray-600 font-normal text-[10px] uppercase tracking-widest">Phone</th>
+                                <th className="text-left px-4 py-2 text-gray-600 font-normal text-[10px] uppercase tracking-widest">Status</th>
+                                <th className="text-left px-4 py-2 text-gray-600 font-normal text-[10px] uppercase tracking-widest">Tasks</th>
+                                <th className="text-left px-4 py-2 text-gray-600 font-normal text-[10px] uppercase tracking-widest hidden sm:table-cell">Notes</th>
+                                <th className="px-4 py-2 w-16"></th>
                               </tr>
                             </thead>
                             <tbody>
                               {company.locations.map(loc => (
-                                <tr key={loc.id} className="border-b border-white/5 hover:bg-white/[0.03] transition-colors">
+                                <tr key={loc.id} className="border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors">
                                   <td className="px-4 py-2.5 whitespace-nowrap">
-                                    <div className="flex items-center gap-2">
-                                      <MapPin className="w-3.5 h-3.5 text-gray-500 shrink-0" />
-                                      {loc.googleProfileUrl ? (
-                                        <a href={loc.googleProfileUrl} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 text-sm flex items-center gap-1 hover:underline">
-                                          {loc.address || '—'}
-                                          <LinkIcon className="w-3 h-3 shrink-0 opacity-60" />
-                                        </a>
-                                      ) : (
-                                        <span className="text-gray-300 text-sm">{loc.address || '—'}</span>
-                                      )}
-                                    </div>
+                                    {loc.googleProfileUrl ? (
+                                      <a href={loc.googleProfileUrl} target="_blank" rel="noopener noreferrer" className="text-white hover:text-[#00e5cc] text-xs flex items-center gap-1.5 transition-colors">
+                                        {loc.address || '—'}
+                                        <LinkIcon className="w-2.5 h-2.5 opacity-40" />
+                                      </a>
+                                    ) : (
+                                      <span className="text-gray-300 text-xs">{loc.address || '—'}</span>
+                                    )}
                                   </td>
                                   <td className="px-4 py-2.5 whitespace-nowrap hidden md:table-cell">
-                                    {loc.email ? (
-                                      <div className="flex items-center gap-2">
-                                        <Mail className="w-3.5 h-3.5 text-gray-500 shrink-0" />
-                                        <span className="text-gray-400 text-xs">{loc.email}</span>
-                                      </div>
-                                    ) : <span className="text-gray-600">—</span>}
+                                    <span className="text-gray-500 text-xs">{loc.email || '—'}</span>
                                   </td>
                                   <td className="px-4 py-2.5 whitespace-nowrap">
-                                    <div className="flex items-center gap-2">
-                                      <Phone className="w-3.5 h-3.5 text-gray-500 shrink-0" />
-                                      <span className="text-gray-300 text-sm">{loc.phone}</span>
-                                    </div>
+                                    <span className="text-gray-400 text-xs">{loc.phone || '—'}</span>
                                   </td>
                                   <td className="px-4 py-2.5 whitespace-nowrap"><StatusBadge status={loc.status} /></td>
                                   <td className="px-4 py-2.5 whitespace-nowrap">
@@ -629,19 +630,19 @@ const GBPManagement: React.FC = () => {
                                   <td className="px-4 py-2.5 whitespace-nowrap hidden sm:table-cell">
                                     <button onClick={() => openNotesModal(loc)} className="text-left hover:opacity-80 transition-opacity group">
                                       {loc.notes ? (
-                                        <span className="text-xs text-amber-400/80 italic group-hover:text-amber-300">{loc.notes}</span>
+                                        <span className="text-xs text-gray-500 italic group-hover:text-gray-300">{loc.notes}</span>
                                       ) : (
-                                        <span className="text-gray-600 text-xs group-hover:text-gray-400 flex items-center gap-1"><StickyNote className="w-3 h-3" /> Add note</span>
+                                        <span className="text-gray-700 text-xs group-hover:text-gray-500">+ note</span>
                                       )}
                                     </button>
                                   </td>
                                   <td className="px-4 py-2.5 whitespace-nowrap">
-                                    <div className="flex items-center gap-1">
-                                      <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-400 hover:text-white" onClick={() => openEditLocation(company.id, loc)}>
-                                        <Pencil className="w-3.5 h-3.5" />
+                                    <div className="flex items-center gap-0.5">
+                                      <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-600 hover:text-white" onClick={() => openEditLocation(company.id, loc)}>
+                                        <Pencil className="w-3 h-3" />
                                       </Button>
-                                      <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-400 hover:text-red-400" onClick={() => handleDeleteLocation(company.id, loc.id)}>
-                                        <Trash2 className="w-3.5 h-3.5" />
+                                      <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-600 hover:text-red-400" onClick={() => handleDeleteLocation(company.id, loc.id)}>
+                                        <Trash2 className="w-3 h-3" />
                                       </Button>
                                     </div>
                                   </td>
@@ -650,54 +651,48 @@ const GBPManagement: React.FC = () => {
                             </tbody>
                           </table>
                         </div>
-                        {/* Mobile card layout */}
-                        <div className="sm:hidden divide-y divide-white/5">
+                        <div className="sm:hidden divide-y divide-white/[0.03]">
                           {company.locations.map(loc => (
                             <div key={loc.id} className="px-4 py-3 space-y-2">
                               <div className="flex items-start justify-between gap-2">
-                                <div className="flex items-center gap-2 min-w-0 flex-1">
-                                  <MapPin className="w-4 h-4 text-cyan-400 shrink-0" />
+                                <div className="min-w-0 flex-1">
                                   {loc.googleProfileUrl ? (
-                                    <a href={loc.googleProfileUrl} target="_blank" rel="noopener noreferrer" className="text-cyan-400 text-sm font-medium truncate hover:underline flex items-center gap-1">
-                                      {loc.address || '—'} <LinkIcon className="w-3 h-3 shrink-0 opacity-60" />
+                                    <a href={loc.googleProfileUrl} target="_blank" rel="noopener noreferrer" className="text-white text-sm font-medium truncate hover:text-[#00e5cc] flex items-center gap-1 transition-colors">
+                                      {loc.address || '—'} <LinkIcon className="w-2.5 h-2.5 opacity-40" />
                                     </a>
                                   ) : (
-                                    <span className="text-white text-sm font-medium truncate">{loc.address || '—'}</span>
+                                    <span className="text-white text-sm font-medium truncate block">{loc.address || '—'}</span>
                                   )}
                                 </div>
                                 <div className="flex items-center gap-0.5 shrink-0" onClick={e => e.stopPropagation()}>
-                                  <Button variant="ghost" size="icon" className="h-11 w-11 text-gray-400 hover:text-amber-400" onClick={() => openNotesModal(loc)} title="Notes">
+                                  <Button variant="ghost" size="icon" className="h-11 w-11 text-gray-600 hover:text-gray-300" onClick={() => openNotesModal(loc)} title="Notes">
                                     <StickyNote className="w-4 h-4" />
                                   </Button>
-                                  <Button variant="ghost" size="icon" className="h-11 w-11 text-gray-400 hover:text-white" onClick={() => openEditLocation(company.id, loc)}>
+                                  <Button variant="ghost" size="icon" className="h-11 w-11 text-gray-600 hover:text-white" onClick={() => openEditLocation(company.id, loc)}>
                                     <Pencil className="w-4 h-4" />
                                   </Button>
-                                  <Button variant="ghost" size="icon" className="h-11 w-11 text-gray-400 hover:text-red-400" onClick={() => handleDeleteLocation(company.id, loc.id)}>
+                                  <Button variant="ghost" size="icon" className="h-11 w-11 text-gray-600 hover:text-red-400" onClick={() => handleDeleteLocation(company.id, loc.id)}>
                                     <Trash2 className="w-4 h-4" />
                                   </Button>
                                 </div>
                               </div>
-                              <div className="flex items-center flex-wrap gap-2 pl-6">
+                              <div className="flex items-center flex-wrap gap-2">
                                 <StatusBadge status={loc.status} />
                                 <button onClick={() => openTasksSummary(loc)} className="hover:opacity-80 transition-opacity"><TasksIndicator loc={loc} /></button>
                                 {loc.phone && (
-                                  <span className="inline-flex items-center gap-1 text-xs text-gray-400">
-                                    <Phone className="w-3 h-3" /> {loc.phone}
-                                  </span>
+                                  <span className="text-[10px] text-gray-500">{loc.phone}</span>
                                 )}
                               </div>
                               {loc.notes && (
-                                <div className="pl-6">
-                                  <span className="text-xs text-amber-400/80 italic">{loc.notes}</span>
-                                </div>
+                                <p className="text-xs text-gray-500 italic">{loc.notes}</p>
                               )}
                             </div>
                           ))}
                         </div>
-                        <div className="px-4 py-2 border-t border-white/5">
-                          <Button variant="ghost" size="sm" className="min-h-[44px] text-[#00e5cc] hover:text-[#00e5cc]/80 hover:bg-[#00e5cc]/10 gap-1.5 text-xs" onClick={() => openAddLocation(company.id)}>
-                            <Plus className="w-3.5 h-3.5" /> Add Location
-                          </Button>
+                        <div className="px-4 py-2 border-t border-white/[0.04]">
+                          <button className="min-h-[44px] text-gray-500 hover:text-white text-xs flex items-center gap-1.5 transition-colors" onClick={() => openAddLocation(company.id)}>
+                            <Plus className="w-3 h-3" /> Add Location
+                          </button>
                         </div>
                       </div>
                     )}
@@ -709,7 +704,7 @@ const GBPManagement: React.FC = () => {
           </>)}
 
           {activeTab === 'seo-hub' && (
-            <Suspense fallback={<div className="text-center py-10"><div className="w-8 h-8 border-4 border-[#00e5cc] border-t-transparent rounded-full animate-spin mx-auto mb-2"></div><p className="text-gray-400 text-sm">Loading...</p></div>}>
+            <Suspense fallback={<div className="text-center py-10"><div className="w-6 h-6 border-2 border-white/20 border-t-white/60 rounded-full animate-spin mx-auto mb-2"></div><p className="text-gray-600 text-xs">Loading...</p></div>}>
               <div className="space-y-8">
                 <SOPLibrary />
                 <KanbanBoard />
@@ -721,31 +716,29 @@ const GBPManagement: React.FC = () => {
 
       {actionRequiredModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-mobile-full-wrapper bg-black/80 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-mobile-full-wrapper bg-black/70 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
           aria-labelledby="action-required-title"
           onClick={() => setActionRequiredModalOpen(false)}
           onKeyDown={e => { if (e.key === 'Escape') setActionRequiredModalOpen(false); }}
         >
-          <div className="modal-mobile-full bg-[#0a0a0f] border border-white/10 rounded-2xl w-full max-w-lg p-5 sm:p-6 relative max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
-            <button onClick={() => setActionRequiredModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white">
-              <X className="w-5 h-5" />
+          <div className="modal-mobile-full bg-[#111118] border border-white/[0.06] rounded-xl w-full max-w-lg p-5 sm:p-6 relative max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setActionRequiredModalOpen(false)} className="absolute top-4 right-4 text-gray-600 hover:text-white">
+              <X className="w-4 h-4" />
             </button>
-            <h2 id="action-required-title" className="text-lg font-bold mb-1 font-orbitron flex items-center gap-2">
-              <FileWarning className="w-5 h-5 text-orange-400" />
+            <h2 id="action-required-title" className="text-sm font-semibold mb-1 flex items-center gap-2">
               Action Required
             </h2>
-            <p className="text-xs text-gray-400 mb-4">{stats.actionRequired} location{stats.actionRequired !== 1 ? 's' : ''} need attention</p>
+            <p className="text-[11px] text-gray-500 mb-4">{stats.actionRequired} location{stats.actionRequired !== 1 ? 's' : ''} need attention</p>
             <div className="overflow-y-auto flex-1 space-y-3 pr-1">
               {actionRequiredData.map(group => (
-                <div key={group.companyId} className="bg-[#1a1a24] border border-white/5 rounded-xl p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Building2 className="w-4 h-4 text-cyan-400" />
-                    <span className="text-sm font-semibold text-white">{group.companyName}</span>
-                    <span className="text-xs text-gray-500 ml-auto">{group.locations.length} location{group.locations.length !== 1 ? 's' : ''}</span>
+                <div key={group.companyId}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xs font-medium text-gray-400">{group.companyName}</span>
+                    <span className="text-[10px] text-gray-600">{group.locations.length}</span>
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     {group.locations.map(loc => (
                       <button
                         key={loc.id}
@@ -759,12 +752,9 @@ const GBPManagement: React.FC = () => {
                             document.getElementById(`company-${group.companyId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                           }, 150);
                         }}
-                        className="flex items-center justify-between gap-3 p-2.5 rounded-lg bg-white/[0.03] border border-white/[0.03] hover:border-orange-400/30 hover:bg-white/[0.06] cursor-pointer transition-all group w-full text-left"
+                        className="flex items-center justify-between gap-3 p-2.5 rounded-lg hover:bg-white/[0.04] cursor-pointer transition-all group w-full text-left"
                       >
-                        <div className="flex items-center gap-2 min-w-0">
-                          <MapPin className="w-3.5 h-3.5 text-gray-500 shrink-0" />
-                          <span className="text-sm text-gray-300 truncate group-hover:text-white transition-colors">{loc.address}</span>
-                        </div>
+                        <span className="text-xs text-gray-400 truncate group-hover:text-white transition-colors">{loc.address}</span>
                         <StatusBadge status={loc.status} />
                       </button>
                     ))}
@@ -773,8 +763,8 @@ const GBPManagement: React.FC = () => {
               ))}
               {actionRequiredData.length === 0 && (
                 <div className="text-center py-8 text-gray-500">
-                  <CheckCircle2 className="w-8 h-8 mx-auto mb-2 text-green-400" />
-                  <p className="text-sm">All locations are verified!</p>
+                  <CheckCircle2 className="w-6 h-6 mx-auto mb-2 text-emerald-400/60" />
+                  <p className="text-xs">All locations verified</p>
                 </div>
               )}
             </div>
@@ -783,20 +773,20 @@ const GBPManagement: React.FC = () => {
       )}
 
       {companyModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-mobile-full-wrapper bg-black/80 backdrop-blur-sm">
-          <div className="modal-mobile-full bg-[#0a0a0f] border border-white/10 rounded-2xl w-full max-w-md p-5 sm:p-6 relative">
-            <button onClick={() => setCompanyModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white">
-              <X className="w-5 h-5" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-mobile-full-wrapper bg-black/70 backdrop-blur-sm">
+          <div className="modal-mobile-full bg-[#111118] border border-white/[0.06] rounded-xl w-full max-w-md p-5 sm:p-6 relative">
+            <button onClick={() => setCompanyModalOpen(false)} className="absolute top-4 right-4 text-gray-600 hover:text-white">
+              <X className="w-4 h-4" />
             </button>
-            <h2 className="text-lg font-bold mb-4 font-orbitron">{editingCompanyId ? 'Edit Company' : 'Add Company'}</h2>
+            <h2 className="text-sm font-semibold mb-4">{editingCompanyId ? 'Edit Company' : 'Add Company'}</h2>
             <form onSubmit={handleCompanySubmit} className="space-y-4">
               <div>
-                <label className="block text-xs text-gray-400 mb-1 font-semibold">Company Name</label>
-                <Input value={companyName} onChange={e => setCompanyName(e.target.value)} className="bg-[#1a1a24] border-white/5 text-white focus:border-[#00e5cc]" />
+                <label className="block text-[10px] text-gray-500 mb-1 uppercase tracking-wider">Company Name</label>
+                <Input value={companyName} onChange={e => setCompanyName(e.target.value)} className="bg-white/[0.03] border-white/[0.06] text-white focus:border-white/20 focus:ring-0 rounded-lg" />
               </div>
               <div className="flex gap-3 justify-end">
-                <Button type="button" variant="ghost" onClick={() => setCompanyModalOpen(false)}>Cancel</Button>
-                <Button type="submit" className="bg-[#00e5cc]/10 border border-[#00e5cc]/30 text-[#00e5cc] hover:bg-[#00e5cc]/20 hover:shadow-[0_0_15px_rgba(0,229,204,0.15)] font-semibold transition-all">{editingCompanyId ? 'Update' : 'Add'}</Button>
+                <Button type="button" variant="ghost" className="text-gray-500 hover:text-white" onClick={() => setCompanyModalOpen(false)}>Cancel</Button>
+                <Button type="submit" className="bg-white/[0.08] border border-white/[0.1] text-white hover:bg-white/[0.12] text-sm transition-all">{editingCompanyId ? 'Update' : 'Add'}</Button>
               </div>
             </form>
           </div>
@@ -804,34 +794,34 @@ const GBPManagement: React.FC = () => {
       )}
 
       {locationModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-mobile-full-wrapper bg-black/80 backdrop-blur-sm">
-          <div className="modal-mobile-full bg-[#0a0a0f] border border-white/10 rounded-2xl w-full max-w-lg p-5 sm:p-6 relative overflow-y-auto">
-            <button onClick={() => setLocationModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white">
-              <X className="w-5 h-5" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-mobile-full-wrapper bg-black/70 backdrop-blur-sm">
+          <div className="modal-mobile-full bg-[#111118] border border-white/[0.06] rounded-xl w-full max-w-lg p-5 sm:p-6 relative overflow-y-auto">
+            <button onClick={() => setLocationModalOpen(false)} className="absolute top-4 right-4 text-gray-600 hover:text-white">
+              <X className="w-4 h-4" />
             </button>
-            <h2 className="text-lg font-bold mb-4 font-orbitron">{editingLocationId ? 'Edit Location' : 'Add Location'}</h2>
+            <h2 className="text-sm font-semibold mb-4">{editingLocationId ? 'Edit Location' : 'Add Location'}</h2>
             <form onSubmit={handleLocationSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs text-gray-400 mb-1 font-semibold">Address</label>
-                <Input value={locationForm.address} onChange={e => setLocationForm(f => ({ ...f, address: e.target.value }))} className="bg-[#1a1a24] border-white/5 text-white focus:border-[#00e5cc]" />
+                <label className="block text-[10px] text-gray-500 mb-1 uppercase tracking-wider">Address</label>
+                <Input value={locationForm.address} onChange={e => setLocationForm(f => ({ ...f, address: e.target.value }))} className="bg-white/[0.03] border-white/[0.06] text-white focus:border-white/20 focus:ring-0 rounded-lg" />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs text-gray-400 mb-1 font-semibold">Email</label>
-                  <Input value={locationForm.email} onChange={e => setLocationForm(f => ({ ...f, email: e.target.value }))} className="bg-[#1a1a24] border-white/5 text-white focus:border-[#00e5cc]" />
+                  <label className="block text-[10px] text-gray-500 mb-1 uppercase tracking-wider">Email</label>
+                  <Input value={locationForm.email} onChange={e => setLocationForm(f => ({ ...f, email: e.target.value }))} className="bg-white/[0.03] border-white/[0.06] text-white focus:border-white/20 focus:ring-0 rounded-lg" />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-400 mb-1 font-semibold">Phone</label>
-                  <Input value={locationForm.phone} onChange={e => setLocationForm(f => ({ ...f, phone: e.target.value }))} className="bg-[#1a1a24] border-white/5 text-white focus:border-[#00e5cc]" />
+                  <label className="block text-[10px] text-gray-500 mb-1 uppercase tracking-wider">Phone</label>
+                  <Input value={locationForm.phone} onChange={e => setLocationForm(f => ({ ...f, phone: e.target.value }))} className="bg-white/[0.03] border-white/[0.06] text-white focus:border-white/20 focus:ring-0 rounded-lg" />
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs text-gray-400 mb-1 font-semibold">Status</label>
+                  <label className="block text-[10px] text-gray-500 mb-1 uppercase tracking-wider">Status</label>
                   <select
                     value={locationForm.status}
                     onChange={e => setLocationForm(f => ({ ...f, status: e.target.value as GBPLocation['status'] }))}
-                    className="modal-select w-full bg-[#1a1a24] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-[#00e5cc]/50 focus:ring-1 focus:ring-[#00e5cc]/20 focus:outline-none transition-colors [&>option]:bg-[#1a1a24] [&>option]:text-white"
+                    className="modal-select w-full bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-white focus:border-white/20 focus:ring-0 focus:outline-none transition-colors [&>option]:bg-[#111118] [&>option]:text-white"
                   >
                     <option value="verified">Verified</option>
                     <option value="pending">Pending</option>
@@ -840,25 +830,25 @@ const GBPManagement: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-400 mb-1 font-semibold">Notes</label>
-                  <Input value={locationForm.notes} onChange={e => setLocationForm(f => ({ ...f, notes: e.target.value }))} className="bg-[#1a1a24] border-white/5 text-white focus:border-[#00e5cc]" placeholder="e.g. Next office" />
+                  <label className="block text-[10px] text-gray-500 mb-1 uppercase tracking-wider">Notes</label>
+                  <Input value={locationForm.notes} onChange={e => setLocationForm(f => ({ ...f, notes: e.target.value }))} className="bg-white/[0.03] border-white/[0.06] text-white focus:border-white/20 focus:ring-0 rounded-lg" placeholder="e.g. Next office" />
                 </div>
               </div>
               <div>
-                <label className="block text-xs text-gray-400 mb-1 font-semibold flex items-center gap-1">
+                <label className="block text-[10px] text-gray-500 mb-1 uppercase tracking-wider flex items-center gap-1">
                   <LinkIcon className="w-3 h-3" /> Google Profile URL
                 </label>
                 <Input
                   type="url"
                   value={locationForm.googleProfileUrl || ''}
                   onChange={e => setLocationForm(f => ({ ...f, googleProfileUrl: e.target.value }))}
-                  className="bg-[#1a1a24] border-white/5 text-white focus:border-[#00e5cc]"
+                  className="bg-white/[0.03] border-white/[0.06] text-white focus:border-white/20 focus:ring-0 rounded-lg"
                   placeholder="https://business.google.com/..."
                 />
               </div>
               <div className="flex gap-3 justify-end">
-                <Button type="button" variant="ghost" onClick={() => setLocationModalOpen(false)}>Cancel</Button>
-                <Button type="submit" className="bg-[#00e5cc]/10 border border-[#00e5cc]/30 text-[#00e5cc] hover:bg-[#00e5cc]/20 hover:shadow-[0_0_15px_rgba(0,229,204,0.15)] font-semibold transition-all">{editingLocationId ? 'Update' : 'Add'}</Button>
+                <Button type="button" variant="ghost" className="text-gray-500 hover:text-white" onClick={() => setLocationModalOpen(false)}>Cancel</Button>
+                <Button type="submit" className="bg-white/[0.08] border border-white/[0.1] text-white hover:bg-white/[0.12] text-sm transition-all">{editingLocationId ? 'Update' : 'Add'}</Button>
               </div>
             </form>
           </div>
@@ -869,17 +859,14 @@ const GBPManagement: React.FC = () => {
         const tasks = tasksModalLocationId ? (seoTasksByLocation.get(tasksModalLocationId) || []) : [];
         const currentWeek = getMonday();
         return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-mobile-full-wrapper bg-black/80 backdrop-blur-sm">
-            <div className="modal-mobile-full bg-[#0a0a0f] border border-white/10 rounded-2xl w-full max-w-md p-5 sm:p-6 relative overflow-y-auto">
-              <button onClick={() => setTasksModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white">
-                <X className="w-5 h-5" />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-mobile-full-wrapper bg-black/70 backdrop-blur-sm">
+            <div className="modal-mobile-full bg-[#111118] border border-white/[0.06] rounded-xl w-full max-w-md p-5 sm:p-6 relative overflow-y-auto">
+              <button onClick={() => setTasksModalOpen(false)} className="absolute top-4 right-4 text-gray-600 hover:text-white">
+                <X className="w-4 h-4" />
               </button>
-              <div className="flex items-center gap-2 mb-1">
-                <ClipboardList className="w-5 h-5 text-[#00e5cc]" />
-                <h2 className="text-lg font-bold font-orbitron">Weekly Tasks</h2>
-              </div>
-              <p className="text-xs text-gray-500 mb-1 truncate">{tasksModalAddress}</p>
-              <p className="text-xs text-gray-400 mb-4">Week of {currentWeek}</p>
+              <h2 className="text-sm font-semibold mb-1">Weekly Tasks</h2>
+              <p className="text-[10px] text-gray-500 mb-1 truncate">{tasksModalAddress}</p>
+              <p className="text-[10px] text-gray-600 mb-4">Week of {currentWeek}</p>
 
               <div className="space-y-2">
                 {DEFAULT_TASK_TITLES.map(title => {
@@ -937,18 +924,18 @@ const GBPManagement: React.FC = () => {
         const targetLabel = config?.targetMin ? `${config.targetMin}-${config.target}` : `${config?.target || '?'}`;
 
         return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-mobile-full-wrapper bg-black/80 backdrop-blur-sm">
-            <div className="modal-mobile-full bg-[#0a0a0f] border border-white/10 rounded-2xl w-full max-w-md p-5 sm:p-6 relative max-h-[90vh] overflow-y-auto">
-              <button onClick={() => { setTaskDetailOpen(null); }} className="absolute top-4 right-4 text-gray-400 hover:text-white">
-                <X className="w-5 h-5" />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-mobile-full-wrapper bg-black/70 backdrop-blur-sm">
+            <div className="modal-mobile-full bg-[#111118] border border-white/[0.06] rounded-xl w-full max-w-md p-5 sm:p-6 relative max-h-[90vh] overflow-y-auto">
+              <button onClick={() => { setTaskDetailOpen(null); }} className="absolute top-4 right-4 text-gray-600 hover:text-white">
+                <X className="w-4 h-4" />
               </button>
-              <button onClick={() => setTaskDetailOpen(null)} className="flex items-center gap-1 text-xs text-gray-400 hover:text-white mb-3">
-                <ChevronLeft className="w-3 h-3" /> Back to summary
+              <button onClick={() => setTaskDetailOpen(null)} className="flex items-center gap-1 text-[10px] text-gray-500 hover:text-white mb-3">
+                <ChevronLeft className="w-3 h-3" /> Back
               </button>
 
               <div className="flex items-center gap-2 mb-3">
-                <Icon className="w-5 h-5 text-[#00e5cc]" />
-                <h2 className="text-lg font-bold">{config?.label || task.title}</h2>
+                <Icon className="w-4 h-4 text-gray-400" />
+                <h2 className="text-sm font-semibold">{config?.label || task.title}</h2>
               </div>
 
               <div className="flex items-center gap-3 mb-2">
@@ -1017,26 +1004,23 @@ const GBPManagement: React.FC = () => {
       })()}
 
       {notesModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-mobile-full-wrapper bg-black/80 backdrop-blur-sm">
-          <div className="modal-mobile-full bg-[#0a0a0f] border border-white/10 rounded-2xl w-full max-w-md p-5 sm:p-6 relative">
-            <button onClick={() => setNotesModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white">
-              <X className="w-5 h-5" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-mobile-full-wrapper bg-black/70 backdrop-blur-sm">
+          <div className="modal-mobile-full bg-[#111118] border border-white/[0.06] rounded-xl w-full max-w-md p-5 sm:p-6 relative">
+            <button onClick={() => setNotesModalOpen(false)} className="absolute top-4 right-4 text-gray-600 hover:text-white">
+              <X className="w-4 h-4" />
             </button>
-            <div className="flex items-center gap-2 mb-1">
-              <StickyNote className="w-5 h-5 text-amber-400" />
-              <h2 className="text-lg font-bold font-orbitron">Location Notes</h2>
-            </div>
-            <p className="text-xs text-gray-500 mb-4 truncate">{notesLocationAddress}</p>
+            <h2 className="text-sm font-semibold mb-1">Notes</h2>
+            <p className="text-[10px] text-gray-500 mb-4 truncate">{notesLocationAddress}</p>
             <textarea
               value={notesText}
               onChange={e => setNotesText(e.target.value)}
               placeholder="Add notes about this location..."
               rows={6}
-              className="w-full bg-[#1a1a24] border border-white/5 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:border-[#00e5cc] focus:outline-none resize-none"
+              className="w-full bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:border-white/20 focus:outline-none resize-none"
             />
             <div className="flex gap-3 justify-end mt-4">
-              <Button type="button" variant="ghost" onClick={() => setNotesModalOpen(false)}>Cancel</Button>
-              <Button onClick={handleNotesSave} className="bg-[#00e5cc]/10 border border-[#00e5cc]/30 text-[#00e5cc] hover:bg-[#00e5cc]/20 hover:shadow-[0_0_15px_rgba(0,229,204,0.15)] font-semibold transition-all">Save</Button>
+              <Button type="button" variant="ghost" className="text-gray-500 hover:text-white" onClick={() => setNotesModalOpen(false)}>Cancel</Button>
+              <Button onClick={handleNotesSave} className="bg-white/[0.08] border border-white/[0.1] text-white hover:bg-white/[0.12] text-sm transition-all">Save</Button>
             </div>
           </div>
         </div>
