@@ -23,7 +23,8 @@ import {
     UserCheck,
     Clapperboard,
     Archive,
-    Shield
+    Shield,
+    MapPin
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -79,6 +80,14 @@ const AgencyDashboard: React.FC = () => {
                     icon: Clapperboard,
                     description: 'Shoots & video tracking',
                     href: '/content-portal',
+                    color: 'cyan' as const
+                },
+                {
+                    id: 'gbp-management',
+                    title: 'GBP Management',
+                    icon: MapPin,
+                    description: 'Local SEO Hub',
+                    href: '/gbpmanagement',
                     color: 'cyan' as const
                 },
                 {

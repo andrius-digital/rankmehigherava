@@ -3,7 +3,7 @@ import { Helmet } from "react-helmet-async";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft, ArrowRight, LogOut, User, Shield, Lock, Mail,
-  Clapperboard, UserCheck, UsersRound, Palette, CreditCard, Clock, Phone, Loader2, LogIn
+  Clapperboard, UserCheck, UsersRound, Palette, CreditCard, Clock, Phone, Loader2, LogIn, MapPin
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -38,6 +38,7 @@ const CARD_CONFIG: Record<string, { label: string; icon: typeof Clapperboard; de
   "subscriptions": { label: "Subscriptions", icon: CreditCard, description: "Billing management", href: "/subscriptions", color: "emerald" },
   "team-tracker": { label: "Team Tracker", icon: Clock, description: "Payroll & time", href: "/team-tracker", color: "emerald" },
   "call-center-kpi": { label: "Call Center KPI", icon: Phone, description: "Leads & analytics", href: "/call-center-kpi", color: "orange" },
+  "gbp-management": { label: "GBP Management", icon: MapPin, description: "Local SEO Hub", href: "/gbpmanagement", color: "cyan" },
 };
 
 export function getTeamSession(): TeamSession | null {

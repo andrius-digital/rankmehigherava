@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
 import {
   ArrowLeft, Plus, X, Users, Trash2, Copy, Shield,
-  Clapperboard, UserCheck, UsersRound, Palette, CreditCard, Clock, Phone,
+  Clapperboard, UserCheck, UsersRound, Palette, CreditCard, Clock, Phone, MapPin,
   ChevronDown, RefreshCw, User, Lock, Eye, EyeOff, Briefcase, Loader2
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -28,6 +28,7 @@ const AVAILABLE_PERMISSIONS = [
   { id: "subscriptions", label: "Subscriptions", icon: CreditCard, description: "Billing management" },
   { id: "team-tracker", label: "Team Tracker", icon: Clock, description: "Payroll & time" },
   { id: "call-center-kpi", label: "Call Center KPI", icon: Phone, description: "Leads & analytics" },
+  { id: "gbp-management", label: "GBP Management", icon: MapPin, description: "Local SEO Hub" },
 ];
 
 function generatePassword(): string {

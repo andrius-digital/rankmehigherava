@@ -220,7 +220,11 @@ const App = () => (
                   </ProtectedRoute>
                 } />
                 <Route path="/manager-portal" element={<ManagerPortal />} />
-                <Route path="/gbpmanagement" element={<GBPManagement />} />
+                <Route path="/gbpmanagement" element={
+                  <ProtectedRoute requireAdmin teamPermission="gbp-management">
+                    <GBPManagement />
+                  </ProtectedRoute>
+                } />
                 <Route path="/team-access" element={
                   <ProtectedRoute requireAdmin>
                     <TeamAccess />
