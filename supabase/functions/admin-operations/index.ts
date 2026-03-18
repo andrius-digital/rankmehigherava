@@ -43,19 +43,24 @@ serve(async (req) => {
       );
     }
 
-    // Check if user is admin
-    const { data: roleData, error: roleError } = await supabaseAdmin
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .eq('role', 'admin')
-      .maybeSingle();
+    // Check if user is admin (email allowlist + user_roles table)
+    const ADMIN_EMAILS = ['andrius@cdlagency.com', 'rubbail@rankmehigher.com'];
+    const isAdminByEmail = user.email && ADMIN_EMAILS.includes(user.email.toLowerCase());
 
-    if (roleError || !roleData) {
-      return new Response(
-        JSON.stringify({ error: 'Admin access required' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    if (!isAdminByEmail) {
+      const { data: roleData, error: roleError } = await supabaseAdmin
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('role', 'admin')
+        .maybeSingle();
+
+      if (roleError || !roleData) {
+        return new Response(
+          JSON.stringify({ error: 'Admin access required' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
     const { action, data } = await req.json();
