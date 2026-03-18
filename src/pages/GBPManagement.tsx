@@ -567,23 +567,26 @@ const GBPManagement: React.FC = () => {
           <div className="mb-6 space-y-3">
             <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2">
               {[
-                { label: 'Companies', value: stats.companies, icon: Building2, filterKey: null, card: 'border-cyan-500/15 bg-cyan-500/[0.03] hover:border-cyan-500/30', activeBorder: '', iconCls: 'text-cyan-400/60', valCls: 'text-cyan-400' },
-                { label: 'Locations', value: stats.locations, icon: MapPin, filterKey: null, card: 'border-cyan-500/15 bg-cyan-500/[0.03] hover:border-cyan-500/30', activeBorder: '', iconCls: 'text-cyan-400/60', valCls: 'text-cyan-400' },
+                { label: 'Companies', value: stats.companies, icon: Building2, filterKey: 'all', card: 'border-cyan-500/15 bg-cyan-500/[0.03] hover:border-cyan-500/30', activeBorder: 'ring-2 ring-cyan-400/60 border-cyan-400/60', iconCls: 'text-cyan-400/60', valCls: 'text-cyan-400' },
+                { label: 'Locations', value: stats.locations, icon: MapPin, filterKey: 'all', card: 'border-cyan-500/15 bg-cyan-500/[0.03] hover:border-cyan-500/30', activeBorder: 'ring-2 ring-cyan-400/60 border-cyan-400/60', iconCls: 'text-cyan-400/60', valCls: 'text-cyan-400' },
                 { label: 'Verified', value: stats.verified, icon: CheckCircle2, filterKey: 'verified', card: 'border-emerald-500/15 bg-emerald-500/[0.03] hover:border-emerald-500/30', activeBorder: 'ring-2 ring-emerald-400/60 border-emerald-400/60', iconCls: 'text-emerald-400/60', valCls: 'text-emerald-400' },
                 { label: 'Pending', value: stats.pending, icon: Clock, filterKey: 'pending', card: 'border-amber-500/15 bg-amber-500/[0.03] hover:border-amber-500/30', activeBorder: 'ring-2 ring-amber-400/60 border-amber-400/60', iconCls: 'text-amber-400/60', valCls: 'text-amber-400' },
                 { label: 'Processing', value: stats.processing, icon: Loader2, filterKey: 'processing', card: 'border-blue-500/15 bg-blue-500/[0.03] hover:border-blue-500/30', activeBorder: 'ring-2 ring-blue-400/60 border-blue-400/60', iconCls: 'text-blue-400/60', valCls: 'text-blue-400' },
                 { label: 'Not Started', value: stats.notStarted, icon: Circle, filterKey: 'not_started', card: 'border-slate-500/15 bg-slate-500/[0.03] hover:border-slate-500/30', activeBorder: 'ring-2 ring-slate-400/60 border-slate-400/60', iconCls: 'text-slate-400/60', valCls: 'text-slate-400' },
               ].map(({ label, value, icon: Icon, filterKey, card, activeBorder, iconCls, valCls }) => {
-                const isActive = filterKey !== null && statusFilter === filterKey;
+                const isActive = filterKey === 'all' ? statusFilter === 'all' : statusFilter === filterKey;
                 return (
                   <button
                     key={label}
                     type="button"
                     onClick={() => {
-                      if (filterKey === null) return;
-                      setStatusFilter(prev => prev === filterKey ? 'all' : filterKey);
+                      if (filterKey === 'all') {
+                        setStatusFilter('all');
+                      } else {
+                        setStatusFilter(prev => prev === filterKey ? 'all' : filterKey);
+                      }
                     }}
-                    className={`rounded-xl border p-2.5 transition-all text-left ${card} ${isActive ? activeBorder : ''} ${filterKey !== null ? 'cursor-pointer' : 'cursor-default'}`}
+                    className={`rounded-xl border p-2.5 transition-all text-left cursor-pointer ${card} ${isActive ? activeBorder : ''}`}
                   >
                     <div className="flex items-center justify-between mb-1">
                       <Icon className={`w-3 h-3 ${iconCls}`} />
