@@ -44,7 +44,7 @@ serve(async (req) => {
     }
 
     // Check if user is admin (email allowlist + user_roles table)
-    const ADMIN_EMAILS = ['andrius@cdlagency.com', 'rubbail@rankmehigher.com'];
+    const ADMIN_EMAILS = ['andrius@cdlagency.com'];
     const isAdminByEmail = user.email && ADMIN_EMAILS.includes(user.email.toLowerCase());
 
     if (!isAdminByEmail) {
@@ -254,8 +254,21 @@ serve(async (req) => {
 
         const teamUserId = newTeamUser.user.id;
 
-        const { error: teamRoleError } = await supabaseAdmin.rpc('assign_team_role', { _user_id: teamUserId });
-        if (teamRoleError) throw teamRoleError;
+        // Try to assign team role via RPC, fall back to direct insert, skip if enum doesn't support 'team'
+        try {
+          const { error: teamRoleError } = await supabaseAdmin.rpc('assign_team_role', { _user_id: teamUserId });
+          if (teamRoleError) {
+            console.warn('assign_team_role RPC failed, trying direct insert:', teamRoleError.message);
+            const { error: directRoleError } = await supabaseAdmin
+              .from('user_roles')
+              .insert({ user_id: teamUserId, role: 'team' });
+            if (directRoleError) {
+              console.warn('Direct role insert also failed (enum may not have team value):', directRoleError.message);
+            }
+          }
+        } catch (rpcErr) {
+          console.warn('Role assignment skipped:', rpcErr);
+        }
 
         const { data: teamMemberRow, error: teamInsertError } = await supabaseAdmin
           .from('team_portal_members')

@@ -49,7 +49,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<Profile | null>(null);
   const [impersonatedUser, setImpersonatedUser] = useState<ImpersonatedUser | null>(null);
 
-  const ADMIN_EMAILS = ['andrius@cdlagency.com', 'rubbail@rankmehigher.com'];
+  const ADMIN_EMAILS = ['andrius@cdlagency.com'];
 
   const checkAdminRole = async (userId: string) => {
     try {
