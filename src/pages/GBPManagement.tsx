@@ -596,94 +596,94 @@ const GBPManagement: React.FC = () => {
           ) : filteredCompanies.length === 0 ? (
             <div className="text-center py-20 text-slate-500 font-orbitron text-xs">No companies found</div>
           ) : (
-            <div className="space-y-1.5">
+            <div className="rounded-xl border border-white/[0.06] overflow-hidden divide-y divide-white/[0.04]">
               {filteredCompanies.map(company => {
                 const isExpanded = expandedIds.has(company.id);
                 const summary = getCompanyStatusSummary(company.locations);
                 const statusDots = getCompanyStatusDots(company.locations);
                 return (
-                  <div key={company.id} id={`company-${company.id}`} className={`rounded-xl border overflow-hidden transition-all ${isExpanded ? 'border-cyan-500/20 bg-card/40' : 'border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12]'}`}>
+                  <div key={company.id} id={`company-${company.id}`} className={`transition-all ${isExpanded ? 'bg-card/40' : 'bg-transparent hover:bg-white/[0.02]'}`}>
                     <div
-                      className="flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors hover:bg-white/[0.02]"
+                      className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors"
                       onClick={() => toggleExpand(company.id)}
                     >
-                      <ChevronRight className={`w-3.5 h-3.5 text-slate-600 shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`} />
-                      {isFriday && companyHasIncomplete(company) && <AlertTriangle className="w-3 h-3 text-red-400 animate-blink shrink-0" />}
-                      <span className="font-orbitron font-bold text-xs text-foreground flex-1 truncate">{company.name}</span>
-                      <div className="hidden sm:flex items-center gap-2 mr-2">
+                      <ChevronRight className={`w-3 h-3 text-slate-600 shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`} />
+                      {isFriday && companyHasIncomplete(company) && <AlertTriangle className="w-2.5 h-2.5 text-red-400 animate-blink shrink-0" />}
+                      <span className="font-orbitron font-bold text-[11px] text-foreground flex-1 truncate">{company.name}</span>
+                      <div className="hidden sm:flex items-center gap-1.5">
                         {statusDots.map(s => (
-                          <div key={s.key} className="flex items-center gap-1">
+                          <div key={s.key} className="flex items-center gap-0.5">
                             <div className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
-                            <span className="text-[9px] font-orbitron text-slate-500 tabular-nums">{s.count}</span>
+                            <span className="text-[8px] font-orbitron text-slate-500 tabular-nums">{s.count}</span>
                           </div>
                         ))}
                       </div>
-                      <span className="sm:hidden text-[9px] font-orbitron text-slate-500">{company.locations.length}</span>
-                      <span className={`text-[9px] font-orbitron font-medium ${summary.color} hidden sm:inline`}>{summary.label}</span>
-                      <div className="flex items-center gap-0.5 ml-1" onClick={e => e.stopPropagation()}>
-                        <button className="p-1.5 rounded-lg hover:bg-white/[0.05] text-slate-600 hover:text-white transition-all" onClick={() => openEditCompany(company)}>
-                          <Pencil className="w-3 h-3" />
+                      <span className="sm:hidden text-[8px] font-orbitron text-slate-500">{company.locations.length}</span>
+                      <span className={`text-[8px] font-orbitron font-medium ${summary.color} hidden sm:inline ml-1`}>{summary.label}</span>
+                      <div className="flex items-center ml-1 opacity-0 group-hover:opacity-100" onClick={e => e.stopPropagation()}>
+                        <button className="p-1 rounded hover:bg-white/[0.05] text-slate-600 hover:text-white transition-all" onClick={() => openEditCompany(company)}>
+                          <Pencil className="w-2.5 h-2.5" />
                         </button>
-                        <button className="p-1.5 rounded-lg hover:bg-red-500/10 text-slate-600 hover:text-red-400 transition-all" onClick={() => handleDeleteCompany(company.id, company.name)}>
-                          <Trash2 className="w-3 h-3" />
+                        <button className="p-1 rounded hover:bg-red-500/10 text-slate-600 hover:text-red-400 transition-all" onClick={() => handleDeleteCompany(company.id, company.name)}>
+                          <Trash2 className="w-2.5 h-2.5" />
                         </button>
                       </div>
                     </div>
 
                     {isExpanded && (
-                      <div className="border-t border-cyan-500/10">
+                      <div className="border-t border-cyan-500/10 bg-white/[0.01]">
                         <div className="hidden sm:block overflow-x-auto">
-                          <table className="w-full text-sm">
+                          <table className="w-full">
                             <thead>
                               <tr className="border-b border-white/[0.04]">
-                                <th className="text-left px-4 py-2 text-[7px] font-orbitron text-slate-500 uppercase tracking-widest">Address</th>
-                                <th className="text-left px-4 py-2 text-[7px] font-orbitron text-slate-500 uppercase tracking-widest hidden md:table-cell">Email</th>
-                                <th className="text-left px-4 py-2 text-[7px] font-orbitron text-slate-500 uppercase tracking-widest">Phone</th>
-                                <th className="text-left px-4 py-2 text-[7px] font-orbitron text-slate-500 uppercase tracking-widest">Status</th>
-                                <th className="text-left px-4 py-2 text-[7px] font-orbitron text-slate-500 uppercase tracking-widest">Tasks</th>
-                                <th className="text-left px-4 py-2 text-[7px] font-orbitron text-slate-500 uppercase tracking-widest hidden sm:table-cell">Notes</th>
-                                <th className="px-4 py-2 w-16"></th>
+                                <th className="text-left px-3 py-1.5 text-[7px] font-orbitron text-slate-500 uppercase tracking-widest">Address</th>
+                                <th className="text-left px-3 py-1.5 text-[7px] font-orbitron text-slate-500 uppercase tracking-widest hidden md:table-cell">Email</th>
+                                <th className="text-left px-3 py-1.5 text-[7px] font-orbitron text-slate-500 uppercase tracking-widest">Phone</th>
+                                <th className="text-left px-3 py-1.5 text-[7px] font-orbitron text-slate-500 uppercase tracking-widest">Status</th>
+                                <th className="text-left px-3 py-1.5 text-[7px] font-orbitron text-slate-500 uppercase tracking-widest">Tasks</th>
+                                <th className="text-left px-3 py-1.5 text-[7px] font-orbitron text-slate-500 uppercase tracking-widest hidden sm:table-cell">Notes</th>
+                                <th className="px-2 py-1.5 w-14"></th>
                               </tr>
                             </thead>
                             <tbody>
                               {company.locations.map(loc => (
                                 <tr key={loc.id} className="border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors">
-                                  <td className="px-4 py-2.5 whitespace-nowrap">
+                                  <td className="px-3 py-1.5 whitespace-nowrap">
                                     {loc.googleProfileUrl ? (
-                                      <a href={loc.googleProfileUrl} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 text-xs flex items-center gap-1.5 transition-colors font-medium">
+                                      <a href={loc.googleProfileUrl} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 text-[11px] flex items-center gap-1 transition-colors">
                                         {loc.address || '—'}
                                         <LinkIcon className="w-2.5 h-2.5 opacity-50" />
                                       </a>
                                     ) : (
-                                      <span className="text-foreground text-xs">{loc.address || '—'}</span>
+                                      <span className="text-foreground text-[11px]">{loc.address || '—'}</span>
                                     )}
                                   </td>
-                                  <td className="px-4 py-2.5 whitespace-nowrap hidden md:table-cell">
-                                    <span className="text-muted-foreground text-xs">{loc.email || '—'}</span>
+                                  <td className="px-3 py-1.5 whitespace-nowrap hidden md:table-cell">
+                                    <span className="text-muted-foreground text-[11px]">{loc.email || '—'}</span>
                                   </td>
-                                  <td className="px-4 py-2.5 whitespace-nowrap">
-                                    <span className="text-muted-foreground text-xs">{loc.phone || '—'}</span>
+                                  <td className="px-3 py-1.5 whitespace-nowrap">
+                                    <span className="text-muted-foreground text-[11px]">{loc.phone || '—'}</span>
                                   </td>
-                                  <td className="px-4 py-2.5 whitespace-nowrap"><StatusBadge status={loc.status} /></td>
-                                  <td className="px-4 py-2.5 whitespace-nowrap">
+                                  <td className="px-3 py-1.5 whitespace-nowrap"><StatusBadge status={loc.status} /></td>
+                                  <td className="px-3 py-1.5 whitespace-nowrap">
                                     <button onClick={() => openTasksSummary(loc)} className="hover:opacity-80 transition-opacity"><TasksIndicator loc={loc} /></button>
                                   </td>
-                                  <td className="px-4 py-2.5 whitespace-nowrap hidden sm:table-cell">
+                                  <td className="px-3 py-1.5 whitespace-nowrap hidden sm:table-cell">
                                     <button onClick={() => openNotesModal(loc)} className="text-left hover:opacity-80 transition-opacity group">
                                       {loc.notes ? (
-                                        <span className="text-xs text-muted-foreground italic group-hover:text-foreground">{loc.notes}</span>
+                                        <span className="text-[11px] text-muted-foreground italic group-hover:text-foreground">{loc.notes}</span>
                                       ) : (
-                                        <span className="text-slate-700 text-xs group-hover:text-slate-500">+ note</span>
+                                        <span className="text-slate-700 text-[11px] group-hover:text-slate-500">+ note</span>
                                       )}
                                     </button>
                                   </td>
-                                  <td className="px-4 py-2.5 whitespace-nowrap">
-                                    <div className="flex items-center gap-0.5">
-                                      <button className="p-1.5 rounded-lg hover:bg-white/[0.05] text-slate-600 hover:text-white transition-all" onClick={() => openEditLocation(company.id, loc)}>
-                                        <Pencil className="w-3 h-3" />
+                                  <td className="px-2 py-1.5 whitespace-nowrap">
+                                    <div className="flex items-center">
+                                      <button className="p-1 rounded hover:bg-white/[0.05] text-slate-600 hover:text-white transition-all" onClick={() => openEditLocation(company.id, loc)}>
+                                        <Pencil className="w-2.5 h-2.5" />
                                       </button>
-                                      <button className="p-1.5 rounded-lg hover:bg-red-500/10 text-slate-600 hover:text-red-400 transition-all" onClick={() => handleDeleteLocation(company.id, loc.id)}>
-                                        <Trash2 className="w-3 h-3" />
+                                      <button className="p-1 rounded hover:bg-red-500/10 text-slate-600 hover:text-red-400 transition-all" onClick={() => handleDeleteLocation(company.id, loc.id)}>
+                                        <Trash2 className="w-2.5 h-2.5" />
                                       </button>
                                     </div>
                                   </td>
@@ -694,45 +694,45 @@ const GBPManagement: React.FC = () => {
                         </div>
                         <div className="sm:hidden divide-y divide-white/[0.03]">
                           {company.locations.map(loc => (
-                            <div key={loc.id} className="px-4 py-3 space-y-2">
+                            <div key={loc.id} className="px-3 py-2 space-y-1.5">
                               <div className="flex items-start justify-between gap-2">
                                 <div className="min-w-0 flex-1">
                                   {loc.googleProfileUrl ? (
-                                    <a href={loc.googleProfileUrl} target="_blank" rel="noopener noreferrer" className="text-cyan-400 text-sm font-medium truncate hover:text-cyan-300 flex items-center gap-1 transition-colors">
+                                    <a href={loc.googleProfileUrl} target="_blank" rel="noopener noreferrer" className="text-cyan-400 text-xs font-medium truncate hover:text-cyan-300 flex items-center gap-1 transition-colors">
                                       {loc.address || '—'} <LinkIcon className="w-2.5 h-2.5 opacity-50" />
                                     </a>
                                   ) : (
-                                    <span className="text-foreground text-sm font-medium truncate block">{loc.address || '—'}</span>
+                                    <span className="text-foreground text-xs font-medium truncate block">{loc.address || '—'}</span>
                                   )}
                                 </div>
-                                <div className="flex items-center gap-0.5 shrink-0" onClick={e => e.stopPropagation()}>
-                                  <button className="p-2.5 rounded-lg hover:bg-white/[0.05] text-slate-600 hover:text-slate-300 transition-all" onClick={() => openNotesModal(loc)} title="Notes">
-                                    <StickyNote className="w-4 h-4" />
+                                <div className="flex items-center shrink-0" onClick={e => e.stopPropagation()}>
+                                  <button className="p-1.5 rounded hover:bg-white/[0.05] text-slate-600 hover:text-slate-300 transition-all" onClick={() => openNotesModal(loc)} title="Notes">
+                                    <StickyNote className="w-3.5 h-3.5" />
                                   </button>
-                                  <button className="p-2.5 rounded-lg hover:bg-white/[0.05] text-slate-600 hover:text-white transition-all" onClick={() => openEditLocation(company.id, loc)}>
-                                    <Pencil className="w-4 h-4" />
+                                  <button className="p-1.5 rounded hover:bg-white/[0.05] text-slate-600 hover:text-white transition-all" onClick={() => openEditLocation(company.id, loc)}>
+                                    <Pencil className="w-3.5 h-3.5" />
                                   </button>
-                                  <button className="p-2.5 rounded-lg hover:bg-red-500/10 text-slate-600 hover:text-red-400 transition-all" onClick={() => handleDeleteLocation(company.id, loc.id)}>
-                                    <Trash2 className="w-4 h-4" />
+                                  <button className="p-1.5 rounded hover:bg-red-500/10 text-slate-600 hover:text-red-400 transition-all" onClick={() => handleDeleteLocation(company.id, loc.id)}>
+                                    <Trash2 className="w-3.5 h-3.5" />
                                   </button>
                                 </div>
                               </div>
-                              <div className="flex items-center flex-wrap gap-2">
+                              <div className="flex items-center flex-wrap gap-1.5">
                                 <StatusBadge status={loc.status} />
                                 <button onClick={() => openTasksSummary(loc)} className="hover:opacity-80 transition-opacity"><TasksIndicator loc={loc} /></button>
                                 {loc.phone && (
-                                  <span className="text-[9px] font-orbitron text-slate-500">{loc.phone}</span>
+                                  <span className="text-[8px] font-orbitron text-slate-500">{loc.phone}</span>
                                 )}
                               </div>
                               {loc.notes && (
-                                <p className="text-xs text-muted-foreground italic">{loc.notes}</p>
+                                <p className="text-[11px] text-muted-foreground italic">{loc.notes}</p>
                               )}
                             </div>
                           ))}
                         </div>
-                        <div className="px-4 py-2 border-t border-white/[0.04]">
-                          <button className="min-h-[44px] text-slate-500 hover:text-cyan-400 text-xs font-orbitron flex items-center gap-1.5 transition-colors" onClick={() => openAddLocation(company.id)}>
-                            <Plus className="w-3 h-3" /> Add Location
+                        <div className="px-3 py-1.5 border-t border-white/[0.04]">
+                          <button className="min-h-[36px] text-slate-500 hover:text-cyan-400 text-[10px] font-orbitron flex items-center gap-1 transition-colors" onClick={() => openAddLocation(company.id)}>
+                            <Plus className="w-2.5 h-2.5" /> Add Location
                           </button>
                         </div>
                       </div>
