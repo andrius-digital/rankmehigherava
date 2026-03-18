@@ -5,13 +5,15 @@ import {
   MapPin, Search, Plus, Pencil, Trash2,
   CheckCircle2, Clock, FileWarning, Circle, AlertTriangle,
   ChevronLeft, ChevronDown, ChevronRight, X, Phone, Mail, Building2, Loader2,
-  ClipboardList, Hash, Image, MessageSquare, Star, LinkIcon, StickyNote, Compass, Activity
+  ClipboardList, Hash, Image, MessageSquare, Star, LinkIcon, StickyNote, Compass, Activity,
+  Layout, RefreshCw
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { logActivity } from '@/utils/activityLog';
+import HUDOverlay from '@/components/ui/HUDOverlay';
 
 const SOPLibrary = lazy(() => import('@/components/SOPLibrary'));
 const KanbanBoard = lazy(() => import('@/components/KanbanBoard'));
@@ -81,7 +83,7 @@ const STATUS_CONFIG = {
   verified: { label: 'Verified', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20', icon: CheckCircle2 },
   pending: { label: 'Pending', color: 'bg-amber-500/10 text-amber-400 border-amber-500/20', icon: Clock },
   processing: { label: 'Processing', color: 'bg-blue-500/10 text-blue-400 border-blue-500/20', icon: Loader2 },
-  not_started: { label: 'Not Started', color: 'bg-white/[0.04] text-gray-500 border-white/[0.06]', icon: Circle },
+  not_started: { label: 'Not Started', color: 'bg-slate-500/[0.03] text-slate-500 border-slate-500/15', icon: Circle },
 };
 
 const EMPTY_LOCATION: Omit<GBPLocation, 'id'> = {
@@ -402,8 +404,8 @@ const GBPManagement: React.FC = () => {
     const cfg = STATUS_CONFIG[status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.not_started;
     const Icon = cfg.icon;
     return (
-      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${cfg.color}`}>
-        <Icon className="w-3 h-3" />
+      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[8px] font-orbitron font-medium uppercase tracking-widest border ${cfg.color}`}>
+        <Icon className="w-2.5 h-2.5" />
         {cfg.label}
       </span>
     );
@@ -424,13 +426,13 @@ const GBPManagement: React.FC = () => {
     const tasks = seoTasksByLocation.get(loc.id) || [];
     const doneCount = DEFAULT_TASK_TITLES.filter(title => tasks.some(t => t.title === title && t.col === 'finished')).length;
     const total = DEFAULT_TASK_TITLES.length;
-    const color = tasks.length === 0 || doneCount === 0 ? 'text-red-400 border-red-500/30 bg-red-500/10'
-      : doneCount >= total ? 'text-green-400 border-green-500/30 bg-green-500/10'
-      : 'text-amber-400 border-amber-500/30 bg-amber-500/10';
+    const color = tasks.length === 0 || doneCount === 0 ? 'text-red-400 border-red-500/20 bg-red-500/[0.03]'
+      : doneCount >= total ? 'text-emerald-400 border-emerald-500/20 bg-emerald-500/[0.03]'
+      : 'text-amber-400 border-amber-500/20 bg-amber-500/[0.03]';
     return (
-      <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium border ${color}`}>
-        {isFriday && doneCount < total && <AlertTriangle className="w-3 h-3 text-red-400 animate-blink" />}
-        <ClipboardList className="w-3 h-3" />
+      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[8px] font-orbitron font-medium uppercase tracking-widest border ${color}`}>
+        {isFriday && doneCount < total && <AlertTriangle className="w-2.5 h-2.5 text-red-400 animate-blink" />}
+        <ClipboardList className="w-2.5 h-2.5" />
         {doneCount}/{total}
       </span>
     );
@@ -439,81 +441,115 @@ const GBPManagement: React.FC = () => {
   return (
     <>
       <Helmet><title>{activeTab === 'gbp' ? 'GBP Management' : 'Local SEO Hub'} | Rank Me Higher</title></Helmet>
-      <div className="min-h-screen bg-[#0a0a0f] text-white overflow-x-hidden mobile-touch-zone">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-          <div className="flex items-center gap-3 mb-6">
-            <Link
-              to={sessionStorage.getItem("rmh_team_session") ? "/team" : "/avaadminpanel"}
-              className="w-9 h-9 min-h-[44px] min-w-[44px] rounded-lg bg-white/5 border border-white/[0.06] flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/10 transition-all shrink-0"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </Link>
-            <div className="flex-1 min-w-0">
-              <h1 className="text-lg sm:text-xl font-semibold tracking-tight text-white truncate">
-                {activeTab === 'gbp' ? 'GBP Management' : 'Local SEO Hub'}
-              </h1>
+      <div className="min-h-screen bg-background relative overflow-hidden mobile-touch-zone">
+        <HUDOverlay />
+        <div className="relative z-10 container mx-auto px-4 py-6 max-w-6xl">
+          <div className="flex flex-col gap-4 mb-8">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                  <span className="font-orbitron text-[10px] tracking-[0.2em] text-cyan-400 uppercase">
+                    {activeTab === 'gbp' ? 'Verification Tracker' : 'SEO Operations'}
+                  </span>
+                </div>
+                <h1 className="font-orbitron text-2xl sm:text-3xl font-bold bg-gradient-to-r from-white via-cyan-400 to-blue-500 bg-clip-text text-transparent">
+                  {activeTab === 'gbp' ? 'GBP MANAGEMENT' : 'LOCAL SEO HUB'}
+                </h1>
+              </div>
+              <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                <Link
+                  to={sessionStorage.getItem("rmh_team_session") ? "/team" : "/avaadminpanel"}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.07] hover:border-white/[0.15] transition-all font-orbitron text-[8px] uppercase tracking-widest text-slate-400 hover:text-white"
+                >
+                  <Layout className="w-2.5 h-2.5" />
+                  AVA Admin
+                </Link>
+                <button
+                  onClick={() => { fetchCompanies(); fetchSeoTasks(); }}
+                  className="flex items-center justify-center w-7 h-7 rounded-lg border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.07] hover:border-white/[0.15] transition-all text-slate-500 hover:text-white"
+                  title="Refresh"
+                >
+                  <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
+                </button>
+                <button
+                  onClick={() => setActivityLogOpen(true)}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-cyan-500/20 bg-cyan-500/[0.06] hover:bg-cyan-500/[0.12] hover:border-cyan-500/30 transition-all font-orbitron text-[8px] uppercase tracking-widest text-cyan-400"
+                >
+                  <Activity className="w-2.5 h-2.5" />
+                  Activity
+                </button>
+              </div>
             </div>
-            <button
-              onClick={() => setActivityLogOpen(true)}
-              className="w-9 h-9 min-h-[44px] min-w-[44px] rounded-lg bg-white/5 border border-white/[0.06] flex items-center justify-center text-gray-500 hover:text-[#00e5cc] hover:bg-[#00e5cc]/5 hover:border-[#00e5cc]/20 transition-all shrink-0"
-            >
-              <Activity className="w-4 h-4" />
-            </button>
           </div>
 
-          <div className="flex gap-0.5 mb-6 bg-white/[0.03] rounded-lg p-0.5 w-fit">
+          <div className="flex gap-0.5 mb-6 rounded-lg bg-white/[0.03] border border-white/[0.06] p-0.5 w-fit">
             <button
               onClick={() => { setActiveTab('gbp'); fetchSeoTasks(); }}
-              className={`px-4 py-2 text-xs font-medium transition-all rounded-md whitespace-nowrap min-h-[36px] ${activeTab === 'gbp' ? 'bg-white/[0.08] text-white shadow-sm' : 'text-gray-500 hover:text-gray-300'}`}
+              className={`px-3 py-1.5 font-orbitron text-[8px] uppercase tracking-widest transition-all rounded-md whitespace-nowrap min-h-[32px] ${activeTab === 'gbp' ? 'bg-cyan-500/[0.12] border border-cyan-500/20 text-cyan-400' : 'text-slate-500 hover:text-slate-300 border border-transparent'}`}
             >
               GBP Management
             </button>
             <button
               onClick={() => setActiveTab('seo-hub')}
-              className={`px-4 py-2 text-xs font-medium transition-all rounded-md whitespace-nowrap min-h-[36px] ${activeTab === 'seo-hub' ? 'bg-white/[0.08] text-white shadow-sm' : 'text-gray-500 hover:text-gray-300'}`}
+              className={`px-3 py-1.5 font-orbitron text-[8px] uppercase tracking-widest transition-all rounded-md whitespace-nowrap min-h-[32px] ${activeTab === 'seo-hub' ? 'bg-cyan-500/[0.12] border border-cyan-500/20 text-cyan-400' : 'text-slate-500 hover:text-slate-300 border border-transparent'}`}
             >
               Local SEO Hub
             </button>
           </div>
 
           {activeTab === 'gbp' && (<>
-          <div className="bg-[#111118] border border-white/[0.04] rounded-xl p-4 sm:p-5 mb-6">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
-              <div className="flex items-baseline gap-3 flex-1">
-                <span className="text-3xl font-bold tabular-nums text-white">{stats.locations}</span>
-                <span className="text-xs text-gray-500 uppercase tracking-wider">Total Locations</span>
-                <span className="text-xs text-gray-600 ml-auto sm:ml-0">across {stats.companies} companies</span>
-              </div>
-              {stats.actionRequired > 0 && (
-                <button
-                  onClick={() => setActionRequiredModalOpen(true)}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-orange-500/8 border border-orange-500/20 text-orange-400 hover:bg-orange-500/15 transition-all text-xs font-medium shrink-0"
-                >
-                  <FileWarning className="w-3.5 h-3.5" />
-                  {stats.actionRequired} need attention
-                </button>
-              )}
+          <div className="mb-6 space-y-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2">
+              {[
+                { label: 'Companies', value: stats.companies, icon: Building2, card: 'border-cyan-500/15 bg-cyan-500/[0.03] hover:border-cyan-500/30', iconCls: 'text-cyan-400/60', valCls: 'text-cyan-400' },
+                { label: 'Locations', value: stats.locations, icon: MapPin, card: 'border-cyan-500/15 bg-cyan-500/[0.03] hover:border-cyan-500/30', iconCls: 'text-cyan-400/60', valCls: 'text-cyan-400' },
+                { label: 'Verified', value: stats.verified, icon: CheckCircle2, card: 'border-emerald-500/15 bg-emerald-500/[0.03] hover:border-emerald-500/30', iconCls: 'text-emerald-400/60', valCls: 'text-emerald-400' },
+                { label: 'Pending', value: stats.pending, icon: Clock, card: 'border-amber-500/15 bg-amber-500/[0.03] hover:border-amber-500/30', iconCls: 'text-amber-400/60', valCls: 'text-amber-400' },
+                { label: 'Processing', value: stats.processing, icon: Loader2, card: 'border-blue-500/15 bg-blue-500/[0.03] hover:border-blue-500/30', iconCls: 'text-blue-400/60', valCls: 'text-blue-400' },
+                { label: 'Not Started', value: stats.notStarted, icon: Circle, card: 'border-slate-500/15 bg-slate-500/[0.03] hover:border-slate-500/30', iconCls: 'text-slate-400/60', valCls: 'text-slate-400' },
+              ].map(({ label, value, icon: Icon, card, iconCls, valCls }) => (
+                <div key={label} className={`rounded-xl border p-2.5 transition-all ${card}`}>
+                  <div className="flex items-center justify-between mb-1">
+                    <Icon className={`w-3 h-3 ${iconCls}`} />
+                    <span className={`font-orbitron text-base font-bold ${valCls}`}>{value}</span>
+                  </div>
+                  <p className="text-[7px] font-orbitron text-slate-500 uppercase tracking-widest">{label}</p>
+                </div>
+              ))}
             </div>
 
             {stats.locations > 0 && (
-              <div className="space-y-3">
-                <div className="flex h-2 rounded-full overflow-hidden bg-white/[0.04]">
+              <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[9px] font-orbitron text-slate-500 uppercase tracking-widest">Verification Progress</span>
+                  {stats.actionRequired > 0 && (
+                    <button
+                      onClick={() => setActionRequiredModalOpen(true)}
+                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-orange-500/20 bg-orange-500/[0.06] hover:bg-orange-500/[0.12] hover:border-orange-500/30 transition-all font-orbitron text-[8px] uppercase tracking-widest text-orange-400"
+                    >
+                      <AlertTriangle className="w-2.5 h-2.5" />
+                      {stats.actionRequired} Need Attention
+                    </button>
+                  )}
+                </div>
+                <div className="flex h-1.5 rounded-full overflow-hidden bg-white/[0.04] mb-2">
                   {stats.verified > 0 && <div className="bg-emerald-500 transition-all" style={{ width: `${(stats.verified / stats.locations) * 100}%` }} />}
                   {stats.pending > 0 && <div className="bg-amber-500 transition-all" style={{ width: `${(stats.pending / stats.locations) * 100}%` }} />}
                   {stats.processing > 0 && <div className="bg-blue-500 transition-all" style={{ width: `${(stats.processing / stats.locations) * 100}%` }} />}
-                  {stats.notStarted > 0 && <div className="bg-gray-600 transition-all" style={{ width: `${(stats.notStarted / stats.locations) * 100}%` }} />}
+                  {stats.notStarted > 0 && <div className="bg-slate-600 transition-all" style={{ width: `${(stats.notStarted / stats.locations) * 100}%` }} />}
                 </div>
-                <div className="flex flex-wrap gap-x-5 gap-y-1">
+                <div className="flex items-center gap-4">
                   {[
-                    { label: 'Verified', count: stats.verified, dot: 'bg-emerald-500' },
-                    { label: 'Pending', count: stats.pending, dot: 'bg-amber-500' },
-                    { label: 'Processing', count: stats.processing, dot: 'bg-blue-500' },
-                    { label: 'Not Started', count: stats.notStarted, dot: 'bg-gray-600' },
+                    { label: 'Verified', count: stats.verified, dotCls: 'bg-emerald-500', valCls: 'text-emerald-400' },
+                    { label: 'Pending', count: stats.pending, dotCls: 'bg-amber-500', valCls: 'text-amber-400' },
+                    { label: 'Processing', count: stats.processing, dotCls: 'bg-blue-500', valCls: 'text-blue-400' },
+                    { label: 'Not Started', count: stats.notStarted, dotCls: 'bg-slate-600', valCls: 'text-slate-400' },
                   ].filter(s => s.count > 0).map(s => (
                     <div key={s.label} className="flex items-center gap-1.5">
-                      <div className={`w-2 h-2 rounded-full ${s.dot}`} />
-                      <span className="text-[11px] text-gray-400">{s.label}</span>
-                      <span className="text-[11px] text-gray-300 font-medium tabular-nums">{s.count}</span>
+                      <div className={`w-1.5 h-1.5 rounded-full ${s.dotCls}`} />
+                      <span className="text-[8px] font-orbitron text-slate-500 uppercase tracking-wider">{s.label}</span>
+                      <span className={`text-[9px] font-orbitron font-bold ${s.valCls}`}>{s.count}</span>
                     </div>
                   ))}
                 </div>
@@ -522,19 +558,24 @@ const GBPManagement: React.FC = () => {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-2 mb-5">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-600" />
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Search companies or addresses..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="pl-9 h-9 min-h-[44px] bg-white/[0.03] border-white/[0.06] text-white text-sm placeholder:text-gray-600 focus:border-white/20 focus:ring-0 rounded-lg"
+                className="pl-10 pr-10 h-9 min-h-[44px] bg-card/40 border-cyan-500/30 focus:border-cyan-400/60 font-orbitron text-xs placeholder:text-muted-foreground/60"
               />
+              {searchQuery && (
+                <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
             <select
               value={statusFilter}
               onChange={e => setStatusFilter(e.target.value)}
-              className="compact-select w-full sm:w-auto rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-2 min-h-[44px] text-sm text-gray-400 focus:border-white/20 focus:ring-0 focus:outline-none transition-colors [&>option]:bg-[#111118] [&>option]:text-white"
+              className="compact-select w-full sm:w-auto rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-2 min-h-[44px] text-xs font-orbitron text-slate-400 focus:border-cyan-500/30 focus:ring-0 focus:outline-none transition-colors [&>option]:bg-card [&>option]:text-white"
             >
               <option value="all">All Statuses</option>
               <option value="verified">Verified</option>
@@ -542,65 +583,65 @@ const GBPManagement: React.FC = () => {
               <option value="processing">Processing</option>
               <option value="not_started">Not Started</option>
             </select>
-            <Button onClick={openAddCompany} className="w-full sm:w-auto min-h-[44px] h-9 bg-white/[0.06] border border-white/[0.08] text-white hover:bg-white/10 text-sm gap-1.5 rounded-lg transition-all">
-              <Plus className="w-3.5 h-3.5" /> Add Company
-            </Button>
+            <button onClick={openAddCompany} className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-3 py-1.5 min-h-[44px] rounded-lg border border-cyan-500/20 bg-cyan-500/[0.06] hover:bg-cyan-500/[0.12] hover:border-cyan-500/30 transition-all font-orbitron text-[8px] uppercase tracking-widest text-cyan-400">
+              <Plus className="w-2.5 h-2.5" /> Add Company
+            </button>
           </div>
 
           {loading ? (
             <div className="text-center py-20">
-              <div className="w-6 h-6 border-2 border-white/20 border-t-white/60 rounded-full animate-spin mx-auto mb-3"></div>
-              <p className="text-gray-600 text-xs">Loading...</p>
+              <RefreshCw className="w-6 h-6 text-cyan-400 animate-spin mx-auto mb-3" />
+              <p className="text-slate-500 text-xs font-orbitron">Loading...</p>
             </div>
           ) : filteredCompanies.length === 0 ? (
-            <div className="text-center py-20 text-gray-500">No companies found</div>
+            <div className="text-center py-20 text-slate-500 font-orbitron text-xs">No companies found</div>
           ) : (
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               {filteredCompanies.map(company => {
                 const isExpanded = expandedIds.has(company.id);
                 const summary = getCompanyStatusSummary(company.locations);
                 const statusDots = getCompanyStatusDots(company.locations);
                 return (
-                  <div key={company.id} id={`company-${company.id}`} className={`border rounded-xl overflow-hidden transition-all ${isExpanded ? 'border-white/[0.08] bg-[#111118]' : 'border-white/[0.04] bg-[#111118]/60 hover:bg-[#111118]'}`}>
+                  <div key={company.id} id={`company-${company.id}`} className={`rounded-xl border overflow-hidden transition-all ${isExpanded ? 'border-cyan-500/20 bg-card/40' : 'border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12]'}`}>
                     <div
-                      className="flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors"
+                      className="flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors hover:bg-white/[0.02]"
                       onClick={() => toggleExpand(company.id)}
                     >
-                      <ChevronRight className={`w-4 h-4 text-gray-600 shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`} />
-                      {isFriday && companyHasIncomplete(company) && <AlertTriangle className="w-3.5 h-3.5 text-red-400 animate-blink shrink-0" />}
-                      <span className="font-medium text-sm text-white flex-1 truncate">{company.name}</span>
-                      <div className="hidden sm:flex items-center gap-1.5 mr-2">
+                      <ChevronRight className={`w-3.5 h-3.5 text-slate-600 shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`} />
+                      {isFriday && companyHasIncomplete(company) && <AlertTriangle className="w-3 h-3 text-red-400 animate-blink shrink-0" />}
+                      <span className="font-orbitron font-bold text-xs text-foreground flex-1 truncate">{company.name}</span>
+                      <div className="hidden sm:flex items-center gap-2 mr-2">
                         {statusDots.map(s => (
                           <div key={s.key} className="flex items-center gap-1">
                             <div className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
-                            <span className="text-[10px] text-gray-500 tabular-nums">{s.count}</span>
+                            <span className="text-[9px] font-orbitron text-slate-500 tabular-nums">{s.count}</span>
                           </div>
                         ))}
                       </div>
-                      <span className="sm:hidden text-[10px] text-gray-500">{company.locations.length} loc</span>
-                      <span className={`text-[10px] font-medium ${summary.color} hidden sm:inline`}>{summary.label}</span>
+                      <span className="sm:hidden text-[9px] font-orbitron text-slate-500">{company.locations.length}</span>
+                      <span className={`text-[9px] font-orbitron font-medium ${summary.color} hidden sm:inline`}>{summary.label}</span>
                       <div className="flex items-center gap-0.5 ml-1" onClick={e => e.stopPropagation()}>
-                        <Button variant="ghost" size="icon" className="h-11 w-11 sm:h-7 sm:w-7 text-gray-600 hover:text-white" onClick={() => openEditCompany(company)}>
-                          <Pencil className="w-3.5 h-3.5" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-11 w-11 sm:h-7 sm:w-7 text-gray-600 hover:text-red-400" onClick={() => handleDeleteCompany(company.id, company.name)}>
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
+                        <button className="p-1.5 rounded-lg hover:bg-white/[0.05] text-slate-600 hover:text-white transition-all" onClick={() => openEditCompany(company)}>
+                          <Pencil className="w-3 h-3" />
+                        </button>
+                        <button className="p-1.5 rounded-lg hover:bg-red-500/10 text-slate-600 hover:text-red-400 transition-all" onClick={() => handleDeleteCompany(company.id, company.name)}>
+                          <Trash2 className="w-3 h-3" />
+                        </button>
                       </div>
                     </div>
 
                     {isExpanded && (
-                      <div className="border-t border-white/[0.04]">
+                      <div className="border-t border-cyan-500/10">
                         <div className="hidden sm:block overflow-x-auto">
                           <table className="w-full text-sm">
                             <thead>
                               <tr className="border-b border-white/[0.04]">
-                                <th className="text-left px-4 py-2 text-gray-600 font-normal text-[10px] uppercase tracking-widest">Address</th>
-                                <th className="text-left px-4 py-2 text-gray-600 font-normal text-[10px] uppercase tracking-widest hidden md:table-cell">Email</th>
-                                <th className="text-left px-4 py-2 text-gray-600 font-normal text-[10px] uppercase tracking-widest">Phone</th>
-                                <th className="text-left px-4 py-2 text-gray-600 font-normal text-[10px] uppercase tracking-widest">Status</th>
-                                <th className="text-left px-4 py-2 text-gray-600 font-normal text-[10px] uppercase tracking-widest">Tasks</th>
-                                <th className="text-left px-4 py-2 text-gray-600 font-normal text-[10px] uppercase tracking-widest hidden sm:table-cell">Notes</th>
+                                <th className="text-left px-4 py-2 text-[7px] font-orbitron text-slate-500 uppercase tracking-widest">Address</th>
+                                <th className="text-left px-4 py-2 text-[7px] font-orbitron text-slate-500 uppercase tracking-widest hidden md:table-cell">Email</th>
+                                <th className="text-left px-4 py-2 text-[7px] font-orbitron text-slate-500 uppercase tracking-widest">Phone</th>
+                                <th className="text-left px-4 py-2 text-[7px] font-orbitron text-slate-500 uppercase tracking-widest">Status</th>
+                                <th className="text-left px-4 py-2 text-[7px] font-orbitron text-slate-500 uppercase tracking-widest">Tasks</th>
+                                <th className="text-left px-4 py-2 text-[7px] font-orbitron text-slate-500 uppercase tracking-widest hidden sm:table-cell">Notes</th>
                                 <th className="px-4 py-2 w-16"></th>
                               </tr>
                             </thead>
@@ -609,19 +650,19 @@ const GBPManagement: React.FC = () => {
                                 <tr key={loc.id} className="border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors">
                                   <td className="px-4 py-2.5 whitespace-nowrap">
                                     {loc.googleProfileUrl ? (
-                                      <a href={loc.googleProfileUrl} target="_blank" rel="noopener noreferrer" className="text-white hover:text-[#00e5cc] text-xs flex items-center gap-1.5 transition-colors">
+                                      <a href={loc.googleProfileUrl} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 text-xs flex items-center gap-1.5 transition-colors font-medium">
                                         {loc.address || '—'}
-                                        <LinkIcon className="w-2.5 h-2.5 opacity-40" />
+                                        <LinkIcon className="w-2.5 h-2.5 opacity-50" />
                                       </a>
                                     ) : (
-                                      <span className="text-gray-300 text-xs">{loc.address || '—'}</span>
+                                      <span className="text-foreground text-xs">{loc.address || '—'}</span>
                                     )}
                                   </td>
                                   <td className="px-4 py-2.5 whitespace-nowrap hidden md:table-cell">
-                                    <span className="text-gray-500 text-xs">{loc.email || '—'}</span>
+                                    <span className="text-muted-foreground text-xs">{loc.email || '—'}</span>
                                   </td>
                                   <td className="px-4 py-2.5 whitespace-nowrap">
-                                    <span className="text-gray-400 text-xs">{loc.phone || '—'}</span>
+                                    <span className="text-muted-foreground text-xs">{loc.phone || '—'}</span>
                                   </td>
                                   <td className="px-4 py-2.5 whitespace-nowrap"><StatusBadge status={loc.status} /></td>
                                   <td className="px-4 py-2.5 whitespace-nowrap">
@@ -630,20 +671,20 @@ const GBPManagement: React.FC = () => {
                                   <td className="px-4 py-2.5 whitespace-nowrap hidden sm:table-cell">
                                     <button onClick={() => openNotesModal(loc)} className="text-left hover:opacity-80 transition-opacity group">
                                       {loc.notes ? (
-                                        <span className="text-xs text-gray-500 italic group-hover:text-gray-300">{loc.notes}</span>
+                                        <span className="text-xs text-muted-foreground italic group-hover:text-foreground">{loc.notes}</span>
                                       ) : (
-                                        <span className="text-gray-700 text-xs group-hover:text-gray-500">+ note</span>
+                                        <span className="text-slate-700 text-xs group-hover:text-slate-500">+ note</span>
                                       )}
                                     </button>
                                   </td>
                                   <td className="px-4 py-2.5 whitespace-nowrap">
                                     <div className="flex items-center gap-0.5">
-                                      <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-600 hover:text-white" onClick={() => openEditLocation(company.id, loc)}>
+                                      <button className="p-1.5 rounded-lg hover:bg-white/[0.05] text-slate-600 hover:text-white transition-all" onClick={() => openEditLocation(company.id, loc)}>
                                         <Pencil className="w-3 h-3" />
-                                      </Button>
-                                      <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-600 hover:text-red-400" onClick={() => handleDeleteLocation(company.id, loc.id)}>
+                                      </button>
+                                      <button className="p-1.5 rounded-lg hover:bg-red-500/10 text-slate-600 hover:text-red-400 transition-all" onClick={() => handleDeleteLocation(company.id, loc.id)}>
                                         <Trash2 className="w-3 h-3" />
-                                      </Button>
+                                      </button>
                                     </div>
                                   </td>
                                 </tr>
@@ -657,40 +698,40 @@ const GBPManagement: React.FC = () => {
                               <div className="flex items-start justify-between gap-2">
                                 <div className="min-w-0 flex-1">
                                   {loc.googleProfileUrl ? (
-                                    <a href={loc.googleProfileUrl} target="_blank" rel="noopener noreferrer" className="text-white text-sm font-medium truncate hover:text-[#00e5cc] flex items-center gap-1 transition-colors">
-                                      {loc.address || '—'} <LinkIcon className="w-2.5 h-2.5 opacity-40" />
+                                    <a href={loc.googleProfileUrl} target="_blank" rel="noopener noreferrer" className="text-cyan-400 text-sm font-medium truncate hover:text-cyan-300 flex items-center gap-1 transition-colors">
+                                      {loc.address || '—'} <LinkIcon className="w-2.5 h-2.5 opacity-50" />
                                     </a>
                                   ) : (
-                                    <span className="text-white text-sm font-medium truncate block">{loc.address || '—'}</span>
+                                    <span className="text-foreground text-sm font-medium truncate block">{loc.address || '—'}</span>
                                   )}
                                 </div>
                                 <div className="flex items-center gap-0.5 shrink-0" onClick={e => e.stopPropagation()}>
-                                  <Button variant="ghost" size="icon" className="h-11 w-11 text-gray-600 hover:text-gray-300" onClick={() => openNotesModal(loc)} title="Notes">
+                                  <button className="p-2.5 rounded-lg hover:bg-white/[0.05] text-slate-600 hover:text-slate-300 transition-all" onClick={() => openNotesModal(loc)} title="Notes">
                                     <StickyNote className="w-4 h-4" />
-                                  </Button>
-                                  <Button variant="ghost" size="icon" className="h-11 w-11 text-gray-600 hover:text-white" onClick={() => openEditLocation(company.id, loc)}>
+                                  </button>
+                                  <button className="p-2.5 rounded-lg hover:bg-white/[0.05] text-slate-600 hover:text-white transition-all" onClick={() => openEditLocation(company.id, loc)}>
                                     <Pencil className="w-4 h-4" />
-                                  </Button>
-                                  <Button variant="ghost" size="icon" className="h-11 w-11 text-gray-600 hover:text-red-400" onClick={() => handleDeleteLocation(company.id, loc.id)}>
+                                  </button>
+                                  <button className="p-2.5 rounded-lg hover:bg-red-500/10 text-slate-600 hover:text-red-400 transition-all" onClick={() => handleDeleteLocation(company.id, loc.id)}>
                                     <Trash2 className="w-4 h-4" />
-                                  </Button>
+                                  </button>
                                 </div>
                               </div>
                               <div className="flex items-center flex-wrap gap-2">
                                 <StatusBadge status={loc.status} />
                                 <button onClick={() => openTasksSummary(loc)} className="hover:opacity-80 transition-opacity"><TasksIndicator loc={loc} /></button>
                                 {loc.phone && (
-                                  <span className="text-[10px] text-gray-500">{loc.phone}</span>
+                                  <span className="text-[9px] font-orbitron text-slate-500">{loc.phone}</span>
                                 )}
                               </div>
                               {loc.notes && (
-                                <p className="text-xs text-gray-500 italic">{loc.notes}</p>
+                                <p className="text-xs text-muted-foreground italic">{loc.notes}</p>
                               )}
                             </div>
                           ))}
                         </div>
                         <div className="px-4 py-2 border-t border-white/[0.04]">
-                          <button className="min-h-[44px] text-gray-500 hover:text-white text-xs flex items-center gap-1.5 transition-colors" onClick={() => openAddLocation(company.id)}>
+                          <button className="min-h-[44px] text-slate-500 hover:text-cyan-400 text-xs font-orbitron flex items-center gap-1.5 transition-colors" onClick={() => openAddLocation(company.id)}>
                             <Plus className="w-3 h-3" /> Add Location
                           </button>
                         </div>
@@ -704,7 +745,7 @@ const GBPManagement: React.FC = () => {
           </>)}
 
           {activeTab === 'seo-hub' && (
-            <Suspense fallback={<div className="text-center py-10"><div className="w-6 h-6 border-2 border-white/20 border-t-white/60 rounded-full animate-spin mx-auto mb-2"></div><p className="text-gray-600 text-xs">Loading...</p></div>}>
+            <Suspense fallback={<div className="text-center py-10"><RefreshCw className="w-6 h-6 text-cyan-400 animate-spin mx-auto mb-2" /><p className="text-slate-500 text-xs font-orbitron">Loading...</p></div>}>
               <div className="space-y-8">
                 <SOPLibrary />
                 <KanbanBoard />
@@ -723,20 +764,20 @@ const GBPManagement: React.FC = () => {
           onClick={() => setActionRequiredModalOpen(false)}
           onKeyDown={e => { if (e.key === 'Escape') setActionRequiredModalOpen(false); }}
         >
-          <div className="modal-mobile-full bg-[#111118] border border-white/[0.06] rounded-xl w-full max-w-lg p-5 sm:p-6 relative max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
-            <button onClick={() => setActionRequiredModalOpen(false)} className="absolute top-4 right-4 text-gray-600 hover:text-white">
+          <div className="modal-mobile-full bg-card border border-cyan-500/20 rounded-xl w-full max-w-lg p-5 sm:p-6 relative max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setActionRequiredModalOpen(false)} className="absolute top-4 right-4 text-slate-600 hover:text-white transition-colors">
               <X className="w-4 h-4" />
             </button>
-            <h2 id="action-required-title" className="text-sm font-semibold mb-1 flex items-center gap-2">
+            <h2 id="action-required-title" className="font-orbitron text-sm font-bold text-foreground mb-1 flex items-center gap-2">
               Action Required
             </h2>
-            <p className="text-[11px] text-gray-500 mb-4">{stats.actionRequired} location{stats.actionRequired !== 1 ? 's' : ''} need attention</p>
+            <p className="text-[9px] font-orbitron text-slate-500 uppercase tracking-widest mb-4">{stats.actionRequired} location{stats.actionRequired !== 1 ? 's' : ''} need attention</p>
             <div className="overflow-y-auto flex-1 space-y-3 pr-1">
               {actionRequiredData.map(group => (
                 <div key={group.companyId}>
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xs font-medium text-gray-400">{group.companyName}</span>
-                    <span className="text-[10px] text-gray-600">{group.locations.length}</span>
+                    <span className="text-xs font-orbitron font-bold text-foreground">{group.companyName}</span>
+                    <span className="text-[9px] font-orbitron text-slate-500">{group.locations.length}</span>
                   </div>
                   <div className="space-y-1">
                     {group.locations.map(loc => (
@@ -752,9 +793,9 @@ const GBPManagement: React.FC = () => {
                             document.getElementById(`company-${group.companyId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                           }, 150);
                         }}
-                        className="flex items-center justify-between gap-3 p-2.5 rounded-lg hover:bg-white/[0.04] cursor-pointer transition-all group w-full text-left"
+                        className="flex items-center justify-between gap-3 p-2.5 rounded-lg border border-white/[0.04] hover:border-cyan-500/20 hover:bg-white/[0.03] cursor-pointer transition-all group w-full text-left"
                       >
-                        <span className="text-xs text-gray-400 truncate group-hover:text-white transition-colors">{loc.address}</span>
+                        <span className="text-xs text-muted-foreground truncate group-hover:text-foreground transition-colors">{loc.address}</span>
                         <StatusBadge status={loc.status} />
                       </button>
                     ))}
@@ -762,9 +803,9 @@ const GBPManagement: React.FC = () => {
                 </div>
               ))}
               {actionRequiredData.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8">
                   <CheckCircle2 className="w-6 h-6 mx-auto mb-2 text-emerald-400/60" />
-                  <p className="text-xs">All locations verified</p>
+                  <p className="text-xs font-orbitron text-slate-500">All locations verified</p>
                 </div>
               )}
             </div>
@@ -774,19 +815,19 @@ const GBPManagement: React.FC = () => {
 
       {companyModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-mobile-full-wrapper bg-black/70 backdrop-blur-sm">
-          <div className="modal-mobile-full bg-[#111118] border border-white/[0.06] rounded-xl w-full max-w-md p-5 sm:p-6 relative">
-            <button onClick={() => setCompanyModalOpen(false)} className="absolute top-4 right-4 text-gray-600 hover:text-white">
+          <div className="modal-mobile-full bg-card border border-cyan-500/20 rounded-xl w-full max-w-md p-5 sm:p-6 relative">
+            <button onClick={() => setCompanyModalOpen(false)} className="absolute top-4 right-4 text-slate-600 hover:text-white transition-colors">
               <X className="w-4 h-4" />
             </button>
-            <h2 className="text-sm font-semibold mb-4">{editingCompanyId ? 'Edit Company' : 'Add Company'}</h2>
+            <h2 className="font-orbitron text-sm font-bold text-foreground mb-4">{editingCompanyId ? 'Edit Company' : 'Add Company'}</h2>
             <form onSubmit={handleCompanySubmit} className="space-y-4">
               <div>
-                <label className="block text-[10px] text-gray-500 mb-1 uppercase tracking-wider">Company Name</label>
-                <Input value={companyName} onChange={e => setCompanyName(e.target.value)} className="bg-white/[0.03] border-white/[0.06] text-white focus:border-white/20 focus:ring-0 rounded-lg" />
+                <label className="block text-[7px] font-orbitron text-slate-500 uppercase tracking-widest mb-1">Company Name</label>
+                <Input value={companyName} onChange={e => setCompanyName(e.target.value)} className="bg-card/40 border-cyan-500/30 focus:border-cyan-400/60 text-foreground rounded-lg" />
               </div>
               <div className="flex gap-3 justify-end">
-                <Button type="button" variant="ghost" className="text-gray-500 hover:text-white" onClick={() => setCompanyModalOpen(false)}>Cancel</Button>
-                <Button type="submit" className="bg-white/[0.08] border border-white/[0.1] text-white hover:bg-white/[0.12] text-sm transition-all">{editingCompanyId ? 'Update' : 'Add'}</Button>
+                <button type="button" className="px-3 py-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.07] transition-all font-orbitron text-[8px] uppercase tracking-widest text-slate-400 hover:text-white" onClick={() => setCompanyModalOpen(false)}>Cancel</button>
+                <button type="submit" className="px-3 py-1.5 rounded-lg border border-cyan-500/20 bg-cyan-500/[0.06] hover:bg-cyan-500/[0.12] hover:border-cyan-500/30 transition-all font-orbitron text-[8px] uppercase tracking-widest text-cyan-400">{editingCompanyId ? 'Update' : 'Add'}</button>
               </div>
             </form>
           </div>
@@ -795,33 +836,33 @@ const GBPManagement: React.FC = () => {
 
       {locationModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-mobile-full-wrapper bg-black/70 backdrop-blur-sm">
-          <div className="modal-mobile-full bg-[#111118] border border-white/[0.06] rounded-xl w-full max-w-lg p-5 sm:p-6 relative overflow-y-auto">
-            <button onClick={() => setLocationModalOpen(false)} className="absolute top-4 right-4 text-gray-600 hover:text-white">
+          <div className="modal-mobile-full bg-card border border-cyan-500/20 rounded-xl w-full max-w-lg p-5 sm:p-6 relative overflow-y-auto">
+            <button onClick={() => setLocationModalOpen(false)} className="absolute top-4 right-4 text-slate-600 hover:text-white transition-colors">
               <X className="w-4 h-4" />
             </button>
-            <h2 className="text-sm font-semibold mb-4">{editingLocationId ? 'Edit Location' : 'Add Location'}</h2>
+            <h2 className="font-orbitron text-sm font-bold text-foreground mb-4">{editingLocationId ? 'Edit Location' : 'Add Location'}</h2>
             <form onSubmit={handleLocationSubmit} className="space-y-4">
               <div>
-                <label className="block text-[10px] text-gray-500 mb-1 uppercase tracking-wider">Address</label>
-                <Input value={locationForm.address} onChange={e => setLocationForm(f => ({ ...f, address: e.target.value }))} className="bg-white/[0.03] border-white/[0.06] text-white focus:border-white/20 focus:ring-0 rounded-lg" />
+                <label className="block text-[7px] font-orbitron text-slate-500 uppercase tracking-widest mb-1">Address</label>
+                <Input value={locationForm.address} onChange={e => setLocationForm(f => ({ ...f, address: e.target.value }))} className="bg-card/40 border-cyan-500/30 focus:border-cyan-400/60 text-foreground rounded-lg" />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[10px] text-gray-500 mb-1 uppercase tracking-wider">Email</label>
-                  <Input value={locationForm.email} onChange={e => setLocationForm(f => ({ ...f, email: e.target.value }))} className="bg-white/[0.03] border-white/[0.06] text-white focus:border-white/20 focus:ring-0 rounded-lg" />
+                  <label className="block text-[7px] font-orbitron text-slate-500 uppercase tracking-widest mb-1">Email</label>
+                  <Input value={locationForm.email} onChange={e => setLocationForm(f => ({ ...f, email: e.target.value }))} className="bg-card/40 border-cyan-500/30 focus:border-cyan-400/60 text-foreground rounded-lg" />
                 </div>
                 <div>
-                  <label className="block text-[10px] text-gray-500 mb-1 uppercase tracking-wider">Phone</label>
-                  <Input value={locationForm.phone} onChange={e => setLocationForm(f => ({ ...f, phone: e.target.value }))} className="bg-white/[0.03] border-white/[0.06] text-white focus:border-white/20 focus:ring-0 rounded-lg" />
+                  <label className="block text-[7px] font-orbitron text-slate-500 uppercase tracking-widest mb-1">Phone</label>
+                  <Input value={locationForm.phone} onChange={e => setLocationForm(f => ({ ...f, phone: e.target.value }))} className="bg-card/40 border-cyan-500/30 focus:border-cyan-400/60 text-foreground rounded-lg" />
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[10px] text-gray-500 mb-1 uppercase tracking-wider">Status</label>
+                  <label className="block text-[7px] font-orbitron text-slate-500 uppercase tracking-widest mb-1">Status</label>
                   <select
                     value={locationForm.status}
                     onChange={e => setLocationForm(f => ({ ...f, status: e.target.value as GBPLocation['status'] }))}
-                    className="modal-select w-full bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-white focus:border-white/20 focus:ring-0 focus:outline-none transition-colors [&>option]:bg-[#111118] [&>option]:text-white"
+                    className="modal-select w-full bg-card/40 border border-cyan-500/30 rounded-lg px-3 py-2 text-sm text-foreground focus:border-cyan-400/60 focus:ring-0 focus:outline-none transition-colors [&>option]:bg-card [&>option]:text-foreground"
                   >
                     <option value="verified">Verified</option>
                     <option value="pending">Pending</option>
@@ -830,25 +871,25 @@ const GBPManagement: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[10px] text-gray-500 mb-1 uppercase tracking-wider">Notes</label>
-                  <Input value={locationForm.notes} onChange={e => setLocationForm(f => ({ ...f, notes: e.target.value }))} className="bg-white/[0.03] border-white/[0.06] text-white focus:border-white/20 focus:ring-0 rounded-lg" placeholder="e.g. Next office" />
+                  <label className="block text-[7px] font-orbitron text-slate-500 uppercase tracking-widest mb-1">Notes</label>
+                  <Input value={locationForm.notes} onChange={e => setLocationForm(f => ({ ...f, notes: e.target.value }))} className="bg-card/40 border-cyan-500/30 focus:border-cyan-400/60 text-foreground rounded-lg" placeholder="e.g. Next office" />
                 </div>
               </div>
               <div>
-                <label className="block text-[10px] text-gray-500 mb-1 uppercase tracking-wider flex items-center gap-1">
+                <label className="block text-[7px] font-orbitron text-slate-500 uppercase tracking-widest mb-1 flex items-center gap-1">
                   <LinkIcon className="w-3 h-3" /> Google Profile URL
                 </label>
                 <Input
                   type="url"
                   value={locationForm.googleProfileUrl || ''}
                   onChange={e => setLocationForm(f => ({ ...f, googleProfileUrl: e.target.value }))}
-                  className="bg-white/[0.03] border-white/[0.06] text-white focus:border-white/20 focus:ring-0 rounded-lg"
+                  className="bg-card/40 border-cyan-500/30 focus:border-cyan-400/60 text-foreground rounded-lg"
                   placeholder="https://business.google.com/..."
                 />
               </div>
               <div className="flex gap-3 justify-end">
-                <Button type="button" variant="ghost" className="text-gray-500 hover:text-white" onClick={() => setLocationModalOpen(false)}>Cancel</Button>
-                <Button type="submit" className="bg-white/[0.08] border border-white/[0.1] text-white hover:bg-white/[0.12] text-sm transition-all">{editingLocationId ? 'Update' : 'Add'}</Button>
+                <button type="button" className="px-3 py-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.07] transition-all font-orbitron text-[8px] uppercase tracking-widest text-slate-400 hover:text-white" onClick={() => setLocationModalOpen(false)}>Cancel</button>
+                <button type="submit" className="px-3 py-1.5 rounded-lg border border-cyan-500/20 bg-cyan-500/[0.06] hover:bg-cyan-500/[0.12] hover:border-cyan-500/30 transition-all font-orbitron text-[8px] uppercase tracking-widest text-cyan-400">{editingLocationId ? 'Update' : 'Add'}</button>
               </div>
             </form>
           </div>
@@ -860,13 +901,13 @@ const GBPManagement: React.FC = () => {
         const currentWeek = getMonday();
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-mobile-full-wrapper bg-black/70 backdrop-blur-sm">
-            <div className="modal-mobile-full bg-[#111118] border border-white/[0.06] rounded-xl w-full max-w-md p-5 sm:p-6 relative overflow-y-auto">
-              <button onClick={() => setTasksModalOpen(false)} className="absolute top-4 right-4 text-gray-600 hover:text-white">
+            <div className="modal-mobile-full bg-card border border-cyan-500/20 rounded-xl w-full max-w-md p-5 sm:p-6 relative overflow-y-auto">
+              <button onClick={() => setTasksModalOpen(false)} className="absolute top-4 right-4 text-slate-600 hover:text-white transition-colors">
                 <X className="w-4 h-4" />
               </button>
-              <h2 className="text-sm font-semibold mb-1">Weekly Tasks</h2>
-              <p className="text-[10px] text-gray-500 mb-1 truncate">{tasksModalAddress}</p>
-              <p className="text-[10px] text-gray-600 mb-4">Week of {currentWeek}</p>
+              <h2 className="font-orbitron text-sm font-bold text-foreground mb-1">Weekly Tasks</h2>
+              <p className="text-[9px] font-orbitron text-slate-500 mb-1 truncate">{tasksModalAddress}</p>
+              <p className="text-[9px] font-orbitron text-slate-600 uppercase tracking-widest mb-4">Week of {currentWeek}</p>
 
               <div className="space-y-2">
                 {DEFAULT_TASK_TITLES.map(title => {
@@ -876,33 +917,33 @@ const GBPManagement: React.FC = () => {
                   const config = TASK_DETAIL_CONFIG[title];
                   const Icon = config?.icon || ClipboardList;
                   const parsed = task ? parseTaskNotes(task.notes || '') : null;
-                  const statusColor = isDone ? 'text-green-400 border-green-500/30 bg-green-500/10'
-                    : inProgress ? 'text-amber-400 border-amber-500/30 bg-amber-500/10'
-                    : 'text-red-400 border-red-500/30 bg-red-500/10';
+                  const statusColor = isDone ? 'text-emerald-400 border-emerald-500/20 bg-emerald-500/[0.03]'
+                    : inProgress ? 'text-amber-400 border-amber-500/20 bg-amber-500/[0.03]'
+                    : 'text-red-400 border-red-500/20 bg-red-500/[0.03]';
                   const statusLabel = isDone ? 'Done' : inProgress ? 'In Progress' : task ? 'To Do' : 'Not Started';
 
                   return (
                     <button
                       key={title}
                       onClick={() => task && setTaskDetailOpen(task)}
-                      className={`w-full border rounded-lg p-3 text-left transition-colors ${statusColor} ${task ? 'hover:bg-white/5 cursor-pointer' : 'opacity-60 cursor-default'}`}
+                      className={`w-full border rounded-xl p-3 text-left transition-all ${statusColor} ${task ? 'hover:bg-white/[0.03] cursor-pointer' : 'opacity-60 cursor-default'}`}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          {isDone ? <CheckCircle2 className="w-4 h-4 text-green-400" /> : <Circle className="w-4 h-4 text-gray-500" />}
-                          <Icon className="w-4 h-4" />
-                          <span className="text-sm font-medium text-white">{config?.label || title}</span>
+                          {isDone ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> : <Circle className="w-3.5 h-3.5 text-slate-600" />}
+                          <Icon className="w-3.5 h-3.5" />
+                          <span className="text-xs font-orbitron font-bold text-foreground">{config?.label || title}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           {parsed && parsed.count > 0 && (
-                            <span className="text-[10px] text-gray-400">{parsed.count}/{config?.targetMin ? `${config.targetMin}-` : ''}{config?.target || '?'}</span>
+                            <span className="text-[9px] font-orbitron text-slate-500">{parsed.count}/{config?.targetMin ? `${config.targetMin}-` : ''}{config?.target || '?'}</span>
                           )}
                           {isFriday && !isDone && <AlertTriangle className="w-3 h-3 text-red-400 animate-blink" />}
-                          <span className="text-[10px] font-medium">{statusLabel}</span>
-                          {task && <ChevronRight className="w-3 h-3 text-gray-500" />}
+                          <span className="text-[8px] font-orbitron font-medium uppercase tracking-widest">{statusLabel}</span>
+                          {task && <ChevronRight className="w-3 h-3 text-slate-600" />}
                         </div>
                       </div>
-                      {config && <p className="text-[10px] text-gray-500 mt-1">{config.description}</p>}
+                      {config && <p className="text-[8px] font-orbitron text-slate-500 mt-1 uppercase tracking-wider">{config.description}</p>}
                     </button>
                   );
                 })}
@@ -925,30 +966,30 @@ const GBPManagement: React.FC = () => {
 
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-mobile-full-wrapper bg-black/70 backdrop-blur-sm">
-            <div className="modal-mobile-full bg-[#111118] border border-white/[0.06] rounded-xl w-full max-w-md p-5 sm:p-6 relative max-h-[90vh] overflow-y-auto">
-              <button onClick={() => { setTaskDetailOpen(null); }} className="absolute top-4 right-4 text-gray-600 hover:text-white">
+            <div className="modal-mobile-full bg-card border border-cyan-500/20 rounded-xl w-full max-w-md p-5 sm:p-6 relative max-h-[90vh] overflow-y-auto">
+              <button onClick={() => { setTaskDetailOpen(null); }} className="absolute top-4 right-4 text-slate-600 hover:text-white transition-colors">
                 <X className="w-4 h-4" />
               </button>
-              <button onClick={() => setTaskDetailOpen(null)} className="flex items-center gap-1 text-[10px] text-gray-500 hover:text-white mb-3">
+              <button onClick={() => setTaskDetailOpen(null)} className="flex items-center gap-1 text-[8px] font-orbitron text-slate-500 hover:text-white uppercase tracking-widest mb-3 transition-colors">
                 <ChevronLeft className="w-3 h-3" /> Back
               </button>
 
               <div className="flex items-center gap-2 mb-3">
-                <Icon className="w-4 h-4 text-gray-400" />
-                <h2 className="text-sm font-semibold">{config?.label || task.title}</h2>
+                <Icon className="w-4 h-4 text-cyan-400/60" />
+                <h2 className="font-orbitron text-sm font-bold text-foreground">{config?.label || task.title}</h2>
               </div>
 
               <div className="flex items-center gap-3 mb-2">
-                <span className={`text-xs font-medium ${statusColor}`}>{statusLabel}</span>
+                <span className={`text-[9px] font-orbitron font-medium uppercase tracking-widest ${statusColor}`}>{statusLabel}</span>
                 {config && (
-                  <span className="text-xs text-gray-400">
+                  <span className="text-[9px] font-orbitron text-slate-500">
                     {parsed.count}/{targetLabel} completed
                   </span>
                 )}
                 {config && (
-                  <div className="flex-1 bg-white/5 rounded-full h-1.5">
+                  <div className="flex-1 bg-white/[0.04] rounded-full h-1.5">
                     <div
-                      className={`h-1.5 rounded-full transition-all ${isDone ? 'bg-green-500' : parsed.count > 0 ? 'bg-amber-500' : 'bg-red-500'}`}
+                      className={`h-1.5 rounded-full transition-all ${isDone ? 'bg-emerald-500' : parsed.count > 0 ? 'bg-amber-500' : 'bg-red-500'}`}
                       style={{ width: `${Math.min(100, (parsed.count / (config.target || 1)) * 100)}%` }}
                     />
                   </div>
@@ -956,7 +997,7 @@ const GBPManagement: React.FC = () => {
               </div>
 
               {task.due_date && (
-                <p className="text-xs text-gray-400 mb-4">
+                <p className="text-[9px] font-orbitron text-slate-500 mb-4">
                   <Clock className="w-3 h-3 inline mr-1" />
                   Due: {new Date(task.due_date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                 </p>
@@ -965,19 +1006,19 @@ const GBPManagement: React.FC = () => {
               {parsed.entries.length > 0 && (
                 <div className="mb-4">
                   <div className="flex items-center gap-1 mb-2">
-                    {config?.entryType === 'url' ? <LinkIcon className="w-3 h-3 text-gray-500" /> : <Hash className="w-3 h-3 text-gray-500" />}
-                    <span className="text-[10px] text-gray-500 uppercase tracking-wide">{config?.entryLabel || 'Entries'}</span>
+                    {config?.entryType === 'url' ? <LinkIcon className="w-3 h-3 text-slate-500" /> : <Hash className="w-3 h-3 text-slate-500" />}
+                    <span className="text-[7px] font-orbitron text-slate-500 uppercase tracking-widest">{config?.entryLabel || 'Entries'}</span>
                   </div>
                   <div className="space-y-1.5">
                     {parsed.entries.map((entry, i) => (
                       <div key={i} className="flex items-center gap-2">
-                        <span className="text-[10px] text-gray-600 w-4 text-right shrink-0">{i + 1}.</span>
+                        <span className="text-[9px] font-orbitron text-slate-600 w-4 text-right shrink-0">{i + 1}.</span>
                         {config?.entryType === 'url' && entry ? (
                           <a href={entry} target="_blank" rel="noopener noreferrer" className="text-xs text-cyan-400 hover:text-cyan-300 truncate flex-1">
                             {entry}
                           </a>
                         ) : (
-                          <span className="text-xs text-gray-300 flex-1">{entry || '—'}</span>
+                          <span className="text-xs text-foreground/70 flex-1">{entry || '—'}</span>
                         )}
                       </div>
                     ))}
@@ -988,15 +1029,15 @@ const GBPManagement: React.FC = () => {
               {parsed.freeNotes && (
                 <div className="mb-4">
                   <div className="flex items-center gap-1 mb-2">
-                    <StickyNote className="w-3 h-3 text-gray-500" />
-                    <span className="text-[10px] text-gray-500 uppercase tracking-wide">Notes</span>
+                    <StickyNote className="w-3 h-3 text-slate-500" />
+                    <span className="text-[7px] font-orbitron text-slate-500 uppercase tracking-widest">Notes</span>
                   </div>
-                  <p className="text-xs text-gray-300 bg-white/5 border border-white/10 rounded-lg p-3 whitespace-pre-wrap">{parsed.freeNotes}</p>
+                  <p className="text-xs text-foreground/70 bg-white/[0.02] border border-white/[0.06] rounded-lg p-3 whitespace-pre-wrap">{parsed.freeNotes}</p>
                 </div>
               )}
 
               {!parsed.entries.length && !parsed.freeNotes && parsed.count === 0 && (
-                <p className="text-sm text-gray-500 text-center py-4">No data recorded yet for this task.</p>
+                <p className="text-xs font-orbitron text-slate-500 text-center py-4">No data recorded yet for this task.</p>
               )}
             </div>
           </div>
@@ -1005,22 +1046,22 @@ const GBPManagement: React.FC = () => {
 
       {notesModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-mobile-full-wrapper bg-black/70 backdrop-blur-sm">
-          <div className="modal-mobile-full bg-[#111118] border border-white/[0.06] rounded-xl w-full max-w-md p-5 sm:p-6 relative">
-            <button onClick={() => setNotesModalOpen(false)} className="absolute top-4 right-4 text-gray-600 hover:text-white">
+          <div className="modal-mobile-full bg-card border border-cyan-500/20 rounded-xl w-full max-w-md p-5 sm:p-6 relative">
+            <button onClick={() => setNotesModalOpen(false)} className="absolute top-4 right-4 text-slate-600 hover:text-white transition-colors">
               <X className="w-4 h-4" />
             </button>
-            <h2 className="text-sm font-semibold mb-1">Notes</h2>
-            <p className="text-[10px] text-gray-500 mb-4 truncate">{notesLocationAddress}</p>
+            <h2 className="font-orbitron text-sm font-bold text-foreground mb-1">Notes</h2>
+            <p className="text-[9px] font-orbitron text-slate-500 mb-4 truncate">{notesLocationAddress}</p>
             <textarea
               value={notesText}
               onChange={e => setNotesText(e.target.value)}
               placeholder="Add notes about this location..."
               rows={6}
-              className="w-full bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:border-white/20 focus:outline-none resize-none"
+              className="w-full bg-card/40 border border-cyan-500/30 rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-cyan-400/60 focus:outline-none resize-none"
             />
             <div className="flex gap-3 justify-end mt-4">
-              <Button type="button" variant="ghost" className="text-gray-500 hover:text-white" onClick={() => setNotesModalOpen(false)}>Cancel</Button>
-              <Button onClick={handleNotesSave} className="bg-white/[0.08] border border-white/[0.1] text-white hover:bg-white/[0.12] text-sm transition-all">Save</Button>
+              <button type="button" className="px-3 py-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.07] transition-all font-orbitron text-[8px] uppercase tracking-widest text-slate-400 hover:text-white" onClick={() => setNotesModalOpen(false)}>Cancel</button>
+              <button onClick={handleNotesSave} className="px-3 py-1.5 rounded-lg border border-cyan-500/20 bg-cyan-500/[0.06] hover:bg-cyan-500/[0.12] hover:border-cyan-500/30 transition-all font-orbitron text-[8px] uppercase tracking-widest text-cyan-400">Save</button>
             </div>
           </div>
         </div>
