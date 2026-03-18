@@ -3,6 +3,13 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const TELEGRAM_BOT_TOKEN = Deno.env.get("TELEGRAM_BOT_TOKEN");
 
+const ALLOWED_CHAT_IDS = new Set([
+    "-1003705919643",
+    "-1003863683808",
+    "-1003516103565",
+    "-1003711003707",
+]);
+
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -117,6 +124,14 @@ async function handleTelegramNotification(data: AvaEmailData): Promise<Response>
         return new Response(
             JSON.stringify({ error: "Missing message or chat_id" }),
             { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+    }
+
+    if (!ALLOWED_CHAT_IDS.has(data.chat_id)) {
+        console.error("Rejected disallowed chat_id:", data.chat_id);
+        return new Response(
+            JSON.stringify({ error: "Invalid chat_id" }),
+            { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } }
         );
     }
 

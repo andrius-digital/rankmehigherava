@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import {
-  Plus, Pencil, Trash2, X, Calendar, GripVertical,
+  Plus, Trash2, X, Calendar, GripVertical,
   Building2, Archive, LayoutDashboard, MapPin, CheckCircle2,
   Hash, MessageSquare, Image, Star, LinkIcon, Clock, CalendarClock, StickyNote,
   ChevronDown, ChevronRight, AlertTriangle, History
@@ -224,7 +224,7 @@ function shortAddress(addr: string): string {
 const KanbanBoard: React.FC = () => {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
-  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string>('all');
   const [companyDropdownOpen, setCompanyDropdownOpen] = useState(false);
   const companyDropdownRef = useRef<HTMLDivElement>(null);
   const [tasks, setTasks] = useState<SEOTask[]>([]);
@@ -243,7 +243,6 @@ const KanbanBoard: React.FC = () => {
   const [selectedArchiveWeek, setSelectedArchiveWeek] = useState<string>('all');
   const [companyAlerts, setCompanyAlerts] = useState<Map<string, { overdue: number; approaching: number }>>(new Map());
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
-  const [historyLocationId, setHistoryLocationId] = useState<string | null>(null);
   const [historyLocationAddress, setHistoryLocationAddress] = useState('');
   const [historyTasks, setHistoryTasks] = useState<Array<{ id: string; title: string; week_of: string; due_date: string | null; priority: string; category: string; notes: string; completed_at: string | null; source: 'current' | 'archive' }>>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -253,17 +252,12 @@ const KanbanBoard: React.FC = () => {
   const didDrag = useRef(false);
 
   const currentWeek = getWeekStart();
-  const isFriday = new Date().getDay() === 5;
 
   const fetchCompanies = useCallback(async () => {
     try {
       const { data, error } = await supabase.from('gbp_companies').select('id, name').order('name');
       if (error) throw error;
-      const list = (data || []) as Company[];
-      setCompanies(list);
-      if (list.length > 0) {
-        setSelectedCompanyId(prev => prev || list[0].id);
-      }
+      setCompanies((data || []) as Company[]);
     } catch {
       toast.error('Failed to load companies');
     }
@@ -299,15 +293,17 @@ const KanbanBoard: React.FC = () => {
   }, [currentWeek]);
 
   const fetchTasks = useCallback(async () => {
-    if (!selectedCompanyId) { setLoading(false); return; }
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('seo_tasks')
         .select('*')
-        .eq('company_id', selectedCompanyId)
         .eq('week_of', currentWeek)
         .not('location_id', 'is', null)
         .order('created_at', { ascending: true });
+      if (selectedCompanyId !== 'all') {
+        query = query.eq('company_id', selectedCompanyId);
+      }
+      const { data, error } = await query;
       if (error) throw error;
       const validCols = COLUMNS.map(c => c.key as string);
       setTasks((data || []).map(row => ({
@@ -324,14 +320,13 @@ const KanbanBoard: React.FC = () => {
   }, [selectedCompanyId, currentWeek]);
 
   const fetchArchive = useCallback(async () => {
-    if (!selectedCompanyId) return;
     setArchiveLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('seo_tasks_archive')
-        .select('*')
-        .eq('company_id', selectedCompanyId)
-        .order('week_of', { ascending: false });
+      let query = supabase.from('seo_tasks_archive').select('*').order('week_of', { ascending: false });
+      if (selectedCompanyId !== 'all') {
+        query = query.eq('company_id', selectedCompanyId);
+      }
+      const { data, error } = await query;
       if (error) throw error;
       const rows = (data || []) as ArchivedTask[];
       setArchivedTasks(rows);
@@ -347,7 +342,6 @@ const KanbanBoard: React.FC = () => {
 
   const openLocationHistory = useCallback(async (locationId: string, address: string) => {
     historyRequestRef.current = locationId;
-    setHistoryLocationId(locationId);
     setHistoryLocationAddress(address);
     setHistoryTasks([]);
     setExpandedHistoryId(null);
@@ -555,21 +549,31 @@ const KanbanBoard: React.FC = () => {
   }, [companyDropdownOpen]);
 
   useEffect(() => {
-    if (!selectedCompanyId) return;
     setLoading(true);
     (async () => {
       try {
-        const { data, error } = await supabase
+        let query = supabase
           .from('gbp_locations')
           .select('id, company_id, address')
-          .eq('company_id', selectedCompanyId)
           .eq('status', 'verified')
           .order('address');
+        if (selectedCompanyId !== 'all') {
+          query = query.eq('company_id', selectedCompanyId);
+        }
+        const { data, error } = await query;
         if (error) throw error;
         const locs = (data || []) as Location[];
         setLocations(locs);
         setCollapsedLocations(new Set(locs.map(l => l.id)));
-        await autoProcessWeekTransition(selectedCompanyId, locs);
+        if (selectedCompanyId === 'all') {
+          const companyIds = [...new Set(locs.map(l => l.company_id))];
+          for (const cid of companyIds) {
+            const companyLocs = locs.filter(l => l.company_id === cid);
+            await autoProcessWeekTransition(cid, companyLocs);
+          }
+        } else {
+          await autoProcessWeekTransition(selectedCompanyId, locs);
+        }
         await fetchTasks();
       } catch {
         toast.error('Failed to load data');
@@ -579,7 +583,7 @@ const KanbanBoard: React.FC = () => {
   }, [selectedCompanyId, autoProcessWeekTransition, fetchTasks]);
 
   useEffect(() => {
-    if (showArchive && selectedCompanyId) fetchArchive();
+    if (showArchive) fetchArchive();
   }, [showArchive, selectedCompanyId, fetchArchive]);
 
   const openAdd = (col: TaskCol = 'new') => {
@@ -644,7 +648,7 @@ const KanbanBoard: React.FC = () => {
       const row = {
         title: form.title.trim(),
         client: loc ? shortAddress(loc.address) : form.client.trim(),
-        company_id: selectedCompanyId,
+        company_id: loc ? loc.company_id : (selectedCompanyId !== 'all' ? selectedCompanyId : ''),
         location_id: form.location_id,
         week_of: currentWeek,
         due_date: form.due_date || null,
@@ -776,12 +780,6 @@ const KanbanBoard: React.FC = () => {
     if (dx > 5 || dy > 5) didDrag.current = true;
   };
 
-  const handleDragOver = (e: React.DragEvent, col: string) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    setDragOverCol(col);
-  };
-
   const handleDrop = async (e: React.DragEvent, targetCol: TaskCol) => {
     e.preventDefault();
     setDragOverCol(null);
@@ -870,7 +868,8 @@ const KanbanBoard: React.FC = () => {
     return diffDays <= 3;
   };
 
-  const selectedCompany = companies.find(c => c.id === selectedCompanyId);
+  const companyMap = new Map(companies.map(c => [c.id, c]));
+  const selectedCompany = selectedCompanyId === 'all' ? null : companies.find(c => c.id === selectedCompanyId);
   const filteredArchive = selectedArchiveWeek === 'all'
     ? archivedTasks
     : archivedTasks.filter(t => t.week_of === selectedArchiveWeek);
@@ -884,6 +883,19 @@ const KanbanBoard: React.FC = () => {
     if (!tasksByLocation.has(t.location_id)) tasksByLocation.set(t.location_id, []);
     tasksByLocation.get(t.location_id)!.push(t);
   }
+
+  const tasksByCompanyLocation = useMemo(() => {
+    const grouped = new Map<string, Map<string, SEOTask[]>>();
+    for (const t of tasks) {
+      if (!t.location_id || !t.company_id) continue;
+      if (!locationMap.has(t.location_id)) continue;
+      if (!grouped.has(t.company_id)) grouped.set(t.company_id, new Map());
+      const companyGroup = grouped.get(t.company_id)!;
+      if (!companyGroup.has(t.location_id)) companyGroup.set(t.location_id, []);
+      companyGroup.get(t.location_id)!.push(t);
+    }
+    return grouped;
+  }, [tasks, locationMap]);
 
   const getTaskProgress = (task: SEOTask): { count: number; target: number; targetMin?: number } | null => {
     const typeConfig = TASK_TYPE_MAP[task.title];
@@ -911,6 +923,196 @@ const KanbanBoard: React.FC = () => {
     });
   };
 
+  const renderLocationBlock = (locId: string, locTasks: SEOTask[], loc: Location | null, locHasOverdue: boolean, locShowApproaching: boolean, locOverdue: number, locApproaching: number) => (
+    <div key={locId} className="border border-white/5 rounded-xl overflow-hidden bg-[#1a1a24]/50">
+      <button
+        type="button"
+        onClick={() => setCollapsedLocations(prev => {
+          const next = new Set(prev);
+          if (next.has(locId)) next.delete(locId); else next.add(locId);
+          return next;
+        })}
+        className="w-full flex items-center gap-2 px-3 py-2.5 bg-[#1a1a24] hover:bg-[#1a1a24]/80 hover:border-[#00e5cc]/30 transition-colors text-left"
+      >
+        {collapsedLocations.has(locId)
+          ? <ChevronRight className="w-4 h-4 text-gray-500 shrink-0" />
+          : <ChevronDown className="w-4 h-4 text-gray-500 shrink-0" />
+        }
+        <MapPin className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+        <span className="text-sm font-semibold text-white">
+          {loc ? shortAddress(loc.address) : 'Unknown Location'}
+        </span>
+        {loc && (
+          <span className="text-[10px] text-gray-500 truncate">{loc.address}</span>
+        )}
+        {(locHasOverdue || locShowApproaching) && (
+          <span className="flex items-center gap-1 shrink-0">
+            <AlertTriangle className={`w-3.5 h-3.5 animate-blink ${locHasOverdue ? 'text-red-500' : 'text-amber-500'}`} />
+            <span className={`text-[10px] font-medium ${locHasOverdue ? 'text-red-400' : 'text-amber-400'}`}>
+              {locHasOverdue ? `${locOverdue} overdue` : `${locApproaching} due soon`}
+            </span>
+          </span>
+        )}
+        <span className="ml-auto flex items-center gap-1.5 shrink-0">
+          <button
+            type="button"
+            title="View task history"
+            onClick={e => { e.stopPropagation(); if (loc) openLocationHistory(loc.id, loc.address); }}
+            className="p-1 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 inline-flex items-center justify-center rounded hover:bg-cyan-500/10 text-gray-500 hover:text-cyan-400 transition-colors"
+          >
+            <History className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+          </button>
+          <span className="text-[10px] text-gray-500 bg-white/5 px-1.5 py-0.5 rounded-full">
+            {locTasks.length} task{locTasks.length !== 1 ? 's' : ''}
+          </span>
+        </span>
+      </button>
+      {!collapsedLocations.has(locId) && (
+      <div className="p-2">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        {COLUMNS.map(column => {
+          const colTasks = locTasks.filter(t => t.col === column.key);
+          const isDragOver = dragOverCol === `${locId}::${column.key}`;
+          return (
+            <div
+              key={column.key}
+              className={`border-t-2 ${column.color} rounded-xl bg-[#0a0a0f]/50 backdrop-blur-sm transition-all ${isDragOver ? 'ring-2 ring-[#00e5cc]/30 bg-[#00e5cc]/5' : ''}`}
+              onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; setDragOverCol(`${locId}::${column.key}`); }}
+              onDragLeave={() => setDragOverCol(null)}
+              onDrop={e => handleDrop(e, column.key)}
+            >
+              <div className="px-3 py-2 border-b border-white/5 flex items-center justify-between">
+                <span className="text-xs font-semibold text-white font-orbitron tracking-wide">{column.label}</span>
+                <span className="text-[10px] text-gray-500 bg-white/5 px-1.5 py-0.5 rounded-full">{colTasks.length}</span>
+              </div>
+              <div className="p-1.5 space-y-1.5 min-h-[80px]">
+                {colTasks.map(task => {
+                  const progress = getTaskProgress(task);
+                  return (
+                    <div
+                      key={task.id}
+                      draggable
+                      onDragStart={e => handleDragStart(e, task.id)}
+                      onDrag={handleDrag}
+                      onDragEnd={() => { setDraggedId(null); setDragOverCol(null); dragStartPos.current = null; }}
+                      onMouseDown={handleMouseDown}
+                      onClick={e => handleCardClick(task, e)}
+                      className={`border rounded-lg p-2.5 bg-white/[0.03] hover:bg-white/[0.06] transition-all cursor-pointer active:cursor-grabbing ${isOverdue(task.due_date, task.col) ? 'card-overdue' : isApproachingDeadline(task.due_date, task.col) ? 'card-approaching' : CARD_GLOW[task.col]} ${draggedId === task.id ? 'opacity-40' : ''}`}
+                    >
+                      <div className="flex items-start justify-between gap-2 mb-1.5">
+                        <div className="flex items-center gap-1 min-w-0">
+                          <GripVertical className="w-3 h-3 text-gray-600 shrink-0 cursor-grab" />
+                          <span className="text-xs font-medium text-white truncate">{task.title}</span>
+                        </div>
+                        <div className="flex items-center gap-0.5 shrink-0" onClick={e => e.stopPropagation()}>
+                          {task.col !== 'finished' && (
+                            <Button
+                              variant="ghost" size="icon"
+                              className="h-11 w-11 sm:h-5 sm:w-5 text-gray-400 hover:text-green-400 hover:bg-green-500/10"
+                              onClick={() => handleMarkDone(task.id)}
+                              title="Mark as done"
+                            >
+                              <CheckCircle2 className="w-5 h-5 sm:w-3 sm:h-3" />
+                            </Button>
+                          )}
+                          {task.col === 'finished' && (
+                            <Button
+                              variant="ghost" size="icon"
+                              className="h-11 w-11 sm:h-5 sm:w-5 text-green-400 hover:text-amber-400 hover:bg-amber-500/10"
+                              onClick={() => handleUnmarkDone(task.id)}
+                              title="Undo — move back"
+                            >
+                              <CheckCircle2 className="w-5 h-5 sm:w-3.5 sm:h-3.5" />
+                            </Button>
+                          )}
+                          <Button
+                            variant="ghost" size="icon"
+                            className="h-11 w-11 sm:h-5 sm:w-5 text-gray-400 hover:text-amber-400 hover:bg-amber-500/10"
+                            onClick={() => handleManualArchive(task)}
+                            title="Archive task"
+                          >
+                            <Archive className="w-4 h-4 sm:w-2.5 sm:h-2.5" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-11 w-11 sm:h-5 sm:w-5 text-gray-400 hover:text-red-400" onClick={() => handleDelete(task.id, task.title)}>
+                            <Trash2 className="w-4 h-4 sm:w-2.5 sm:h-2.5" />
+                          </Button>
+                        </div>
+                      </div>
+                      {progress && (
+                        <div className="mb-1.5">
+                          <div className="flex items-center gap-1.5">
+                            <span className={`text-[10px] font-bold ${getProgressColor(progress.count, progress.target, progress.targetMin)}`}>
+                              {progress.count}/{progress.targetMin ? `${progress.targetMin}-${progress.target}` : progress.target}
+                            </span>
+                            <div className="flex-1 bg-white/5 rounded-full h-1">
+                              <div
+                                className={`h-1 rounded-full transition-all ${getProgressBarColor(progress.count, progress.target, progress.targetMin)}`}
+                                style={{ width: `${Math.min(100, (progress.count / progress.target) * 100)}%` }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-1 flex-wrap">
+                        {task.due_date && (
+                          <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium border ${isOverdue(task.due_date, task.col) ? 'bg-red-500/20 text-red-400 border-red-500/30' : isApproachingDeadline(task.due_date, task.col) ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-white/5 text-gray-400 border-white/10'}`}>
+                            {isOverdue(task.due_date, task.col) ? <AlertTriangle className="w-2.5 h-2.5" /> : isApproachingDeadline(task.due_date, task.col) ? <AlertTriangle className="w-2.5 h-2.5" /> : <Calendar className="w-2.5 h-2.5" />}
+                            {isOverdue(task.due_date, task.col) ? 'OVERDUE' : isApproachingDeadline(task.due_date, task.col) ? `DUE SOON · ${formatDate(task.due_date)}` : formatDate(task.due_date)}
+                          </span>
+                        )}
+                        {!task.due_date && (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border bg-white/5 text-gray-500 border-white/10">
+                            No deadline
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+                {colTasks.length === 0 && (
+                  <div className="text-center py-4 text-gray-600 text-[10px]">
+                    {isDragOver ? 'Drop here' : 'Empty'}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      {(() => {
+        const locUpcoming = locTasks.filter(t => t.col === 'finished' && defaultTitles.has(t.title));
+        const seen = new Set<string>();
+        const deduped = locUpcoming.filter(t => {
+          if (seen.has(t.title)) return false;
+          seen.add(t.title);
+          return true;
+        });
+        if (deduped.length === 0) return null;
+        return (
+          <div className="mt-2 border border-cyan-500/15 rounded-lg bg-cyan-500/[0.02]">
+            <div className="px-3 py-1.5 border-b border-cyan-500/10 flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <CalendarClock className="w-3 h-3 text-cyan-400" />
+                <span className="text-[10px] font-semibold text-cyan-400">Upcoming Next Week</span>
+              </div>
+              <span className="text-[10px] text-cyan-400/60">{nextMondayDate}</span>
+            </div>
+            <div className="p-1.5 space-y-1">
+              {deduped.map(t => (
+                <div key={t.id} className="flex items-center gap-2 px-2 py-1 rounded bg-white/[0.02] border border-cyan-500/10">
+                  <Clock className="w-2.5 h-2.5 text-cyan-400/60 shrink-0" />
+                  <span className="text-[10px] text-gray-300 truncate">{t.title}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+      </div>
+      )}
+    </div>
+  );
+
   const currentTypeConfig = TASK_TYPE_MAP[form.title.trim()] || null;
 
   const nextMonday = getNextMonday(currentWeek);
@@ -937,11 +1139,9 @@ const KanbanBoard: React.FC = () => {
           >
             <Archive className="w-3.5 h-3.5" /> {showArchive ? 'Hide Archive' : 'View Archive'}
           </Button>
-          {selectedCompanyId && (
-            <Button onClick={() => openAdd('new')} className="min-h-[44px] bg-[#00e5cc]/10 border border-[#00e5cc]/30 text-[#00e5cc] hover:bg-[#00e5cc]/20 hover:shadow-[0_0_15px_rgba(0,229,204,0.15)] gap-2 text-xs font-semibold transition-all">
-              <Plus className="w-3.5 h-3.5" /> Add Task
-            </Button>
-          )}
+          <Button onClick={() => openAdd('new')} className="min-h-[44px] bg-[#00e5cc]/10 border border-[#00e5cc]/30 text-[#00e5cc] hover:bg-[#00e5cc]/20 hover:shadow-[0_0_15px_rgba(0,229,204,0.15)] gap-2 text-xs font-semibold transition-all">
+            <Plus className="w-3.5 h-3.5" /> Add Task
+          </Button>
         </div>
       </div>
 
@@ -961,9 +1161,10 @@ const KanbanBoard: React.FC = () => {
               className="w-full flex items-center justify-between gap-2 bg-[#1a1a24] border border-white/10 rounded-full px-4 py-1.5 min-h-[44px] text-sm text-white text-left hover:border-[#00e5cc]/30 focus:border-[#00e5cc]/50 focus:ring-1 focus:ring-[#00e5cc]/20 transition-all"
             >
               <span className="truncate flex items-center gap-1.5">
-                {selectedCompany?.name || 'Select company'}
+                {selectedCompanyId === 'all' ? 'All Companies' : (selectedCompany?.name || 'Select company')}
                 {(() => {
-                  const al = selectedCompanyId ? companyAlerts.get(selectedCompanyId) : null;
+                  if (selectedCompanyId === 'all') return null;
+                  const al = companyAlerts.get(selectedCompanyId);
                   if (!al) return null;
                   return (
                     <>
@@ -981,6 +1182,16 @@ const KanbanBoard: React.FC = () => {
                 className="absolute z-50 mt-1 w-full max-h-64 overflow-y-auto bg-[#1a1a24] border border-white/10 rounded-2xl shadow-xl shadow-black/40"
                 onKeyDown={e => { if (e.key === 'Escape') setCompanyDropdownOpen(false); }}
               >
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={selectedCompanyId === 'all'}
+                  onClick={() => { setSelectedCompanyId('all'); setCompanyDropdownOpen(false); }}
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left transition-colors border-b border-white/5 ${selectedCompanyId === 'all' ? 'bg-white/10 text-white' : 'text-gray-300 hover:bg-white/5 hover:text-white'}`}
+                >
+                  <LayoutDashboard className="w-3.5 h-3.5 text-[#00e5cc] shrink-0" />
+                  <span className="truncate font-semibold">All Companies</span>
+                </button>
                 {companies.length === 0 && (
                   <div className="px-3 py-2 text-sm text-gray-500">No companies</div>
                 )}
@@ -1024,216 +1235,61 @@ const KanbanBoard: React.FC = () => {
           <div className="w-8 h-8 border-4 border-[#00e5cc] border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
           <p className="text-gray-400 text-sm">Loading tasks...</p>
         </div>
-      ) : !selectedCompanyId ? (
-        <div className="text-center py-10 text-gray-500">Select a company to view tasks</div>
-      ) : tasksByLocation.size > 0 ? (
+      ) : (selectedCompanyId === 'all' ? tasksByCompanyLocation.size > 0 : tasksByLocation.size > 0) ? (
         <div className="space-y-6">
-          {Array.from(tasksByLocation.entries()).map(([locId, locTasks]) => {
+          {selectedCompanyId === 'all' ? (
+            Array.from(tasksByCompanyLocation.entries()).map(([compId, locTasksMap]) => {
+              const comp = companyMap.get(compId);
+              return (
+                <div key={compId}>
+                  <div className="flex items-center gap-2 mb-3 px-1">
+                    <Building2 className="w-4 h-4 text-[#00e5cc]" />
+                    <span className="text-sm font-bold text-white font-orbitron">{comp?.name || 'Unknown'}</span>
+                    <span className="text-[10px] text-gray-500 bg-white/5 px-1.5 py-0.5 rounded-full">{locTasksMap.size} location{locTasksMap.size !== 1 ? 's' : ''}</span>
+                    {(() => {
+                      const al = companyAlerts.get(compId);
+                      if (!al) return null;
+                      return (
+                        <>
+                          {al.overdue > 0 && <AlertTriangle className="w-3.5 h-3.5 text-red-500 animate-blink shrink-0" />}
+                          {al.approaching > 0 && <AlertTriangle className="w-3.5 h-3.5 text-amber-500 animate-blink shrink-0" />}
+                        </>
+                      );
+                    })()}
+                  </div>
+                  <div className="space-y-4 mb-6">
+                    {Array.from(locTasksMap.entries()).map(([locId, locTasks]) => {
+                      const loc = locationMap.get(locId);
+                      const locOverdue = locTasks.filter(t => isOverdue(t.due_date, t.col)).length;
+                      const locApproaching = locTasks.filter(t => isApproachingDeadline(t.due_date, t.col)).length;
+                      const locHasOverdue = locOverdue > 0;
+                      const locShowApproaching = locApproaching > 0 && !locHasOverdue;
+                      return renderLocationBlock(locId, locTasks, loc || null, locHasOverdue, locShowApproaching, locOverdue, locApproaching);
+                    })}
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+          Array.from(tasksByLocation.entries()).map(([locId, locTasks]) => {
             const loc = locationMap.get(locId);
             const locOverdue = locTasks.filter(t => isOverdue(t.due_date, t.col)).length;
             const locApproaching = locTasks.filter(t => isApproachingDeadline(t.due_date, t.col)).length;
             const locHasOverdue = locOverdue > 0;
             const locShowApproaching = locApproaching > 0 && !locHasOverdue;
-            return (
-              <div key={locId} className="border border-white/5 rounded-xl overflow-hidden bg-[#1a1a24]/50">
-                <button
-                  type="button"
-                  onClick={() => setCollapsedLocations(prev => {
-                    const next = new Set(prev);
-                    if (next.has(locId)) next.delete(locId); else next.add(locId);
-                    return next;
-                  })}
-                  className="w-full flex items-center gap-2 px-3 py-2.5 bg-[#1a1a24] hover:bg-[#1a1a24]/80 hover:border-[#00e5cc]/30 transition-colors text-left"
-                >
-                  {collapsedLocations.has(locId)
-                    ? <ChevronRight className="w-4 h-4 text-gray-500 shrink-0" />
-                    : <ChevronDown className="w-4 h-4 text-gray-500 shrink-0" />
-                  }
-                  <MapPin className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                  <span className="text-sm font-semibold text-white">
-                    {loc ? shortAddress(loc.address) : 'Unknown Location'}
-                  </span>
-                  {loc && (
-                    <span className="text-[10px] text-gray-500 truncate">{loc.address}</span>
-                  )}
-                  {(locHasOverdue || locShowApproaching) && (
-                    <span className="flex items-center gap-1 shrink-0">
-                      <AlertTriangle className={`w-3.5 h-3.5 animate-blink ${locHasOverdue ? 'text-red-500' : 'text-amber-500'}`} />
-                      <span className={`text-[10px] font-medium ${locHasOverdue ? 'text-red-400' : 'text-amber-400'}`}>
-                        {locHasOverdue ? `${locOverdue} overdue` : `${locApproaching} due soon`}
-                      </span>
-                    </span>
-                  )}
-                  <span className="ml-auto flex items-center gap-1.5 shrink-0">
-                    <button
-                      type="button"
-                      title="View task history"
-                      onClick={e => { e.stopPropagation(); if (loc) openLocationHistory(loc.id, loc.address); }}
-                      className="p-1 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 inline-flex items-center justify-center rounded hover:bg-cyan-500/10 text-gray-500 hover:text-cyan-400 transition-colors"
-                    >
-                      <History className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
-                    </button>
-                    <span className="text-[10px] text-gray-500 bg-white/5 px-1.5 py-0.5 rounded-full">
-                      {locTasks.length} task{locTasks.length !== 1 ? 's' : ''}
-                    </span>
-                  </span>
-                </button>
-                {!collapsedLocations.has(locId) && (
-                <div className="p-2">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-                  {COLUMNS.map(column => {
-                    const colTasks = locTasks.filter(t => t.col === column.key);
-                    const isDragOver = dragOverCol === `${locId}::${column.key}`;
-                    return (
-                      <div
-                        key={column.key}
-                        className={`border-t-2 ${column.color} rounded-xl bg-[#0a0a0f]/50 backdrop-blur-sm transition-all ${isDragOver ? 'ring-2 ring-[#00e5cc]/30 bg-[#00e5cc]/5' : ''}`}
-                        onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; setDragOverCol(`${locId}::${column.key}`); }}
-                        onDragLeave={() => setDragOverCol(null)}
-                        onDrop={e => handleDrop(e, column.key)}
-                      >
-                        <div className="px-3 py-2 border-b border-white/5 flex items-center justify-between">
-                          <span className="text-xs font-semibold text-white font-orbitron tracking-wide">{column.label}</span>
-                          <span className="text-[10px] text-gray-500 bg-white/5 px-1.5 py-0.5 rounded-full">{colTasks.length}</span>
-                        </div>
-                        <div className="p-1.5 space-y-1.5 min-h-[80px]">
-                          {colTasks.map(task => {
-                            const progress = getTaskProgress(task);
-                            return (
-                              <div
-                                key={task.id}
-                                draggable
-                                onDragStart={e => handleDragStart(e, task.id)}
-                                onDrag={handleDrag}
-                                onDragEnd={() => { setDraggedId(null); setDragOverCol(null); dragStartPos.current = null; }}
-                                onMouseDown={handleMouseDown}
-                                onClick={e => handleCardClick(task, e)}
-                                className={`border rounded-lg p-2.5 bg-white/[0.03] hover:bg-white/[0.06] transition-all cursor-pointer active:cursor-grabbing ${isOverdue(task.due_date, task.col) ? 'card-overdue' : isApproachingDeadline(task.due_date, task.col) ? 'card-approaching' : CARD_GLOW[task.col]} ${draggedId === task.id ? 'opacity-40' : ''}`}
-                              >
-                                <div className="flex items-start justify-between gap-2 mb-1.5">
-                                  <div className="flex items-center gap-1 min-w-0">
-                                    <GripVertical className="w-3 h-3 text-gray-600 shrink-0 cursor-grab" />
-                                    <span className="text-xs font-medium text-white truncate">{task.title}</span>
-                                  </div>
-                                  <div className="flex items-center gap-0.5 shrink-0" onClick={e => e.stopPropagation()}>
-                                    {task.col !== 'finished' && (
-                                      <Button
-                                        variant="ghost" size="icon"
-                                        className="h-11 w-11 sm:h-5 sm:w-5 text-gray-400 hover:text-green-400 hover:bg-green-500/10"
-                                        onClick={() => handleMarkDone(task.id)}
-                                        title="Mark as done"
-                                      >
-                                        <CheckCircle2 className="w-5 h-5 sm:w-3 sm:h-3" />
-                                      </Button>
-                                    )}
-                                    {task.col === 'finished' && (
-                                      <Button
-                                        variant="ghost" size="icon"
-                                        className="h-11 w-11 sm:h-5 sm:w-5 text-green-400 hover:text-amber-400 hover:bg-amber-500/10"
-                                        onClick={() => handleUnmarkDone(task.id)}
-                                        title="Undo — move back"
-                                      >
-                                        <CheckCircle2 className="w-5 h-5 sm:w-3.5 sm:h-3.5" />
-                                      </Button>
-                                    )}
-                                    <Button
-                                      variant="ghost" size="icon"
-                                      className="h-11 w-11 sm:h-5 sm:w-5 text-gray-400 hover:text-amber-400 hover:bg-amber-500/10"
-                                      onClick={() => handleManualArchive(task)}
-                                      title="Archive task"
-                                    >
-                                      <Archive className="w-4 h-4 sm:w-2.5 sm:h-2.5" />
-                                    </Button>
-                                    <Button variant="ghost" size="icon" className="h-11 w-11 sm:h-5 sm:w-5 text-gray-400 hover:text-red-400" onClick={() => handleDelete(task.id, task.title)}>
-                                      <Trash2 className="w-4 h-4 sm:w-2.5 sm:h-2.5" />
-                                    </Button>
-                                  </div>
-                                </div>
-                                {progress && (
-                                  <div className="mb-1.5">
-                                    <div className="flex items-center gap-1.5">
-                                      <span className={`text-[10px] font-bold ${getProgressColor(progress.count, progress.target, progress.targetMin)}`}>
-                                        {progress.count}/{progress.targetMin ? `${progress.targetMin}-${progress.target}` : progress.target}
-                                      </span>
-                                      <div className="flex-1 bg-white/5 rounded-full h-1">
-                                        <div
-                                          className={`h-1 rounded-full transition-all ${getProgressBarColor(progress.count, progress.target, progress.targetMin)}`}
-                                          style={{ width: `${Math.min(100, (progress.count / progress.target) * 100)}%` }}
-                                        />
-                                      </div>
-                                    </div>
-                                  </div>
-                                )}
-                                <div className="flex items-center gap-1 flex-wrap">
-                                  {task.due_date && (
-                                    <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium border ${isOverdue(task.due_date, task.col) ? 'bg-red-500/20 text-red-400 border-red-500/30' : isApproachingDeadline(task.due_date, task.col) ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-white/5 text-gray-400 border-white/10'}`}>
-                                      {isOverdue(task.due_date, task.col) ? <AlertTriangle className="w-2.5 h-2.5" /> : isApproachingDeadline(task.due_date, task.col) ? <AlertTriangle className="w-2.5 h-2.5" /> : <Calendar className="w-2.5 h-2.5" />}
-                                      {isOverdue(task.due_date, task.col) ? 'OVERDUE' : isApproachingDeadline(task.due_date, task.col) ? `DUE SOON · ${formatDate(task.due_date)}` : formatDate(task.due_date)}
-                                    </span>
-                                  )}
-                                  {!task.due_date && (
-                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border bg-white/5 text-gray-500 border-white/10">
-                                      No deadline
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                            );
-                          })}
-                          {colTasks.length === 0 && (
-                            <div className="text-center py-4 text-gray-600 text-[10px]">
-                              {isDragOver ? 'Drop here' : 'Empty'}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-                {(() => {
-                  const locUpcoming = locTasks.filter(t => t.col === 'finished' && defaultTitles.has(t.title));
-                  const seen = new Set<string>();
-                  const deduped = locUpcoming.filter(t => {
-                    if (seen.has(t.title)) return false;
-                    seen.add(t.title);
-                    return true;
-                  });
-                  if (deduped.length === 0) return null;
-                  return (
-                    <div className="mt-2 border border-cyan-500/15 rounded-lg bg-cyan-500/[0.02]">
-                      <div className="px-3 py-1.5 border-b border-cyan-500/10 flex items-center justify-between">
-                        <div className="flex items-center gap-1.5">
-                          <CalendarClock className="w-3 h-3 text-cyan-400" />
-                          <span className="text-[10px] font-semibold text-cyan-400">Upcoming Next Week</span>
-                        </div>
-                        <span className="text-[10px] text-cyan-400/60">{nextMondayDate}</span>
-                      </div>
-                      <div className="p-1.5 space-y-1">
-                        {deduped.map(t => (
-                          <div key={t.id} className="flex items-center gap-2 px-2 py-1 rounded bg-white/[0.02] border border-cyan-500/10">
-                            <Clock className="w-2.5 h-2.5 text-cyan-400/60 shrink-0" />
-                            <span className="text-[10px] text-gray-300 truncate">{t.title}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })()}
-                </div>
-                )}
-              </div>
-            );
-          })}
+            return renderLocationBlock(locId, locTasks, loc || null, locHasOverdue, locShowApproaching, locOverdue, locApproaching);
+          })
+          )}
 
         </div>
-      ) : selectedCompanyId && locations.length === 0 ? (
+      ) : locations.length === 0 ? (
         <div className="text-center py-10 text-gray-500 text-sm">
-          No locations for this company. Add locations in the GBP Management tab first.
+          {selectedCompanyId === 'all' ? 'No verified locations found across any companies.' : 'No locations for this company. Add locations in the GBP Management tab first.'}
         </div>
       ) : null}
 
 
-      {showArchive && selectedCompanyId && (
+      {showArchive && (
         <div className="mt-6 border border-white/5 rounded-xl bg-[#1a1a24]">
           <div className="px-4 py-3 border-b border-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
             <div className="flex items-center gap-2">
@@ -1367,9 +1423,12 @@ const KanbanBoard: React.FC = () => {
                   className="modal-select w-full bg-[#1a1a24] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-[#00e5cc]/50 focus:ring-1 focus:ring-[#00e5cc]/20 focus:outline-none transition-colors [&>option]:bg-[#1a1a24] [&>option]:text-white"
                 >
                   {locations.length === 0 && <option value="">No locations available</option>}
-                  {locations.map(l => (
-                    <option key={l.id} value={l.id}>{shortAddress(l.address)}</option>
-                  ))}
+                  {locations.map(l => {
+                    const compName = selectedCompanyId === 'all' ? companyMap.get(l.company_id)?.name : null;
+                    return (
+                      <option key={l.id} value={l.id}>{compName ? `${compName} — ` : ''}{shortAddress(l.address)}</option>
+                    );
+                  })}
                 </select>
               </div>
               <div>
