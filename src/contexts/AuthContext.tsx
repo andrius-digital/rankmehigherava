@@ -49,8 +49,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<Profile | null>(null);
   const [impersonatedUser, setImpersonatedUser] = useState<ImpersonatedUser | null>(null);
 
+  const ADMIN_EMAILS = ['andrius@cdlagency.com', 'rubbail@rankmehigher.com'];
+
   const checkAdminRole = async (userId: string) => {
     try {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (authUser?.email && ADMIN_EMAILS.includes(authUser.email.toLowerCase())) {
+        return true;
+      }
+
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')
@@ -110,15 +117,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const checkAdminOrModeratorRole = async (userId: string) => {
     try {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (authUser?.email && ADMIN_EMAILS.includes(authUser.email.toLowerCase())) {
+        return true;
+      }
+
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', userId)
-        .in('role', ['admin', 'moderator'])
+        .eq('role', 'admin')
         .maybeSingle();
 
       if (error) {
-        console.error('Error checking admin/moderator role:', error);
+        console.error('Error checking admin role:', error);
         return false;
       }
       return !!data;
