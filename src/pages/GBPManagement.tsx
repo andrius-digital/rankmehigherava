@@ -89,6 +89,75 @@ const EMPTY_LOCATION: Omit<GBPLocation, 'id'> = {
   address: '', email: '', phone: '', status: 'not_started', notes: '', googleProfileUrl: '',
 };
 
+const StatusBadge: React.FC<{
+  status: string;
+  locationId?: string;
+  editable?: boolean;
+  onStatusChange?: (locationId: string, newStatus: GBPLocation['status']) => void;
+}> = ({ status, locationId, editable = false, onStatusChange }) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const cfg = STATUS_CONFIG[status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.not_started;
+  const Icon = cfg.icon;
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  if (!editable || !locationId || !onStatusChange) {
+    return (
+      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[8px] font-orbitron font-medium uppercase tracking-widest border ${cfg.color}`}>
+        <Icon className="w-2.5 h-2.5" />
+        {cfg.label}
+      </span>
+    );
+  }
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={e => { e.stopPropagation(); setOpen(!open); }}
+        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[8px] font-orbitron font-medium uppercase tracking-widest border cursor-pointer hover:opacity-80 transition-opacity ${cfg.color}`}
+      >
+        <Icon className="w-2.5 h-2.5" />
+        {cfg.label}
+        <ChevronLeft className={`w-2 h-2 transition-transform ${open ? '-rotate-90' : 'rotate-0'}`} />
+      </button>
+      {open && (
+        <div className="absolute z-50 mt-1 left-0 w-36 bg-[#1a1a24] border border-white/10 rounded-lg shadow-xl shadow-black/40 overflow-hidden">
+          {(Object.keys(STATUS_CONFIG) as Array<keyof typeof STATUS_CONFIG>).map(key => {
+            const c = STATUS_CONFIG[key];
+            const Ic = c.icon;
+            const active = key === status;
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={e => {
+                  e.stopPropagation();
+                  if (key !== status) onStatusChange(locationId, key);
+                  setOpen(false);
+                }}
+                className={`w-full flex items-center gap-2 px-3 py-2 text-[9px] font-orbitron uppercase tracking-wider transition-colors text-left ${active ? 'bg-white/10 text-white' : 'text-gray-400 hover:bg-white/5 hover:text-white'}`}
+              >
+                <Ic className="w-3 h-3" />
+                {c.label}
+                {active && <CheckCircle2 className="w-3 h-3 text-cyan-400 ml-auto" />}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
 function pad(n: number): string { return n < 10 ? `0${n}` : `${n}`; }
 function toDateStr(d: Date): string { return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; }
 function getMonday(): string {
@@ -398,16 +467,14 @@ const GBPManagement: React.FC = () => {
   };
 
 
-  const StatusBadge = ({ status }: { status: string }) => {
-    const cfg = STATUS_CONFIG[status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.not_started;
-    const Icon = cfg.icon;
-    return (
-      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[8px] font-orbitron font-medium uppercase tracking-widest border ${cfg.color}`}>
-        <Icon className="w-2.5 h-2.5" />
-        {cfg.label}
-      </span>
-    );
-  };
+  const handleStatusChange = useCallback(async (locationId: string, newStatus: GBPLocation['status']) => {
+    try {
+      const { error } = await supabase.from('gbp_locations').update({ status: newStatus }).eq('id', locationId);
+      if (error) throw error;
+      toast.success(`Status updated to ${STATUS_CONFIG[newStatus].label}`);
+      fetchCompanies();
+    } catch { toast.error('Failed to update status'); }
+  }, [fetchCompanies]);
 
   const isFriday = new Date().getDay() === 5;
 
@@ -500,21 +567,32 @@ const GBPManagement: React.FC = () => {
           <div className="mb-6 space-y-3">
             <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2">
               {[
-                { label: 'Companies', value: stats.companies, icon: Building2, card: 'border-cyan-500/15 bg-cyan-500/[0.03] hover:border-cyan-500/30', iconCls: 'text-cyan-400/60', valCls: 'text-cyan-400' },
-                { label: 'Locations', value: stats.locations, icon: MapPin, card: 'border-cyan-500/15 bg-cyan-500/[0.03] hover:border-cyan-500/30', iconCls: 'text-cyan-400/60', valCls: 'text-cyan-400' },
-                { label: 'Verified', value: stats.verified, icon: CheckCircle2, card: 'border-emerald-500/15 bg-emerald-500/[0.03] hover:border-emerald-500/30', iconCls: 'text-emerald-400/60', valCls: 'text-emerald-400' },
-                { label: 'Pending', value: stats.pending, icon: Clock, card: 'border-amber-500/15 bg-amber-500/[0.03] hover:border-amber-500/30', iconCls: 'text-amber-400/60', valCls: 'text-amber-400' },
-                { label: 'Processing', value: stats.processing, icon: Loader2, card: 'border-blue-500/15 bg-blue-500/[0.03] hover:border-blue-500/30', iconCls: 'text-blue-400/60', valCls: 'text-blue-400' },
-                { label: 'Not Started', value: stats.notStarted, icon: Circle, card: 'border-slate-500/15 bg-slate-500/[0.03] hover:border-slate-500/30', iconCls: 'text-slate-400/60', valCls: 'text-slate-400' },
-              ].map(({ label, value, icon: Icon, card, iconCls, valCls }) => (
-                <div key={label} className={`rounded-xl border p-2.5 transition-all ${card}`}>
-                  <div className="flex items-center justify-between mb-1">
-                    <Icon className={`w-3 h-3 ${iconCls}`} />
-                    <span className={`font-orbitron text-base font-bold ${valCls}`}>{value}</span>
-                  </div>
-                  <p className="text-[7px] font-orbitron text-slate-500 uppercase tracking-widest">{label}</p>
-                </div>
-              ))}
+                { label: 'Companies', value: stats.companies, icon: Building2, filterKey: null, card: 'border-cyan-500/15 bg-cyan-500/[0.03] hover:border-cyan-500/30', activeBorder: '', iconCls: 'text-cyan-400/60', valCls: 'text-cyan-400' },
+                { label: 'Locations', value: stats.locations, icon: MapPin, filterKey: null, card: 'border-cyan-500/15 bg-cyan-500/[0.03] hover:border-cyan-500/30', activeBorder: '', iconCls: 'text-cyan-400/60', valCls: 'text-cyan-400' },
+                { label: 'Verified', value: stats.verified, icon: CheckCircle2, filterKey: 'verified', card: 'border-emerald-500/15 bg-emerald-500/[0.03] hover:border-emerald-500/30', activeBorder: 'ring-2 ring-emerald-400/60 border-emerald-400/60', iconCls: 'text-emerald-400/60', valCls: 'text-emerald-400' },
+                { label: 'Pending', value: stats.pending, icon: Clock, filterKey: 'pending', card: 'border-amber-500/15 bg-amber-500/[0.03] hover:border-amber-500/30', activeBorder: 'ring-2 ring-amber-400/60 border-amber-400/60', iconCls: 'text-amber-400/60', valCls: 'text-amber-400' },
+                { label: 'Processing', value: stats.processing, icon: Loader2, filterKey: 'processing', card: 'border-blue-500/15 bg-blue-500/[0.03] hover:border-blue-500/30', activeBorder: 'ring-2 ring-blue-400/60 border-blue-400/60', iconCls: 'text-blue-400/60', valCls: 'text-blue-400' },
+                { label: 'Not Started', value: stats.notStarted, icon: Circle, filterKey: 'not_started', card: 'border-slate-500/15 bg-slate-500/[0.03] hover:border-slate-500/30', activeBorder: 'ring-2 ring-slate-400/60 border-slate-400/60', iconCls: 'text-slate-400/60', valCls: 'text-slate-400' },
+              ].map(({ label, value, icon: Icon, filterKey, card, activeBorder, iconCls, valCls }) => {
+                const isActive = filterKey !== null && statusFilter === filterKey;
+                return (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => {
+                      if (filterKey === null) return;
+                      setStatusFilter(prev => prev === filterKey ? 'all' : filterKey);
+                    }}
+                    className={`rounded-xl border p-2.5 transition-all text-left ${card} ${isActive ? activeBorder : ''} ${filterKey !== null ? 'cursor-pointer' : 'cursor-default'}`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <Icon className={`w-3 h-3 ${iconCls}`} />
+                      <span className={`font-orbitron text-base font-bold ${valCls}`}>{value}</span>
+                    </div>
+                    <p className="text-[7px] font-orbitron text-slate-500 uppercase tracking-widest">{label}</p>
+                  </button>
+                );
+              })}
             </div>
 
             {stats.locations > 0 && (
@@ -756,7 +834,7 @@ const GBPManagement: React.FC = () => {
                             <td className="px-4 py-2 whitespace-nowrap">
                               <span className="text-muted-foreground text-xs">{loc.phone || '—'}</span>
                             </td>
-                            <td className="px-4 py-2 whitespace-nowrap"><StatusBadge status={loc.status} /></td>
+                            <td className="px-4 py-2 whitespace-nowrap"><StatusBadge status={loc.status} locationId={loc.id} editable onStatusChange={handleStatusChange} /></td>
                             <td className="px-4 py-2 whitespace-nowrap">
                               <button onClick={() => openTasksSummary(loc)} className="hover:opacity-80 transition-opacity"><TasksIndicator loc={loc} /></button>
                             </td>
@@ -811,7 +889,7 @@ const GBPManagement: React.FC = () => {
                           </div>
                         </div>
                         <div className="flex items-center flex-wrap gap-1.5">
-                          <StatusBadge status={loc.status} />
+                          <StatusBadge status={loc.status} locationId={loc.id} editable onStatusChange={handleStatusChange} />
                           <button onClick={() => openTasksSummary(loc)} className="hover:opacity-80 transition-opacity"><TasksIndicator loc={loc} /></button>
                           {loc.phone && <span className="text-[8px] font-orbitron text-slate-500">{loc.phone}</span>}
                         </div>
