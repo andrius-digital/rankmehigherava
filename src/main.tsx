@@ -52,13 +52,7 @@ try {
     </React.StrictMode>
   );
 
-  // If prerendered HTML exists, hydrate instead of full render for faster interactivity
-  if (rootElement.hasChildNodes()) {
-    const { hydrateRoot } = await import("react-dom/client");
-    hydrateRoot(rootElement, app);
-  } else {
-    createRoot(rootElement).render(app);
-  }
+  createRoot(rootElement).render(app);
 } catch (error) {
   console.error("Failed to render app:", error);
   document.body.innerHTML = `
