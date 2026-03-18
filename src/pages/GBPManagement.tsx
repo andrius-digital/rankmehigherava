@@ -1,14 +1,13 @@
-import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef, lazy, Suspense } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import {
   MapPin, Search, Plus, Pencil, Trash2,
-  CheckCircle2, Clock, FileWarning, Circle, AlertTriangle,
-  ChevronLeft, ChevronDown, ChevronRight, X, Phone, Mail, Building2, Loader2,
-  ClipboardList, Hash, Image, MessageSquare, Star, LinkIcon, StickyNote, Compass, Activity,
+  CheckCircle2, Clock, Circle, AlertTriangle,
+  ChevronLeft, ChevronRight, X, Phone, Building2, Loader2,
+  ClipboardList, Hash, Image, MessageSquare, Star, LinkIcon, StickyNote, Activity,
   Layout, RefreshCw
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -106,8 +105,6 @@ const GBPManagement: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
-
   const [companyModalOpen, setCompanyModalOpen] = useState(false);
   const [editingCompanyId, setEditingCompanyId] = useState<string | null>(null);
   const [companyName, setCompanyName] = useState('');
@@ -129,6 +126,15 @@ const GBPManagement: React.FC = () => {
   const [notesLocationAddress, setNotesLocationAddress] = useState('');
   const [notesText, setNotesText] = useState('');
   const [activityLogOpen, setActivityLogOpen] = useState(false);
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
+  const companyScrollRef = useRef<HTMLDivElement>(null);
+
+  const scrollLeft = (ref: React.RefObject<HTMLDivElement>) => {
+    if (ref.current) ref.current.scrollBy({ left: -320, behavior: 'smooth' });
+  };
+  const scrollRight = (ref: React.RefObject<HTMLDivElement>) => {
+    if (ref.current) ref.current.scrollBy({ left: 320, behavior: 'smooth' });
+  };
 
   const fetchCompanies = useCallback(async () => {
     try {
@@ -248,14 +254,6 @@ const GBPManagement: React.FC = () => {
       })
       .filter(Boolean) as GBPCompany[];
   }, [companies, searchQuery, statusFilter]);
-
-  const toggleExpand = (id: string) => {
-    setExpandedIds(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      return next;
-    });
-  };
 
   const getCompanyStatusSummary = (locs: GBPLocation[]) => {
     const v = locs.filter(l => l.status === 'verified').length;
@@ -595,152 +593,236 @@ const GBPManagement: React.FC = () => {
             </div>
           ) : filteredCompanies.length === 0 ? (
             <div className="text-center py-20 text-slate-500 font-orbitron text-xs">No companies found</div>
-          ) : (
-            <div className="rounded-xl border border-white/[0.06] overflow-hidden divide-y divide-white/[0.04]">
-              {filteredCompanies.map(company => {
-                const isExpanded = expandedIds.has(company.id);
-                const summary = getCompanyStatusSummary(company.locations);
-                const statusDots = getCompanyStatusDots(company.locations);
-                return (
-                  <div key={company.id} id={`company-${company.id}`} className={`transition-all ${isExpanded ? 'bg-card/40' : 'bg-transparent hover:bg-white/[0.02]'}`}>
-                    <div
-                      className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors"
-                      onClick={() => toggleExpand(company.id)}
-                    >
-                      <ChevronRight className={`w-3 h-3 text-slate-600 shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`} />
-                      {isFriday && companyHasIncomplete(company) && <AlertTriangle className="w-2.5 h-2.5 text-red-400 animate-blink shrink-0" />}
-                      <span className="font-orbitron font-bold text-[11px] text-foreground flex-1 truncate">{company.name}</span>
-                      <div className="hidden sm:flex items-center gap-1.5">
-                        {statusDots.map(s => (
-                          <div key={s.key} className="flex items-center gap-0.5">
-                            <div className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
-                            <span className="text-[8px] font-orbitron text-slate-500 tabular-nums">{s.count}</span>
+          ) : (<>
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/30 flex items-center justify-center">
+                    <Building2 className="w-4 h-4 text-cyan-400" />
+                  </div>
+                  <h2 className="font-orbitron text-lg font-bold text-foreground">Companies</h2>
+                  <span className="bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 font-orbitron text-[8px] px-1.5 py-0.5 rounded-md">
+                    {filteredCompanies.length}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    aria-label="Scroll companies left"
+                    onClick={() => scrollLeft(companyScrollRef)}
+                    className="p-1.5 rounded-lg bg-card/40 border border-cyan-500/20 hover:border-cyan-500/50 transition-colors"
+                  >
+                    <ChevronLeft className="w-4 h-4 text-cyan-400" />
+                  </button>
+                  <button
+                    aria-label="Scroll companies right"
+                    onClick={() => scrollRight(companyScrollRef)}
+                    className="p-1.5 rounded-lg bg-card/40 border border-cyan-500/20 hover:border-cyan-500/50 transition-colors"
+                  >
+                    <ChevronRight className="w-4 h-4 text-cyan-400" />
+                  </button>
+                </div>
+              </div>
+
+              <div
+                ref={companyScrollRef}
+                className="flex gap-4 overflow-x-auto pt-4 pl-4 pb-2 -ml-4 -mt-2 scrollbar-hide snap-x snap-mandatory"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              >
+                {filteredCompanies.map(company => {
+                  const summary = getCompanyStatusSummary(company.locations);
+                  const statusDots = getCompanyStatusDots(company.locations);
+                  const isSelected = selectedCompanyId === company.id;
+                  return (
+                    <div key={company.id} id={`company-${company.id}`} className={`relative group flex-shrink-0 w-[280px] snap-start ${isSelected ? 'ring-2 ring-cyan-400/60 ring-offset-2 ring-offset-background rounded-xl' : ''}`}>
+                      {isFriday && companyHasIncomplete(company) && (
+                        <div className="absolute -top-2 -left-2 z-20 min-w-[20px] h-5 px-1.5 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center animate-pulse shadow-lg shadow-red-500/50 border-2 border-background">
+                          !
+                        </div>
+                      )}
+                      <div
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`View ${company.name} locations`}
+                        onClick={() => setSelectedCompanyId(isSelected ? null : company.id)}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedCompanyId(isSelected ? null : company.id); } }}
+                        className={`block h-full bg-gradient-to-br from-card/40 via-card/20 to-transparent backdrop-blur-xl border rounded-xl p-4 hover:border-cyan-400/60 transition-all duration-200 hover:shadow-lg hover:shadow-cyan-500/20 cursor-pointer ${isSelected ? 'border-cyan-400/60 shadow-lg shadow-cyan-500/20' : 'border-cyan-500/30'}`}
+                      >
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/30 flex items-center justify-center">
+                            <MapPin className="w-5 h-5 text-cyan-400" />
                           </div>
-                        ))}
+                          <div className="flex-1 min-w-0">
+                            <span className={`text-[8px] font-orbitron font-medium uppercase tracking-widest ${summary.color}`}>{summary.label}</span>
+                            <h3 className="font-orbitron font-bold text-sm text-foreground truncate">
+                              {company.name}
+                            </h3>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap gap-1 mb-3">
+                          {statusDots.map(s => (
+                            <span key={s.key} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-white/5 text-[8px] font-orbitron text-muted-foreground">
+                              <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
+                              {s.count} {s.key}
+                            </span>
+                          ))}
+                        </div>
+
+                        <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <MapPin className="w-2.5 h-2.5 text-cyan-400" />
+                            {company.locations.length} location{company.locations.length !== 1 ? 's' : ''}
+                          </span>
+                          <span className="flex items-center gap-1 text-cyan-400 font-orbitron font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                            View <ChevronRight className="w-2.5 h-2.5" />
+                          </span>
+                        </div>
                       </div>
-                      <span className="sm:hidden text-[8px] font-orbitron text-slate-500">{company.locations.length}</span>
-                      <span className={`text-[8px] font-orbitron font-medium ${summary.color} hidden sm:inline ml-1`}>{summary.label}</span>
-                      <div className="flex items-center ml-1 opacity-0 group-hover:opacity-100" onClick={e => e.stopPropagation()}>
-                        <button className="p-1 rounded hover:bg-white/[0.05] text-slate-600 hover:text-white transition-all" onClick={() => openEditCompany(company)}>
-                          <Pencil className="w-2.5 h-2.5" />
+                      <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          aria-label={`Edit ${company.name}`}
+                          onClick={(e) => { e.stopPropagation(); openEditCompany(company); }}
+                          className="p-1.5 rounded-lg bg-white/[0.05] border border-white/[0.08] hover:bg-white/[0.1] transition-colors"
+                        >
+                          <Pencil className="w-3 h-3 text-slate-400" />
                         </button>
-                        <button className="p-1 rounded hover:bg-red-500/10 text-slate-600 hover:text-red-400 transition-all" onClick={() => handleDeleteCompany(company.id, company.name)}>
-                          <Trash2 className="w-2.5 h-2.5" />
+                        <button
+                          aria-label={`Delete ${company.name}`}
+                          onClick={(e) => { e.stopPropagation(); handleDeleteCompany(company.id, company.name); }}
+                          className="p-1.5 rounded-lg bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition-colors"
+                        >
+                          <Trash2 className="w-3 h-3 text-red-400" />
                         </button>
                       </div>
                     </div>
-
-                    {isExpanded && (
-                      <div className="border-t border-cyan-500/10 bg-white/[0.01]">
-                        <div className="hidden sm:block overflow-x-auto">
-                          <table className="w-full">
-                            <thead>
-                              <tr className="border-b border-white/[0.04]">
-                                <th className="text-left px-3 py-1.5 text-[7px] font-orbitron text-slate-500 uppercase tracking-widest">Address</th>
-                                <th className="text-left px-3 py-1.5 text-[7px] font-orbitron text-slate-500 uppercase tracking-widest hidden md:table-cell">Email</th>
-                                <th className="text-left px-3 py-1.5 text-[7px] font-orbitron text-slate-500 uppercase tracking-widest">Phone</th>
-                                <th className="text-left px-3 py-1.5 text-[7px] font-orbitron text-slate-500 uppercase tracking-widest">Status</th>
-                                <th className="text-left px-3 py-1.5 text-[7px] font-orbitron text-slate-500 uppercase tracking-widest">Tasks</th>
-                                <th className="text-left px-3 py-1.5 text-[7px] font-orbitron text-slate-500 uppercase tracking-widest hidden sm:table-cell">Notes</th>
-                                <th className="px-2 py-1.5 w-14"></th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {company.locations.map(loc => (
-                                <tr key={loc.id} className="border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors">
-                                  <td className="px-3 py-1.5 whitespace-nowrap">
-                                    {loc.googleProfileUrl ? (
-                                      <a href={loc.googleProfileUrl} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 text-[11px] flex items-center gap-1 transition-colors">
-                                        {loc.address || '—'}
-                                        <LinkIcon className="w-2.5 h-2.5 opacity-50" />
-                                      </a>
-                                    ) : (
-                                      <span className="text-foreground text-[11px]">{loc.address || '—'}</span>
-                                    )}
-                                  </td>
-                                  <td className="px-3 py-1.5 whitespace-nowrap hidden md:table-cell">
-                                    <span className="text-muted-foreground text-[11px]">{loc.email || '—'}</span>
-                                  </td>
-                                  <td className="px-3 py-1.5 whitespace-nowrap">
-                                    <span className="text-muted-foreground text-[11px]">{loc.phone || '—'}</span>
-                                  </td>
-                                  <td className="px-3 py-1.5 whitespace-nowrap"><StatusBadge status={loc.status} /></td>
-                                  <td className="px-3 py-1.5 whitespace-nowrap">
-                                    <button onClick={() => openTasksSummary(loc)} className="hover:opacity-80 transition-opacity"><TasksIndicator loc={loc} /></button>
-                                  </td>
-                                  <td className="px-3 py-1.5 whitespace-nowrap hidden sm:table-cell">
-                                    <button onClick={() => openNotesModal(loc)} className="text-left hover:opacity-80 transition-opacity group">
-                                      {loc.notes ? (
-                                        <span className="text-[11px] text-muted-foreground italic group-hover:text-foreground">{loc.notes}</span>
-                                      ) : (
-                                        <span className="text-slate-700 text-[11px] group-hover:text-slate-500">+ note</span>
-                                      )}
-                                    </button>
-                                  </td>
-                                  <td className="px-2 py-1.5 whitespace-nowrap">
-                                    <div className="flex items-center">
-                                      <button className="p-1 rounded hover:bg-white/[0.05] text-slate-600 hover:text-white transition-all" onClick={() => openEditLocation(company.id, loc)}>
-                                        <Pencil className="w-2.5 h-2.5" />
-                                      </button>
-                                      <button className="p-1 rounded hover:bg-red-500/10 text-slate-600 hover:text-red-400 transition-all" onClick={() => handleDeleteLocation(company.id, loc.id)}>
-                                        <Trash2 className="w-2.5 h-2.5" />
-                                      </button>
-                                    </div>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                        <div className="sm:hidden divide-y divide-white/[0.03]">
-                          {company.locations.map(loc => (
-                            <div key={loc.id} className="px-3 py-2 space-y-1.5">
-                              <div className="flex items-start justify-between gap-2">
-                                <div className="min-w-0 flex-1">
-                                  {loc.googleProfileUrl ? (
-                                    <a href={loc.googleProfileUrl} target="_blank" rel="noopener noreferrer" className="text-cyan-400 text-xs font-medium truncate hover:text-cyan-300 flex items-center gap-1 transition-colors">
-                                      {loc.address || '—'} <LinkIcon className="w-2.5 h-2.5 opacity-50" />
-                                    </a>
-                                  ) : (
-                                    <span className="text-foreground text-xs font-medium truncate block">{loc.address || '—'}</span>
-                                  )}
-                                </div>
-                                <div className="flex items-center shrink-0" onClick={e => e.stopPropagation()}>
-                                  <button className="p-1.5 rounded hover:bg-white/[0.05] text-slate-600 hover:text-slate-300 transition-all" onClick={() => openNotesModal(loc)} title="Notes">
-                                    <StickyNote className="w-3.5 h-3.5" />
-                                  </button>
-                                  <button className="p-1.5 rounded hover:bg-white/[0.05] text-slate-600 hover:text-white transition-all" onClick={() => openEditLocation(company.id, loc)}>
-                                    <Pencil className="w-3.5 h-3.5" />
-                                  </button>
-                                  <button className="p-1.5 rounded hover:bg-red-500/10 text-slate-600 hover:text-red-400 transition-all" onClick={() => handleDeleteLocation(company.id, loc.id)}>
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </button>
-                                </div>
-                              </div>
-                              <div className="flex items-center flex-wrap gap-1.5">
-                                <StatusBadge status={loc.status} />
-                                <button onClick={() => openTasksSummary(loc)} className="hover:opacity-80 transition-opacity"><TasksIndicator loc={loc} /></button>
-                                {loc.phone && (
-                                  <span className="text-[8px] font-orbitron text-slate-500">{loc.phone}</span>
-                                )}
-                              </div>
-                              {loc.notes && (
-                                <p className="text-[11px] text-muted-foreground italic">{loc.notes}</p>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                        <div className="px-3 py-1.5 border-t border-white/[0.04]">
-                          <button className="min-h-[36px] text-slate-500 hover:text-cyan-400 text-[10px] font-orbitron flex items-center gap-1 transition-colors" onClick={() => openAddLocation(company.id)}>
-                            <Plus className="w-2.5 h-2.5" /> Add Location
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
+
+            {selectedCompanyId && (() => {
+              const company = filteredCompanies.find(c => c.id === selectedCompanyId);
+              if (!company) return null;
+              return (
+                <div className="rounded-xl border border-cyan-500/20 bg-card/40 overflow-hidden mb-6">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-cyan-500/10">
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-cyan-400" />
+                      <h3 className="font-orbitron font-bold text-sm text-foreground">{company.name}</h3>
+                      <span className="text-[8px] font-orbitron text-slate-500">{company.locations.length} location{company.locations.length !== 1 ? 's' : ''}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => openAddLocation(company.id)}
+                        className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-cyan-500/20 bg-cyan-500/[0.06] hover:bg-cyan-500/[0.12] hover:border-cyan-500/30 transition-all font-orbitron text-[8px] uppercase tracking-widest text-cyan-400"
+                      >
+                        <Plus className="w-2.5 h-2.5" /> Add Location
+                      </button>
+                      <button onClick={() => setSelectedCompanyId(null)} className="p-1 rounded-lg hover:bg-white/[0.05] text-slate-500 hover:text-white transition-all">
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="hidden sm:block overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-white/[0.04]">
+                          <th className="text-left px-4 py-2 text-[7px] font-orbitron text-slate-500 uppercase tracking-widest">Address</th>
+                          <th className="text-left px-4 py-2 text-[7px] font-orbitron text-slate-500 uppercase tracking-widest hidden md:table-cell">Email</th>
+                          <th className="text-left px-4 py-2 text-[7px] font-orbitron text-slate-500 uppercase tracking-widest">Phone</th>
+                          <th className="text-left px-4 py-2 text-[7px] font-orbitron text-slate-500 uppercase tracking-widest">Status</th>
+                          <th className="text-left px-4 py-2 text-[7px] font-orbitron text-slate-500 uppercase tracking-widest">Tasks</th>
+                          <th className="text-left px-4 py-2 text-[7px] font-orbitron text-slate-500 uppercase tracking-widest hidden lg:table-cell">Notes</th>
+                          <th className="px-3 py-2 w-16"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {company.locations.map(loc => (
+                          <tr key={loc.id} className="border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors">
+                            <td className="px-4 py-2 whitespace-nowrap">
+                              {loc.googleProfileUrl ? (
+                                <a href={loc.googleProfileUrl} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 text-xs flex items-center gap-1 transition-colors">
+                                  {loc.address || '—'}
+                                  <LinkIcon className="w-2.5 h-2.5 opacity-50" />
+                                </a>
+                              ) : (
+                                <span className="text-foreground text-xs">{loc.address || '—'}</span>
+                              )}
+                            </td>
+                            <td className="px-4 py-2 whitespace-nowrap hidden md:table-cell">
+                              <span className="text-muted-foreground text-xs">{loc.email || '—'}</span>
+                            </td>
+                            <td className="px-4 py-2 whitespace-nowrap">
+                              <span className="text-muted-foreground text-xs">{loc.phone || '—'}</span>
+                            </td>
+                            <td className="px-4 py-2 whitespace-nowrap"><StatusBadge status={loc.status} /></td>
+                            <td className="px-4 py-2 whitespace-nowrap">
+                              <button onClick={() => openTasksSummary(loc)} className="hover:opacity-80 transition-opacity"><TasksIndicator loc={loc} /></button>
+                            </td>
+                            <td className="px-4 py-2 whitespace-nowrap hidden lg:table-cell">
+                              <button onClick={() => openNotesModal(loc)} className="text-left hover:opacity-80 transition-opacity group">
+                                {loc.notes ? (
+                                  <span className="text-xs text-muted-foreground italic group-hover:text-foreground">{loc.notes}</span>
+                                ) : (
+                                  <span className="text-slate-700 text-xs group-hover:text-slate-500">+ note</span>
+                                )}
+                              </button>
+                            </td>
+                            <td className="px-3 py-2 whitespace-nowrap">
+                              <div className="flex items-center gap-0.5">
+                                <button className="p-1 rounded hover:bg-white/[0.05] text-slate-600 hover:text-white transition-all" onClick={() => openEditLocation(company.id, loc)}>
+                                  <Pencil className="w-3 h-3" />
+                                </button>
+                                <button className="p-1 rounded hover:bg-red-500/10 text-slate-600 hover:text-red-400 transition-all" onClick={() => handleDeleteLocation(company.id, loc.id)}>
+                                  <Trash2 className="w-3 h-3" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="sm:hidden divide-y divide-white/[0.03]">
+                    {company.locations.map(loc => (
+                      <div key={loc.id} className="px-4 py-2.5 space-y-1.5">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            {loc.googleProfileUrl ? (
+                              <a href={loc.googleProfileUrl} target="_blank" rel="noopener noreferrer" className="text-cyan-400 text-xs font-medium truncate hover:text-cyan-300 flex items-center gap-1 transition-colors">
+                                {loc.address || '—'} <LinkIcon className="w-2.5 h-2.5 opacity-50" />
+                              </a>
+                            ) : (
+                              <span className="text-foreground text-xs font-medium truncate block">{loc.address || '—'}</span>
+                            )}
+                          </div>
+                          <div className="flex items-center shrink-0">
+                            <button className="p-1.5 rounded hover:bg-white/[0.05] text-slate-600 hover:text-slate-300 transition-all" onClick={() => openNotesModal(loc)}>
+                              <StickyNote className="w-3.5 h-3.5" />
+                            </button>
+                            <button className="p-1.5 rounded hover:bg-white/[0.05] text-slate-600 hover:text-white transition-all" onClick={() => openEditLocation(company.id, loc)}>
+                              <Pencil className="w-3.5 h-3.5" />
+                            </button>
+                            <button className="p-1.5 rounded hover:bg-red-500/10 text-slate-600 hover:text-red-400 transition-all" onClick={() => handleDeleteLocation(company.id, loc.id)}>
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                        <div className="flex items-center flex-wrap gap-1.5">
+                          <StatusBadge status={loc.status} />
+                          <button onClick={() => openTasksSummary(loc)} className="hover:opacity-80 transition-opacity"><TasksIndicator loc={loc} /></button>
+                          {loc.phone && <span className="text-[8px] font-orbitron text-slate-500">{loc.phone}</span>}
+                        </div>
+                        {loc.notes && <p className="text-xs text-muted-foreground italic">{loc.notes}</p>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
+          </>
           )}
           </>)}
 
@@ -787,7 +869,7 @@ const GBPManagement: React.FC = () => {
                         onClick={() => {
                           setSearchQuery('');
                           setStatusFilter('all');
-                          setExpandedIds(prev => { const next = new Set(prev); next.add(group.companyId); return next; });
+                          setSelectedCompanyId(group.companyId);
                           setActionRequiredModalOpen(false);
                           setTimeout(() => {
                             document.getElementById(`company-${group.companyId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
