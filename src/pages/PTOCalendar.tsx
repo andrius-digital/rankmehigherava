@@ -103,6 +103,11 @@ const PTOCalendar = () => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "PTO added!" });
+      fetch("/api/pto/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ member_name: form.member_name, start_date: selStart, end_date: selEnd, type: form.type, notes: form.notes || null }),
+      }).catch(() => {});
       setForm({ member_name: "", type: "vacation", notes: "" });
       cancelRange();
       await loadEntries();

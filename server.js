@@ -489,6 +489,112 @@ app.post('/api/script/approve', (req, res) => {
   res.json({ success: true, totalApproved: knowledge.approvedScripts.length });
 });
 
+// PTO Telegram Notifications
+const PTO_CHAT_ID = '-1003861077048';
+
+const PTO_TYPE_EMOJI = {
+  vacation: '🏖️',
+  sick: '🤒',
+  personal: '👤',
+  holiday: '🎉',
+  other: '📋',
+};
+
+async function sendPTOTelegram(text) {
+  const botToken = process.env.TELEGRAM_BOT_TOKEN;
+  if (!botToken) { console.error('TELEGRAM_BOT_TOKEN not set'); return false; }
+  try {
+    const resp = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: PTO_CHAT_ID, text, parse_mode: 'HTML' }),
+    });
+    const result = await resp.json();
+    if (!result.ok) console.error('Telegram PTO error:', result);
+    return result.ok;
+  } catch (err) {
+    console.error('Telegram PTO send failed:', err);
+    return false;
+  }
+}
+
+app.post('/api/pto/notify', async (req, res) => {
+  try {
+    const { member_name, start_date, end_date, type, notes } = req.body;
+    if (!member_name || !start_date || !end_date) {
+      return res.status(400).json({ error: 'Missing fields' });
+    }
+    const emoji = PTO_TYPE_EMOJI[type] || '📋';
+    const startFmt = new Date(start_date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+    const endFmt = new Date(end_date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+    const days = Math.round((new Date(end_date) - new Date(start_date)) / 86400000) + 1;
+    const typeLabel = (type || 'other').charAt(0).toUpperCase() + (type || 'other').slice(1);
+
+    let msg = `${emoji} <b>New PTO Scheduled</b>\n\n`;
+    msg += `👤 <b>${member_name}</b>\n`;
+    msg += `📅 ${startFmt}`;
+    if (start_date !== end_date) msg += ` → ${endFmt}`;
+    msg += ` (${days} day${days > 1 ? 's' : ''})\n`;
+    msg += `📋 Type: ${typeLabel}\n`;
+    if (notes) msg += `📝 Notes: ${notes}\n`;
+
+    await sendPTOTelegram(msg);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('PTO notify error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/pto/reminders', async (req, res) => {
+  try {
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabaseUrl = 'https://vyviopkpwcsdrfpdwzpa.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5dmlvcGtwd2NzZHJmcGR3enBhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY5MDI0NjUsImV4cCI6MjA4MjQ3ODQ2NX0.-0fLKWyJ39io9kTmV0Y9vg_sCeKBHy5Ct4c2FgEqHOw';
+    const sb = createClient(supabaseUrl, supabaseKey);
+
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+    const { data: entries, error } = await sb
+      .from('pto_entries')
+      .select('*')
+      .eq('start_date', tomorrowStr);
+
+    if (error) {
+      console.error('PTO reminders query error:', error);
+      return res.status(500).json({ error: error.message });
+    }
+
+    if (!entries || entries.length === 0) {
+      return res.json({ success: true, reminders_sent: 0, message: 'No PTO starting tomorrow' });
+    }
+
+    let sent = 0;
+    for (const e of entries) {
+      const emoji = PTO_TYPE_EMOJI[e.type] || '📋';
+      const endFmt = new Date(e.end_date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+      const days = Math.round((new Date(e.end_date) - new Date(e.start_date)) / 86400000) + 1;
+      const typeLabel = (e.type || 'other').charAt(0).toUpperCase() + (e.type || 'other').slice(1);
+
+      let msg = `⏰ <b>PTO Reminder — Starting Tomorrow</b>\n\n`;
+      msg += `👤 <b>${e.member_name}</b>\n`;
+      msg += `${emoji} ${typeLabel} · ${days} day${days > 1 ? 's' : ''}\n`;
+      msg += `📅 Through ${endFmt}\n`;
+      if (e.notes) msg += `📝 ${e.notes}\n`;
+
+      const ok = await sendPTOTelegram(msg);
+      if (ok) sent++;
+    }
+
+    res.json({ success: true, reminders_sent: sent, total: entries.length });
+  } catch (err) {
+    console.error('PTO reminders error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.use(express.static(join(__dirname, 'dist')));
 
 app.use((req, res) => {
@@ -497,4 +603,23 @@ app.use((req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
+
+  // Daily PTO reminder check — runs every hour, sends reminders at ~8 AM UTC
+  let lastReminderDate = '';
+  setInterval(async () => {
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+    const hour = now.getUTCHours();
+    if (hour >= 8 && hour < 9 && lastReminderDate !== todayStr) {
+      lastReminderDate = todayStr;
+      console.log('Running daily PTO reminder check...');
+      try {
+        const resp = await fetch(`http://localhost:${PORT}/api/pto/reminders`);
+        const result = await resp.json();
+        console.log('PTO reminders result:', result);
+      } catch (err) {
+        console.error('PTO reminder cron error:', err);
+      }
+    }
+  }, 60 * 60 * 1000);
 });
