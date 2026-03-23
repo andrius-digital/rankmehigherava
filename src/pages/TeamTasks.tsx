@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ArrowLeft, Plus, Users, ChevronDown, LayoutGrid } from 'lucide-react';
-import { Link } from 'react-router-dom';
+
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
@@ -49,7 +49,6 @@ const TeamTasks: React.FC = () => {
   const swipeStartX = useRef<number | null>(null);
 
   const teamSession = getTeamSession();
-  const backLink = teamSession ? '/team' : '/avaadminpanel';
 
   const viewableMembers = getViewableMembers();
   const viewingMember = members.find(m => m.id === viewingMemberId);
@@ -171,9 +170,20 @@ const TeamTasks: React.FC = () => {
         <div className="border-b border-white/10 bg-background/80 backdrop-blur-xl sticky top-0 z-50">
           <div className={`max-w-7xl mx-auto ${isMobile ? 'px-3 py-2' : 'px-4 lg:px-8 py-3'}`}>
             <div className="flex items-center gap-3">
-              <Link to={backLink} className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors">
+              <button
+                onClick={() => {
+                  if (isAdmin && !showAdminOverview) {
+                    setShowAdminOverview(true);
+                    setViewingMemberId(null);
+                    loadAllTasks();
+                  } else {
+                    window.location.href = teamSession ? '/team' : '/avaadminpanel';
+                  }
+                }}
+                className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors"
+              >
                 <ArrowLeft className="w-4 h-4" />
-              </Link>
+              </button>
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 <Users className="w-5 h-5 text-cyan-400 flex-shrink-0" />
                 <h1 className={`font-orbitron font-bold truncate ${isMobile ? 'text-sm' : 'text-base lg:text-lg'}`}>Team Tasks</h1>
