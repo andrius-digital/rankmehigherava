@@ -203,6 +203,7 @@ const ContentPortal = () => {
   const [showBulkAssign, setShowBulkAssign] = useState(false);
   const [expandedPipelineEditor, setExpandedPipelineEditor] = useState<string | null>(null);
   const [editingClientName, setEditingClientName] = useState(false);
+  const [editStatusFilter, setEditStatusFilter] = useState<EditStatus | null>(null);
 
 
   const persistManagers = (updated: VideoManager[]) => {
@@ -842,23 +843,76 @@ const ContentPortal = () => {
                 const done = allVids.filter(v => v.editStatus === "done").length;
                 const notStarted = allVids.filter(v => v.editStatus === "not-started").length;
                 if (allVids.length === 0) return null;
+
+                const statCards: { label: string; value: number; color: string; border: string; activeBorder: string; status: EditStatus }[] = [
+                  { label: "Not Started", value: notStarted, color: "text-gray-400", border: "border-gray-500/20", activeBorder: "border-gray-400 bg-gray-500/15", status: "not-started" },
+                  { label: "In Editing", value: editing, color: "text-yellow-400", border: "border-yellow-500/20", activeBorder: "border-yellow-400 bg-yellow-500/15", status: "editing" },
+                  { label: "In Review", value: review, color: "text-blue-400", border: "border-blue-500/20", activeBorder: "border-blue-400 bg-blue-500/15", status: "review" },
+                  { label: "Completed", value: done, color: "text-green-400", border: "border-green-500/20", activeBorder: "border-green-400 bg-green-500/15", status: "done" },
+                ];
+
+                const filtered = editStatusFilter ? allVids.filter(v => v.editStatus === editStatusFilter) : [];
+                const grouped = editStatusFilter ? filtered.reduce<Record<string, typeof filtered>>((acc, v) => {
+                  const key = v.editor || "Unassigned";
+                  if (!acc[key]) acc[key] = [];
+                  acc[key].push(v);
+                  return acc;
+                }, {}) : {};
+
                 return (
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-                    {[
-                      { label: "Not Started", value: notStarted, color: "text-gray-400", border: "border-gray-500/20" },
-                      { label: "In Editing", value: editing, color: "text-yellow-400", border: "border-yellow-500/20" },
-                      { label: "In Review", value: review, color: "text-blue-400", border: "border-blue-500/20" },
-                      { label: "Completed", value: done, color: "text-green-400", border: "border-green-500/20" },
-                    ].map(s => (
-                      <div key={s.label} className={`p-4 rounded-xl bg-white/5 border ${s.border}`}>
-                        <div className="flex items-center gap-2 mb-1">
-                          <Film className={`w-4 h-4 ${s.color}`} />
-                          <span className="text-[10px] text-muted-foreground uppercase font-orbitron">{s.label}</span>
+                  <>
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+                      {statCards.map(s => (
+                        <button
+                          key={s.label}
+                          onClick={() => setEditStatusFilter(editStatusFilter === s.status ? null : s.status)}
+                          className={`p-4 rounded-xl bg-white/5 border text-left transition-all hover:scale-[1.02] ${editStatusFilter === s.status ? s.activeBorder : s.border}`}
+                        >
+                          <div className="flex items-center gap-2 mb-1">
+                            <Film className={`w-4 h-4 ${s.color}`} />
+                            <span className="text-[10px] text-muted-foreground uppercase font-orbitron">{s.label}</span>
+                          </div>
+                          <p className={`text-xl font-black font-orbitron ${s.color}`}>{s.value}</p>
+                        </button>
+                      ))}
+                    </div>
+
+                    {editStatusFilter && (
+                      <div className="mb-6 bg-card/30 backdrop-blur-md border border-white/10 rounded-xl p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <h3 className="text-sm font-orbitron font-bold text-foreground">
+                            {editStatusLabel[editStatusFilter]} — {filtered.length} video{filtered.length !== 1 ? "s" : ""}
+                          </h3>
+                          <button onClick={() => setEditStatusFilter(null)} className="text-xs text-muted-foreground hover:text-foreground transition-colors">Close</button>
                         </div>
-                        <p className={`text-xl font-black font-orbitron ${s.color}`}>{s.value}</p>
+                        {Object.keys(grouped).length === 0 ? (
+                          <p className="text-xs text-muted-foreground">No videos</p>
+                        ) : (
+                          <div className="space-y-3">
+                            {Object.entries(grouped).sort(([a], [b]) => a === "Unassigned" ? 1 : b === "Unassigned" ? -1 : a.localeCompare(b)).map(([editor, vids]) => (
+                              <div key={editor}>
+                                <div className="flex items-center gap-2 mb-1.5">
+                                  <span className={`text-xs font-semibold ${editor === "Unassigned" ? "text-muted-foreground italic" : "text-cyan-400"}`}>{editor}</span>
+                                  <span className="text-[10px] text-muted-foreground">({vids.length})</span>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                                  {vids.map(v => (
+                                    <div key={v.id} className={`p-2.5 rounded-lg border ${editStatusColor[v.editStatus]} flex items-start justify-between gap-2`}>
+                                      <div className="min-w-0">
+                                        <p className="text-xs font-medium text-foreground truncate">{v.title}</p>
+                                        <p className="text-[10px] text-muted-foreground truncate">{v.clientName} · {v.shootName}</p>
+                                        <p className="text-[10px] text-muted-foreground">{v.contentType}</p>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    ))}
-                  </div>
+                    )}
+                  </>
                 );
               })()}
 
