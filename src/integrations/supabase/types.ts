@@ -901,6 +901,96 @@ export type Database = {
         }
         Relationships: []
       }
+      team_portal_members: {
+        Row: {
+          id: string
+          user_id: string
+          name: string
+          email: string
+          role: string
+          permissions: string[]
+          is_manager: boolean
+          managed_member_ids: string[]
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          name: string
+          email: string
+          role?: string
+          permissions?: string[]
+          is_manager?: boolean
+          managed_member_ids?: string[]
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          name?: string
+          email?: string
+          role?: string
+          permissions?: string[]
+          is_manager?: boolean
+          managed_member_ids?: string[]
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      team_tasks: {
+        Row: {
+          id: string
+          title: string
+          description: string
+          status: string
+          priority: string
+          due_date: string | null
+          assignee_id: string
+          assignee_name: string
+          created_by: string
+          labels: string[]
+          position: number
+          notes: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          description?: string
+          status?: string
+          priority?: string
+          due_date?: string | null
+          assignee_id: string
+          assignee_name?: string
+          created_by?: string
+          labels?: string[]
+          position?: number
+          notes?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          description?: string
+          status?: string
+          priority?: string
+          due_date?: string | null
+          assignee_id?: string
+          assignee_name?: string
+          created_by?: string
+          labels?: string[]
+          position?: number
+          notes?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       work_days: {
         Row: {
           client_id: string

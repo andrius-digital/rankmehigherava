@@ -58,6 +58,7 @@ const TeamPortal = lazy(() => import("./pages/TeamPortal"));
 const ClientProfile = lazy(() => import("./pages/ClientProfile"));
 const GBPManagement = lazy(() => import("./pages/GBPManagement"));
 const PTOCalendar = lazy(() => import("./pages/PTOCalendar"));
+const TeamTasks = lazy(() => import("./pages/TeamTasks"));
 
 // AVA by Rank Me Higher Pages - lazy loaded
 const SEOSpiderDashboard = lazy(() => import("./pages/seo-spider/Dashboard"));
@@ -231,6 +232,11 @@ const App = () => (
                 <Route path="/pto-calendar" element={
                   <ProtectedRoute requireAdmin teamPermission="pto-calendar">
                     <PTOCalendar />
+                  </ProtectedRoute>
+                } />
+                <Route path="/team-tasks" element={
+                  <ProtectedRoute teamPermission="team-tasks">
+                    <TeamTasks />
                   </ProtectedRoute>
                 } />
                 <Route path="/team-access" element={

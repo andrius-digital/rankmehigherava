@@ -25,7 +25,8 @@ import {
     Archive,
     Shield,
     MapPin,
-    Palmtree
+    Palmtree,
+    ClipboardList
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -97,6 +98,14 @@ const AgencyDashboard: React.FC = () => {
                     icon: Palmtree,
                     description: 'Paid time off tracker',
                     href: '/pto-calendar',
+                    color: 'cyan' as const
+                },
+                {
+                    id: 'team-tasks',
+                    title: 'Team Tasks',
+                    icon: ClipboardList,
+                    description: 'Kanban task boards',
+                    href: '/team-tasks',
                     color: 'cyan' as const
                 },
                 {

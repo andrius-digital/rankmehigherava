@@ -3,7 +3,7 @@ import { Helmet } from "react-helmet-async";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft, ArrowRight, LogOut, User, Shield, Lock, Mail,
-  Clapperboard, UserCheck, UsersRound, Palette, CreditCard, Clock, Phone, Loader2, LogIn, MapPin, Palmtree
+  Clapperboard, UserCheck, UsersRound, Palette, CreditCard, Clock, Phone, Loader2, LogIn, MapPin, Palmtree, ClipboardList
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -40,6 +40,7 @@ const CARD_CONFIG: Record<string, { label: string; icon: typeof Clapperboard; de
   "call-center-kpi": { label: "Call Center KPI", icon: Phone, description: "Leads & analytics", href: "/call-center-kpi", color: "orange" },
   "gbp-management": { label: "GBP Management", icon: MapPin, description: "Local SEO Hub", href: "/gbpmanagement", color: "cyan" },
   "pto-calendar": { label: "PTO Calendar", icon: Palmtree, description: "Time off tracker", href: "/pto-calendar", color: "cyan" },
+  "team-tasks": { label: "Team Tasks", icon: ClipboardList, description: "Kanban task boards", href: "/team-tasks", color: "cyan" },
 };
 
 export function getTeamSession(): TeamSession | null {
@@ -90,18 +91,18 @@ const TeamPortal = () => {
 
   async function fetchTeamData(userId: string): Promise<TeamSession | null> {
     const { data, error } = await supabase
-      .from("team_portal_members" as any)
+      .from("team_portal_members")
       .select("*")
       .eq("user_id", userId)
       .maybeSingle();
     if (error || !data) return null;
     return {
-      id: (data as any).id,
-      user_id: (data as any).user_id,
-      name: (data as any).name,
-      email: (data as any).email,
-      role: (data as any).role,
-      permissions: (data as any).permissions || [],
+      id: data.id,
+      user_id: data.user_id,
+      name: data.name,
+      email: data.email,
+      role: data.role,
+      permissions: data.permissions || [],
     };
   }
 

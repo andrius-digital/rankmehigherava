@@ -298,13 +298,19 @@ serve(async (req) => {
       }
 
       case 'update_team_portal_member': {
-        const { id: teamMemberId, permissions: updPerms, role: updRole, name: updName, password: updPassword } = data;
+        const { id: teamMemberId, permissions: updPerms, role: updRole, name: updName, password: updPassword, is_manager: updIsManager, managed_member_ids: updManagedIds } = data;
         if (!teamMemberId) throw new Error('id is required');
 
         const updateFields: Record<string, unknown> = { updated_at: new Date().toISOString() };
         if (updPerms !== undefined) updateFields.permissions = updPerms;
         if (updRole !== undefined) updateFields.role = updRole;
         if (updName !== undefined) updateFields.name = updName;
+        if (updIsManager !== undefined) updateFields.is_manager = updIsManager;
+        if (updManagedIds !== undefined) {
+          if (Array.isArray(updManagedIds)) {
+            updateFields.managed_member_ids = updManagedIds;
+          }
+        }
 
         const { data: updatedTeam, error: updTeamError } = await supabaseAdmin
           .from('team_portal_members')

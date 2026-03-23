@@ -44,7 +44,8 @@ The app is built as a React SPA using Vite, TypeScript, Tailwind CSS, and shadcn
 - **Team Portal**: `/team` — standalone team login page using Supabase Auth (email/password); after login checks `team_portal_members` table for permissions; shows only permitted cards; `/team-portal` redirects here; session cached in `rmh_team_session` sessionStorage; back buttons in sub-pages detect team session and route back to `/team` instead of admin dashboard
 - **Admin Dashboard**: `/avaadminpanel` — protected admin-only route (Supabase auth required), renders AgencyDashboard; all admin sub-pages link back here
 - **Database Table**: `team_portal_members` — id, user_id (FK to auth.users), name, email, role, permissions (TEXT[]), created_at, updated_at; RLS: admins full access, team members read own record
-- **Team Permissions**: content-portal, applicant-tracker, client-portal, build-website, subscriptions, team-tracker, call-center-kpi, gbp-management
+- **Team Permissions**: content-portal, applicant-tracker, client-portal, build-website, subscriptions, team-tracker, call-center-kpi, gbp-management, pto-calendar, team-tasks
+- **Team Tasks Portal**: `/team-tasks` — Trello-inspired Kanban board for team task management with four columns (To Do, In Progress, In Review, Done). Uses @dnd-kit for drag-and-drop. Three role-based views: Member (own board only), Manager (own + managed members via dropdown), Admin (full dashboard with workload overview + drill into any member). Uses `team_tasks` table + existing `team_portal_members` table (extended with `is_manager` and `managed_member_ids` columns). SQL migration at `supabase/migrations/20260323_team_tasks.sql`. Manager assignments managed in Team Access admin UI. Mobile-optimized with swipeable column tabs. Components in `src/components/team-tasks/`.
 - **ProtectedRoute**: `teamPermission` prop allows team sessions to bypass Supabase auth for permitted routes
 
 ## User Preferences

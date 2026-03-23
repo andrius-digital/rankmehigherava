@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
 import {
   ArrowLeft, Plus, X, Users, Trash2, Copy, Shield,
-  Clapperboard, UserCheck, UsersRound, Palette, CreditCard, Clock, Phone, MapPin, Palmtree,
+  Clapperboard, UserCheck, UsersRound, Palette, CreditCard, Clock, Phone, MapPin, Palmtree, ClipboardList,
   ChevronDown, RefreshCw, User, Lock, Eye, EyeOff, Briefcase, Loader2
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,8 @@ interface TeamMember {
   email: string;
   role: string;
   permissions: string[];
+  is_manager: boolean;
+  managed_member_ids: string[];
   created_at: string;
 }
 
@@ -30,6 +32,7 @@ const AVAILABLE_PERMISSIONS = [
   { id: "call-center-kpi", label: "Call Center KPI", icon: Phone, description: "Leads & analytics" },
   { id: "gbp-management", label: "GBP Management", icon: MapPin, description: "Local SEO Hub" },
   { id: "pto-calendar", label: "PTO Calendar", icon: Palmtree, description: "Time off tracker" },
+  { id: "team-tasks", label: "Team Tasks", icon: ClipboardList, description: "Kanban task boards" },
 ];
 
 function generatePassword(): string {
@@ -69,9 +72,14 @@ const TeamAccess = () => {
   const loadMembers = useCallback(async () => {
     try {
       const result = await adminAction("list_team_portal_members", {});
-      setMembers(result || []);
-    } catch (err: any) {
-      toast({ title: "Failed to load team members", description: err.message, variant: "destructive" });
+      setMembers((result || []).map((m: Record<string, unknown>) => ({
+        ...m,
+        is_manager: m.is_manager ?? false,
+        managed_member_ids: m.managed_member_ids ?? [],
+      })) as TeamMember[]);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      toast({ title: "Failed to load team members", description: message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -307,6 +315,63 @@ const TeamAccess = () => {
                           </button>
                         </div>
                       </div>
+
+                      <div className="flex items-center gap-3 mb-4 p-3 rounded-lg bg-white/[0.02] border border-white/10">
+                        <div className="flex-1">
+                          <p className="text-[9px] text-muted-foreground uppercase font-bold mb-1">Manager Role</p>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => {
+                                const newVal = !member.is_manager;
+                                setMembers(prev => prev.map(m => m.id === member.id ? { ...m, is_manager: newVal, managed_member_ids: newVal ? m.managed_member_ids : [] } : m));
+                                updateMember(member.id, { is_manager: newVal, managed_member_ids: newVal ? member.managed_member_ids : [] });
+                              }}
+                              className={`relative w-10 h-5 rounded-full transition-colors ${member.is_manager ? 'bg-purple-500/40' : 'bg-white/10'}`}
+                            >
+                              <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${member.is_manager ? 'left-5' : 'left-0.5'}`} />
+                            </button>
+                            <span className="text-xs text-muted-foreground">{member.is_manager ? 'Can view & assign tasks to managed members' : 'Not a manager'}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {member.is_manager && (
+                        <div className="mb-4 p-3 rounded-lg bg-purple-500/5 border border-purple-500/20">
+                          <p className="text-[9px] text-purple-400 uppercase font-bold mb-2">Managed Team Members</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {members.filter(m => m.id !== member.id).map(other => {
+                              const isManaged = member.managed_member_ids.includes(other.id);
+                              return (
+                                <button
+                                  key={other.id}
+                                  onClick={() => {
+                                    const newIds = isManaged
+                                      ? member.managed_member_ids.filter(id => id !== other.id)
+                                      : [...member.managed_member_ids, other.id];
+                                    setMembers(prev => prev.map(m => m.id === member.id ? { ...m, managed_member_ids: newIds } : m));
+                                    updateMember(member.id, { managed_member_ids: newIds });
+                                  }}
+                                  className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border text-xs transition-all ${
+                                    isManaged
+                                      ? 'bg-purple-500/10 border-purple-500/30 text-purple-400'
+                                      : 'bg-white/[0.02] border-white/10 text-muted-foreground hover:border-white/20'
+                                  }`}
+                                >
+                                  <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold ${
+                                    isManaged ? 'bg-purple-500/20 text-purple-400' : 'bg-white/5 text-muted-foreground'
+                                  }`}>
+                                    {other.name.charAt(0).toUpperCase()}
+                                  </div>
+                                  {other.name}
+                                </button>
+                              );
+                            })}
+                          </div>
+                          {members.filter(m => m.id !== member.id).length === 0 && (
+                            <p className="text-[10px] text-muted-foreground">No other team members to manage.</p>
+                          )}
+                        </div>
+                      )}
 
                       <p className="text-[10px] font-bold text-muted-foreground uppercase mb-3">Access Permissions</p>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 mb-4">
