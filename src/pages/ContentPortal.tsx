@@ -185,9 +185,18 @@ const ContentPortal = () => {
 
   useEffect(() => { loadFromSupabase(); }, [loadFromSupabase]);
 
+  const persistAll = (updatedClients?: Client[], updatedManagers?: VideoManager[], updatedEditors?: Editor[]) => {
+    const c = updatedClients ?? clients;
+    const m = updatedManagers ?? managers;
+    const e = updatedEditors ?? editors;
+    if (updatedClients) setClients(c);
+    if (updatedManagers) setManagers(m);
+    if (updatedEditors) setEditors(e);
+    supabase.from(CP_TABLE).upsert({ id: 1, clients: c, managers: m, editors: e, updated_at: new Date().toISOString() } as any).then();
+  };
+
   const persist = (updated: Client[]) => {
-    setClients(updated);
-    supabase.from(CP_TABLE).upsert({ id: 1, clients: updated, updated_at: new Date().toISOString() } as any).then();
+    persistAll(updated, undefined, undefined);
   };
 
   const selectedClient = clients.find(c => c.id === selectedClientId) || null;
@@ -216,8 +225,7 @@ const ContentPortal = () => {
 
 
   const persistManagers = (updated: VideoManager[]) => {
-    setManagers(updated);
-    supabase.from(CP_TABLE).upsert({ id: 1, managers: updated, updated_at: new Date().toISOString() } as any).then();
+    persistAll(undefined, updated, undefined);
   };
   const addManager = () => {
     if (!newManager.name || !newManager.email) return;
@@ -230,8 +238,7 @@ const ContentPortal = () => {
   const deleteManager = (id: string) => { persistManagers(managers.filter(m => m.id !== id)); };
 
   const persistEditors = (updated: Editor[]) => {
-    setEditors(updated);
-    supabase.from(CP_TABLE).upsert({ id: 1, editors: updated, updated_at: new Date().toISOString() } as any).then();
+    persistAll(undefined, undefined, updated);
   };
   const addEditor = () => {
     if (!newEditor.name || !newEditor.email) return;
