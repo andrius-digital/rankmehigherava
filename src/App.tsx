@@ -52,6 +52,7 @@ const TaskFlow = lazy(() => import("./pages/TaskFlow"));
 const ClientSitesTracker = lazy(() => import("./pages/ClientSitesTracker"));
 const ContentPortal = lazy(() => import("./pages/ContentPortal"));
 const ManagerPortal = lazy(() => import("./pages/ManagerPortal"));
+const EditorPortal = lazy(() => import("./pages/EditorPortal"));
 const TeamAccess = lazy(() => import("./pages/TeamAccess"));
 const TeamPortal = lazy(() => import("./pages/TeamPortal"));
 const ClientProfile = lazy(() => import("./pages/ClientProfile"));
@@ -221,6 +222,7 @@ const App = () => (
                   </ProtectedRoute>
                 } />
                 <Route path="/manager-portal" element={<ManagerPortal />} />
+                <Route path="/editor-portal" element={<EditorPortal />} />
                 <Route path="/gbpmanagement" element={
                   <ProtectedRoute requireAdmin teamPermission="gbp-management">
                     <GBPManagement />

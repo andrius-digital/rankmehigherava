@@ -65,6 +65,7 @@ interface Editor {
   name: string;
   email: string;
   specialties: EditorSpecialty[];
+  accessCode: string;
   createdAt: string;
 }
 
@@ -155,7 +156,14 @@ const ContentPortal = () => {
       if (data && ((data as any).clients?.length > 0 || (data as any).managers?.length > 0 || (data as any).editors?.length > 0)) {
         setClients((data as any).clients || []);
         setManagers((data as any).managers || []);
-        setEditors((data as any).editors || []);
+        const loadedEditors: Editor[] = ((data as any).editors || []).map((e: any) => ({
+          ...e,
+          accessCode: e.accessCode || Math.random().toString(36).slice(2, 8).toUpperCase(),
+        }));
+        setEditors(loadedEditors);
+        if (loadedEditors.some((e: any) => !(data as any).editors?.find((orig: any) => orig.id === e.id && orig.accessCode))) {
+          supabase.from(CP_TABLE).upsert({ id: 1, editors: loadedEditors, updated_at: new Date().toISOString() } as any).then();
+        }
       } else {
         const localClients = (() => { try { const r = localStorage.getItem("rmh_content_portal"); return r ? JSON.parse(r) : []; } catch { return []; } })();
         const localManagers = (() => { try { const r = localStorage.getItem("rmh_video_managers"); return r ? JSON.parse(r) : []; } catch { return []; } })();
@@ -227,10 +235,11 @@ const ContentPortal = () => {
   };
   const addEditor = () => {
     if (!newEditor.name || !newEditor.email) return;
-    const e: Editor = { id: generateId(), name: newEditor.name, email: newEditor.email, specialties: newEditor.specialties, createdAt: new Date().toISOString() };
+    const code = Math.random().toString(36).slice(2, 8).toUpperCase();
+    const e: Editor = { id: generateId(), name: newEditor.name, email: newEditor.email, specialties: newEditor.specialties, accessCode: code, createdAt: new Date().toISOString() };
     persistEditors([...editors, e]);
     setNewEditor({ name: "", email: "", specialties: [] });
-    toast({ title: "Editor added", description: `${e.name} has been onboarded.` });
+    toast({ title: "Editor added", description: `${e.name} has been onboarded. Access code: ${code}` });
   };
   const deleteEditor = (id: string) => { persistEditors(editors.filter(e => e.id !== id)); };
 
@@ -1934,6 +1943,7 @@ const ContentPortal = () => {
                               )}
                             </div>
                             <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                              {ed.accessCode && <span className="font-mono text-purple-300 bg-purple-500/10 px-1.5 py-0.5 rounded border border-purple-500/20">{ed.accessCode}</span>}
                               <span>{stats.total} assigned</span>
                               <span className="text-yellow-400">{stats.editing} editing</span>
                               <span className="text-blue-400">{stats.review} review</span>
