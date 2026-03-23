@@ -1943,7 +1943,7 @@ const ContentPortal = () => {
                               )}
                             </div>
                             <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                              {ed.accessCode && <span className="font-mono text-purple-300 bg-purple-500/10 px-1.5 py-0.5 rounded border border-purple-500/20">{ed.accessCode}</span>}
+                              {ed.accessCode && <span onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(ed.accessCode); toast({ title: "Copied!", description: `Access code ${ed.accessCode} copied to clipboard` }); }} className="font-mono text-purple-300 bg-purple-500/10 px-1.5 py-0.5 rounded border border-purple-500/20 cursor-pointer hover:bg-purple-500/20 transition-colors">{ed.accessCode}</span>}
                               <span>{stats.total} assigned</span>
                               <span className="text-yellow-400">{stats.editing} editing</span>
                               <span className="text-blue-400">{stats.review} review</span>
