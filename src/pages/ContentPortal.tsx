@@ -6,7 +6,7 @@ import {
   Clock, DollarSign, ExternalLink, ChevronRight,
   Trash2, CheckCircle2, Clapperboard,
   Building2, Link2, Search, Calendar, Sparkles, ThumbsUp, BookOpen, Loader2, Brain,
-  User, KeyRound, Copy, Pencil, Percent
+  User, KeyRound, Copy, Pencil, Percent, Film, ChevronDown, CheckSquare, Square, UserPlus
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -55,6 +55,16 @@ interface VideoManager {
   name: string;
   email: string;
   accessCode: string;
+  createdAt: string;
+}
+
+type EditorSpecialty = "short-form" | "vsl" | "youtube" | "value-added";
+
+interface Editor {
+  id: string;
+  name: string;
+  email: string;
+  specialties: EditorSpecialty[];
   createdAt: string;
 }
 
@@ -128,7 +138,7 @@ const generateId = () => Date.now().toString(36) + Math.random().toString(36).sl
 const ContentPortal = () => {
   const [clients, setClients] = useState<Client[]>([]);
   const [dataLoaded, setDataLoaded] = useState(false);
-  const [view, setView] = useState<"clients" | "client-detail" | "shoot-detail">("clients");
+  const [view, setView] = useState<"clients" | "client-detail" | "shoot-detail" | "editing-pipeline">("clients");
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [selectedShootId, setSelectedShootId] = useState<string | null>(null);
   const [showAddClient, setShowAddClient] = useState(false);
@@ -142,14 +152,15 @@ const ContentPortal = () => {
     try {
       const { data, error } = await supabase.from(CP_TABLE).select("*").eq("id", 1).maybeSingle();
       if (error) throw error;
-      if (data && ((data as any).clients?.length > 0 || (data as any).managers?.length > 0)) {
+      if (data && ((data as any).clients?.length > 0 || (data as any).managers?.length > 0 || (data as any).editors?.length > 0)) {
         setClients((data as any).clients || []);
         setManagers((data as any).managers || []);
+        setEditors((data as any).editors || []);
       } else {
         const localClients = (() => { try { const r = localStorage.getItem("rmh_content_portal"); return r ? JSON.parse(r) : []; } catch { return []; } })();
         const localManagers = (() => { try { const r = localStorage.getItem("rmh_video_managers"); return r ? JSON.parse(r) : []; } catch { return []; } })();
         if (localClients.length > 0 || localManagers.length > 0) {
-          await supabase.from(CP_TABLE).upsert({ id: 1, clients: localClients, managers: localManagers, updated_at: new Date().toISOString() } as any);
+          await supabase.from(CP_TABLE).upsert({ id: 1, clients: localClients, managers: localManagers, editors: [], updated_at: new Date().toISOString() } as any);
           setClients(localClients);
           setManagers(localManagers);
         }
@@ -185,6 +196,12 @@ const ContentPortal = () => {
   const [managers, setManagers] = useState<VideoManager[]>([]);
   const [showManagerSetup, setShowManagerSetup] = useState(false);
   const [newManager, setNewManager] = useState({ name: "", email: "" });
+  const [editors, setEditors] = useState<Editor[]>([]);
+  const [showEditorSetup, setShowEditorSetup] = useState(false);
+  const [newEditor, setNewEditor] = useState<{ name: string; email: string; specialties: EditorSpecialty[] }>({ name: "", email: "", specialties: [] });
+  const [selectedBulkVideos, setSelectedBulkVideos] = useState<string[]>([]);
+  const [showBulkAssign, setShowBulkAssign] = useState(false);
+  const [expandedPipelineEditor, setExpandedPipelineEditor] = useState<string | null>(null);
   const [editingClientName, setEditingClientName] = useState(false);
 
 
@@ -201,6 +218,111 @@ const ContentPortal = () => {
     toast({ title: "Manager added", description: `Access code: ${code}` });
   };
   const deleteManager = (id: string) => { persistManagers(managers.filter(m => m.id !== id)); };
+
+  const persistEditors = (updated: Editor[]) => {
+    setEditors(updated);
+    supabase.from(CP_TABLE).upsert({ id: 1, editors: updated, updated_at: new Date().toISOString() } as any).then();
+  };
+  const addEditor = () => {
+    if (!newEditor.name || !newEditor.email) return;
+    const e: Editor = { id: generateId(), name: newEditor.name, email: newEditor.email, specialties: newEditor.specialties, createdAt: new Date().toISOString() };
+    persistEditors([...editors, e]);
+    setNewEditor({ name: "", email: "", specialties: [] });
+    toast({ title: "Editor added", description: `${e.name} has been onboarded.` });
+  };
+  const deleteEditor = (id: string) => { persistEditors(editors.filter(e => e.id !== id)); };
+
+  const toggleEditorSpecialty = (specialty: EditorSpecialty) => {
+    setNewEditor(p => ({
+      ...p,
+      specialties: p.specialties.includes(specialty)
+        ? p.specialties.filter(s => s !== specialty)
+        : [...p.specialties, specialty]
+    }));
+  };
+
+  const assignEditorToVideo = (videoId: string, editorName: string, clientId: string, shootId: string) => {
+    const updated = clients.map(c =>
+      c.id === clientId
+        ? {
+          ...c, shoots: c.shoots.map(s =>
+            s.id === shootId
+              ? {
+                ...s, videos: s.videos.map(v =>
+                  v.id === videoId
+                    ? { ...v, editor: editorName, editStatus: (v.editStatus === "not-started" ? "editing" : v.editStatus) as EditStatus }
+                    : v
+                )
+              }
+              : s
+          )
+        }
+        : c
+    );
+    persist(updated);
+  };
+
+  const bulkAssignEditor = (editorName: string) => {
+    if (!selectedClientId || !selectedShootId || selectedBulkVideos.length === 0) return;
+    const updated = clients.map(c =>
+      c.id === selectedClientId
+        ? {
+          ...c, shoots: c.shoots.map(s =>
+            s.id === selectedShootId
+              ? {
+                ...s, videos: s.videos.map(v =>
+                  selectedBulkVideos.includes(v.id)
+                    ? { ...v, editor: editorName, editStatus: (v.editStatus === "not-started" ? "editing" : v.editStatus) as EditStatus }
+                    : v
+                )
+              }
+              : s
+          )
+        }
+        : c
+    );
+    persist(updated);
+    setSelectedBulkVideos([]);
+    setShowBulkAssign(false);
+    toast({ title: "Videos assigned", description: `${selectedBulkVideos.length} video(s) assigned to ${editorName}` });
+  };
+
+  const updateVideoStatusGlobal = (videoId: string, editStatus: EditStatus, clientId: string, shootId: string) => {
+    const updated = clients.map(c =>
+      c.id === clientId
+        ? {
+          ...c, shoots: c.shoots.map(s =>
+            s.id === shootId
+              ? { ...s, videos: s.videos.map(v => v.id === videoId ? { ...v, editStatus } : v) }
+              : s
+          )
+        }
+        : c
+    );
+    persist(updated);
+  };
+
+  const getAllVideosWithContext = () => {
+    return clients.flatMap(c =>
+      c.shoots.flatMap(s =>
+        s.videos.map(v => ({ ...v, clientName: c.name, clientId: c.id, shootName: s.name, shootId: s.id }))
+      )
+    );
+  };
+
+  const getEditorStats = (editorName: string) => {
+    const allVideos = getAllVideosWithContext();
+    const assigned = allVideos.filter(v => v.editor === editorName);
+    return {
+      total: assigned.length,
+      editing: assigned.filter(v => v.editStatus === "editing").length,
+      review: assigned.filter(v => v.editStatus === "review").length,
+      done: assigned.filter(v => v.editStatus === "done").length,
+      notStarted: assigned.filter(v => v.editStatus === "not-started").length,
+      videos: assigned,
+    };
+  };
+
   const [newVideo, setNewVideo] = useState<{ title: string; contentType: ContentType; editor: string; script: string }>({ title: "", contentType: "short-form", editor: "", script: "" });
 
   const addClient = () => {
@@ -486,8 +608,9 @@ const ContentPortal = () => {
           <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 flex items-center gap-4">
             <button
               onClick={() => {
-                if (view === "shoot-detail") { setSelectedShootId(null); setView("client-detail"); }
+                if (view === "shoot-detail") { setSelectedShootId(null); setSelectedBulkVideos([]); setView("client-detail"); }
                 else if (view === "client-detail") { setSelectedClientId(null); setView("clients"); }
+                else if (view === "editing-pipeline") { setExpandedPipelineEditor(null); setView("clients"); }
                 else {
                   const teamSession = sessionStorage.getItem("rmh_team_session");
                   window.location.href = teamSession ? "/team" : "/avaadminpanel";
@@ -521,6 +644,12 @@ const ContentPortal = () => {
             )}
 
             <div className="ml-auto flex items-center gap-2">
+              <button onClick={() => { setView("editing-pipeline"); setExpandedPipelineEditor(null); }} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs transition-all ${view === "editing-pipeline" ? "bg-purple-500/20 border-purple-500/30 text-purple-400" : "bg-white/5 border-white/10 hover:bg-white/10"}`}>
+                <Film className="w-3.5 h-3.5" /> Editing Pipeline
+              </button>
+              <button onClick={() => setShowEditorSetup(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs hover:bg-white/10 transition-all">
+                <UserPlus className="w-3.5 h-3.5" /> Editors
+              </button>
               <button onClick={() => setShowManagerSetup(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs hover:bg-white/10 transition-all">
                 <Users className="w-3.5 h-3.5" /> Managers
               </button>
@@ -577,6 +706,89 @@ const ContentPortal = () => {
           </div>
         )}
 
+        {showEditorSetup && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={() => setShowEditorSetup(false)}>
+            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+            <div className="relative w-full max-w-lg max-h-[80vh] rounded-2xl bg-background/95 backdrop-blur-xl border border-white/10 p-6 overflow-y-auto" onClick={e => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-orbitron font-bold">Video Editors</h3>
+                <button onClick={() => setShowEditorSetup(false)} className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20"><X className="w-3.5 h-3.5" /></button>
+              </div>
+
+              <div className="space-y-3 mb-6">
+                <Input placeholder="Editor name *" value={newEditor.name} onChange={e => setNewEditor(p => ({ ...p, name: e.target.value }))} className="bg-white/5 border-white/10" />
+                <Input placeholder="Email *" value={newEditor.email} onChange={e => setNewEditor(p => ({ ...p, email: e.target.value }))} className="bg-white/5 border-white/10" />
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1.5 block">Specialties</label>
+                  <div className="flex flex-wrap gap-2">
+                    {(["short-form", "vsl", "youtube", "value-added"] as EditorSpecialty[]).map(spec => (
+                      <button
+                        key={spec}
+                        onClick={() => toggleEditorSpecialty(spec)}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-bold border transition-all ${newEditor.specialties.includes(spec) ? contentTypeColor[spec] : "bg-white/5 border-white/10 text-muted-foreground"}`}
+                      >
+                        {contentTypeLabel[spec]}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <button onClick={addEditor} className="w-full py-2 rounded-lg bg-purple-500/20 border border-purple-500/30 text-purple-400 font-bold text-sm hover:bg-purple-500/30 transition-all">
+                  <Plus className="w-3.5 h-3.5 inline mr-1" /> Add Editor
+                </button>
+              </div>
+
+              {editors.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase">Onboarded Editors ({editors.length})</p>
+                  {editors.map(ed => {
+                    const stats = getEditorStats(ed.name);
+                    return (
+                      <div key={ed.id} className="p-3 rounded-lg bg-white/5 border border-white/10">
+                        <div className="flex items-center justify-between mb-2">
+                          <div>
+                            <p className="text-sm font-bold">{ed.name}</p>
+                            <p className="text-[10px] text-muted-foreground">{ed.email}</p>
+                          </div>
+                          <button onClick={() => deleteEditor(ed.id)} className="w-6 h-6 rounded bg-white/5 flex items-center justify-center hover:bg-red-500/20 transition-all">
+                            <Trash2 className="w-3 h-3 text-muted-foreground" />
+                          </button>
+                        </div>
+                        {ed.specialties.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mb-2">
+                            {ed.specialties.map(spec => (
+                              <span key={spec} className={`px-1.5 py-0.5 rounded text-[9px] font-bold border ${contentTypeColor[spec]}`}>
+                                {contentTypeLabel[spec]}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        <div className="grid grid-cols-4 gap-2 text-center">
+                          <div className="rounded bg-white/5 p-1.5">
+                            <p className="text-[10px] text-muted-foreground">Assigned</p>
+                            <p className="text-sm font-bold text-cyan-400">{stats.total}</p>
+                          </div>
+                          <div className="rounded bg-white/5 p-1.5">
+                            <p className="text-[10px] text-muted-foreground">Editing</p>
+                            <p className="text-sm font-bold text-yellow-400">{stats.editing}</p>
+                          </div>
+                          <div className="rounded bg-white/5 p-1.5">
+                            <p className="text-[10px] text-muted-foreground">Review</p>
+                            <p className="text-sm font-bold text-blue-400">{stats.review}</p>
+                          </div>
+                          <div className="rounded bg-white/5 p-1.5">
+                            <p className="text-[10px] text-muted-foreground">Done</p>
+                            <p className="text-sm font-bold text-green-400">{stats.done}</p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-6">
           {view === "clients" && (
             <>
@@ -621,6 +833,34 @@ const ContentPortal = () => {
                   ));
                 })()}
               </div>
+
+              {/* Editing Overview Stats */}
+              {(() => {
+                const allVids = getAllVideosWithContext();
+                const editing = allVids.filter(v => v.editStatus === "editing").length;
+                const review = allVids.filter(v => v.editStatus === "review").length;
+                const done = allVids.filter(v => v.editStatus === "done").length;
+                const notStarted = allVids.filter(v => v.editStatus === "not-started").length;
+                if (allVids.length === 0) return null;
+                return (
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+                    {[
+                      { label: "Not Started", value: notStarted, color: "text-gray-400", border: "border-gray-500/20" },
+                      { label: "In Editing", value: editing, color: "text-yellow-400", border: "border-yellow-500/20" },
+                      { label: "In Review", value: review, color: "text-blue-400", border: "border-blue-500/20" },
+                      { label: "Completed", value: done, color: "text-green-400", border: "border-green-500/20" },
+                    ].map(s => (
+                      <div key={s.label} className={`p-4 rounded-xl bg-white/5 border ${s.border}`}>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Film className={`w-4 h-4 ${s.color}`} />
+                          <span className="text-[10px] text-muted-foreground uppercase font-orbitron">{s.label}</span>
+                        </div>
+                        <p className={`text-xl font-black font-orbitron ${s.color}`}>{s.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
 
               {/* Shoot Pipeline */}
               {(() => {
@@ -828,7 +1068,7 @@ const ContentPortal = () => {
                   return (
                     <button
                       key={shoot.id}
-                      onClick={() => { setSelectedShootId(shoot.id); setView("shoot-detail"); }}
+                      onClick={() => { setSelectedShootId(shoot.id); setSelectedBulkVideos([]); setView("shoot-detail"); }}
                       className="w-full text-left rounded-xl bg-white/[0.03] border border-white/10 hover:border-cyan-500/30 hover:bg-white/[0.06] transition-all group overflow-hidden"
                     >
                       <div className="flex">
@@ -1239,14 +1479,42 @@ const ContentPortal = () => {
                   <h3 className="text-xs font-bold text-muted-foreground uppercase font-orbitron flex items-center gap-1.5">
                     <Video className="w-3.5 h-3.5 text-red-400" /> Videos ({selectedShoot.videos.length})
                   </h3>
-                  <button onClick={() => setShowAddVideo(true)} className="flex items-center gap-1 px-3 py-1 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold hover:bg-red-500/20 transition-all">
-                    <Plus className="w-3 h-3" /> Add
-                  </button>
+                  <div className="flex items-center gap-2">
+                    {selectedBulkVideos.length > 0 && (
+                      <button onClick={() => setShowBulkAssign(true)} className="flex items-center gap-1 px-3 py-1 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-bold hover:bg-purple-500/20 transition-all">
+                        <UserPlus className="w-3 h-3" /> Assign {selectedBulkVideos.length} to Editor
+                      </button>
+                    )}
+                    {selectedShoot.videos.length > 0 && (
+                      <button
+                        onClick={() => {
+                          if (selectedBulkVideos.length === selectedShoot.videos.length) {
+                            setSelectedBulkVideos([]);
+                          } else {
+                            setSelectedBulkVideos(selectedShoot.videos.map(v => v.id));
+                          }
+                        }}
+                        className="flex items-center gap-1 px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-muted-foreground text-xs hover:bg-white/10 transition-all"
+                      >
+                        {selectedBulkVideos.length === selectedShoot.videos.length ? <CheckSquare className="w-3 h-3" /> : <Square className="w-3 h-3" />}
+                        {selectedBulkVideos.length === selectedShoot.videos.length ? "Deselect All" : "Select All"}
+                      </button>
+                    )}
+                    <button onClick={() => setShowAddVideo(true)} className="flex items-center gap-1 px-3 py-1 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold hover:bg-red-500/20 transition-all">
+                      <Plus className="w-3 h-3" /> Add
+                    </button>
+                  </div>
                 </div>
                 <div className="space-y-2">
                   {selectedShoot.videos.map(video => (
-                    <div key={video.id} className="p-3 rounded-lg bg-white/[0.03] border border-white/5 group">
+                    <div key={video.id} className={`p-3 rounded-lg bg-white/[0.03] border group ${selectedBulkVideos.includes(video.id) ? "border-purple-500/30 bg-purple-500/5" : "border-white/5"}`}>
                       <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => setSelectedBulkVideos(prev => prev.includes(video.id) ? prev.filter(id => id !== video.id) : [...prev, video.id])}
+                          className="flex-shrink-0"
+                        >
+                          {selectedBulkVideos.includes(video.id) ? <CheckSquare className="w-4 h-4 text-purple-400" /> : <Square className="w-4 h-4 text-muted-foreground/50 hover:text-muted-foreground" />}
+                        </button>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <p className="font-bold text-sm truncate">{video.title}</p>
@@ -1255,7 +1523,18 @@ const ContentPortal = () => {
                             </span>
                           </div>
                           <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                            {video.editor && <span>Editor: {video.editor}</span>}
+                            {video.editor ? (
+                              <span className="flex items-center gap-1"><User className="w-3 h-3 text-purple-400" /> {video.editor}</span>
+                            ) : (
+                              <select
+                                value=""
+                                onChange={e => { if (e.target.value && selectedClientId && selectedShootId) assignEditorToVideo(video.id, e.target.value, selectedClientId, selectedShootId); }}
+                                className="px-2 py-0.5 rounded bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[10px] font-bold focus:outline-none cursor-pointer"
+                              >
+                                <option value="">Assign Editor</option>
+                                {editors.map(ed => <option key={ed.id} value={ed.name}>{ed.name}</option>)}
+                              </select>
+                            )}
                             <span className="text-green-400 font-bold">${video.price}</span>
                             <button
                               onClick={() => setExpandedVideoId(video.id)}
@@ -1266,6 +1545,16 @@ const ContentPortal = () => {
                             </button>
                           </div>
                         </div>
+                        {video.editor && (
+                          <select
+                            value={video.editor}
+                            onChange={e => { if (selectedClientId && selectedShootId) assignEditorToVideo(video.id, e.target.value, selectedClientId, selectedShootId); }}
+                            className="px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-[10px] text-muted-foreground focus:outline-none"
+                          >
+                            <option value="">Unassign</option>
+                            {editors.map(ed => <option key={ed.id} value={ed.name}>{ed.name}</option>)}
+                          </select>
+                        )}
                         <select
                           value={video.editStatus}
                           onChange={e => updateVideoStatus(video.id, e.target.value as EditStatus)}
@@ -1287,6 +1576,38 @@ const ContentPortal = () => {
                   )}
                 </div>
               </div>
+
+              {showBulkAssign && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={() => setShowBulkAssign(false)}>
+                  <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+                  <div className="relative w-full max-w-sm rounded-2xl bg-background/95 backdrop-blur-xl border border-white/10 p-6" onClick={e => e.stopPropagation()}>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-orbitron font-bold text-sm">Assign {selectedBulkVideos.length} Video{selectedBulkVideos.length !== 1 ? "s" : ""}</h3>
+                      <button onClick={() => setShowBulkAssign(false)} className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20"><X className="w-3.5 h-3.5" /></button>
+                    </div>
+                    <div className="space-y-2">
+                      {editors.map(ed => (
+                        <button
+                          key={ed.id}
+                          onClick={() => bulkAssignEditor(ed.name)}
+                          className="w-full flex items-center gap-3 p-3 rounded-lg bg-white/5 border border-white/10 hover:border-purple-500/30 hover:bg-white/[0.07] transition-all text-left"
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
+                            <User className="w-4 h-4 text-purple-400" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold">{ed.name}</p>
+                            <p className="text-[10px] text-muted-foreground">{ed.specialties.map(s => contentTypeLabel[s]).join(", ") || "No specialties"}</p>
+                          </div>
+                        </button>
+                      ))}
+                      {editors.length === 0 && (
+                        <p className="text-xs text-muted-foreground text-center py-4">No editors onboarded yet. Add editors first.</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {showAddVideo && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={() => setShowAddVideo(false)}>
@@ -1313,7 +1634,14 @@ const ContentPortal = () => {
                           ))}
                         </div>
                       </div>
-                      <Input placeholder="Editor name (optional)" value={newVideo.editor} onChange={e => setNewVideo(p => ({ ...p, editor: e.target.value }))} className="bg-white/5 border-white/10" />
+                      <select
+                        value={newVideo.editor}
+                        onChange={e => setNewVideo(p => ({ ...p, editor: e.target.value }))}
+                        className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-foreground focus:outline-none"
+                      >
+                        <option value="">Assign Editor (optional)</option>
+                        {editors.map(ed => <option key={ed.id} value={ed.name}>{ed.name}</option>)}
+                      </select>
                       <textarea
                         placeholder="Paste script (optional)..."
                         value={newVideo.script}
@@ -1470,6 +1798,155 @@ const ContentPortal = () => {
                 </div>
               )}
 
+            </>
+          )}
+
+          {view === "editing-pipeline" && (
+            <>
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="font-orbitron font-bold text-xl flex items-center gap-2">
+                    <Film className="w-5 h-5 text-purple-400" /> Editing Pipeline
+                  </h2>
+                  <p className="text-xs text-muted-foreground mt-1">{editors.length} editor{editors.length !== 1 ? "s" : ""} · {getAllVideosWithContext().length} total videos</p>
+                </div>
+                <button onClick={() => setShowEditorSetup(true)} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-500/10 border border-purple-500/30 text-purple-400 text-sm font-bold hover:bg-purple-500/20 transition-all">
+                  <UserPlus className="w-4 h-4" /> Add Editor
+                </button>
+              </div>
+
+              {/* Pipeline Overview Stats */}
+              {(() => {
+                const allVids = getAllVideosWithContext();
+                const editing = allVids.filter(v => v.editStatus === "editing").length;
+                const review = allVids.filter(v => v.editStatus === "review").length;
+                const done = allVids.filter(v => v.editStatus === "done").length;
+                const notStarted = allVids.filter(v => v.editStatus === "not-started").length;
+                const unassigned = allVids.filter(v => !v.editor).length;
+                return (
+                  <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
+                    {[
+                      { label: "Not Started", value: notStarted, color: "text-gray-400", border: "border-gray-500/20" },
+                      { label: "In Editing", value: editing, color: "text-yellow-400", border: "border-yellow-500/20" },
+                      { label: "In Review", value: review, color: "text-blue-400", border: "border-blue-500/20" },
+                      { label: "Completed", value: done, color: "text-green-400", border: "border-green-500/20" },
+                      { label: "Unassigned", value: unassigned, color: "text-red-400", border: "border-red-500/20" },
+                    ].map(s => (
+                      <div key={s.label} className={`p-3 rounded-xl bg-white/5 border ${s.border}`}>
+                        <p className="text-[10px] text-muted-foreground uppercase font-orbitron">{s.label}</p>
+                        <p className={`text-xl font-black font-orbitron ${s.color}`}>{s.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+
+              {/* Editor Cards */}
+              <div className="space-y-3">
+                {editors.map(ed => {
+                  const stats = getEditorStats(ed.name);
+                  const completionPct = stats.total > 0 ? Math.round((stats.done / stats.total) * 100) : 0;
+                  const isExpanded = expandedPipelineEditor === ed.id;
+                  return (
+                    <div key={ed.id} className="rounded-xl bg-white/[0.03] border border-white/10 overflow-hidden">
+                      <button
+                        onClick={() => setExpandedPipelineEditor(isExpanded ? null : ed.id)}
+                        className="w-full text-left p-4 hover:bg-white/[0.03] transition-all"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center flex-shrink-0">
+                            <User className="w-5 h-5 text-purple-400" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <p className="font-bold text-sm">{ed.name}</p>
+                              {ed.specialties.length > 0 && (
+                                <div className="flex gap-1">
+                                  {ed.specialties.map(spec => (
+                                    <span key={spec} className={`px-1.5 py-0.5 rounded text-[8px] font-bold border ${contentTypeColor[spec]}`}>
+                                      {contentTypeLabel[spec]}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                              <span>{stats.total} assigned</span>
+                              <span className="text-yellow-400">{stats.editing} editing</span>
+                              <span className="text-blue-400">{stats.review} review</span>
+                              <span className="text-green-400">{stats.done} done</span>
+                            </div>
+                            {stats.total > 0 && (
+                              <div className="mt-2">
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="text-[10px] text-muted-foreground">Completion</span>
+                                  <span className="text-[10px] font-bold text-muted-foreground">{completionPct}%</span>
+                                </div>
+                                <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
+                                  <div
+                                    className={`h-full rounded-full transition-all ${completionPct === 100 ? "bg-green-400" : "bg-purple-400"}`}
+                                    style={{ width: `${completionPct}%` }}
+                                  />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                          <ChevronDown className={`w-4 h-4 text-muted-foreground flex-shrink-0 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                        </div>
+                      </button>
+
+                      {isExpanded && (
+                        <div className="border-t border-white/10 p-4">
+                          {stats.videos.length === 0 ? (
+                            <p className="text-xs text-muted-foreground text-center py-4">No videos assigned to this editor</p>
+                          ) : (
+                            <div className="space-y-2">
+                              {stats.videos.map(video => (
+                                <div key={video.id} className="flex items-center justify-between p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <p className="text-sm font-bold truncate">{video.title}</p>
+                                      <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold border ${contentTypeColor[video.contentType]}`}>
+                                        {contentTypeLabel[video.contentType]}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                                      <span>{video.clientName}</span>
+                                      <span>·</span>
+                                      <span>{video.shootName}</span>
+                                    </div>
+                                  </div>
+                                  <select
+                                    value={video.editStatus}
+                                    onChange={e => updateVideoStatusGlobal(video.id, e.target.value as EditStatus, video.clientId, video.shootId)}
+                                    className={`px-2 py-1 rounded-lg text-[10px] font-bold border focus:outline-none ${editStatusColor[video.editStatus]}`}
+                                  >
+                                    <option value="not-started">Not Started</option>
+                                    <option value="editing">Editing</option>
+                                    <option value="review">In Review</option>
+                                    <option value="done">Done</option>
+                                  </select>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+
+                {editors.length === 0 && (
+                  <div className="text-center py-16 text-muted-foreground rounded-xl bg-white/[0.02] border border-dashed border-white/10">
+                    <UserPlus className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                    <p className="text-sm font-medium mb-1">No editors onboarded</p>
+                    <p className="text-xs text-muted-foreground mb-4">Add your first editor to start tracking the editing pipeline</p>
+                    <button onClick={() => setShowEditorSetup(true)} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-500/10 border border-purple-500/30 text-purple-400 text-sm font-bold hover:bg-purple-500/20 transition-all">
+                      <Plus className="w-4 h-4" /> Add First Editor
+                    </button>
+                  </div>
+                )}
+              </div>
             </>
           )}
         </div>
