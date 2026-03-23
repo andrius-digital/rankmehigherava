@@ -24,7 +24,8 @@ import {
     Clapperboard,
     Archive,
     Shield,
-    MapPin
+    MapPin,
+    Palmtree
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -88,6 +89,14 @@ const AgencyDashboard: React.FC = () => {
                     icon: MapPin,
                     description: 'Local SEO Hub',
                     href: '/gbpmanagement',
+                    color: 'cyan' as const
+                },
+                {
+                    id: 'pto-calendar',
+                    title: 'PTO Calendar',
+                    icon: Palmtree,
+                    description: 'Paid time off tracker',
+                    href: '/pto-calendar',
                     color: 'cyan' as const
                 },
                 {
