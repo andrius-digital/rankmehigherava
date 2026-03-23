@@ -595,6 +595,51 @@ app.get('/api/pto/reminders', async (req, res) => {
   }
 });
 
+app.post('/api/editor/notify', async (req, res) => {
+  try {
+    const { editorName, editorEmail, videos, clientName, shootName } = req.body;
+    if (!editorEmail || !videos || videos.length === 0) {
+      return res.status(400).json({ error: 'Missing editor email or videos' });
+    }
+    const { Resend } = await import('resend');
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    const videoList = videos.map(v => `<li style="padding:4px 0;color:#e2e8f0;">${v.title || v.name || 'Untitled'} <span style="color:#94a3b8;">(${v.type || 'video'})</span></li>`).join('');
+    const html = `
+      <div style="font-family:'Inter',sans-serif;max-width:600px;margin:0 auto;background:#0f172a;border:1px solid #1e293b;border-radius:12px;overflow:hidden;">
+        <div style="background:linear-gradient(135deg,#7c3aed,#dc2626);padding:24px 32px;">
+          <h1 style="margin:0;color:#fff;font-size:20px;">New Videos Assigned</h1>
+          <p style="margin:4px 0 0;color:rgba(255,255,255,0.8);font-size:14px;">Rank Me Higher Content Portal</p>
+        </div>
+        <div style="padding:24px 32px;">
+          <p style="color:#e2e8f0;font-size:14px;margin:0 0 8px;">Hey <strong>${editorName || 'Editor'}</strong>,</p>
+          <p style="color:#94a3b8;font-size:14px;margin:0 0 16px;">You've been assigned <strong style="color:#a78bfa;">${videos.length} video${videos.length !== 1 ? 's' : ''}</strong> for <strong style="color:#f472b6;">${clientName || 'a client'}</strong>${shootName ? ` — ${shootName}` : ''}.</p>
+          <div style="background:#1e293b;border-radius:8px;padding:16px;margin-bottom:16px;">
+            <p style="color:#94a3b8;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin:0 0 8px;">Videos</p>
+            <ul style="margin:0;padding:0 0 0 16px;list-style:disc;">${videoList}</ul>
+          </div>
+          <a href="https://rankmehigher.com/editor-portal" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#dc2626);color:#fff;text-decoration:none;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:600;">Open Editor Portal</a>
+        </div>
+        <div style="padding:16px 32px;border-top:1px solid #1e293b;">
+          <p style="color:#64748b;font-size:12px;margin:0;">Rank Me Higher · Content Portal</p>
+        </div>
+      </div>`;
+    const { data, error } = await resend.emails.send({
+      from: 'Rank Me Higher <notifications@rankmehigher.com>',
+      to: [editorEmail],
+      subject: `${videos.length} new video${videos.length !== 1 ? 's' : ''} assigned — ${clientName || 'Content Portal'}`,
+      html,
+    });
+    if (error) {
+      console.error('Resend error:', error);
+      return res.status(500).json({ error: error.message });
+    }
+    res.json({ success: true, id: data?.id });
+  } catch (err) {
+    console.error('Editor notify error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.use(express.static(join(__dirname, 'dist')));
 
 app.use((req, res) => {

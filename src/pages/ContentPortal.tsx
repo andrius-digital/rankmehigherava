@@ -269,7 +269,24 @@ const ContentPortal = () => {
     }));
   };
 
+  const notifyEditorByEmail = async (editorName: string, videoInfos: { title: string; type: string }[], clientName: string, shootName: string) => {
+    const editor = editors.find(e => e.name === editorName);
+    if (!editor?.email) return;
+    try {
+      await fetch('/api/editor/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ editorName, editorEmail: editor.email, videos: videoInfos, clientName, shootName }),
+      });
+    } catch (err) {
+      console.error('Editor notification failed:', err);
+    }
+  };
+
   const assignEditorToVideo = (videoId: string, editorName: string, clientId: string, shootId: string) => {
+    const client = clients.find(c => c.id === clientId);
+    const shoot = client?.shoots.find(s => s.id === shootId);
+    const video = shoot?.videos.find(v => v.id === videoId);
     const updated = clients.map(c =>
       c.id === clientId
         ? {
@@ -288,10 +305,16 @@ const ContentPortal = () => {
         : c
     );
     persist(updated);
+    if (editorName && video) {
+      notifyEditorByEmail(editorName, [{ title: video.title || 'Untitled', type: video.contentType || 'video' }], client?.name || '', shoot?.name || '');
+    }
   };
 
   const bulkAssignEditor = (editorName: string) => {
     if (!selectedClientId || !selectedShootId || selectedBulkVideos.length === 0) return;
+    const client = clients.find(c => c.id === selectedClientId);
+    const shoot = client?.shoots.find(s => s.id === selectedShootId);
+    const assignedVideos = shoot?.videos.filter(v => selectedBulkVideos.includes(v.id)) || [];
     const updated = clients.map(c =>
       c.id === selectedClientId
         ? {
@@ -310,9 +333,13 @@ const ContentPortal = () => {
         : c
     );
     persist(updated);
+    const count = selectedBulkVideos.length;
     setSelectedBulkVideos([]);
     setShowBulkAssign(false);
-    toast({ title: "Videos assigned", description: `${selectedBulkVideos.length} video(s) assigned to ${editorName}` });
+    toast({ title: "Videos assigned", description: `${count} video(s) assigned to ${editorName}` });
+    if (editorName && assignedVideos.length > 0) {
+      notifyEditorByEmail(editorName, assignedVideos.map(v => ({ title: v.title || 'Untitled', type: v.contentType || 'video' })), client?.name || '', shoot?.name || '');
+    }
   };
 
   const updateVideoStatusGlobal = (videoId: string, editStatus: EditStatus, clientId: string, shootId: string) => {
