@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Users, AlertTriangle, CheckCircle2, Clock, BarChart3, ChevronRight, Calendar, Tag, ListTodo, Eye } from 'lucide-react';
+import { Users, AlertTriangle, CheckCircle2, Clock, BarChart3, ChevronRight, ListTodo, Columns3 } from 'lucide-react';
 import type { TeamTask, TeamMember, TaskStatus, TaskPriority } from './types';
 import { STATUS_COLUMNS, PRIORITY_CONFIG } from './types';
 
@@ -27,15 +27,63 @@ function isDueSoon(dueDate: string | null, status: string): boolean {
 }
 
 function formatDate(d: string | null): string {
-  if (!d) return '—';
+  if (!d) return '';
   return new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-type ViewTab = 'overview' | 'all-tasks';
+type ViewTab = 'board' | 'overview' | 'all-tasks';
 type FilterKey = TaskStatus | 'all' | 'overdue' | 'active';
 
+const COLUMN_HEADER_COLORS: Record<TaskStatus, { bg: string; border: string; text: string; dot: string }> = {
+  todo: { bg: 'bg-blue-500/10', border: 'border-blue-500/30', text: 'text-blue-400', dot: 'bg-blue-400' },
+  in_progress: { bg: 'bg-amber-500/10', border: 'border-amber-500/30', text: 'text-amber-400', dot: 'bg-amber-400' },
+  in_review: { bg: 'bg-purple-500/10', border: 'border-purple-500/30', text: 'text-purple-400', dot: 'bg-purple-400' },
+  done: { bg: 'bg-green-500/10', border: 'border-green-500/30', text: 'text-green-400', dot: 'bg-green-400' },
+};
+
+const MiniTaskCard: React.FC<{ task: TeamTask }> = ({ task }) => {
+  const overdue = isOverdue(task.due_date, task.status);
+  const dueSoon = isDueSoon(task.due_date, task.status);
+  const prioConf = PRIORITY_CONFIG[task.priority as TaskPriority];
+
+  return (
+    <div className={`p-2.5 rounded-lg border transition-all hover:border-white/20 ${overdue ? 'bg-red-500/[0.06] border-red-500/20' : 'bg-white/[0.03] border-white/[0.06]'}`}>
+      <div className="flex items-start gap-2 mb-1.5">
+        <div className={`w-1.5 h-1.5 rounded-full mt-1 flex-shrink-0 ${prioConf?.dot || 'bg-gray-400'}`} />
+        <p className="text-xs font-medium text-foreground leading-tight line-clamp-2">{task.title}</p>
+      </div>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <div className="w-4 h-4 rounded-full bg-cyan-500/20 flex items-center justify-center flex-shrink-0">
+            <span className="text-[7px] font-bold text-cyan-400">{(task.assignee_name || '?').charAt(0).toUpperCase()}</span>
+          </div>
+          <span className="text-[10px] text-muted-foreground truncate">{task.assignee_name || '—'}</span>
+        </div>
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          {task.due_date && (
+            <span className={`text-[9px] font-medium ${overdue ? 'text-red-400 font-bold' : dueSoon ? 'text-amber-400' : 'text-muted-foreground'}`}>
+              {formatDate(task.due_date)}
+            </span>
+          )}
+          <span className={`px-1 py-0.5 rounded text-[8px] font-bold border ${prioConf?.color || ''}`}>
+            {prioConf?.label?.charAt(0) || '?'}
+          </span>
+        </div>
+      </div>
+      {task.labels.length > 0 && (
+        <div className="flex gap-1 mt-1.5 flex-wrap">
+          {task.labels.slice(0, 2).map(l => (
+            <span key={l} className="px-1 py-0.5 rounded text-[7px] font-bold bg-white/5 text-muted-foreground">{l}</span>
+          ))}
+          {task.labels.length > 2 && <span className="text-[7px] text-muted-foreground">+{task.labels.length - 2}</span>}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const AdminOverview: React.FC<AdminOverviewProps> = ({ members, tasks, onSelectMember, selectedMemberId }) => {
-  const [viewTab, setViewTab] = useState<ViewTab>('overview');
+  const [viewTab, setViewTab] = useState<ViewTab>('board');
   const [statusFilter, setStatusFilter] = useState<FilterKey>('all');
   const [sortBy, setSortBy] = useState<'due_date' | 'priority' | 'assignee' | 'status'>('priority');
 
@@ -143,20 +191,26 @@ const AdminOverview: React.FC<AdminOverviewProps> = ({ members, tasks, onSelectM
 
       <div className="flex gap-2">
         <button
+          onClick={() => setViewTab('board')}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${viewTab === 'board' ? 'bg-cyan-500/15 border border-cyan-500/30 text-cyan-400' : 'bg-white/5 border border-white/10 text-muted-foreground hover:text-foreground'}`}
+        >
+          <Columns3 className="w-3.5 h-3.5" /> Board
+        </button>
+        <button
           onClick={() => setViewTab('overview')}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${viewTab === 'overview' ? 'bg-cyan-500/15 border border-cyan-500/30 text-cyan-400' : 'bg-white/5 border border-white/10 text-muted-foreground hover:text-foreground'}`}
         >
-          <Users className="w-3.5 h-3.5" /> Team Overview
+          <Users className="w-3.5 h-3.5" /> Team
         </button>
         <button
           onClick={() => { setViewTab('all-tasks'); setStatusFilter('all'); }}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${viewTab === 'all-tasks' ? 'bg-cyan-500/15 border border-cyan-500/30 text-cyan-400' : 'bg-white/5 border border-white/10 text-muted-foreground hover:text-foreground'}`}
         >
-          <ListTodo className="w-3.5 h-3.5" /> All Tasks
+          <ListTodo className="w-3.5 h-3.5" /> List
         </button>
       </div>
 
-      {viewTab === 'overview' && (
+      {viewTab === 'board' && (
         <div className="space-y-3">
           {totalOverdue > 0 && (
             <div className="rounded-xl bg-red-500/5 border border-red-500/20 p-3">
@@ -181,6 +235,40 @@ const AdminOverview: React.FC<AdminOverviewProps> = ({ members, tasks, onSelectM
             </div>
           )}
 
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            {STATUS_COLUMNS.map(col => {
+              const colTasks = tasks
+                .filter(t => t.status === col.key)
+                .sort((a, b) => (priorityOrder[a.priority] ?? 2) - (priorityOrder[b.priority] ?? 2));
+              const colors = COLUMN_HEADER_COLORS[col.key];
+
+              return (
+                <div key={col.key} className="flex flex-col">
+                  <div className={`flex items-center justify-between px-3 py-2 rounded-t-xl border ${colors.border} ${colors.bg}`}>
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full ${colors.dot}`} />
+                      <span className={`text-xs font-bold ${colors.text}`}>{col.label}</span>
+                    </div>
+                    <span className={`text-xs font-orbitron font-bold ${colors.text}`}>{colTasks.length}</span>
+                  </div>
+                  <div className="flex-1 rounded-b-xl border border-t-0 border-white/[0.06] bg-white/[0.02] p-2 space-y-2 min-h-[120px]">
+                    {colTasks.length === 0 ? (
+                      <div className="flex items-center justify-center h-full min-h-[80px]">
+                        <p className="text-[10px] text-muted-foreground/40">No tasks</p>
+                      </div>
+                    ) : (
+                      colTasks.map(task => <MiniTaskCard key={task.id} task={task} />)
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {viewTab === 'overview' && (
+        <div className="space-y-3">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             <button
               onClick={() => onSelectMember(null)}
