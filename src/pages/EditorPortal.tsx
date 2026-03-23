@@ -76,8 +76,10 @@ const EditorPortal = () => {
     });
   }, []);
 
+  const normalizeCode = (code: string) => code.toUpperCase().replace(/O/g, '0').replace(/I/g, '1').replace(/L/g, '1');
   const handleLogin = () => {
-    const found = cpData.editors.find(e => e.accessCode === accessInput.trim().toUpperCase());
+    const input = normalizeCode(accessInput.trim());
+    const found = cpData.editors.find(e => normalizeCode(e.accessCode || '') === input);
     if (found) { setLoggedInEditor(found); }
     else { toast({ title: "Invalid code", description: "Please check your access code and try again.", variant: "destructive" }); }
   };

@@ -135,6 +135,10 @@ const VALUE_ADDED_PRICE = 30;
 const getVideoPrice = (type: ContentType) => type === "vsl" ? VSL_PRICE : type === "youtube" ? YOUTUBE_PRICE : type === "short-form" ? SHORT_FORM_PRICE : VALUE_ADDED_PRICE;
 
 const generateId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const generateAccessCode = () => {
+  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  return Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+};
 
 const ContentPortal = () => {
   const [clients, setClients] = useState<Client[]>([]);
@@ -158,7 +162,7 @@ const ContentPortal = () => {
         setManagers((data as any).managers || []);
         const loadedEditors: Editor[] = ((data as any).editors || []).map((e: any) => ({
           ...e,
-          accessCode: e.accessCode || Math.random().toString(36).slice(2, 8).toUpperCase(),
+          accessCode: e.accessCode || generateAccessCode(),
         }));
         setEditors(loadedEditors);
         if (loadedEditors.some((e: any) => !(data as any).editors?.find((orig: any) => orig.id === e.id && orig.accessCode))) {
@@ -231,7 +235,7 @@ const ContentPortal = () => {
   };
   const addManager = () => {
     if (!newManager.name || !newManager.email) return;
-    const code = Math.random().toString(36).slice(2, 8).toUpperCase();
+    const code = generateAccessCode();
     const m: VideoManager = { id: generateId(), name: newManager.name, email: newManager.email, accessCode: code, createdAt: new Date().toISOString() };
     persistManagers([...managers, m]);
     setNewManager({ name: "", email: "" });
@@ -245,7 +249,7 @@ const ContentPortal = () => {
   };
   const addEditor = () => {
     if (!newEditor.name || !newEditor.email) return;
-    const code = Math.random().toString(36).slice(2, 8).toUpperCase();
+    const code = generateAccessCode();
     const e: Editor = { id: generateId(), name: newEditor.name, email: newEditor.email, specialties: newEditor.specialties, accessCode: code, createdAt: new Date().toISOString() };
     persistEditors([...editors, e]);
     setNewEditor({ name: "", email: "", specialties: [] });
