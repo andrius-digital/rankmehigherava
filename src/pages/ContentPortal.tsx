@@ -29,6 +29,8 @@ interface ShootVideo {
   scriptStatus: ScriptStatus;
 }
 
+type ShootType = "production" | "edit-only";
+
 interface Shoot {
   id: string;
   clientId: string;
@@ -36,6 +38,7 @@ interface Shoot {
   date: string;
   location: string;
   status: ShootStatus;
+  shootType?: ShootType;
   managerName: string;
   actorMinutes: number;
   filmerMinutes: number;
@@ -588,10 +591,11 @@ const ContentPortal = () => {
   useEffect(() => { loadKnowledge(); }, []);
 
   const calcShootFinancials = (shoot: Shoot) => {
-    const actorCost = (shoot.actorMinutes / 60) * ACTOR_COST;
-    const filmerCost = (shoot.filmerMinutes / 60) * FILMER_COST;
-    const actorRevenue = (shoot.actorMinutes / 60) * ACTOR_CHARGE;
-    const filmerRevenue = (shoot.filmerMinutes / 60) * FILMER_CHARGE;
+    const isEditOnly = shoot.shootType === "edit-only";
+    const actorCost = isEditOnly ? 0 : (shoot.actorMinutes / 60) * ACTOR_COST;
+    const filmerCost = isEditOnly ? 0 : (shoot.filmerMinutes / 60) * FILMER_COST;
+    const actorRevenue = isEditOnly ? 0 : (shoot.actorMinutes / 60) * ACTOR_CHARGE;
+    const filmerRevenue = isEditOnly ? 0 : (shoot.filmerMinutes / 60) * FILMER_CHARGE;
     const totalVideoCount = (shoot.shortFormCount || 0) + (shoot.vslCount || 0) + (shoot.valueAddedCount || 0) + (shoot.youtubeCount || 0);
     const shootVideoRevenue = (shoot.shortFormCount || 0) * SHORT_FORM_PRICE + (shoot.vslCount || 0) * VSL_PRICE + (shoot.valueAddedCount || 0) * VALUE_ADDED_PRICE + (shoot.youtubeCount || 0) * YOUTUBE_PRICE;
     const editorCost = ((shoot.shortFormCount || 0) + (shoot.valueAddedCount || 0)) * EDITOR_COST_PER_VIDEO + (shoot.vslCount || 0) * EDITOR_COST_PER_VSL + (shoot.youtubeCount || 0) * EDITOR_COST_PER_YOUTUBE;
@@ -1198,10 +1202,18 @@ const ContentPortal = () => {
                               <Video className="w-3.5 h-3.5 text-yellow-400" />
                               <span className="text-muted-foreground">{fin.totalVideoCount} video{fin.totalVideoCount !== 1 ? "s" : ""}</span>
                             </div>
-                            <div className="flex items-center gap-1.5">
-                              <Clock className="w-3.5 h-3.5 text-blue-400" />
-                              <span className="text-muted-foreground">{shoot.actorMinutes + shoot.filmerMinutes}min on site</span>
-                            </div>
+                            {shoot.shootType !== "edit-only" && (
+                              <div className="flex items-center gap-1.5">
+                                <Clock className="w-3.5 h-3.5 text-blue-400" />
+                                <span className="text-muted-foreground">{shoot.actorMinutes + shoot.filmerMinutes}min on site</span>
+                              </div>
+                            )}
+                            {shoot.shootType === "edit-only" && (
+                              <div className="flex items-center gap-1.5">
+                                <Pencil className="w-3.5 h-3.5 text-violet-400" />
+                                <span className="text-violet-400">Edit Only</span>
+                              </div>
+                            )}
                             <div className="flex items-center gap-1.5">
                               <DollarSign className="w-3.5 h-3.5 text-green-400" />
                               <span className="text-green-400 font-bold">${fin.totalRevenue.toFixed(0)}</span>
@@ -1317,6 +1329,20 @@ const ContentPortal = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => updateShoot("shootType", selectedShoot.shootType === "edit-only" ? "production" : "edit-only")}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all ${
+                      selectedShoot.shootType === "edit-only"
+                        ? "bg-violet-500/10 border-violet-500/30 text-violet-400"
+                        : "bg-white/5 border-white/10 text-foreground"
+                    }`}
+                  >
+                    {selectedShoot.shootType === "edit-only" ? (
+                      <><Pencil className="w-3 h-3" /> Edit Only</>
+                    ) : (
+                      <><Camera className="w-3 h-3" /> Production</>
+                    )}
+                  </button>
                   <select
                     value={selectedShoot.managerName || ""}
                     onChange={e => updateShoot("managerName", e.target.value)}
@@ -1361,31 +1387,35 @@ const ContentPortal = () => {
                     <h3 className="text-xs font-bold text-muted-foreground uppercase font-orbitron mb-3 flex items-center gap-1.5">
                       <DollarSign className="w-3.5 h-3.5 text-green-400" /> Financials
                     </h3>
-                    <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-3 mb-3">
-                      <div>
-                        <label className="text-[10px] text-muted-foreground block mb-1">Actor Minutes on Site</label>
-                        <Input
-                          type="number" min="0" step="5"
-                          value={selectedShoot.actorMinutes || ""}
-                          onChange={e => updateShoot("actorMinutes", parseFloat(e.target.value) || 0)}
-                          onBlur={e => { if (e.target.value === "") updateShoot("actorMinutes", 0); }}
-                          placeholder="0"
-                          className="bg-white/5 border-white/10 h-8 text-sm"
-                        />
-                        <p className="text-[10px] mt-0.5"><span className="text-green-400">Charge: ${fin.actorRevenue.toFixed(2)}</span> · <span className="text-red-400">Cost: ${fin.actorCost.toFixed(2)}</span></p>
-                      </div>
-                      <div>
-                        <label className="text-[10px] text-muted-foreground block mb-1">Filmer Minutes on Site</label>
-                        <Input
-                          type="number" min="0" step="5"
-                          value={selectedShoot.filmerMinutes || ""}
-                          onChange={e => updateShoot("filmerMinutes", parseFloat(e.target.value) || 0)}
-                          onBlur={e => { if (e.target.value === "") updateShoot("filmerMinutes", 0); }}
-                          placeholder="0"
-                          className="bg-white/5 border-white/10 h-8 text-sm"
-                        />
-                        <p className="text-[10px] mt-0.5"><span className="text-green-400">Charge: ${fin.filmerRevenue.toFixed(2)}</span> · <span className="text-red-400">Cost: ${fin.filmerCost.toFixed(2)}</span></p>
-                      </div>
+                    <div className={`grid grid-cols-2 lg:grid-cols-4 ${selectedShoot.shootType === "edit-only" ? "xl:grid-cols-5" : "xl:grid-cols-7"} gap-3 mb-3`}>
+                      {selectedShoot.shootType !== "edit-only" && (
+                        <>
+                          <div>
+                            <label className="text-[10px] text-muted-foreground block mb-1">Actor Minutes on Site</label>
+                            <Input
+                              type="number" min="0" step="5"
+                              value={selectedShoot.actorMinutes || ""}
+                              onChange={e => updateShoot("actorMinutes", parseFloat(e.target.value) || 0)}
+                              onBlur={e => { if (e.target.value === "") updateShoot("actorMinutes", 0); }}
+                              placeholder="0"
+                              className="bg-white/5 border-white/10 h-8 text-sm"
+                            />
+                            <p className="text-[10px] mt-0.5"><span className="text-green-400">Charge: ${fin.actorRevenue.toFixed(2)}</span> · <span className="text-red-400">Cost: ${fin.actorCost.toFixed(2)}</span></p>
+                          </div>
+                          <div>
+                            <label className="text-[10px] text-muted-foreground block mb-1">Filmer Minutes on Site</label>
+                            <Input
+                              type="number" min="0" step="5"
+                              value={selectedShoot.filmerMinutes || ""}
+                              onChange={e => updateShoot("filmerMinutes", parseFloat(e.target.value) || 0)}
+                              onBlur={e => { if (e.target.value === "") updateShoot("filmerMinutes", 0); }}
+                              placeholder="0"
+                              className="bg-white/5 border-white/10 h-8 text-sm"
+                            />
+                            <p className="text-[10px] mt-0.5"><span className="text-green-400">Charge: ${fin.filmerRevenue.toFixed(2)}</span> · <span className="text-red-400">Cost: ${fin.filmerCost.toFixed(2)}</span></p>
+                          </div>
+                        </>
+                      )}
                       <div>
                         <label className="text-[10px] text-muted-foreground block mb-1">Short Form Ads Shot</label>
                         <Input
@@ -1452,8 +1482,12 @@ const ContentPortal = () => {
                         <div>
                           <p className="text-[10px] text-muted-foreground uppercase font-orbitron mb-1.5">Revenue Breakdown</p>
                           <div className="space-y-1">
-                            <div className="flex justify-between"><span className="text-muted-foreground">Actor charge ({selectedShoot.actorMinutes || 0}min × ${ACTOR_CHARGE}/hr)</span><span className="text-green-400 font-bold">${fin.actorRevenue.toFixed(2)}</span></div>
-                            <div className="flex justify-between"><span className="text-muted-foreground">Filmer charge ({selectedShoot.filmerMinutes || 0}min × ${FILMER_CHARGE}/hr)</span><span className="text-green-400 font-bold">${fin.filmerRevenue.toFixed(2)}</span></div>
+                            {selectedShoot.shootType !== "edit-only" && (
+                              <>
+                                <div className="flex justify-between"><span className="text-muted-foreground">Actor charge ({selectedShoot.actorMinutes || 0}min × ${ACTOR_CHARGE}/hr)</span><span className="text-green-400 font-bold">${fin.actorRevenue.toFixed(2)}</span></div>
+                                <div className="flex justify-between"><span className="text-muted-foreground">Filmer charge ({selectedShoot.filmerMinutes || 0}min × ${FILMER_CHARGE}/hr)</span><span className="text-green-400 font-bold">${fin.filmerRevenue.toFixed(2)}</span></div>
+                              </>
+                            )}
                             <div className="flex justify-between"><span className="text-muted-foreground">Video revenue ({fin.totalVideoCount} videos)</span><span className="text-green-400 font-bold">${fin.videoRevenue.toFixed(2)}</span></div>
                             {fin.discount > 0 && (
                               <div className="flex justify-between"><span className="text-orange-400">Discount ({selectedShoot.discountPercent}%)</span><span className="text-orange-400 font-bold">−${fin.discount.toFixed(2)}</span></div>
@@ -1464,8 +1498,12 @@ const ContentPortal = () => {
                         <div>
                           <p className="text-[10px] text-muted-foreground uppercase font-orbitron mb-1.5">Cost Breakdown</p>
                           <div className="space-y-1">
-                            <div className="flex justify-between"><span className="text-muted-foreground">Actor cost ({selectedShoot.actorMinutes || 0}min × ${ACTOR_COST}/hr)</span><span className="text-red-400 font-bold">${fin.actorCost.toFixed(2)}</span></div>
-                            <div className="flex justify-between"><span className="text-muted-foreground">Filmer cost ({selectedShoot.filmerMinutes || 0}min × ${FILMER_COST}/hr)</span><span className="text-red-400 font-bold">${fin.filmerCost.toFixed(2)}</span></div>
+                            {selectedShoot.shootType !== "edit-only" && (
+                              <>
+                                <div className="flex justify-between"><span className="text-muted-foreground">Actor cost ({selectedShoot.actorMinutes || 0}min × ${ACTOR_COST}/hr)</span><span className="text-red-400 font-bold">${fin.actorCost.toFixed(2)}</span></div>
+                                <div className="flex justify-between"><span className="text-muted-foreground">Filmer cost ({selectedShoot.filmerMinutes || 0}min × ${FILMER_COST}/hr)</span><span className="text-red-400 font-bold">${fin.filmerCost.toFixed(2)}</span></div>
+                              </>
+                            )}
                             {((selectedShoot.shortFormCount || 0) + (selectedShoot.valueAddedCount || 0)) > 0 && (
                               <div className="flex justify-between"><span className="text-muted-foreground">Editor cost — SF/VA ({(selectedShoot.shortFormCount || 0) + (selectedShoot.valueAddedCount || 0)} × ${EDITOR_COST_PER_VIDEO})</span><span className="text-red-400 font-bold">${(((selectedShoot.shortFormCount || 0) + (selectedShoot.valueAddedCount || 0)) * EDITOR_COST_PER_VIDEO).toFixed(2)}</span></div>
                             )}
