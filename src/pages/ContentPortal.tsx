@@ -832,6 +832,57 @@ const ContentPortal = () => {
                 </div>
               </div>
 
+              {showClientList && (
+                <>
+                  <div className="relative mb-4">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search clients..."
+                      value={searchQuery}
+                      onChange={e => setSearchQuery(e.target.value)}
+                      className="pl-10 bg-white/5 border-white/10"
+                    />
+                  </div>
+                  <div className="grid gap-3 mb-6">
+                    {filteredClients.map(client => {
+                      const totals = calcClientTotals(client);
+                      return (
+                        <button
+                          key={client.id}
+                          onClick={() => { setSelectedClientId(client.id); setView("client-detail"); }}
+                          className="w-full text-left p-4 rounded-xl bg-white/5 border border-white/10 hover:border-red-500/30 hover:bg-white/[0.07] transition-all group"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+                                <Building2 className="w-5 h-5 text-red-400" />
+                              </div>
+                              <div>
+                                <p className="font-bold text-sm">{client.name}</p>
+                                <p className="text-xs text-muted-foreground">{client.business}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                              <div className="text-right hidden sm:block">
+                                <p className="text-green-400 font-bold">${totals.totalRevenue.toLocaleString()}</p>
+                                <p>{totals.totalShoots} shoot{totals.totalShoots !== 1 ? "s" : ""} · {totals.totalVideos} video{totals.totalVideos !== 1 ? "s" : ""}</p>
+                              </div>
+                              <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-red-400 transition-colors" />
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                    {filteredClients.length === 0 && (
+                      <div className="text-center py-12 text-muted-foreground">
+                        <Users className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                        <p className="text-sm">{searchQuery ? "No clients match your search" : "No clients yet. Onboard your first client."}</p>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+
               {/* Stats overview */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
                 {(() => {
@@ -992,57 +1043,6 @@ const ContentPortal = () => {
                   </div>
                 );
               })()}
-
-              {showClientList && (
-                <>
-                  <div className="relative mb-4">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search clients..."
-                      value={searchQuery}
-                      onChange={e => setSearchQuery(e.target.value)}
-                      className="pl-10 bg-white/5 border-white/10"
-                    />
-                  </div>
-                  <div className="grid gap-3 mb-6">
-                    {filteredClients.map(client => {
-                      const totals = calcClientTotals(client);
-                      return (
-                        <button
-                          key={client.id}
-                          onClick={() => { setSelectedClientId(client.id); setView("client-detail"); }}
-                          className="w-full text-left p-4 rounded-xl bg-white/5 border border-white/10 hover:border-red-500/30 hover:bg-white/[0.07] transition-all group"
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center">
-                                <Building2 className="w-5 h-5 text-red-400" />
-                              </div>
-                              <div>
-                                <p className="font-bold text-sm">{client.name}</p>
-                                <p className="text-xs text-muted-foreground">{client.business}</p>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                              <div className="text-right hidden sm:block">
-                                <p className="text-green-400 font-bold">${totals.totalRevenue.toLocaleString()}</p>
-                                <p>{totals.totalShoots} shoot{totals.totalShoots !== 1 ? "s" : ""} · {totals.totalVideos} video{totals.totalVideos !== 1 ? "s" : ""}</p>
-                              </div>
-                              <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-red-400 transition-colors" />
-                            </div>
-                          </div>
-                        </button>
-                      );
-                    })}
-                    {filteredClients.length === 0 && (
-                      <div className="text-center py-12 text-muted-foreground">
-                        <Users className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                        <p className="text-sm">{searchQuery ? "No clients match your search" : "No clients yet. Onboard your first client."}</p>
-                      </div>
-                    )}
-                  </div>
-                </>
-              )}
 
               {showAddClient && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={() => setShowAddClient(false)}>
