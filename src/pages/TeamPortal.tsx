@@ -125,6 +125,11 @@ const TeamPortal = () => {
       }
       const teamData = await fetchTeamData(data.user.id);
       if (!teamData) {
+        const adminEmails = ['andrius@cdlagency.com'];
+        if (adminEmails.includes(data.user.email?.toLowerCase() || '')) {
+          window.location.href = '/avaadminpanel';
+          return;
+        }
         await supabase.auth.signOut();
         toast({ title: "Access denied", description: "This account is not a team portal member. Use the admin login instead.", variant: "destructive" });
         setIsLoading(false);
