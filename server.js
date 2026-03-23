@@ -640,6 +640,56 @@ app.post('/api/editor/notify', async (req, res) => {
   }
 });
 
+const TEAM_TASKS_CHAT_ID = '-1003715756363';
+
+app.post('/api/team-tasks/notify', async (req, res) => {
+  try {
+    const { type, taskTitle, assigneeName, priority, dueDate, oldStatus, newStatus, movedBy } = req.body;
+    if (!taskTitle) return res.status(400).json({ error: 'Missing task title' });
+
+    const botToken = process.env.TELEGRAM_BOT_TOKEN;
+    if (!botToken) return res.status(500).json({ error: 'Telegram bot token not configured' });
+
+    const priorityEmoji = { urgent: '🔴', high: '🟠', medium: '🟡', low: '🟢' };
+    const statusEmoji = { todo: '📋', in_progress: '⚡', in_review: '🔍', done: '✅' };
+    const statusLabel = { todo: 'To Do', in_progress: 'In Progress', in_review: 'In Review', done: 'Done' };
+
+    let message = '';
+    if (type === 'created') {
+      message = `📌 *New Task Created*\n\n` +
+        `*${taskTitle}*\n` +
+        `${priorityEmoji[priority] || '🟡'} Priority: ${(priority || 'medium').charAt(0).toUpperCase() + (priority || 'medium').slice(1)}\n` +
+        `👤 Assigned to: ${assigneeName || 'Unassigned'}\n` +
+        (dueDate ? `📅 Due: ${dueDate}\n` : '') +
+        `\n_Team Tasks Board_`;
+    } else if (type === 'moved') {
+      message = `${statusEmoji[newStatus] || '📋'} *Task Status Updated*\n\n` +
+        `*${taskTitle}*\n` +
+        `${statusLabel[oldStatus] || oldStatus} → ${statusLabel[newStatus] || newStatus}\n` +
+        `👤 ${assigneeName || 'Unknown'}\n` +
+        (movedBy ? `↪️ Moved by: ${movedBy}\n` : '') +
+        `\n_Team Tasks Board_`;
+    } else {
+      return res.status(400).json({ error: 'Invalid notification type' });
+    }
+
+    const tgRes = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: TEAM_TASKS_CHAT_ID, text: message, parse_mode: 'Markdown' }),
+    });
+    const tgData = await tgRes.json();
+    if (!tgData.ok) {
+      console.error('Telegram error:', tgData);
+      return res.status(500).json({ error: tgData.description || 'Telegram send failed' });
+    }
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Team tasks notify error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.use(express.static(join(__dirname, 'dist')));
 
 app.use((req, res) => {

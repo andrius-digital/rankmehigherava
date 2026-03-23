@@ -69,6 +69,18 @@ function rowToMember(row: TeamPortalMemberRow): TeamMember {
   };
 }
 
+async function notifyTelegram(payload: Record<string, string | null | undefined>) {
+  try {
+    await fetch('/api/team-tasks/notify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+  } catch (err) {
+    console.error('Task notification failed:', err);
+  }
+}
+
 export function useTeamTasks() {
   const { user, isAdmin } = useAuth();
   const [tasks, setTasks] = useState<TeamTask[]>([]);
@@ -183,6 +195,13 @@ export function useTeamTasks() {
         const row = data as TeamTaskRow;
         const created = rowToTask(row);
         setTasks(prev => [...prev, created]);
+        notifyTelegram({
+          type: 'created',
+          taskTitle: created.title,
+          assigneeName: created.assignee_name,
+          priority: created.priority,
+          dueDate: created.due_date,
+        });
         return created;
       }
     } catch (err) {
@@ -193,6 +212,7 @@ export function useTeamTasks() {
 
   const updateTask = useCallback(async (taskId: string, updates: Partial<TeamTask>) => {
     try {
+      const existingTask = tasks.find(t => t.id === taskId);
       const updatePayload: Record<string, unknown> = {
         ...updates,
         updated_at: new Date().toISOString(),
@@ -203,11 +223,25 @@ export function useTeamTasks() {
       const { error } = await supabase.from('team_tasks').update(updatePayload).eq('id', taskId);
       if (error) throw error;
       setTasks(prev => prev.map(t => t.id === taskId ? { ...t, ...updates, updated_at: new Date().toISOString() } : t));
+
+      if (existingTask && updates.status && updates.status !== existingTask.status) {
+        const currentName = user?.email
+          ? members.find(m => m.email === user.email)?.name
+          : getTeamSession()?.name;
+        notifyTelegram({
+          type: 'moved',
+          taskTitle: existingTask.title,
+          assigneeName: existingTask.assignee_name,
+          oldStatus: existingTask.status,
+          newStatus: updates.status,
+          movedBy: currentName || undefined,
+        });
+      }
     } catch (err) {
       console.error('Failed to update task:', err);
       throw err;
     }
-  }, []);
+  }, [tasks, user, members]);
 
   const deleteTask = useCallback(async (taskId: string) => {
     try {
@@ -224,6 +258,7 @@ export function useTeamTasks() {
     const task = tasks.find(t => t.id === taskId);
     if (!task || task.status === newStatus) return;
 
+    const oldStatus = task.status;
     const maxPos = tasks.filter(t => t.status === newStatus).reduce((max, t) => Math.max(max, t.position), 0);
 
     setTasks(prev => prev.map(t =>
@@ -237,13 +272,26 @@ export function useTeamTasks() {
         updated_at: new Date().toISOString(),
       }).eq('id', taskId);
       if (error) throw error;
+
+      const currentName = user?.email
+        ? members.find(m => m.email === user.email)?.name
+        : getTeamSession()?.name;
+
+      notifyTelegram({
+        type: 'moved',
+        taskTitle: task.title,
+        assigneeName: task.assignee_name,
+        oldStatus,
+        newStatus,
+        movedBy: currentName || undefined,
+      });
     } catch (err) {
       console.error('Failed to move task:', err);
       setTasks(prev => prev.map(t =>
         t.id === taskId ? { ...t, status: task.status, position: task.position } : t
       ));
     }
-  }, [tasks]);
+  }, [tasks, user, members]);
 
   useEffect(() => {
     loadMembers();
