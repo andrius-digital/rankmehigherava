@@ -185,22 +185,6 @@ const ContentPortal = () => {
 
   useEffect(() => { loadFromSupabase(); }, [loadFromSupabase]);
 
-  const clientsRef = useRef(clients);
-  clientsRef.current = clients;
-  const managersRef = useRef(managers);
-  managersRef.current = managers;
-  const editorsRef = useRef(editors);
-  editorsRef.current = editors;
-
-  const saveToSupabase = useCallback((c: Client[], m: VideoManager[], e: Editor[]) => {
-    supabase.from(CP_TABLE).upsert({ id: 1, clients: c, managers: m, editors: e, updated_at: new Date().toISOString() } as any).then();
-  }, []);
-
-  const persist = (updated: Client[]) => {
-    setClients(updated);
-    saveToSupabase(updated, managersRef.current, editorsRef.current);
-  };
-
   const selectedClient = clients.find(c => c.id === selectedClientId) || null;
   const selectedShoot = selectedClient?.shoots.find(s => s.id === selectedShootId) || null;
 
@@ -225,6 +209,21 @@ const ContentPortal = () => {
   const [editStatusFilter, setEditStatusFilter] = useState<EditStatus | null>(null);
   const [showClientList, setShowClientList] = useState(false);
 
+  const clientsRef = useRef(clients);
+  clientsRef.current = clients;
+  const managersRef = useRef(managers);
+  managersRef.current = managers;
+  const editorsRef = useRef(editors);
+  editorsRef.current = editors;
+
+  const saveToSupabase = useCallback((c: Client[], m: VideoManager[], e: Editor[]) => {
+    supabase.from(CP_TABLE).upsert({ id: 1, clients: c, managers: m, editors: e, updated_at: new Date().toISOString() } as any).then();
+  }, []);
+
+  const persist = (updated: Client[]) => {
+    setClients(updated);
+    saveToSupabase(updated, managersRef.current, editorsRef.current);
+  };
 
   const persistManagers = (updated: VideoManager[]) => {
     setManagers(updated);
