@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import {
@@ -162,7 +162,7 @@ const ContentPortal = () => {
         }));
         setEditors(loadedEditors);
         if (loadedEditors.some((e: any) => !(data as any).editors?.find((orig: any) => orig.id === e.id && orig.accessCode))) {
-          supabase.from(CP_TABLE).upsert({ id: 1, editors: loadedEditors, updated_at: new Date().toISOString() } as any).then();
+          supabase.from(CP_TABLE).upsert({ id: 1, clients: (data as any).clients || [], managers: (data as any).managers || [], editors: loadedEditors, updated_at: new Date().toISOString() } as any).then();
         }
       } else {
         const localClients = (() => { try { const r = localStorage.getItem("rmh_content_portal"); return r ? JSON.parse(r) : []; } catch { return []; } })();
@@ -185,18 +185,20 @@ const ContentPortal = () => {
 
   useEffect(() => { loadFromSupabase(); }, [loadFromSupabase]);
 
-  const persistAll = (updatedClients?: Client[], updatedManagers?: VideoManager[], updatedEditors?: Editor[]) => {
-    const c = updatedClients ?? clients;
-    const m = updatedManagers ?? managers;
-    const e = updatedEditors ?? editors;
-    if (updatedClients) setClients(c);
-    if (updatedManagers) setManagers(m);
-    if (updatedEditors) setEditors(e);
+  const clientsRef = useRef(clients);
+  clientsRef.current = clients;
+  const managersRef = useRef(managers);
+  managersRef.current = managers;
+  const editorsRef = useRef(editors);
+  editorsRef.current = editors;
+
+  const saveToSupabase = useCallback((c: Client[], m: VideoManager[], e: Editor[]) => {
     supabase.from(CP_TABLE).upsert({ id: 1, clients: c, managers: m, editors: e, updated_at: new Date().toISOString() } as any).then();
-  };
+  }, []);
 
   const persist = (updated: Client[]) => {
-    persistAll(updated, undefined, undefined);
+    setClients(updated);
+    saveToSupabase(updated, managersRef.current, editorsRef.current);
   };
 
   const selectedClient = clients.find(c => c.id === selectedClientId) || null;
@@ -225,7 +227,8 @@ const ContentPortal = () => {
 
 
   const persistManagers = (updated: VideoManager[]) => {
-    persistAll(undefined, updated, undefined);
+    setManagers(updated);
+    saveToSupabase(clientsRef.current, updated, editorsRef.current);
   };
   const addManager = () => {
     if (!newManager.name || !newManager.email) return;
@@ -238,7 +241,8 @@ const ContentPortal = () => {
   const deleteManager = (id: string) => { persistManagers(managers.filter(m => m.id !== id)); };
 
   const persistEditors = (updated: Editor[]) => {
-    persistAll(undefined, undefined, updated);
+    setEditors(updated);
+    saveToSupabase(clientsRef.current, managersRef.current, updated);
   };
   const addEditor = () => {
     if (!newEditor.name || !newEditor.email) return;
