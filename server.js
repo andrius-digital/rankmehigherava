@@ -624,7 +624,7 @@ app.post('/api/editor/notify', async (req, res) => {
         </div>
       </div>`;
     const { data, error } = await resend.emails.send({
-      from: 'Rank Me Higher <notifications@rankmehigher.com>',
+      from: 'AVA - Rank Me Higher <noreply@ava.rankmehigher.com>',
       to: [editorEmail],
       subject: `${videos.length} new video${videos.length !== 1 ? 's' : ''} assigned — ${clientName || 'Content Portal'}`,
       html,
