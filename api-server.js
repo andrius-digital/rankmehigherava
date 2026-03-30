@@ -521,8 +521,8 @@ app.post('/api/pto/notify', async (req, res) => {
 app.get('/api/pto/reminders', async (req, res) => {
   try {
     const { createClient } = await import('@supabase/supabase-js');
-    const supabaseUrl = 'https://vyviopkpwcsdrfpdwzpa.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5dmlvcGtwd2NzZHJmcGR3enBhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY5MDI0NjUsImV4cCI6MjA4MjQ3ODQ2NX0.-0fLKWyJ39io9kTmV0Y9vg_sCeKBHy5Ct4c2FgEqHOw';
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_ANON_KEY;
     const sb = createClient(supabaseUrl, supabaseKey);
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
