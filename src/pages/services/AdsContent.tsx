@@ -127,6 +127,7 @@ const AdsContent = () => {
         <meta property="og:description" content="Professional content shoots, Meta ad campaigns, and sales funnels that deliver qualified leads." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://rankmehigher.com/services/ads-content" />
+        <meta property="og:site_name" content="Rank Me Higher" />
         <meta property="og:image" content="https://rankmehigher.com/assets/logo.png" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Ads & Content | Rank Me Higher" />

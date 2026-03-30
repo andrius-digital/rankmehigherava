@@ -409,6 +409,7 @@ const Careers = () => {
         <meta property="og:description" content="Join the Rank Me Higher team. We're hiring in automation, marketing, design, and development. Remote positions available." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://rankmehigher.com/careers" />
+        <meta property="og:site_name" content="Rank Me Higher" />
         <meta property="og:image" content="https://rankmehigher.com/assets/logo.png" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Careers | Rank Me Higher" />

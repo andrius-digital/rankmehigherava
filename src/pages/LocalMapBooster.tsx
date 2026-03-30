@@ -26,6 +26,7 @@ const LocalMapBooster = () => {
         <meta property="og:description" content="Optimize your Google Business Profile and drive real human activity. 7 day free trial. See results before you pay." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://rankmehigher.com/localmapbooster" />
+        <meta property="og:site_name" content="Rank Me Higher" />
         <meta property="og:image" content="https://rankmehigher.com/assets/logo.png" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Local Map Booster | Rank Me Higher" />

@@ -128,6 +128,7 @@ const Websites = () => {
         <meta property="og:description" content="Get a custom-built website with AI receptionist, automated follow-ups, and full CRM integration. From scratch to live in 2 weeks." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://rankmehigher.com/services/websites" />
+        <meta property="og:site_name" content="Rank Me Higher" />
         <meta property="og:image" content="https://rankmehigher.com/assets/logo.png" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Custom Websites with AI Receptionist | Rank Me Higher" />

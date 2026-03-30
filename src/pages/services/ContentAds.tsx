@@ -8,20 +8,39 @@ const ContentAds = () => {
   return (
     <>
       <Helmet>
-        <title>Content & Ads — Coming Soon | Rank Me Higher</title>
+        <title>Content & Ads | Short-Form Video & Meta Ad Campaigns | Rank Me Higher</title>
         <meta
           name="description"
-          content="Short-form video ads and Meta ad campaigns that convert. Coming soon from Rank Me Higher."
+          content="Professional short-form video content creation and high-ROI Meta ad campaigns. Zero-touch content that fills your calendar with appointments."
         />
-        <meta property="og:title" content="Content & Ads | Rank Me Higher" />
-        <meta property="og:description" content="Short-form video ads and Meta ad campaigns that convert. Coming soon." />
+        <meta property="og:title" content="Content & Ads | Short-Form Video & Meta Ad Campaigns | Rank Me Higher" />
+        <meta property="og:description" content="Professional short-form video content creation and high-ROI Meta ad campaigns that fill your calendar." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://rankmehigher.com/services/content-ads" />
+        <meta property="og:site_name" content="Rank Me Higher" />
         <meta property="og:image" content="https://rankmehigher.com/assets/logo.png" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Content & Ads | Rank Me Higher" />
-        <meta name="twitter:description" content="Short-form video ads and Meta ad campaigns that convert." />
+        <meta name="twitter:description" content="Short-form video content and Meta ad campaigns that convert." />
         <link rel="canonical" href="https://rankmehigher.com/services/content-ads" />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Service",
+          "name": "Content & Ads",
+          "description": "Professional short-form video content creation, Google Ads, and Meta Ads campaigns that fill your calendar with qualified appointments.",
+          "provider": { "@type": "Organization", "name": "Rank Me Higher", "url": "https://rankmehigher.com" },
+          "url": "https://rankmehigher.com/services/content-ads",
+          "serviceType": "Content Marketing and Advertising",
+          "areaServed": { "@type": "Country", "name": "United States" }
+        })}</script>
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://rankmehigher.com" },
+            { "@type": "ListItem", "position": 2, "name": "Content & Ads", "item": "https://rankmehigher.com/services/content-ads" }
+          ]
+        })}</script>
       </Helmet>
 
       <div className="min-h-screen bg-background text-foreground relative overflow-hidden">

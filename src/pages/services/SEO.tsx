@@ -127,6 +127,7 @@ const SEO = () => {
         <meta property="og:description" content="Dominate local search results and get more calls from customers actively searching for your services." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://rankmehigher.com/services/seo" />
+        <meta property="og:site_name" content="Rank Me Higher" />
         <meta property="og:image" content="https://rankmehigher.com/assets/logo.png" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="SEO Services for Local Businesses | Rank Me Higher" />

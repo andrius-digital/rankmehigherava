@@ -30,6 +30,7 @@ const Blog = () => {
         <meta property="og:description" content="Get the latest SEO strategies, local marketing tips, and Google Maps ranking secrets from Chicago's top local SEO experts." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://rankmehigher.com/blog" />
+        <meta property="og:site_name" content="Rank Me Higher" />
         <meta property="og:image" content="https://rankmehigher.com/assets/logo.png" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="SEO Blog | Rank Me Higher" />

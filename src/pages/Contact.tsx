@@ -106,6 +106,7 @@ const Contact = () => {
         <meta property="og:description" content="Contact Rank Me Higher - AI, Software & Website Development Company from Chicago. Call (773) 572-4686." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://rankmehigher.com/contact" />
+        <meta property="og:site_name" content="Rank Me Higher" />
         <meta property="og:image" content="https://rankmehigher.com/assets/logo.png" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Contact Rank Me Higher | Chicago SEO Agency" />

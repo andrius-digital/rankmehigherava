@@ -137,6 +137,7 @@ const Outbound = () => {
         <meta property="og:description" content="Reactivate your existing customer database with live human agents. Guaranteed ROI. Deploy in 2 days." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://rankmehigher.com/services/outbound" />
+        <meta property="og:site_name" content="Rank Me Higher" />
         <meta property="og:image" content="https://rankmehigher.com/assets/logo.png" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Live Outbound Sales Agents | Rank Me Higher" />
