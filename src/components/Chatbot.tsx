@@ -1005,7 +1005,7 @@ And what kind of services are you looking into? Just so they know what you're af
                         ? "border border-cyan-400/30 shadow-[0_0_30px_rgba(6,182,212,0.15)]"
                         : isCallActive
                           ? "border border-cyan-500/20 shadow-[0_0_20px_rgba(6,182,212,0.1)]"
-                          : "border border-white/10"
+                          : "border border-cyan-500/10 shadow-[0_0_15px_rgba(6,182,212,0.05)]"
                     }`} />
 
                     {/* Main orb */}
@@ -1013,8 +1013,8 @@ And what kind of services are you looking into? Just so they know what you're af
                       isSpeaking
                         ? "bg-gradient-to-br from-cyan-400 via-blue-500 to-cyan-600 shadow-lg shadow-cyan-500/40"
                         : isCallActive
-                          ? "bg-gradient-to-br from-cyan-500 via-blue-600 to-blue-700 shadow-lg shadow-blue-500/30"
-                          : "bg-gradient-to-br from-slate-500 via-slate-600 to-slate-700 shadow-md"
+                          ? "bg-gradient-to-br from-cyan-400/80 via-blue-500/80 to-cyan-600/80 shadow-lg shadow-cyan-500/25"
+                          : "bg-gradient-to-br from-cyan-600/40 via-blue-700/40 to-cyan-800/40 shadow-md shadow-cyan-500/10"
                     }`}>
                       <div className="absolute inset-1 rounded-full bg-gradient-to-br from-white/20 to-transparent" />
 
@@ -1042,7 +1042,7 @@ And what kind of services are you looking into? Just so they know what you're af
                   {/* Status */}
                   <div className="text-center flex-shrink-0">
                     <p className={`text-sm font-semibold tracking-wider uppercase ${
-                      isSpeaking ? 'text-cyan-400' : isCallActive ? 'text-blue-400' : 'text-white/50'
+                      isSpeaking ? 'text-cyan-400' : isCallActive ? 'text-cyan-400' : 'text-cyan-500/50'
                     }`}>
                       {isSpeaking ? "AVA is speaking" : isCallActive ? "Listening..." : "Connecting..."}
                     </p>
@@ -1077,13 +1077,13 @@ And what kind of services are you looking into? Just so they know what you're af
 
                   {/* Action buttons */}
                   <div className="w-full flex-shrink-0 space-y-2 mt-auto pb-1">
-                    <Button
+                    <button
                       onClick={endVoiceCall}
-                      className="w-full h-9 rounded-lg bg-red-500/90 hover:bg-red-500 text-white text-sm font-medium shadow-sm"
+                      className="w-full h-9 rounded-lg bg-transparent hover:bg-red-500/10 border border-red-500/30 hover:border-red-500/50 text-red-400 hover:text-red-300 text-sm font-medium flex items-center justify-center gap-1.5 transition-all"
                     >
-                      <PhoneOff className="w-4 h-4 mr-1.5" />
+                      <PhoneOff className="w-4 h-4" />
                       End Call
-                    </Button>
+                    </button>
 
                     <div className="flex gap-2">
                       <button
@@ -1091,14 +1091,14 @@ And what kind of services are you looking into? Just so they know what you're af
                           endVoiceCall();
                           setShowTextMode(true);
                         }}
-                        className="flex-1 flex items-center justify-center gap-1.5 h-8 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 hover:border-cyan-500/30 text-white/60 hover:text-white text-xs transition-all"
+                        className="flex-1 flex items-center justify-center gap-1.5 h-8 rounded-lg bg-transparent hover:bg-white/5 border border-white/10 hover:border-cyan-500/30 text-white/40 hover:text-white text-xs transition-all"
                       >
                         <MessageSquare className="w-3.5 h-3.5" />
                         Text mode
                       </button>
                       <button
                         onClick={openCalendly}
-                        className="flex-1 flex items-center justify-center gap-1.5 h-8 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 hover:border-cyan-500/40 text-cyan-400/80 hover:text-cyan-300 text-xs transition-all"
+                        className="flex-1 flex items-center justify-center gap-1.5 h-8 rounded-lg bg-transparent hover:bg-cyan-500/5 border border-cyan-500/15 hover:border-cyan-500/30 text-cyan-400/50 hover:text-cyan-300 text-xs transition-all"
                       >
                         <Calendar className="w-3.5 h-3.5" />
                         Book a call
