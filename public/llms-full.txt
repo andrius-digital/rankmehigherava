@@ -1,0 +1,159 @@
+# Rank Me Higher — Full Documentation
+
+> Rank Me Higher is a full-service digital marketing agency headquartered in Chicago, Illinois. We specialize in custom-coded websites, search engine optimization (SEO), Google Maps optimization, AI-powered business automation, content creation, paid advertising, and outbound sales. Our mission is to help local businesses dominate their online presence and convert digital traffic into paying customers.
+
+## Company Overview
+
+- **Name**: Rank Me Higher
+- **Type**: Digital Marketing Agency / AI Website Agency
+- **Founded**: 2015
+- **Founder**: Andrius
+- **Location**: Chicago, IL, United States
+- **Phone**: (773) 572-4686
+- **Website**: https://rankmehigher.com
+- **Team Size**: 10–50 employees
+- **Service Area**: United States (nationwide)
+- **Hours**: Monday–Friday, 9:00 AM – 5:00 PM Central Time
+- **Rating**: 5.0 stars (54 reviews)
+
+## Core Philosophy
+
+We believe that most businesses overpay for websites that don't generate leads. Template websites, WordPress sites, and drag-and-drop builders produce slow, bloated pages that Google ignores. We custom-code every website from scratch, optimized for speed, SEO, and conversions. We then layer on AI-powered automation so the website works for the business 24/7 — answering calls, chatting with visitors, and following up on leads automatically.
+
+## Detailed Service Descriptions
+
+### 1. Custom Website Design & Development
+**URL**: https://rankmehigher.com/services/websites
+
+We build custom-coded websites — no WordPress, no Wix, no Squarespace, no templates. Every site is hand-coded using modern web technologies for:
+
+- **Speed**: Sites load in under 2 seconds, which Google rewards with higher rankings
+- **Mobile-First Design**: Every site is designed for mobile devices first, then scaled up
+- **SEO Built-In**: Proper heading structure, schema markup, meta tags, semantic HTML, and fast Core Web Vitals
+- **Conversion Optimization**: Strategic CTAs, lead capture forms, and sales funnels
+- **AI Integration**: Every website comes with AVA, our AI assistant that handles phone calls, live chat, and automated follow-up
+
+**Delivery**: Complete website in 10 business days
+**Includes**: Domain setup, hosting, SSL, analytics, AI assistant setup
+
+### 2. SEO Services
+**URL**: https://rankmehigher.com/services/seo
+
+Our SEO service focuses on getting businesses to Page 1 of Google for the keywords their customers are actually searching. We combine technical SEO, content optimization, and local SEO strategies:
+
+- **On-Page SEO**: Title tags, meta descriptions, header optimization, internal linking, image optimization
+- **Technical SEO**: Site speed, Core Web Vitals, crawlability, indexation, structured data
+- **Local SEO**: Google Business Profile optimization, local citations, NAP consistency, review generation
+- **Content Strategy**: Blog posts, landing pages, and content clusters targeting high-intent keywords
+- **Link Building**: White-hat backlink acquisition from relevant, authoritative sources
+- **Monthly Reporting**: Transparent rank tracking, traffic reports, and ROI analysis
+
+**Guarantee**: Page 1 Google rankings or you don't pay
+
+### 3. Local Map Booster
+**URL**: https://rankmehigher.com/localmapbooster
+
+Our flagship local SEO product focused specifically on Google Maps rankings:
+
+- Get into the Google Maps Top 3 results within 7 days
+- Google Business Profile optimization and management
+- Review generation and reputation management
+- Local citation building across 50+ directories
+- Geo-targeted content and landing pages
+- Competitor analysis and displacement strategy
+
+**Guarantee**: Top 3 Google Maps ranking in 7 days or you don't pay
+
+### 4. Content & Ads
+**URL**: https://rankmehigher.com/services/content-ads
+
+Full-service content creation and paid advertising:
+
+- **Video Production**: Professional short-form content, VSLs (Video Sales Letters), YouTube videos, and value-added content
+- **Social Media Management**: Content creation, posting, and engagement across platforms
+- **Google Ads**: Search, display, and local service ads management
+- **Meta Ads**: Facebook and Instagram advertising campaigns
+- **Content Strategy**: Editorial calendars, content briefs, and performance tracking
+
+### 5. Outbound Sales
+**URL**: https://rankmehigher.com/services/outbound
+
+Revenue recovery through database reactivation:
+
+- We call your old leads, past customers, and dormant contacts
+- Professional appointment setting
+- Lead qualification and warm handoff
+- CRM integration and tracking
+- Performance-based pricing available
+
+## AI Technology — AVA
+
+AVA (Advanced Virtual Assistant) is our proprietary AI system integrated into every client's digital presence:
+
+- **Voice AI**: AVA handles inbound phone calls, qualifies leads, and books appointments 24/7
+- **Chat AI**: Website chatbot that engages visitors, answers questions, and captures contact information
+- **Knowledge Base**: Custom-trained on each client's business, services, pricing, and FAQs
+- **Automated Follow-Up**: Sends follow-up messages to leads who don't convert immediately
+- **Call Transcription**: Every call is transcribed and analyzed for quality and insights
+
+## Industries We Serve
+
+Rank Me Higher works with businesses across many industries, including but not limited to:
+
+- Auto detailing, car wash, and automotive services
+- Trucking, logistics, and CDL companies
+- HVAC, plumbing, and home services
+- Medical practices, dental offices, and healthcare
+- Law firms and legal services
+- Restaurants, bars, and hospitality
+- Real estate agents and property management
+- E-commerce and online retail
+- Construction, roofing, and trades
+- Gyms, fitness studios, and wellness
+- Accounting and financial services
+- Any local business seeking Google visibility
+
+## Frequently Asked Questions
+
+**Q: How much does a custom website cost?**
+A: Pricing depends on project scope and requirements. We offer competitive packages for businesses of all sizes. Contact us for a free consultation and custom quote.
+
+**Q: How is a custom-coded website different from WordPress?**
+A: Custom-coded websites load 3–5x faster, rank higher on Google, have no plugin vulnerabilities, and are built specifically for your business goals. WordPress sites use generic templates and bloated code that slows performance.
+
+**Q: How long does it take to build a website?**
+A: We deliver complete, launch-ready websites in 10 business days, including AI assistant setup, SEO configuration, and analytics.
+
+**Q: Do you guarantee Google Page 1 rankings?**
+A: Yes. We guarantee your business will rank on Page 1 of Google for targeted keywords. If we fail to deliver, you don't pay.
+
+**Q: What is the Local Map Booster?**
+A: Our specialized service that gets your business into the top 3 Google Maps results within 7 days. If we don't achieve this, you pay nothing.
+
+**Q: What is AVA?**
+A: AVA is our AI-powered virtual assistant. She handles phone calls, website chat, and lead follow-up for your business 24/7, so you never miss a lead.
+
+**Q: Do you work with businesses outside of Chicago?**
+A: Yes. While we're based in Chicago, we serve businesses across the entire United States.
+
+**Q: Can you help with an existing website?**
+A: Yes. We can optimize existing websites for SEO, speed, and conversions, or we can build you a new custom-coded site.
+
+**Q: Do you offer monthly plans?**
+A: Yes. We offer ongoing SEO, content, and advertising management plans with transparent monthly reporting.
+
+**Q: How do I get started?**
+A: Visit https://rankmehigher.com/contact or call (773) 572-4686 for a free consultation.
+
+## Links
+
+- Homepage: https://rankmehigher.com
+- Websites Service: https://rankmehigher.com/services/websites
+- SEO Service: https://rankmehigher.com/services/seo
+- Content & Ads: https://rankmehigher.com/services/content-ads
+- Ads & Content: https://rankmehigher.com/services/ads-content
+- Outbound Sales: https://rankmehigher.com/services/outbound
+- Local Map Booster: https://rankmehigher.com/localmapbooster
+- Contact: https://rankmehigher.com/contact
+- Careers: https://rankmehigher.com/careers
+- Blog: https://rankmehigher.com/blog

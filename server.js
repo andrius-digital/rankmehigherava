@@ -692,6 +692,14 @@ app.post('/api/team-tasks/notify', async (req, res) => {
 
 app.use(express.static(join(__dirname, 'dist')));
 
+app.get('/llms.txt', (req, res) => {
+  res.type('text/plain').sendFile(join(__dirname, 'dist', 'llms.txt'));
+});
+
+app.get('/llms-full.txt', (req, res) => {
+  res.type('text/plain').sendFile(join(__dirname, 'dist', 'llms-full.txt'));
+});
+
 app.use((req, res) => {
   res.sendFile(join(__dirname, 'dist', 'index.html'));
 });

@@ -11,6 +11,11 @@ Allow: /services/seo
 Allow: /services/content-ads
 Allow: /services/ads-content
 Allow: /services/outbound
+Allow: /privacy
+Allow: /terms
+Allow: /llms.txt
+Allow: /llms-full.txt
+Allow: /sitemap.xml
 
 # Block all internal/admin pages
 Disallow: /auth
@@ -39,23 +44,34 @@ Disallow: /task-flow
 Disallow: /applicant-tracker
 Disallow: /content-portal
 Disallow: /manager-portal
+Disallow: /editor-portal
 Disallow: /team-access
 Disallow: /team
 Disallow: /team-portal
+Disallow: /team-tasks
 Disallow: /avaseo
 Disallow: /avabyrankmehigher
 Disallow: /task-pipeline
 Disallow: /team-tracker
 Disallow: /client-sites-tracker
+Disallow: /gbp-management
+Disallow: /pto-calendar
+Disallow: /local-seo-hub
 
-# AI Crawlers — Allowed
+# AI Crawlers — Full Access
 User-agent: GPTBot
+Allow: /
+Disallow: /auth
+Disallow: /avaadminpanel
+Disallow: /agency-dashboard
+
+User-agent: ChatGPT-User
 Allow: /
 
 User-agent: Google-Extended
 Allow: /
 
-User-agent: ChatGPT-User
+User-agent: Googlebot
 Allow: /
 
 User-agent: anthropic-ai
@@ -64,16 +80,58 @@ Allow: /
 User-agent: ClaudeBot
 Allow: /
 
-User-agent: Bytespider
+User-agent: Claude-Web
 Allow: /
 
 User-agent: PerplexityBot
+Allow: /
+
+User-agent: Bytespider
 Allow: /
 
 User-agent: Applebot-Extended
 Allow: /
 
 User-agent: cohere-ai
+Allow: /
+
+User-agent: Meta-ExternalAgent
+Allow: /
+
+User-agent: Meta-ExternalFetcher
+Allow: /
+
+User-agent: Amazonbot
+Allow: /
+
+User-agent: YouBot
+Allow: /
+
+User-agent: Baiduspider
+Allow: /
+
+User-agent: YandexBot
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Seekr
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: AI2Bot
+Allow: /
+
+User-agent: Timpibot
+Allow: /
+
+User-agent: ISSCyberRiskCrawler
+Allow: /
+
+User-agent: PetalBot
 Allow: /
 
 # Social media bots for link previews
@@ -84,6 +142,18 @@ User-agent: facebookexternalhit
 Allow: /
 
 User-agent: LinkedInBot
+Allow: /
+
+User-agent: Slackbot
+Allow: /
+
+User-agent: WhatsApp
+Allow: /
+
+User-agent: Discordbot
+Allow: /
+
+User-agent: TelegramBot
 Allow: /
 
 Sitemap: https://rankmehigher.com/sitemap.xml

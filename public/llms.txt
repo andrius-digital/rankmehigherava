@@ -1,24 +1,110 @@
 # Rank Me Higher
 
-> Professional SEO and website creation agency based in Chicago, IL. We help businesses dominate Google search results and generate leads through high-conversion websites, organic SEO, Google Maps optimization, content marketing, and outbound sales.
+> Rank Me Higher is a Chicago-based digital marketing agency that builds custom-coded websites, runs SEO campaigns, manages Google Maps optimization, creates content and ad campaigns, and automates lead generation with AI. Founded by Andrius, the agency serves local businesses across the United States.
 
-## About
+## What We Do
 
-Rank Me Higher is a digital marketing agency that custom codes websites, runs profitable ad campaigns, and builds AI-powered automations. Founded by Andrius, we work with businesses across the United States to increase their online visibility and generate qualified leads.
+Rank Me Higher helps businesses get found online and convert visitors into customers. We don't use templates — every website is custom-coded for speed, SEO, and conversions. Our AI assistant AVA handles calls, chats, and follow-ups 24/7. We guarantee Google Page 1 rankings or you don't pay.
 
 ## Services
 
-- [High-Conversion Websites](https://rankmehigher.com/services/websites): Custom-coded sales machines that go live in 10 days with AI systems that capture and close leads 24/7.
-- [SEO Services](https://rankmehigher.com/services/seo): Organic search optimization to dominate the exact terms your customers are typing. Google Maps and organic rankings.
-- [Content & Ads](https://rankmehigher.com/services/content-ads): Zero-touch content creation and high-ROI ad campaigns that fill your calendar with appointments.
-- [Outbound Sales](https://rankmehigher.com/services/outbound): Database reactivation — we call your old leads and turn them into new revenue.
-- [Local Map Booster](https://rankmehigher.com/localmapbooster): Google Maps Top 3 ranking in 7 days or you don't pay.
+### Custom Website Design & Development
+- URL: https://rankmehigher.com/services/websites
+- Custom-coded websites (no WordPress, no templates)
+- Built for speed, mobile-first, and SEO from day one
+- AI-powered systems for capturing and closing leads 24/7
+- Complete website delivery in 10 business days
+- Includes AVA AI assistant for automated calls and chat
 
-## Blog
+### SEO Services
+- URL: https://rankmehigher.com/services/seo
+- Organic search engine optimization
+- Local SEO and Google Maps optimization
+- Keyword research and on-page optimization
+- Technical SEO audits and fixes
+- Monthly reporting and rank tracking
+- Guaranteed Page 1 Google rankings
 
-- [SEO Blog](https://rankmehigher.com/blog): SEO strategies, local marketing tips, and Google Maps ranking secrets.
+### Local Map Booster
+- URL: https://rankmehigher.com/localmapbooster
+- Google Maps Top 3 ranking in 7 days or you don't pay
+- Google Business Profile optimization
+- Review management and generation
+- Local citation building
+- Map pack dominance strategy
+
+### Content & Ads
+- URL: https://rankmehigher.com/services/content-ads
+- Professional video content creation (short-form, VSL, YouTube)
+- Social media content management
+- Google Ads and Meta Ads campaigns
+- High-ROI ad campaigns that fill your calendar
+- Zero-touch content creation
+
+### Outbound Sales
+- URL: https://rankmehigher.com/services/outbound
+- Database reactivation — we call your old leads
+- Cold outreach campaigns
+- Appointment setting
+- Lead qualification
+- Revenue recovery from existing databases
+
+## Key Differentiators
+
+- **Custom Code Only**: No WordPress, no Wix, no templates. Every site is hand-coded for maximum performance.
+- **AI-Powered**: Our AI assistant AVA handles phone calls, website chat, and lead follow-up automatically.
+- **Guaranteed Results**: Page 1 Google rankings guaranteed, or you don't pay. Google Maps Top 3 in 7 days or free.
+- **Fast Delivery**: Complete website and business revamp in 10 business days.
+- **Full-Service Agency**: Websites, SEO, ads, content, and outbound — all under one roof.
+
+## Industries We Serve
+
+- Auto detailing and car care
+- Trucking and logistics
+- HVAC and home services
+- Medical and dental practices
+- Legal services
+- Restaurants and hospitality
+- Real estate
+- E-commerce
+- Construction and trades
+- Any local business wanting to dominate Google
 
 ## Contact
 
-- [Contact Us](https://rankmehigher.com/contact)
-- [Careers](https://rankmehigher.com/careers)
+- Website: https://rankmehigher.com
+- Contact page: https://rankmehigher.com/contact
+- Phone: (773) 572-4686
+- Location: Chicago, IL, United States
+- Hours: Monday–Friday, 9 AM – 5 PM CT
+
+## Careers
+
+- Careers page: https://rankmehigher.com/careers
+- We hire for: Sales, Marketing, Creative, Software Engineering
+- AI-powered screening process with our assistant AVA
+
+## Blog
+
+- Blog: https://rankmehigher.com/blog
+- Topics: SEO strategies, local marketing tips, Google Maps ranking secrets, website conversion optimization
+
+## FAQs
+
+**How much does a website cost?**
+Pricing varies by project scope. We offer custom packages starting from competitive rates. Contact us for a free consultation.
+
+**How long does it take to build a website?**
+We deliver complete websites in 10 business days, including AI automation setup.
+
+**Do you guarantee Google rankings?**
+Yes. We guarantee Page 1 Google rankings. If we don't deliver, you don't pay.
+
+**What is Local Map Booster?**
+Our Google Maps optimization service that gets your business into the top 3 map results within 7 days, or it's free.
+
+**What is AVA?**
+AVA is our AI-powered virtual assistant that handles phone calls, website chat, and lead follow-up for your business 24/7.
+
+**Do you work with businesses outside Chicago?**
+Yes, we serve businesses across the entire United States.
