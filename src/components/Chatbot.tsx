@@ -982,67 +982,41 @@ And what kind of services are you looking into? Just so they know what you're af
 
               {/* Voice Call Active UI */}
               {isVoiceMode && (
-                <div className="flex-1 flex flex-col items-center justify-center p-6 gap-5">
-                  {/* Voice visualization */}
-                  <div className="relative">
-                    {/* Connecting state - animated rings */}
-                    {isConnecting && !isCallActive && (
-                      <>
-                        <div className="absolute -inset-16 rounded-full border-2 border-primary/20 animate-[spin_4s_linear_infinite]">
-                          <div className="absolute top-0 left-1/2 w-2 h-2 bg-primary/60 rounded-full" />
-                        </div>
-                        <div className="absolute -inset-12 rounded-full border-2 border-primary/30 animate-[spin_3s_linear_infinite_reverse]">
-                          <div className="absolute right-0 top-1/2 w-2.5 h-2.5 bg-white/50 rounded-full" />
-                          <div className="absolute left-0 top-1/2 w-1.5 h-1.5 bg-red-400/60 rounded-full" />
-                        </div>
-                        <div className="absolute -inset-8 rounded-full border-2 border-primary/40 animate-pulse" />
-                      </>
-                    )}
+                <div className="flex-1 flex flex-col items-center p-4 gap-3 overflow-y-auto">
+                  {/* Compact voice orb */}
+                  <div className="relative flex-shrink-0 my-2">
+                    {/* Subtle outer ring */}
+                    <div className={`absolute -inset-4 rounded-full transition-all duration-700 ${
+                      isSpeaking
+                        ? "border border-cyan-400/30 shadow-[0_0_30px_rgba(6,182,212,0.15)]"
+                        : isCallActive
+                          ? "border border-cyan-500/20 shadow-[0_0_20px_rgba(6,182,212,0.1)]"
+                          : "border border-white/10"
+                    }`} />
 
-                    {/* Active call - pulsing rings */}
-                    {isCallActive && (
-                      <>
-                        <div className="absolute -inset-20 rounded-full border border-primary/10 animate-ping" style={{ animationDuration: '3s' }} />
-                        <div className="absolute -inset-16 rounded-full border border-primary/20 animate-ping" style={{ animationDuration: '2.5s', animationDelay: '0.2s' }} />
-                        <div className="absolute -inset-12 rounded-full border border-primary/30 animate-ping" style={{ animationDuration: '2s', animationDelay: '0.4s' }} />
-                        <div className="absolute -inset-8 rounded-full border-2 border-primary/40 animate-ping" style={{ animationDuration: '1.5s', animationDelay: '0.6s' }} />
-                      </>
-                    )}
-
-                    {/* Spinning orbital rings */}
-                    <div className="absolute -inset-10 rounded-full border border-white/10 animate-[spin_8s_linear_infinite]">
-                      <div className="absolute top-0 left-1/2 w-2 h-2 bg-primary rounded-full shadow-lg shadow-primary/50" />
-                      <div className="absolute bottom-0 left-1/2 w-1.5 h-1.5 bg-red-400 rounded-full" />
-                    </div>
-                    <div className="absolute -inset-6 rounded-full border border-white/20 animate-[spin_6s_linear_infinite_reverse]">
-                      <div className="absolute right-0 top-1/2 w-2 h-2 bg-white/60 rounded-full" />
-                    </div>
-
-                    {/* Main orb with waveform */}
-                    <div className={`relative w-36 h-36 rounded-full flex items-center justify-center transition-all duration-500 ${isSpeaking
-                      ? "bg-gradient-to-br from-cyan-500 via-blue-500 to-blue-700 shadow-2xl shadow-cyan-500/60"
-                      : isCallActive
-                        ? "bg-gradient-to-br from-emerald-500 via-green-500 to-emerald-600 shadow-2xl shadow-green-500/40"
-                        : "bg-gradient-to-br from-gray-600 via-gray-700 to-gray-800 shadow-xl"
-                      }`}>
-                      {/* Inner glow */}
-                      <div className="absolute inset-2 rounded-full bg-gradient-to-br from-white/30 to-transparent" />
+                    {/* Main orb */}
+                    <div className={`relative w-24 h-24 rounded-full flex items-center justify-center transition-all duration-500 ${
+                      isSpeaking
+                        ? "bg-gradient-to-br from-cyan-400 via-blue-500 to-cyan-600 shadow-lg shadow-cyan-500/40"
+                        : isCallActive
+                          ? "bg-gradient-to-br from-cyan-500 via-blue-600 to-blue-700 shadow-lg shadow-blue-500/30"
+                          : "bg-gradient-to-br from-slate-500 via-slate-600 to-slate-700 shadow-md"
+                    }`}>
+                      <div className="absolute inset-1 rounded-full bg-gradient-to-br from-white/20 to-transparent" />
 
                       {/* Waveform bars */}
-                      <div className="flex items-center gap-1.5 relative z-10">
-                        {[...Array(9)].map((_, i) => {
-                          const baseHeight = isSpeaking ? 28 : isCallActive ? 16 : 10;
-                          const variation = isSpeaking ? 20 : isCallActive ? 10 : 6;
-                          const heights = [0.6, 0.8, 1, 0.9, 1.2, 0.9, 1, 0.8, 0.6];
+                      <div className="flex items-center gap-1 relative z-10">
+                        {[...Array(7)].map((_, i) => {
+                          const baseHeight = isSpeaking ? 20 : isCallActive ? 12 : 8;
+                          const heights = [0.5, 0.7, 0.9, 1, 0.9, 0.7, 0.5];
                           return (
                             <div
                               key={i}
-                              className={`w-1.5 rounded-full bg-white transition-all ${isSpeaking || isCallActive || isConnecting ? 'animate-pulse' : ''
-                                }`}
+                              className={`w-1 rounded-full bg-white transition-all ${(isSpeaking || isCallActive || isConnecting) ? 'animate-pulse' : ''}`}
                               style={{
-                                height: `${baseHeight * heights[i] + (isSpeaking || isConnecting ? Math.sin(i * 0.5) * variation : 0)}px`,
-                                animationDelay: `${i * 0.08}s`,
-                                animationDuration: isSpeaking ? '0.4s' : isConnecting ? '0.6s' : '0.8s'
+                                height: `${baseHeight * heights[i]}px`,
+                                animationDelay: `${i * 0.1}s`,
+                                animationDuration: isSpeaking ? '0.35s' : '0.7s'
                               }}
                             />
                           );
@@ -1051,36 +1025,33 @@ And what kind of services are you looking into? Just so they know what you're af
                     </div>
                   </div>
 
-                  {/* Status text */}
-                  <div className="text-center">
-                    <p className={`text-2xl font-semibold tracking-wide font-orbitron ${isSpeaking ? 'text-cyan-400' : isCallActive ? 'text-green-400' : 'text-white/70'
-                      }`}>
-                      {isSpeaking ? "AVA IS SPEAKING..." : isCallActive ? "LISTENING..." : "CONNECTING..."}
+                  {/* Status */}
+                  <div className="text-center flex-shrink-0">
+                    <p className={`text-sm font-semibold tracking-wider uppercase ${
+                      isSpeaking ? 'text-cyan-400' : isCallActive ? 'text-blue-400' : 'text-white/50'
+                    }`}>
+                      {isSpeaking ? "AVA is speaking" : isCallActive ? "Listening..." : "Connecting..."}
                     </p>
-                    {isCallActive && !isSpeaking && (
-                      <p className="text-white/40 text-sm mt-2">Speak naturally, I'm here to help</p>
-                    )}
-                    {isConnecting && !isCallActive && (
-                      <p className="text-white/40 text-sm mt-2">Setting up voice connection...</p>
-                    )}
+                    <p className="text-white/30 text-xs mt-0.5">
+                      {isConnecting && !isCallActive ? "Setting up voice..." : isCallActive && !isSpeaking ? "Speak naturally" : "\u00A0"}
+                    </p>
                   </div>
 
-                  {/* Enhanced Transcription View */}
+                  {/* Transcription */}
                   {messages.length > 1 && (
-                    <div className="w-full flex-1 flex flex-col justify-center px-4 overflow-hidden mb-4">
-                      <ScrollArea className="w-full h-full max-h-[300px]">
-                        <div className="space-y-6 pb-4 px-2">
-                          {messages.slice(-8).map((msg, i) => (
+                    <div className="w-full flex-1 min-h-0 overflow-hidden">
+                      <ScrollArea className="w-full h-full max-h-[200px]">
+                        <div className="space-y-2 px-1 pb-2">
+                          {messages.slice(-6).map((msg, i) => (
                             <div
                               key={i}
-                              className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}
+                              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                             >
-                              <div
-                                className={`max-w-[95%] px-5 py-4 rounded-2xl font-body text-base leading-relaxed shadow-2xl backdrop-blur-xl ${msg.role === 'user'
-                                  ? 'bg-cyan-500/20 border border-cyan-400/40 text-white'
-                                  : 'bg-white/10 border border-white/20 text-cyan-50'
-                                  }`}
-                              >
+                              <div className={`max-w-[90%] px-3 py-2 rounded-xl text-sm leading-relaxed ${
+                                msg.role === 'user'
+                                  ? 'bg-cyan-500/15 border border-cyan-500/20 text-white'
+                                  : 'bg-white/5 border border-white/10 text-white/80'
+                              }`}>
                                 {msg.content}
                               </div>
                             </div>
@@ -1090,35 +1061,36 @@ And what kind of services are you looking into? Just so they know what you're af
                     </div>
                   )}
 
-                  {/* End call button */}
-                  <Button
-                    onClick={endVoiceCall}
-                    className="rounded-full px-10 py-6 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 shadow-xl shadow-red-600/30 hover:shadow-red-500/50 transition-all text-base font-semibold"
-                  >
-                    <PhoneOff className="w-5 h-5 mr-2" />
-                    End Call
-                  </Button>
+                  {/* Action buttons */}
+                  <div className="w-full flex-shrink-0 space-y-2 mt-auto pb-1">
+                    <Button
+                      onClick={endVoiceCall}
+                      className="w-full h-9 rounded-lg bg-red-500/90 hover:bg-red-500 text-white text-sm font-medium shadow-sm"
+                    >
+                      <PhoneOff className="w-4 h-4 mr-1.5" />
+                      End Call
+                    </Button>
 
-                  {/* Switch to text mode during connecting/call */}
-                  <button
-                    onClick={() => {
-                      endVoiceCall();
-                      setShowTextMode(true);
-                    }}
-                    className="flex items-center gap-3 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 text-white/70 hover:text-white text-sm font-medium transition-all duration-300 group"
-                  >
-                    <MessageSquare className="w-4 h-4" />
-                    <span>Switch to text</span>
-                  </button>
-
-                  {/* Calendly booking button */}
-                  <button
-                    onClick={openCalendly}
-                    className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary/60 to-red-600/60 hover:from-primary hover:to-red-600 border border-primary/20 text-white/90 text-xs font-medium transition-all duration-300 hover:scale-105"
-                  >
-                    <Calendar className="w-3.5 h-3.5" />
-                    <span>Book a Call</span>
-                  </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          endVoiceCall();
+                          setShowTextMode(true);
+                        }}
+                        className="flex-1 flex items-center justify-center gap-1.5 h-8 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 hover:border-cyan-500/30 text-white/60 hover:text-white text-xs transition-all"
+                      >
+                        <MessageSquare className="w-3.5 h-3.5" />
+                        Text mode
+                      </button>
+                      <button
+                        onClick={openCalendly}
+                        className="flex-1 flex items-center justify-center gap-1.5 h-8 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 hover:border-cyan-500/40 text-cyan-400/80 hover:text-cyan-300 text-xs transition-all"
+                      >
+                        <Calendar className="w-3.5 h-3.5" />
+                        Book a call
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
 
