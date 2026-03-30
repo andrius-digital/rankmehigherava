@@ -55,13 +55,22 @@ try {
   createRoot(rootElement).render(app);
 } catch (error) {
   console.error("Failed to render app:", error);
-  document.body.innerHTML = `
-    <div style="padding: 20px; font-family: sans-serif; color: white; background: #0a0a0a; min-height: 100vh;">
-      <h1>Failed to start application</h1>
-      <p>${error instanceof Error ? error.message : "Unknown error"}</p>
-      <pre style="background: #1a1a1a; padding: 10px; overflow: auto; color: #fff;">
-        ${error instanceof Error ? error.stack : String(error)}
-      </pre>
-    </div>
-  `;
+  const wrapper = document.createElement("div");
+  wrapper.setAttribute("style", "padding: 20px; font-family: sans-serif; color: white; background: #0a0a0a; min-height: 100vh;");
+
+  const heading = document.createElement("h1");
+  heading.textContent = "Failed to start application";
+
+  const message = document.createElement("p");
+  message.textContent = error instanceof Error ? error.message : "Unknown error";
+
+  const stack = document.createElement("pre");
+  stack.setAttribute("style", "background: #1a1a1a; padding: 10px; overflow: auto; color: #fff;");
+  stack.textContent = error instanceof Error ? (error.stack ?? "") : String(error);
+
+  wrapper.appendChild(heading);
+  wrapper.appendChild(message);
+  wrapper.appendChild(stack);
+
+  document.body.replaceChildren(wrapper);
 }
