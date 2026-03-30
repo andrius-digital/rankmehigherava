@@ -64,6 +64,7 @@ channel = "stable-25_05"
 [userenv]
 
 [userenv.shared]
+SUPABASE_URL = "https://vyviopkpwcsdrfpdwzpa.supabase.co"
 
 [postMerge]
 path = "scripts/post-merge.sh"
