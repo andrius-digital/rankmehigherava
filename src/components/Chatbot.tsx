@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { X, Send, User, Sparkles, PhoneOff, MessageSquare, Calendar, Brain, GripVertical } from "lucide-react";
+import { X, Send, User, Sparkles, PhoneOff, MessageSquare, Calendar, Brain, GripVertical, Gift } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import AvaAvatar from "@/components/agency/AvaAvatar";
 
@@ -183,6 +183,7 @@ const ENGAGEMENT_INTERVALS = [2 * 60 * 1000, 3.5 * 60 * 1000, 5 * 60 * 1000]; //
 const AVA_INTRO = `Hey! 👋 How can I help you today?`;
 
 const CALENDLY_URL = "https://calendly.com/andrius-cdlagency/andrius-digital-asap-meeting";
+const LEAD_MAGNET_URL = "https://rankmehigher.com/?qualify=true";
 
 const openCalendly = () => {
   if (window.Calendly) {
@@ -190,6 +191,10 @@ const openCalendly = () => {
   } else {
     window.open(CALENDLY_URL, '_blank');
   }
+};
+
+const openLeadMagnet = () => {
+  window.open(LEAD_MAGNET_URL, '_blank');
 };
 
 const Chatbot = () => {
@@ -969,14 +974,23 @@ And what kind of services are you looking into? Just so they know what you're af
                     <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                   </button>
 
-                  {/* Calendly booking button */}
-                  <button
-                    onClick={openCalendly}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-cyan-100/60 text-xs font-orbitron transition-all"
-                  >
-                    <Calendar className="w-4 h-4" />
-                    <span>Book a Call</span>
-                  </button>
+                  {/* Bottom action buttons */}
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={openCalendly}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 hover:border-cyan-500/30 text-white/50 hover:text-white text-xs transition-all"
+                    >
+                      <Calendar className="w-3.5 h-3.5" />
+                      <span>Book a Call</span>
+                    </button>
+                    <button
+                      onClick={openLeadMagnet}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 hover:border-cyan-500/40 text-cyan-400/70 hover:text-cyan-300 text-xs transition-all"
+                    >
+                      <Gift className="w-3.5 h-3.5" />
+                      <span>Free Audit</span>
+                    </button>
+                  </div>
                 </div>
               )}
 
@@ -1159,46 +1173,47 @@ And what kind of services are you looking into? Just so they know what you're af
                   </ScrollArea>
 
                   {/* Input area */}
-                  <div className="relative p-4 border-t border-white/10 bg-black/50">
-                    {/* Top action buttons */}
-                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 flex items-center gap-3">
-                      <button
-                        onClick={() => setShowTextMode(false)}
-                        className="group flex items-center gap-2 px-4 py-2 rounded-xl backdrop-blur-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/70 hover:text-white text-xs font-orbitron tracking-wide transition-all duration-300"
-                      >
-                        <Sparkles className="w-3.5 h-3.5 group-hover:animate-pulse" />
-                        <span>Menu</span>
-                      </button>
-                      <button
-                        onClick={openCalendly}
-                        className="group flex items-center gap-2 px-4 py-2 rounded-xl backdrop-blur-xl bg-primary/10 hover:bg-primary/20 border border-primary/30 hover:border-primary/50 text-primary hover:text-white text-xs font-orbitron tracking-wide transition-all duration-300 hover:shadow-lg hover:shadow-primary/20"
-                      >
-                        <Calendar className="w-3.5 h-3.5 group-hover:animate-pulse" />
-                        <span>Book Call</span>
-                      </button>
-                    </div>
-
+                  <div className="p-3 border-t border-white/10 bg-black/40 space-y-2">
                     <div className="flex gap-2">
-                      <div className="relative flex-1 group">
-                        <div className="absolute -inset-0.5 bg-gradient-to-r from-primary via-red-600 to-primary rounded-xl opacity-0 group-focus-within:opacity-50 blur-sm transition-opacity duration-300" />
-                        <Input
-                          value={input}
-                          onChange={(e) => setInput(e.target.value)}
-                          onKeyPress={handleKeyPress}
-                          placeholder="Ask me anything..."
-                          disabled={isLoading}
-                          className="relative flex-1 bg-white/10 border-white/20 rounded-xl focus:border-primary/50 text-white placeholder:text-white/40 transition-all"
-                        />
-                      </div>
-
+                      <Input
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                        placeholder="Ask me anything..."
+                        disabled={isLoading}
+                        className="flex-1 bg-white/5 border-white/10 rounded-lg focus:border-cyan-500/40 text-white placeholder:text-white/30 text-sm h-9"
+                      />
                       <Button
                         onClick={sendMessage}
                         disabled={!input.trim() || isLoading}
                         size="icon"
-                        className="shrink-0 w-11 h-11 rounded-xl backdrop-blur-xl bg-white/10 hover:bg-white/20 border border-white/20 hover:border-cyan-400/50 shadow-lg shadow-cyan-500/10 hover:shadow-cyan-500/30 hover:scale-105 transition-all duration-300"
+                        className="shrink-0 w-9 h-9 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/20 hover:border-cyan-500/40 transition-all"
                       >
-                        <Send className="w-4 h-4" />
+                        <Send className="w-3.5 h-3.5 text-cyan-400" />
                       </Button>
+                    </div>
+                    <div className="flex items-center justify-center gap-2">
+                      <button
+                        onClick={() => setShowTextMode(false)}
+                        className="flex items-center gap-1 px-3 py-1 rounded-md bg-white/5 hover:bg-white/10 border border-white/5 text-white/40 hover:text-white text-[11px] transition-all"
+                      >
+                        <Sparkles className="w-3 h-3" />
+                        Menu
+                      </button>
+                      <button
+                        onClick={openCalendly}
+                        className="flex items-center gap-1 px-3 py-1 rounded-md bg-white/5 hover:bg-white/10 border border-white/5 text-white/40 hover:text-white text-[11px] transition-all"
+                      >
+                        <Calendar className="w-3 h-3" />
+                        Book Call
+                      </button>
+                      <button
+                        onClick={openLeadMagnet}
+                        className="flex items-center gap-1 px-3 py-1 rounded-md bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/10 text-cyan-400/60 hover:text-cyan-300 text-[11px] transition-all"
+                      >
+                        <Gift className="w-3 h-3" />
+                        Free Audit
+                      </button>
                     </div>
                   </div>
                 </>
@@ -1208,9 +1223,9 @@ And what kind of services are you looking into? Just so they know what you're af
               {showLiveChatMode && !isVoiceMode && (
                 <>
                   {/* Header with Andrius info */}
-                  <div className="px-4 py-3 border-b border-primary/20 bg-gradient-to-r from-primary/10 to-red-600/10">
+                  <div className="px-4 py-3 border-b border-cyan-500/15 bg-cyan-500/5">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden border-2 border-primary/30">
+                      <div className="w-9 h-9 rounded-full bg-cyan-500/10 flex items-center justify-center overflow-hidden border border-cyan-500/30">
                         <img 
                           src="/andrius-avatar.png" 
                           alt="Andrius Digital"
@@ -1221,10 +1236,10 @@ And what kind of services are you looking into? Just so they know what you're af
                         />
                       </div>
                       <div className="flex-1">
-                        <p className="font-orbitron font-bold text-white text-sm">Andrius Digital</p>
+                        <p className="font-medium text-white text-sm">Andrius Digital</p>
                         <div className="flex items-center gap-1.5">
-                          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                          <p className="text-xs text-green-400">Online - Usually replies instantly</p>
+                          <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                          <p className="text-[11px] text-white/40">Online</p>
                         </div>
                       </div>
                     </div>
@@ -1236,7 +1251,7 @@ And what kind of services are you looking into? Just so they know what you're af
                       {/* Welcome message */}
                       {messages.length === 1 && (
                         <div className="flex gap-3 animate-fade-in">
-                          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden border border-primary/30 flex-shrink-0">
+                          <div className="w-7 h-7 rounded-full bg-cyan-500/10 flex items-center justify-center overflow-hidden border border-cyan-500/20 flex-shrink-0">
                             <img 
                               src="/andrius-avatar.png" 
                               alt="Andrius"
@@ -1244,8 +1259,8 @@ And what kind of services are you looking into? Just so they know what you're af
                               onError={(e) => { e.currentTarget.style.display = 'none'; }}
                             />
                           </div>
-                          <div className="bg-white/10 rounded-2xl rounded-tl-sm px-4 py-3 border border-white/10">
-                            <p className="text-sm text-white/90">Hi! 👋 Messages here go straight to my phone. I'm usually available and will reply within minutes!</p>
+                          <div className="bg-white/5 rounded-2xl rounded-tl-sm px-3 py-2.5 border border-white/10">
+                            <p className="text-sm text-white/80">Hi! Messages here go straight to my phone. I'll reply within minutes.</p>
                           </div>
                         </div>
                       )}
@@ -1271,13 +1286,13 @@ And what kind of services are you looking into? Just so they know what you're af
                           >
                             <div className="relative flex-shrink-0">
                               <div
-                                className={`w-8 h-8 rounded-full flex items-center justify-center overflow-hidden ${message.role === "user"
-                                  ? "backdrop-blur-xl bg-cyan-500/20 border border-cyan-400/30"
-                                  : "bg-primary/20 border border-primary/30"
+                                className={`w-7 h-7 rounded-full flex items-center justify-center overflow-hidden ${message.role === "user"
+                                  ? "bg-cyan-500/15 border border-cyan-500/20"
+                                  : "bg-cyan-500/10 border border-cyan-500/20"
                                   }`}
                               >
                                 {message.role === "user" ? (
-                                  <User className="w-4 h-4 text-white" />
+                                  <User className="w-3.5 h-3.5 text-white/70" />
                                 ) : (
                                   <img 
                                     src="/andrius-avatar.png" 
@@ -1289,9 +1304,9 @@ And what kind of services are you looking into? Just so they know what you're af
                               </div>
                             </div>
                             <div
-                              className={`max-w-[75%] rounded-2xl px-4 py-3 ${message.role === "user"
-                                ? "backdrop-blur-xl bg-cyan-500/20 border border-cyan-400/30 text-white rounded-tr-sm"
-                                : "bg-white/10 text-white/90 rounded-tl-sm border border-white/10"
+                              className={`max-w-[75%] rounded-2xl px-3 py-2.5 ${message.role === "user"
+                                ? "bg-cyan-500/10 border border-cyan-500/15 text-white rounded-tr-sm"
+                                : "bg-white/5 text-white/80 rounded-tl-sm border border-white/10"
                                 }`}
                             >
                               <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
@@ -1302,11 +1317,11 @@ And what kind of services are you looking into? Just so they know what you're af
 
                       {isLoading && (
                         <div className="flex gap-3 animate-fade-in">
-                          <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center flex-shrink-0">
-                            <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                          <div className="w-7 h-7 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center flex-shrink-0">
+                            <div className="w-3.5 h-3.5 border-2 border-cyan-500/20 border-t-cyan-400 rounded-full animate-spin" />
                           </div>
-                          <div className="bg-white/10 rounded-2xl rounded-tl-sm px-4 py-3 border border-white/10">
-                            <p className="text-sm text-white/60">Sending...</p>
+                          <div className="bg-white/5 rounded-2xl rounded-tl-sm px-3 py-2.5 border border-white/10">
+                            <p className="text-sm text-white/40">Sending...</p>
                           </div>
                         </div>
                       )}
@@ -1314,45 +1329,47 @@ And what kind of services are you looking into? Just so they know what you're af
                   </ScrollArea>
 
                   {/* Input area */}
-                  <div className="relative p-4 border-t border-white/10 bg-black/50">
-                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 flex items-center gap-3">
-                      <button
-                        onClick={() => setShowLiveChatMode(false)}
-                        className="group flex items-center gap-2 px-4 py-2 rounded-xl backdrop-blur-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/70 hover:text-white text-xs font-orbitron tracking-wide transition-all duration-300"
-                      >
-                        <Sparkles className="w-3.5 h-3.5 group-hover:animate-pulse" />
-                        <span>Menu</span>
-                      </button>
-                      <button
-                        onClick={openCalendly}
-                        className="group flex items-center gap-2 px-4 py-2 rounded-xl backdrop-blur-xl bg-primary/10 hover:bg-primary/20 border border-primary/30 hover:border-primary/50 text-primary hover:text-white text-xs font-orbitron tracking-wide transition-all duration-300 hover:shadow-lg hover:shadow-primary/20"
-                      >
-                        <Calendar className="w-3.5 h-3.5 group-hover:animate-pulse" />
-                        <span>Book Call</span>
-                      </button>
-                    </div>
-
+                  <div className="p-3 border-t border-white/10 bg-black/40 space-y-2">
                     <div className="flex gap-2">
-                      <div className="relative flex-1 group">
-                        <div className="absolute -inset-0.5 bg-gradient-to-r from-primary via-red-600 to-primary rounded-xl opacity-0 group-focus-within:opacity-50 blur-sm transition-opacity duration-300" />
-                        <Input
-                          value={input}
-                          onChange={(e) => setInput(e.target.value)}
-                          onKeyPress={handleKeyPress}
-                          placeholder="Type your message..."
-                          disabled={isLoading}
-                          className="relative flex-1 bg-white/10 border-white/20 rounded-xl focus:border-primary/50 text-white placeholder:text-white/40 transition-all"
-                        />
-                      </div>
-
+                      <Input
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                        placeholder="Type your message..."
+                        disabled={isLoading}
+                        className="flex-1 bg-white/5 border-white/10 rounded-lg focus:border-cyan-500/40 text-white placeholder:text-white/30 text-sm h-9"
+                      />
                       <Button
                         onClick={sendMessage}
                         disabled={!input.trim() || isLoading}
                         size="icon"
-                        className="shrink-0 w-11 h-11 rounded-xl backdrop-blur-xl bg-white/10 hover:bg-white/20 border border-white/20 hover:border-cyan-400/50 shadow-lg shadow-cyan-500/10 hover:shadow-cyan-500/30 hover:scale-105 transition-all duration-300"
+                        className="shrink-0 w-9 h-9 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/20 hover:border-cyan-500/40 transition-all"
                       >
-                        <Send className="w-4 h-4" />
+                        <Send className="w-3.5 h-3.5 text-cyan-400" />
                       </Button>
+                    </div>
+                    <div className="flex items-center justify-center gap-2">
+                      <button
+                        onClick={() => setShowLiveChatMode(false)}
+                        className="flex items-center gap-1 px-3 py-1 rounded-md bg-white/5 hover:bg-white/10 border border-white/5 text-white/40 hover:text-white text-[11px] transition-all"
+                      >
+                        <Sparkles className="w-3 h-3" />
+                        Menu
+                      </button>
+                      <button
+                        onClick={openCalendly}
+                        className="flex items-center gap-1 px-3 py-1 rounded-md bg-white/5 hover:bg-white/10 border border-white/5 text-white/40 hover:text-white text-[11px] transition-all"
+                      >
+                        <Calendar className="w-3 h-3" />
+                        Book Call
+                      </button>
+                      <button
+                        onClick={openLeadMagnet}
+                        className="flex items-center gap-1 px-3 py-1 rounded-md bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/10 text-cyan-400/60 hover:text-cyan-300 text-[11px] transition-all"
+                      >
+                        <Gift className="w-3 h-3" />
+                        Free Audit
+                      </button>
                     </div>
                   </div>
                 </>
