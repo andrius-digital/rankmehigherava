@@ -11,6 +11,9 @@ dist/
 build/
 *.local
 
+# Vite cache artifacts
+vite.config.ts.timestamp-*.mjs
+
 # Environment variables
 .env
 .env.local
