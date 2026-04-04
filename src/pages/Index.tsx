@@ -211,9 +211,9 @@ const Index = () => {
           "url": "https://rankmehigher.com",
           "logo": "https://rankmehigher.com/assets/logo.png",
           "description": "Chicago-based AI website agency specializing in custom-coded SEO websites, Google Maps optimization, and AI-powered business automation.",
-          "address": { "@type": "PostalAddress", "addressLocality": "Chicago", "addressRegion": "IL", "addressCountry": "US" },
+          "address": { "@type": "PostalAddress", "streetAddress": "1 N State St Ste 1515", "addressLocality": "Chicago", "addressRegion": "IL", "postalCode": "60602", "addressCountry": "US" },
           "telephone": "+17735724686",
-          "sameAs": [],
+          "sameAs": ["https://www.facebook.com/rankmehigher", "https://www.linkedin.com/company/rankmehigher", "https://www.instagram.com/rankmehigher", "https://www.yelp.com/biz/rank-me-higher-chicago", "https://maps.google.com/?cid=rankmehigher"],
           "foundingDate": "2015",
           "numberOfEmployees": { "@type": "QuantitativeValue", "value": "10-50" },
           "serviceArea": { "@type": "Place", "name": "United States" }
@@ -232,11 +232,12 @@ const Index = () => {
           "name": "Rank Me Higher",
           "image": "https://rankmehigher.com/assets/logo.png",
           "telephone": "+17735724686",
-          "address": { "@type": "PostalAddress", "addressLocality": "Chicago", "addressRegion": "IL", "addressCountry": "US" },
+          "address": { "@type": "PostalAddress", "streetAddress": "1 N State St Ste 1515", "addressLocality": "Chicago", "addressRegion": "IL", "postalCode": "60602", "addressCountry": "US" },
           "url": "https://rankmehigher.com",
           "priceRange": "$$",
           "openingHours": "Mo-Fr 09:00-17:00",
-          "aggregateRating": { "@type": "AggregateRating", "ratingValue": "5", "reviewCount": "54" }
+          "sameAs": ["https://www.facebook.com/rankmehigher", "https://www.linkedin.com/company/rankmehigher", "https://www.instagram.com/rankmehigher", "https://www.yelp.com/biz/rank-me-higher-chicago", "https://maps.google.com/?cid=rankmehigher"],
+          "aggregateRating": { "@type": "AggregateRating", "ratingValue": "5", "reviewCount": "54", "bestRating": "5", "worstRating": "1" }
         })}</script>
       </Helmet>
 
@@ -491,33 +492,33 @@ const Index = () => {
               <div className="overflow-hidden">
                 <div className="flex gap-4 animate-scroll-left hover:[animation-play-state:paused]">
                   {[
-                    { name: "Klean AF", desc: "Cleaning · San Diego", img: "/kleanaf.png" },
-                    { name: "Truck Clinic", desc: "Truck Repair · Romeoville, IL", img: "/truckclinic.png" },
-                    { name: "Off-Tint", desc: "PPF & Tinting · Lisle, IL", img: "/off-tint-screenshot.png" },
-                    { name: "XXII Century", desc: "Trucking · Chicago, IL", img: "/goxxii.png" },
-                    { name: "Pro Repair", desc: "Truck Repair · Lockport, IL", img: "/images/portfolio-pro-repair.png" },
-                    { name: "Property Refresh", desc: "Maid Service · Chicago, IL", img: "/images/portfolio-property-refresh-maids.png" },
-                    { name: "Chicago Valley", desc: "Video Production · Chicago, IL", img: "/images/portfolio-chicago-valley.png" },
-                    { name: "LTS Mechanical", desc: "Truck Repair · Romeoville, IL", img: "/images/portfolio-lts-mechanical.png" },
-                    { name: "Paddock Parking", desc: "Storage Yard · Phoenix, AZ", img: "/images/portfolio-paddock-parking.png" },
-                    { name: "QTA Tax", desc: "Tax & Accounting · Oak Brook, IL", img: "/images/portfolio-qtatax.png" },
-                    { name: "Midwest Express", desc: "Trucking · Chicago, IL", img: "/images/portfolio-midwest-express.png" },
-                    { name: "Klean AF", desc: "Cleaning · San Diego", img: "/kleanaf.png" },
-                    { name: "Truck Clinic", desc: "Truck Repair · Romeoville, IL", img: "/truckclinic.png" },
-                    { name: "Off-Tint", desc: "PPF & Tinting · Lisle, IL", img: "/off-tint-screenshot.png" },
-                    { name: "XXII Century", desc: "Trucking · Chicago, IL", img: "/goxxii.png" },
-                    { name: "Pro Repair", desc: "Truck Repair · Lockport, IL", img: "/images/portfolio-pro-repair.png" },
-                    { name: "Property Refresh", desc: "Maid Service · Chicago, IL", img: "/images/portfolio-property-refresh-maids.png" },
-                    { name: "Chicago Valley", desc: "Video Production · Chicago, IL", img: "/images/portfolio-chicago-valley.png" },
-                    { name: "LTS Mechanical", desc: "Truck Repair · Romeoville, IL", img: "/images/portfolio-lts-mechanical.png" },
-                    { name: "Paddock Parking", desc: "Storage Yard · Phoenix, AZ", img: "/images/portfolio-paddock-parking.png" },
-                    { name: "QTA Tax", desc: "Tax & Accounting · Oak Brook, IL", img: "/images/portfolio-qtatax.png" },
-                    { name: "Midwest Express", desc: "Trucking · Chicago, IL", img: "/images/portfolio-midwest-express.png" },
+                    { name: "Klean AF", desc: "Cleaning · San Diego", img: "/kleanaf.webp" },
+                    { name: "Truck Clinic", desc: "Truck Repair · Romeoville, IL", img: "/truckclinic.webp" },
+                    { name: "Off-Tint", desc: "PPF & Tinting · Lisle, IL", img: "/off-tint-screenshot.webp" },
+                    { name: "XXII Century", desc: "Trucking · Chicago, IL", img: "/goxxii.webp" },
+                    { name: "Pro Repair", desc: "Truck Repair · Lockport, IL", img: "/images/portfolio-pro-repair.webp" },
+                    { name: "Property Refresh", desc: "Maid Service · Chicago, IL", img: "/images/portfolio-property-refresh-maids.webp" },
+                    { name: "Chicago Valley", desc: "Video Production · Chicago, IL", img: "/images/portfolio-chicago-valley.webp" },
+                    { name: "LTS Mechanical", desc: "Truck Repair · Romeoville, IL", img: "/images/portfolio-lts-mechanical.webp" },
+                    { name: "Paddock Parking", desc: "Storage Yard · Phoenix, AZ", img: "/images/portfolio-paddock-parking.webp" },
+                    { name: "QTA Tax", desc: "Tax & Accounting · Oak Brook, IL", img: "/images/portfolio-qtatax.webp" },
+                    { name: "Midwest Express", desc: "Trucking · Chicago, IL", img: "/images/portfolio-midwest-express.webp" },
+                    { name: "Klean AF", desc: "Cleaning · San Diego", img: "/kleanaf.webp" },
+                    { name: "Truck Clinic", desc: "Truck Repair · Romeoville, IL", img: "/truckclinic.webp" },
+                    { name: "Off-Tint", desc: "PPF & Tinting · Lisle, IL", img: "/off-tint-screenshot.webp" },
+                    { name: "XXII Century", desc: "Trucking · Chicago, IL", img: "/goxxii.webp" },
+                    { name: "Pro Repair", desc: "Truck Repair · Lockport, IL", img: "/images/portfolio-pro-repair.webp" },
+                    { name: "Property Refresh", desc: "Maid Service · Chicago, IL", img: "/images/portfolio-property-refresh-maids.webp" },
+                    { name: "Chicago Valley", desc: "Video Production · Chicago, IL", img: "/images/portfolio-chicago-valley.webp" },
+                    { name: "LTS Mechanical", desc: "Truck Repair · Romeoville, IL", img: "/images/portfolio-lts-mechanical.webp" },
+                    { name: "Paddock Parking", desc: "Storage Yard · Phoenix, AZ", img: "/images/portfolio-paddock-parking.webp" },
+                    { name: "QTA Tax", desc: "Tax & Accounting · Oak Brook, IL", img: "/images/portfolio-qtatax.webp" },
+                    { name: "Midwest Express", desc: "Trucking · Chicago, IL", img: "/images/portfolio-midwest-express.webp" },
                   ].map((item, i) => (
                     <div key={i} className="flex-shrink-0 w-[260px] md:w-[300px] group">
                       <div className="rounded-xl overflow-hidden bg-white/5 border border-white/10 hover:border-primary/40 transition-all duration-300 shadow-lg hover:shadow-primary/20">
                         <div className="relative overflow-hidden aspect-[16/9] bg-black">
-                          <img src={item.img} alt={item.name} className="w-full h-full object-cover object-top block" />
+                          <img src={item.img} alt={item.name} loading="lazy" width="600" height="338" className="w-full h-full object-cover object-top block" />
                         </div>
                         <div className="px-3 py-2.5 flex items-center justify-between">
                           <div>

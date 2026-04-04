@@ -14,6 +14,15 @@ const PORT = process.env.PORT || 5000;
 
 app.use(express.json({ limit: '1mb' }));
 
+app.use((req, res, next) => {
+  const host = req.hostname || req.headers.host;
+  if (host && host.startsWith('www.')) {
+    const newHost = host.replace(/^www\./, '');
+    return res.redirect(301, `https://${newHost}${req.originalUrl}`);
+  }
+  next();
+});
+
 // Security headers
 app.disable('x-powered-by');
 app.use((req, res, next) => {
