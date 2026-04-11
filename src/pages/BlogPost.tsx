@@ -202,7 +202,13 @@ const BlogPost = () => {
             {post.image && (
               <div className="rounded-xl overflow-hidden border border-white/10 shadow-xl mb-8">
                 <picture>
-                  {imageWebp && <source srcSet={imageWebp} type="image/webp" />}
+                  {imageWebp && (
+                    <source
+                      srcSet={`${imageWebp.replace('.webp', '-400w.webp')} 400w, ${imageWebp.replace('.webp', '-800w.webp')} 800w, ${imageWebp} 1408w`}
+                      sizes="(max-width: 768px) 100vw, 800px"
+                      type="image/webp"
+                    />
+                  )}
                   <img
                     src={post.image}
                     alt={post.title}

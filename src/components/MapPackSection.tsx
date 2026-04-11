@@ -319,7 +319,11 @@ const MapPackSection = () => {
               <div className="relative group">
                 <div className="relative rounded-2xl overflow-hidden border border-primary/30 shadow-[0_0_50px_rgba(239,68,68,0.15)] transform transition-all duration-700 group-hover:scale-[1.02] group-hover:rotate-1">
                   <picture>
-                    <source srcSet="/assets/seo-results-collage.webp" type="image/webp" />
+                    <source
+                      srcSet="/assets/seo-results-collage-400w.webp 400w, /assets/seo-results-collage-800w.webp 800w, /assets/seo-results-collage.webp 1024w"
+                      sizes="(max-width: 768px) 100vw, 500px"
+                      type="image/webp"
+                    />
                     <img
                       src="/assets/seo-results-collage.png"
                       alt="Local SEO results proof - Google Maps rankings achieved by Rank Me Higher clients"

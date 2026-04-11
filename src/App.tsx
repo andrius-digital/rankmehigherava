@@ -24,6 +24,8 @@ const Blog = lazy(() => import("./pages/Blog"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
 const Contact = lazy(() => import("./pages/Contact"));
 const Careers = lazy(() => import("./pages/Careers"));
+const Privacy = lazy(() => import("./pages/Privacy"));
+const Terms = lazy(() => import("./pages/Terms"));
 const WebsiteSubmissions = lazy(() => import("./pages/WebsiteSubmissions"));
 const WebsiteSubmissionConfirmation = lazy(() => import("./pages/WebsiteSubmissionConfirmation"));
 const FunnelSubmissions = lazy(() => import("./pages/FunnelSubmissions"));
@@ -112,6 +114,8 @@ const App = () => (
                 <Route path="/blog/:slug" element={<BlogPost />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/careers" element={<Careers />} />
+                <Route path="/privacy" element={<Privacy />} />
+                <Route path="/terms" element={<Terms />} />
                 <Route path="/website-submissions" element={<WebsiteSubmissions />} />
                 <Route path="/website-submission-confirmation" element={<WebsiteSubmissionConfirmation />} />
                 <Route path="/funnel-submissions" element={<FunnelSubmissions />} />

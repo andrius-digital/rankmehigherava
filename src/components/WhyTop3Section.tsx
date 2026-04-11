@@ -80,7 +80,11 @@ const WhyTop3Section = () => {
 
             <div className="relative rounded-2xl overflow-hidden border border-primary/50 shadow-[0_0_50px_rgba(239,68,68,0.2)] bg-card/40 backdrop-blur-sm group">
               <picture>
-                <source srcSet="/assets/seo-results-collage.webp" type="image/webp" />
+                <source
+                  srcSet="/assets/seo-results-collage-400w.webp 400w, /assets/seo-results-collage-800w.webp 800w, /assets/seo-results-collage.webp 1024w"
+                  sizes="(max-width: 768px) 100vw, 500px"
+                  type="image/webp"
+                />
                 <img
                   src="/assets/seo-results-collage.png"
                   alt="Google Maps 3-Pack dominance proof - Rank Me Higher SEO results"

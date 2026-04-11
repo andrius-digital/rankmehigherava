@@ -162,6 +162,8 @@ const Blog = () => {
                       <div className="aspect-[16/9] overflow-hidden">
                         <img 
                           src={featuredPosts[0].image} 
+                          srcSet={`${featuredPosts[0].image.replace('.webp', '-400w.webp').replace('.png', '-400w.webp')} 400w, ${featuredPosts[0].image.replace('.webp', '-800w.webp').replace('.png', '-800w.webp')} 800w, ${featuredPosts[0].image.replace('.png', '.webp')} 1408w`}
+                          sizes="(max-width: 768px) 100vw, 600px"
                           alt={featuredPosts[0].title}
                           width={800}
                           height={450}

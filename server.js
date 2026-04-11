@@ -709,8 +709,59 @@ app.get('/llms-full.txt', (req, res) => {
   res.type('text/plain').sendFile(join(__dirname, 'dist', 'llms-full.txt'));
 });
 
+// Known public routes (must match React Router paths)
+const KNOWN_ROUTES = new Set([
+  '/', '/localmapbooster', '/services/websites', '/services/seo',
+  '/services/content-ads', '/services/ads-content', '/services/outbound',
+  '/blog', '/contact', '/careers', '/privacy', '/terms',
+  '/auth', '/website-submissions', '/website-submission-confirmation',
+  '/funnel-submissions', '/funnel-submission-confirmation',
+  '/call-center-kpi', '/submissions-dashboard', '/agency-dashboard',
+  '/avaadminpanel', '/team', '/cdl-agency-portal', '/cdl-recruiters',
+  '/cdl-carriers', '/subscriptions', '/website-prompting',
+  '/website-builder', '/website-command-center', '/client-portal',
+  '/client-dashboard', '/reseller-portal', '/ava-voice-calls',
+  '/ava-training', '/task-flow', '/applicant-tracker', '/content-portal',
+  '/manager-portal', '/editor-portal', '/gbpmanagement', '/pto-calendar',
+  '/team-tasks', '/team-access', '/team-portal', '/task-pipeline',
+  '/team-tracker', '/client-sites-tracker',
+]);
+
+// Route prefixes that accept dynamic segments
+const KNOWN_PREFIXES = [
+  '/blog/', '/agency/client/', '/avaseo/', '/avabyrankmehigher/'
+];
+
+function isKnownRoute(pathname) {
+  if (KNOWN_ROUTES.has(pathname)) return true;
+  return KNOWN_PREFIXES.some(prefix => pathname.startsWith(prefix));
+}
+
 app.use((req, res) => {
-  res.sendFile(join(__dirname, 'dist', 'index.html'));
+  const pathname = req.path;
+
+  // Try to serve a pre-rendered HTML file for this route
+  const prerenderedPath = join(__dirname, 'dist', pathname, 'index.html');
+  if (fs.existsSync(prerenderedPath) && pathname !== '/') {
+    return res.sendFile(prerenderedPath);
+  }
+
+  // For the root path, dist/index.html is already pre-rendered
+  if (pathname === '/') {
+    return res.sendFile(join(__dirname, 'dist', 'index.html'));
+  }
+
+  // Known routes that weren't pre-rendered: serve the SPA shell with 200
+  if (isKnownRoute(pathname)) {
+    return res.sendFile(join(__dirname, 'dist', 'index.html'));
+  }
+
+  // Unknown route: serve 404.html with 404 status, or fallback to SPA shell
+  const notFoundPath = join(__dirname, 'dist', '404.html');
+  if (fs.existsSync(notFoundPath)) {
+    return res.status(404).sendFile(notFoundPath);
+  }
+  return res.status(404).sendFile(join(__dirname, 'dist', 'index.html'));
 });
 
 app.listen(PORT, '0.0.0.0', () => {

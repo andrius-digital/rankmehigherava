@@ -340,7 +340,11 @@ const Index = () => {
                     <div className="absolute -inset-1 bg-gradient-to-br from-primary/30 to-red-600/30 rounded-2xl blur-lg opacity-60" />
                     <div className="relative z-10">
                       <picture>
-                        <source srcSet="/off-tint-screenshot.webp" type="image/webp" />
+                        <source
+                          srcSet="/off-tint-screenshot-400w.webp 400w, /off-tint-screenshot-800w.webp 800w, /off-tint-screenshot-1200w.webp 1200w, /off-tint-screenshot.webp 2994w"
+                          sizes="(max-width: 768px) 100vw, 580px"
+                          type="image/webp"
+                        />
                         <img 
                           src="/off-tint-screenshot.png" 
                           alt="Off-Tint - Custom coded website by Rank Me Higher" 
@@ -431,7 +435,11 @@ const Index = () => {
               <div className="absolute -inset-1 bg-gradient-to-br from-primary/30 to-red-600/30 rounded-xl blur-md opacity-50" />
                 <div className="relative z-10">
                 <picture>
-                  <source srcSet="/off-tint-screenshot.webp" type="image/webp" />
+                  <source
+                    srcSet="/off-tint-screenshot-400w.webp 400w, /off-tint-screenshot-800w.webp 800w, /off-tint-screenshot.webp 2994w"
+                    sizes="100vw"
+                    type="image/webp"
+                  />
                   <img 
                     src="/off-tint-screenshot.png" 
                     alt="Off-Tint - Custom coded website by Rank Me Higher" 
@@ -532,7 +540,16 @@ const Index = () => {
                     <div key={i} className="flex-shrink-0 w-[260px] md:w-[300px] group">
                       <div className="rounded-xl overflow-hidden bg-white/5 border border-white/10 hover:border-primary/40 transition-all duration-300 shadow-lg hover:shadow-primary/20">
                         <div className="relative overflow-hidden aspect-[16/9] bg-black">
-                          <img src={item.img} alt={`${item.name} - ${item.desc} - Custom website by Rank Me Higher`} loading="lazy" width={600} height={338} className="w-full h-full object-cover object-top block" />
+                          <img
+                            src={item.img}
+                            srcSet={`${item.img.replace('.webp', '-400w.webp')} 400w, ${item.img} 600w`}
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"
+                            alt={`${item.name} - ${item.desc} - Custom website by Rank Me Higher`}
+                            loading="lazy"
+                            width={600}
+                            height={338}
+                            className="w-full h-full object-cover object-top block"
+                          />
                         </div>
                         <div className="px-3 py-2.5 flex items-center justify-between">
                           <div>
@@ -717,6 +734,8 @@ const Index = () => {
                       <div className="relative aspect-[16/9] overflow-hidden">
                         <img 
                           src="/images/template-website-example.webp" 
+                          srcSet="/images/template-website-example-400w.webp 400w, /images/template-website-example-800w.webp 800w, /images/template-website-example-1200w.webp 1200w, /images/template-website-example.webp 2036w"
+                          sizes="(max-width: 768px) 100vw, 500px"
                           alt="Example of a template-built website showing slow performance" 
                           width={800}
                           height={450}
@@ -776,7 +795,11 @@ const Index = () => {
                       </div>
                       <div className="relative aspect-[16/9] overflow-hidden">
                         <picture>
-                          <source srcSet="/images/custom-coded-website-example.webp" type="image/webp" />
+                          <source
+                            srcSet="/images/custom-coded-website-example-400w.webp 400w, /images/custom-coded-website-example-800w.webp 800w, /images/custom-coded-website-example-1200w.webp 1200w, /images/custom-coded-website-example.webp 2990w"
+                            sizes="(max-width: 768px) 100vw, 500px"
+                            type="image/webp"
+                          />
                           <img 
                             src="/images/custom-coded-website-example.png" 
                             alt="Example of a custom-coded website by Rank Me Higher" 
