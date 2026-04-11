@@ -4,12 +4,14 @@ import path from "path";
 import fs from "fs";
 
 /**
- * Vite plugin that:
- * 1. Injects <link rel="preload"> for critical Latin web fonts
- * 2. Converts the main CSS to a non-render-blocking preload pattern
+ * Vite plugin that injects <link rel="preload"> tags for critical
+ * Latin-subset web fonts (Inter, Orbitron, Montserrat) into the
+ * built index.html.  This eliminates the FOUT/CLS caused by fonts
+ * loading only after the CSS is parsed.
  *
- * Uses the closeBundle hook to post-process dist/index.html after
- * all assets are written, so we can scan the actual font files on disk.
+ * NOTE: CSS deferral has been intentionally removed — deferring the
+ * main stylesheet caused fonts and layout to render incorrectly on
+ * first paint because the @fontsource CSS rules were not yet applied.
  */
 function fontPreloadPlugin(): Plugin {
   return {
@@ -33,7 +35,7 @@ function fontPreloadPlugin(): Plugin {
           /(inter|orbitron|montserrat)-latin-\d+/.test(f)
       );
 
-      // Critical weights
+      // Critical weights: Inter 400/500/600, Montserrat 400/600/700, Orbitron 400/700/800/900
       const criticalPatterns = [
         "inter-latin-400-normal",
         "inter-latin-500-normal",
@@ -65,21 +67,6 @@ function fontPreloadPlugin(): Plugin {
             preloadTags.split("\n").length
           } preload tags`
         );
-      }
-
-      // Convert main CSS to non-render-blocking preload pattern
-      const cssLinkRegex =
-        /<link rel="stylesheet" crossorigin href="(\/assets\/index-[^"]+\.css)">/;
-      const cssMatch = html.match(cssLinkRegex);
-      if (cssMatch) {
-        const cssHref = cssMatch[1];
-        const replacement = [
-          `<link rel="preload" href="${cssHref}" as="style" crossorigin>`,
-          `<link rel="stylesheet" href="${cssHref}" crossorigin media="print" onload="this.media='all'">`,
-          `<noscript><link rel="stylesheet" href="${cssHref}" crossorigin></noscript>`,
-        ].join("\n    ");
-        html = html.replace(cssMatch[0], replacement);
-        console.log(`🎨 CSS defer: converted main CSS to non-blocking preload`);
       }
 
       fs.writeFileSync(indexPath, html, "utf-8");
