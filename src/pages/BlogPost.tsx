@@ -8,6 +8,19 @@ import { blogPosts } from "@/data/blogPosts";
 import ReactMarkdown from "react-markdown";
 
 
+/**
+ * Converts a display date like "December 20, 2025" to ISO 8601 "2025-12-20".
+ */
+function toISODate(displayDate: string): string {
+  try {
+    const d = new Date(displayDate);
+    if (isNaN(d.getTime())) return displayDate;
+    return d.toISOString().split("T")[0];
+  } catch {
+    return displayDate;
+  }
+}
+
 const BlogPost = () => {
   const { slug } = useParams<{ slug: string }>();
   const post = blogPosts.find(p => p.slug === slug);
@@ -26,6 +39,7 @@ const BlogPost = () => {
   const secondHalf = contentParts.slice(midPoint).join("\n\n");
 
   const shareUrl = `https://rankmehigher.com/blog/${post.slug}`;
+  const isoDate = toISODate(post.date);
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -33,6 +47,69 @@ const BlogPost = () => {
     } else {
       navigator.clipboard.writeText(shareUrl);
     }
+  };
+
+  // Derive WebP path from image if it's a PNG
+  const imageWebp = post.image ? post.image.replace(/\.png$/i, ".webp") : undefined;
+
+  // Word count for estimated reading time
+  const wordCount = post.content.split(/\s+/).length;
+
+  // BlogPosting schema
+  const blogPostingSchema = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": post.title,
+    "description": post.excerpt,
+    "author": {
+      "@type": "Person",
+      "name": post.author,
+      "url": "https://rankmehigher.com"
+    },
+    "datePublished": isoDate,
+    "dateModified": isoDate,
+    "publisher": {
+      "@type": "Organization",
+      "name": "Rank Me Higher",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://rankmehigher.com/assets/logo.png"
+      }
+    },
+    "image": post.image ? `https://rankmehigher.com${post.image}` : "https://rankmehigher.com/assets/logo.png",
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": shareUrl
+    },
+    "articleSection": post.category,
+    "wordCount": wordCount,
+    "inLanguage": "en-US"
+  };
+
+  // BreadcrumbList schema
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://rankmehigher.com"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Blog",
+        "item": "https://rankmehigher.com/blog"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": post.title,
+        "item": shareUrl
+      }
+    ]
   };
 
   return (
@@ -45,26 +122,18 @@ const BlogPost = () => {
         <meta property="og:description" content={post.excerpt} />
         <meta property="og:type" content="article" />
         <meta property="og:url" content={shareUrl} />
-        {post.image && <meta property="og:image" content={post.image} />}
+        <meta property="og:site_name" content="Rank Me Higher" />
+        {post.image && <meta property="og:image" content={`https://rankmehigher.com${post.image}`} />}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={post.title} />
         <meta name="twitter:description" content={post.excerpt} />
-        {post.image && <meta name="twitter:image" content={post.image} />}
-        <meta property="article:published_time" content={post.date} />
+        {post.image && <meta name="twitter:image" content={`https://rankmehigher.com${post.image}`} />}
+        <meta property="article:published_time" content={isoDate} />
         <meta property="article:author" content={post.author} />
         <meta property="article:section" content={post.category} />
         <link rel="canonical" href={shareUrl} />
-        <script type="application/ld+json">{JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "BlogPosting",
-          "headline": post.title,
-          "description": post.excerpt,
-          "author": { "@type": "Person", "name": post.author },
-          "datePublished": post.date,
-          "publisher": { "@type": "Organization", "name": "Rank Me Higher" },
-          "image": post.image || "",
-          "mainEntityOfPage": { "@type": "WebPage", "@id": shareUrl }
-        })}</script>
+        <script type="application/ld+json">{JSON.stringify(blogPostingSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
       </Helmet>
 
       <div className="min-h-screen bg-background relative overflow-hidden">
@@ -132,7 +201,17 @@ const BlogPost = () => {
 
             {post.image && (
               <div className="rounded-xl overflow-hidden border border-white/10 shadow-xl mb-8">
-                <img src={post.image} alt={post.title} className="w-full h-auto object-cover" />
+                <picture>
+                  {imageWebp && <source srcSet={imageWebp} type="image/webp" />}
+                  <img
+                    src={post.image}
+                    alt={post.title}
+                    width={800}
+                    height={450}
+                    loading="eager"
+                    className="w-full h-auto object-cover"
+                  />
+                </picture>
               </div>
             )}
 

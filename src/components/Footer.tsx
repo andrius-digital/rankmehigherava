@@ -90,7 +90,7 @@ const Footer = () => {
         <div className="grid md:grid-cols-2 gap-12 mb-12">
           {/* Left Column - About */}
           <div className="space-y-6">
-            <img src={logo} alt="Rank Me Higher" className="h-10 w-auto" />
+            <img src={logo} alt="Rank Me Higher logo" width={120} height={40} className="h-10 w-auto" />
 
             <p className="text-muted-foreground leading-relaxed max-w-md">
               <strong className="text-foreground">Rank Me Higher</strong> is a Software & Website Development Marketing Company from Chicago. We take a technology-driven approach to building faster, better-ranking websites that actually generate leads and revenue for local businesses.

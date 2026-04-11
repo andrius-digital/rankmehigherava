@@ -10,7 +10,10 @@ const HeroSection = () => {
       <div className="absolute inset-0">
         <img 
           src={heroBackground} 
-          alt="" 
+          alt="Rank Me Higher hero background - Local Map Booster service"
+          width={1920}
+          height={1080}
+          fetchPriority="high"
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/85 to-background/70" />

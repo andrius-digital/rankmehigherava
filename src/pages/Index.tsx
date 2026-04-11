@@ -213,7 +213,7 @@ const Index = () => {
           "description": "Chicago-based AI website agency specializing in custom-coded SEO websites, Google Maps optimization, and AI-powered business automation.",
           "address": { "@type": "PostalAddress", "streetAddress": "1 N State St Ste 1515", "addressLocality": "Chicago", "addressRegion": "IL", "postalCode": "60602", "addressCountry": "US" },
           "telephone": "+17735724686",
-          "sameAs": ["https://www.facebook.com/rankmehigher", "https://www.linkedin.com/company/rankmehigher", "https://www.instagram.com/rankmehigher", "https://www.yelp.com/biz/rank-me-higher-chicago", "https://maps.google.com/?cid=rankmehigher"],
+          "sameAs": ["https://www.facebook.com/rankmehigherseo", "https://instagram.com/rankmehigherseo", "https://www.tiktok.com/@rankmehigher", "https://www.trustpilot.com/review/rankmehigher.com", "https://agencies.semrush.com/rank-me-higher/"],
           "foundingDate": "2015",
           "numberOfEmployees": { "@type": "QuantitativeValue", "value": "10-50" },
           "serviceArea": { "@type": "Place", "name": "United States" }
@@ -236,7 +236,7 @@ const Index = () => {
           "url": "https://rankmehigher.com",
           "priceRange": "$$",
           "openingHours": "Mo-Fr 09:00-17:00",
-          "sameAs": ["https://www.facebook.com/rankmehigher", "https://www.linkedin.com/company/rankmehigher", "https://www.instagram.com/rankmehigher", "https://www.yelp.com/biz/rank-me-higher-chicago", "https://maps.google.com/?cid=rankmehigher"],
+          "sameAs": ["https://www.facebook.com/rankmehigherseo", "https://instagram.com/rankmehigherseo", "https://www.tiktok.com/@rankmehigher", "https://www.trustpilot.com/review/rankmehigher.com", "https://agencies.semrush.com/rank-me-higher/"],
           "aggregateRating": { "@type": "AggregateRating", "ratingValue": "5", "reviewCount": "54", "bestRating": "5", "worstRating": "1" }
         })}</script>
       </Helmet>
@@ -339,14 +339,21 @@ const Index = () => {
                     <div className="absolute -inset-2 bg-gradient-to-br from-primary/40 to-red-600/40 rounded-2xl blur-xl opacity-50 group-hover:opacity-70 transition-opacity" />
                     <div className="absolute -inset-1 bg-gradient-to-br from-primary/30 to-red-600/30 rounded-2xl blur-lg opacity-60" />
                     <div className="relative z-10">
-                      <img 
-                        src="/off-tint-screenshot.png" 
-                        alt="Off-Tint - Custom coded website by Rank Me Higher" 
-                        className="w-full h-auto rounded-2xl"
-                      />
+                      <picture>
+                        <source srcSet="/off-tint-screenshot.webp" type="image/webp" />
+                        <img 
+                          src="/off-tint-screenshot.png" 
+                          alt="Off-Tint - Custom coded website by Rank Me Higher" 
+                          width={800}
+                          height={600}
+                          loading="eager"
+                          fetchPriority="high"
+                          className="w-full h-auto rounded-2xl"
+                        />
+                      </picture>
                       <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent rounded-b-2xl">
                         <div className="flex items-center gap-3">
-                          <img src="/off-tint-logo.webp" alt="Off-Tint logo" className="w-8 h-8 rounded-lg" />
+                          <img src="/off-tint-logo.webp" alt="Off-Tint logo" width={32} height={32} className="w-8 h-8 rounded-lg" />
                           <div>
                             <p className="text-sm font-bold text-white font-orbitron">Off-Tint</p>
                             <p className="text-[11px] text-white/60">PPF & Window Tinting · Lisle, IL</p>
@@ -422,15 +429,22 @@ const Index = () => {
             {/* Website Showcase */}
             <div className="relative rounded-xl overflow-hidden border-2 border-primary/30 shadow-xl shadow-primary/20 mb-5">
               <div className="absolute -inset-1 bg-gradient-to-br from-primary/30 to-red-600/30 rounded-xl blur-md opacity-50" />
-              <div className="relative z-10">
-                <img 
-                  src="/off-tint-screenshot.png" 
-                  alt="Off-Tint - Custom coded website by Rank Me Higher" 
-                  className="w-full h-auto rounded-xl"
-                />
+                <div className="relative z-10">
+                <picture>
+                  <source srcSet="/off-tint-screenshot.webp" type="image/webp" />
+                  <img 
+                    src="/off-tint-screenshot.png" 
+                    alt="Off-Tint - Custom coded website by Rank Me Higher" 
+                    width={800}
+                    height={600}
+                    loading="eager"
+                    fetchPriority="high"
+                    className="w-full h-auto rounded-xl"
+                  />
+                </picture>
                 <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/80 via-black/40 to-transparent rounded-b-xl">
                   <div className="flex items-center gap-2.5">
-                    <img src="/off-tint-logo.webp" alt="Off-Tint logo" className="w-7 h-7 rounded-lg" />
+                    <img src="/off-tint-logo.webp" alt="Off-Tint logo" width={28} height={28} className="w-7 h-7 rounded-lg" />
                     <div>
                       <p className="text-xs font-bold text-white font-orbitron">Off-Tint</p>
                       <p className="text-[10px] text-white/60">PPF & Window Tinting · Lisle, IL</p>
@@ -518,7 +532,7 @@ const Index = () => {
                     <div key={i} className="flex-shrink-0 w-[260px] md:w-[300px] group">
                       <div className="rounded-xl overflow-hidden bg-white/5 border border-white/10 hover:border-primary/40 transition-all duration-300 shadow-lg hover:shadow-primary/20">
                         <div className="relative overflow-hidden aspect-[16/9] bg-black">
-                          <img src={item.img} alt={item.name} loading="lazy" width="600" height="338" className="w-full h-full object-cover object-top block" />
+                          <img src={item.img} alt={`${item.name} - ${item.desc} - Custom website by Rank Me Higher`} loading="lazy" width={600} height={338} className="w-full h-full object-cover object-top block" />
                         </div>
                         <div className="px-3 py-2.5 flex items-center justify-between">
                           <div>
@@ -703,7 +717,10 @@ const Index = () => {
                       <div className="relative aspect-[16/9] overflow-hidden">
                         <img 
                           src="/images/template-website-example.webp" 
-                          alt="Example of a template-built website" 
+                          alt="Example of a template-built website showing slow performance" 
+                          width={800}
+                          height={450}
+                          loading="lazy"
                           className="w-full h-full object-cover object-top opacity-80"
                         />
                         <div className="absolute inset-0 bg-red-500/10" />
@@ -758,11 +775,17 @@ const Index = () => {
                         </div>
                       </div>
                       <div className="relative aspect-[16/9] overflow-hidden">
-                        <img 
-                          src="/images/custom-coded-website-example.png" 
-                          alt="Example of a custom-coded website by Rank Me Higher" 
-                          className="w-full h-full object-cover object-top"
-                        />
+                        <picture>
+                          <source srcSet="/images/custom-coded-website-example.webp" type="image/webp" />
+                          <img 
+                            src="/images/custom-coded-website-example.png" 
+                            alt="Example of a custom-coded website by Rank Me Higher" 
+                            width={800}
+                            height={450}
+                            loading="lazy"
+                            className="w-full h-full object-cover object-top"
+                          />
+                        </picture>
                         <div className="absolute inset-0 bg-cyan-500/5" />
                       </div>
                     </div>

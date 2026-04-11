@@ -53,7 +53,7 @@ const Navbar = ({ onOpenLeadMagnet }: { onOpenLeadMagnet?: () => void }) => {
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/40 to-red-600/40 rounded-full blur-md" />
                 <div className="relative w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-background border-2 border-primary/30 overflow-hidden flex items-center justify-center">
-                  <img src="/assets/logo.png" alt="Rank Me Higher" className="w-10 h-10 lg:w-12 lg:h-12 object-contain" />
+                  <img src="/assets/logo.png" alt="Rank Me Higher logo" width={48} height={48} className="w-10 h-10 lg:w-12 lg:h-12 object-contain" />
                 </div>
               </div>
             </Link>

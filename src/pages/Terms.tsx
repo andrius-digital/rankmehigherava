@@ -1,12 +1,20 @@
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 const Terms = () => {
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <Navbar />
+    <>
+      <Helmet>
+        <title>Terms & Conditions | Rank Me Higher</title>
+        <meta name="description" content="Rank Me Higher terms and conditions. Review our service agreement, payment terms, and usage policies." />
+        <link rel="canonical" href="https://rankmehigher.com/terms" />
+        <meta name="robots" content="noindex, follow" />
+      </Helmet>
+      <div className="min-h-screen bg-background text-foreground">
+        <Navbar />
       
       <main className="pt-32 pb-20">
         <div className="container mx-auto px-4 max-w-4xl">
@@ -90,11 +98,11 @@ const Terms = () => {
         </div>
       </main>
 
-      <Footer />
+       <Footer />
     </div>
+    </>
   );
 };
-
 export default Terms;
 
 

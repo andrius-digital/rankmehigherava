@@ -318,11 +318,17 @@ const MapPackSection = () => {
 
               <div className="relative group">
                 <div className="relative rounded-2xl overflow-hidden border border-primary/30 shadow-[0_0_50px_rgba(239,68,68,0.15)] transform transition-all duration-700 group-hover:scale-[1.02] group-hover:rotate-1">
-                  <img
-                    src="/assets/seo-results-collage.png"
-                    alt="Local SEO Results Proof"
-                    className="w-full h-auto object-cover"
-                  />
+                  <picture>
+                    <source srcSet="/assets/seo-results-collage.webp" type="image/webp" />
+                    <img
+                      src="/assets/seo-results-collage.png"
+                      alt="Local SEO results proof - Google Maps rankings achieved by Rank Me Higher clients"
+                      width={800}
+                      height={600}
+                      loading="lazy"
+                      className="w-full h-auto object-cover"
+                    />
+                  </picture>
                   {/* Glass overlay effect */}
                   <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-transparent opacity-60 pointer-events-none" />
 

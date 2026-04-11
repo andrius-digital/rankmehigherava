@@ -132,7 +132,7 @@ const AdsContent = () => {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Ads & Content | Rank Me Higher" />
         <meta name="twitter:description" content="Content shoots, Meta ads, and sales funnels for local businesses." />
-        <link rel="canonical" href="https://rankmehigher.com/services/ads-content" />
+        <link rel="canonical" href="https://rankmehigher.com/services/content-ads" />
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
           "@type": "Service",

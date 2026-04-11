@@ -1,12 +1,20 @@
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 const Privacy = () => {
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <Navbar />
+    <>
+      <Helmet>
+        <title>Privacy Policy | Rank Me Higher</title>
+        <meta name="description" content="Rank Me Higher privacy policy. Learn how we collect, use, and protect your personal information." />
+        <link rel="canonical" href="https://rankmehigher.com/privacy" />
+        <meta name="robots" content="noindex, follow" />
+      </Helmet>
+      <div className="min-h-screen bg-background text-foreground">
+        <Navbar />
       
       <main className="pt-32 pb-20">
         <div className="container mx-auto px-4 max-w-4xl">
@@ -104,11 +112,11 @@ const Privacy = () => {
         </div>
       </main>
 
-      <Footer />
+       <Footer />
     </div>
+    </>
   );
 };
-
 export default Privacy;
 
 
