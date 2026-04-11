@@ -296,6 +296,26 @@ async function main() {
 }
 
 main().catch((err) => {
+  // Detect Chrome/Puppeteer not available (e.g., Replit, CI without Chrome)
+  const isChromeMissing =
+    err.message &&
+    (err.message.includes("Could not find Chrome") ||
+      err.message.includes("Failed to launch") ||
+      err.message.includes("No usable sandbox") ||
+      err.message.includes("ENOENT") ||
+      err.message.includes("chromium") ||
+      err.message.includes("chrome"));
+
+  if (isChromeMissing) {
+    console.warn(
+      "\n⚠️  Pre-render skipped: Chrome/Puppeteer not available in this environment."
+    );
+    console.warn(
+      "   The site will work as a normal SPA. Run the build locally to generate pre-rendered HTML.\n"
+    );
+    process.exit(0); // Exit successfully so the overall build does not fail
+  }
+
   console.error("Pre-render failed:", err);
   process.exit(1);
 });
