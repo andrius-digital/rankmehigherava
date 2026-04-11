@@ -17,7 +17,7 @@ import NotFound from "./pages/NotFound";
 const LocalMapBooster = lazy(() => import("./pages/LocalMapBooster"));
 const Websites = lazy(() => import("./pages/services/Websites"));
 const SEO = lazy(() => import("./pages/services/SEO"));
-const AdsContent = lazy(() => import("./pages/services/AdsContent"));
+
 const ContentAds = lazy(() => import("./pages/services/ContentAds"));
 const Outbound = lazy(() => import("./pages/services/Outbound"));
 const Blog = lazy(() => import("./pages/Blog"));
@@ -107,7 +107,7 @@ const App = () => (
                 <Route path="/localmapbooster" element={<LocalMapBooster />} />
                 <Route path="/services/websites" element={<Websites />} />
                 <Route path="/services/seo" element={<SEO />} />
-                <Route path="/services/ads-content" element={<AdsContent />} />
+                
                 <Route path="/services/content-ads" element={<ContentAds />} />
                 <Route path="/services/outbound" element={<Outbound />} />
                 <Route path="/blog" element={<Blog />} />
