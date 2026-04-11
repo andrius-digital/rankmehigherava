@@ -69,6 +69,10 @@ const Navbar = ({ onOpenLeadMagnet }: { onOpenLeadMagnet?: () => void }) => {
               Content & Ads
             </Link>
 
+            <Link to="/services/google-ads" className="text-foreground font-medium hover:text-primary transition-colors">
+              Google Ads
+            </Link>
+
             <Link to="/blog" className="text-foreground font-medium hover:text-primary transition-colors">
               Blog
             </Link>
@@ -126,6 +130,14 @@ const Navbar = ({ onOpenLeadMagnet }: { onOpenLeadMagnet?: () => void }) => {
                 className="text-foreground font-medium hover:text-primary transition-colors py-2"
               >
                 Content & Ads
+              </Link>
+
+              <Link
+                to="/services/google-ads"
+                onClick={() => setIsMenuOpen(false)}
+                className="text-foreground font-medium hover:text-primary transition-colors py-2"
+              >
+                Google Ads
               </Link>
 
               <Link

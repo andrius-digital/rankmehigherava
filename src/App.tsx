@@ -19,6 +19,7 @@ const Websites = lazy(() => import("./pages/services/Websites"));
 const SEO = lazy(() => import("./pages/services/SEO"));
 
 const ContentAds = lazy(() => import("./pages/services/ContentAds"));
+const GoogleAds = lazy(() => import("./pages/services/GoogleAds"));
 const Outbound = lazy(() => import("./pages/services/Outbound"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
@@ -109,6 +110,7 @@ const App = () => (
                 <Route path="/services/seo" element={<SEO />} />
                 
                 <Route path="/services/content-ads" element={<ContentAds />} />
+                <Route path="/services/google-ads" element={<GoogleAds />} />
                 <Route path="/services/outbound" element={<Outbound />} />
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/blog/:slug" element={<BlogPost />} />
