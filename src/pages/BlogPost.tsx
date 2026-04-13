@@ -1,4 +1,4 @@
-import { useParams, Link, Navigate } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { ArrowLeft, Clock, Calendar, User, TrendingUp, BookOpen, ArrowRight, Share2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import LeadMagnet from "@/components/blog/LeadMagnet";
 import { blogPosts } from "@/data/blogPosts";
 import ReactMarkdown from "react-markdown";
+import NotFound from "@/pages/NotFound";
 
 
 /**
@@ -26,7 +27,7 @@ const BlogPost = () => {
   const post = blogPosts.find(p => p.slug === slug);
   
   if (!post) {
-    return <Navigate to="/blog" replace />;
+    return <NotFound />;
   }
 
   const relatedPosts = blogPosts
