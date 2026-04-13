@@ -295,7 +295,7 @@ const Index = () => {
                     <div className="text-sm text-muted-foreground pl-2">
                       <div className="flex items-start gap-2">
                         <span className="text-cyan-400 font-bold shrink-0">•</span>
-                        <span><strong className="text-foreground">$2,000 setup + $99/mo.</strong> Unlimited revisions until launch • Hosting • Emergency Telegram support • Go High Level included • Post-launch adjustments $100/hr</span>
+                        <span><strong className="text-foreground">$99/mo.</strong> Unlimited revisions until launch • Hosting • Emergency Telegram support • Go High Level included • Post-launch adjustments $100/hr</span>
                       </div>
                     </div>
                   </div>
@@ -425,7 +425,7 @@ const Index = () => {
               <div className="text-xs text-muted-foreground pl-2">
                 <div className="flex items-start gap-2">
                   <span className="text-cyan-400 font-bold shrink-0">•</span>
-                  <span><strong className="text-foreground">$2,000 setup + $99/mo.</strong> Unlimited revisions until launch • Hosting • Emergency Telegram support • Go High Level included • Post-launch adjustments $100/hr</span>
+                  <span><strong className="text-foreground">$99/mo.</strong> Unlimited revisions until launch • Hosting • Emergency Telegram support • Go High Level included • Post-launch adjustments $100/hr</span>
                 </div>
               </div>
             </div>
@@ -605,19 +605,15 @@ const Index = () => {
                   <div className="text-center lg:text-left space-y-5">
                     <div>
                       <div className="mb-1">
-                        <span className="text-5xl lg:text-6xl font-black font-orbitron text-foreground">$2,000</span>
-                      </div>
-                      <p className="text-base text-muted-foreground mb-1">One-time setup fee</p>
-                      <div className="flex items-baseline gap-2 justify-center lg:justify-start">
-                        <span className="text-3xl lg:text-4xl font-black font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-primary to-red-500">+ $99</span>
-                        <span className="text-muted-foreground text-base">/month</span>
+                        <span className="text-5xl lg:text-6xl font-black font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-primary to-red-500">$99</span>
+                        <span className="text-3xl lg:text-4xl font-black font-orbitron text-muted-foreground">/month</span>
                       </div>
                       <p className="text-sm text-muted-foreground mt-1">Billed every 1st of the month</p>
                       <p className="text-sm text-cyan-400 font-bold mt-3">No sales call needed to know our pricing. It's all right here.</p>
                     </div>
 
                     <div className="p-4 rounded-xl bg-white/5 border border-white/10 text-left">
-                      <h4 className="font-orbitron font-bold text-xs text-foreground mb-2">What's in the Setup Fee</h4>
+                      <h4 className="font-orbitron font-bold text-xs text-foreground mb-2">What's Included in Your Build</h4>
                       <ul className="space-y-1.5">
                         {[
                           'Custom-coded website (not a template)',
@@ -1229,8 +1225,8 @@ const Index = () => {
 
           <div className="grid grid-cols-3 gap-2 mt-2">
             <div className="p-1.5 rounded-lg bg-red-500/5 border border-red-500/20 text-center">
-              <span className="block text-xs font-black font-orbitron text-foreground">$2K</span>
-              <span className="text-[8px] text-muted-foreground">Setup</span>
+              <span className="block text-xs font-black font-orbitron text-foreground">$99/mo</span>
+              <span className="text-[8px] text-muted-foreground">Monthly</span>
             </div>
             <div className="p-1.5 rounded-lg bg-red-500/5 border border-red-500/20 text-center">
               <span className="block text-xs font-black font-orbitron text-foreground">10 Days</span>

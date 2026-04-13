@@ -142,7 +142,7 @@ const Websites = () => {
           "description": "Custom-coded websites with AI receptionist, automated follow-ups, CRM integration, and full SEO optimization. Delivered in 2 weeks.",
           "url": "https://rankmehigher.com/services/websites",
           "areaServed": "United States",
-          "offers": { "@type": "Offer", "price": "2000", "priceCurrency": "USD", "description": "$2,000 setup + $99/mo" },
+          "offers": { "@type": "Offer", "price": "99", "priceCurrency": "USD", "description": "$99/mo" },
           "serviceType": "Web Development"
         })}</script>
         <script type="application/ld+json">{JSON.stringify({

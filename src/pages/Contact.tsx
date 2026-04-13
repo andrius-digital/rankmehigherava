@@ -314,7 +314,7 @@ const Contact = () => {
                       "Chicago-based, meet us in person",
                       "Direct line to Andrius, always",
                       "Live in 10 days, not months",
-                      "$2,000 setup + $99/mo, no hidden fees"
+                      "$99/mo, no hidden fees"
                     ].map((item, index) => (
                       <div key={index} className="flex items-center gap-2">
                         <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
