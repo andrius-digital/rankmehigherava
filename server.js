@@ -712,7 +712,7 @@ app.get('/llms-full.txt', (req, res) => {
 // Known public routes (must match React Router paths)
 const KNOWN_ROUTES = new Set([
   '/', '/localmapbooster', '/services/websites', '/services/seo',
-  '/services/content-ads', '/services/ads-content', '/services/outbound',
+  '/services/content-ads', '/services/ads-content', '/services/google-ads', '/services/outbound',
   '/blog', '/contact', '/careers', '/privacy', '/terms',
   '/auth', '/website-submissions', '/website-submission-confirmation',
   '/funnel-submissions', '/funnel-submission-confirmation',

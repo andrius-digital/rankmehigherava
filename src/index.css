@@ -62,8 +62,8 @@
     --agency-operations-glow: 234 85% 55% / 0.3;
 
     /* Fonts */
-    --font-heading: "Montserrat", sans-serif;
-    --font-body: "Inter", sans-serif;
+    --font-heading: "Montserrat", "Montserrat-fallback", sans-serif;
+    --font-body: "Inter", "Inter-fallback", sans-serif;
 
     --sidebar-background: 0 0% 5%;
     --sidebar-foreground: 0 0% 98%;

@@ -14,8 +14,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        heading: ["Montserrat", "sans-serif"],
-        body: ["Inter", "sans-serif"],
+        heading: ["Montserrat", "Montserrat-fallback", "sans-serif"],
+        body: ["Inter", "Inter-fallback", "sans-serif"],
         orbitron: ["Orbitron", "sans-serif"],
       },
       colors: {

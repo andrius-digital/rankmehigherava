@@ -8,6 +8,28 @@
     <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet" media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="https://assets.calendly.com/assets/external/widget.css"></noscript>
     <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" defer></script>
+    <!-- Preload critical latin font subsets to reduce CLS from font swapping -->
+    <link rel="preload" href="/assets/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/assets/montserrat-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <!-- Font metric overrides to eliminate CLS from Inter and Montserrat -->
+    <style>
+      @font-face {
+        font-family: 'Inter-fallback';
+        src: local('Arial');
+        ascent-override: 90%;
+        descent-override: 22.43%;
+        line-gap-override: 0%;
+        size-adjust: 107.64%;
+      }
+      @font-face {
+        font-family: 'Montserrat-fallback';
+        src: local('Arial');
+        ascent-override: 84.75%;
+        descent-override: 22.03%;
+        line-gap-override: 0%;
+        size-adjust: 114.04%;
+      }
+    </style>
     <!-- Default title/meta — overridden per-page by react-helmet-async -->
     <!-- Fallback metadata: visible to crawlers before React hydrates; react-helmet-async overrides these per-page -->
     <title>Rank Me Higher | Chicago SEO & Website Agency</title>
