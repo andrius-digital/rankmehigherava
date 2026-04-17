@@ -541,9 +541,9 @@ const Index = () => {
                       <div className="rounded-xl overflow-hidden bg-white/5 border border-white/10 hover:border-primary/40 transition-all duration-300 shadow-lg hover:shadow-primary/20">
                         <div className="relative overflow-hidden aspect-[16/9] bg-black">
                           <img
-                            src={item.img}
-                            srcSet={`${item.img.replace('.webp', '-400w.webp')} 400w, ${item.img} 600w`}
-                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"
+                            src={item.img.replace('.webp', '-600w.webp')}
+                            srcSet={`${item.img.replace('.webp', '-400w.webp')} 400w, ${item.img.replace('.webp', '-600w.webp')} 600w`}
+                            sizes="(max-width: 640px) 260px, 300px"
                             alt={`${item.name} - ${item.desc} - Custom website by Rank Me Higher`}
                             loading="lazy"
                             width={600}
